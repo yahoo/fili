@@ -19,6 +19,7 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.Interval
 
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -104,6 +105,7 @@ class TableUtilsSpec extends  Specification {
         TableUtils.getColumnNames(request, query) == [metric1] as LinkedHashSet
     }
 
+    @Ignore("The corresponding implementation has never been implemented.  This test is testing test code.")
     def "getConstrainedLogicalTableAvailability returns intervals constrained by availability"() {
         given: "Unconstrained intervals as [2017, 2021] and constrained as [2018, 2020]"
         Interval unconstrainedInterval1 = new Interval("2017/2019") // [2017, 2018, 2019]
@@ -128,11 +130,20 @@ class TableUtilsSpec extends  Specification {
         ConfigPhysicalTable configPhysicalTable2 = Mock(ConfigPhysicalTable)
         configPhysicalTable1.getAvailability() >> availability1
         configPhysicalTable2.getAvailability() >> availability2
+
         configPhysicalTable1.getSchema() >> physicalTableSchema
         configPhysicalTable2.getSchema() >> physicalTableSchema
 
         QueryPlanningConstraint queryPlanningConstraint = Mock(QueryPlanningConstraint)
         queryPlanningConstraint.intervals >> [constrainedInterval1, constrainedInterval2]
+        queryPlanningConstraint.getAllColumnNames() >> ([] as Set)
+
+        configPhysicalTable1.getAvailableIntervals(_) >> { constraint ->
+            return availability1.getAvailableIntervals(constraint)
+        }
+        configPhysicalTable2.getAvailableIntervals(_) >> { constraint ->
+            return availability2.getAvailableIntervals(constraint)
+        }
 
         ConstrainedTable constrainedTable1 = new ConstrainedTable(configPhysicalTable1, queryPlanningConstraint)
         ConstrainedTable constrainedTable2 = new ConstrainedTable(configPhysicalTable2, queryPlanningConstraint)
@@ -145,6 +156,7 @@ class TableUtilsSpec extends  Specification {
         LogicalTable logicalTable = Mock(LogicalTable)
         logicalTable.getTableGroup() >> tableGroup
 
+
         when:
         SimplifiedIntervalList constrainedInterval = TableUtils.getConstrainedLogicalTableAvailability(
                 logicalTable,
@@ -152,6 +164,7 @@ class TableUtilsSpec extends  Specification {
         )
 
         then:
+
         constrainedInterval == SimplifiedIntervalList.simplifyIntervals([constrainedInterval1, constrainedInterval2])
     }
 

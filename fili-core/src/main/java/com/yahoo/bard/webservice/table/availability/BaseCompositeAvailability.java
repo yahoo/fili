@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
 
@@ -51,6 +50,11 @@ public abstract class BaseCompositeAvailability implements Availability {
         return dataSourcesNames;
     }
 
+    @Override
+    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+        return dataSourcesNames;
+    }
+
     /**
      * Retrieve all available intervals for all data source fields across all the underlying datasources.
      * <p>
@@ -74,42 +78,13 @@ public abstract class BaseCompositeAvailability implements Availability {
     }
 
     @Override
-    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
-        return getEarliestStart(constraint, sourceAvailabilities);
-    }
-
-    @Override
     public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
         return getEarliestStart(constraint, sourceAvailabilities);
     }
 
     @Override
-    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
-        return getLatestEnd(constraint, sourceAvailabilities);
-    }
-
-    @Override
     public Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
         return getLatestEnd(constraint, sourceAvailabilities);
-    }
-
-    /**
-     * Finds and returns the earliest expected start date from the provided availabilities. An empty start date
-     * is considered to be no start date, and is returned.
-     *
-     * @param constraint  constraint used to find sub availabilities' expected start dates
-     * @param availabilities  the availabilities to examine
-     * @return the earliest start date or empty if ANY availability has an empty start date
-     */
-    protected Optional<DateTime> getEarliestStart(
-            PhysicalDataSourceConstraint constraint,
-            Collection<Availability> availabilities
-    ) {
-        DateTime minDate = availabilities.stream()
-                .map(availability -> availability.getExpectedStartDate(constraint).orElse(Availability.DISTANT_PAST))
-                .reduce((datetime1, datetime2) -> datetime1.isBefore(datetime2) ? datetime1 : datetime2)
-                .orElse(Availability.DISTANT_PAST);
-        return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
     }
 
     /**
@@ -129,25 +104,6 @@ public abstract class BaseCompositeAvailability implements Availability {
                 .reduce((datetime1, datetime2) -> datetime1.isBefore(datetime2) ? datetime1 : datetime2)
                 .orElse(Availability.DISTANT_PAST);
         return minDate.equals(DISTANT_PAST) ? Optional.empty() : Optional.of(minDate);
-    }
-
-    /**
-     * Finds and returns the latest expected end date from the provided availabilities. An empty end date
-     * is considered to be no end date, and is returned.
-     *
-     * @param constraint  constraint used to find sub availabilities' expected end dates
-     * @param availabilities  the availabilities to examine
-     * @return the latest end date or empty if ANY availability has an empty end date
-     */
-    protected Optional<DateTime> getLatestEnd(
-            PhysicalDataSourceConstraint constraint,
-            Collection<Availability> availabilities
-    ) {
-        DateTime maxDate = availabilities.stream()
-                .map(availability -> availability.getExpectedEndDate(constraint).orElse(Availability.FAR_FUTURE))
-                .reduce((datetime1, datetime2) -> datetime1.isAfter(datetime2) ? datetime1 : datetime2)
-                .orElse(Availability.FAR_FUTURE);
-        return maxDate.equals(FAR_FUTURE) ? Optional.empty() : Optional.of(maxDate);
     }
 
     /**

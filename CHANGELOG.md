@@ -213,7 +213,14 @@ Current
 
 ### Removed:
 
+- [Removed specialized `PhysicalDataSourceConstraint` methods from `Availability`](https://github.com/yahoo/fili/issues/884)
+
+- [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
+
 ### Fixed:
+
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
+
 
 - [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
     * Many minor syntax and structual issues resolved.

@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import javax.validation.constraints.NotNull;
@@ -33,9 +33,8 @@ public class PermissiveAvailability extends BaseMetadataAvailability {
      * <p>
      * This is different from its parent's
      * {@link
-     * StrictAvailability#getAvailableIntervals(
-     * PhysicalDataSourceConstraint
-     * )};
+     * StrictAvailability#getAvailableIntervals(DataSourceConstraint)};
+     *
      * Instead of returning the intersection of all available intervals, this method returns the union of them.
      *
      * @param ignoredConstraint  Constrains are ignored, because <tt>PermissiveAvailability</tt> returns as many
@@ -45,7 +44,7 @@ public class PermissiveAvailability extends BaseMetadataAvailability {
      * @return the union of all available intervals
      */
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint ignoredConstraint) {
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint ignoredConstraint) {
         return getAllAvailableIntervals().values().stream()
                 .map(SimplifiedIntervalList::new)
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::simplifyIntervals);
