@@ -1024,12 +1024,12 @@
             <id>sonar</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>env.SONAR_TOKEN</name>
-                </property>
             </activation>
             <properties>
-                <sonar.login>${env.SONAR_TOKEN}</sonar.login>
+                <sonar.java.spotbugs.reportPaths>target/spotbugs.xml</sonar.java.spotbugs.reportPaths>
+                <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
+                <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
+                <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
             </properties>
             <build>
                 <pluginManagement>
