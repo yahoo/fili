@@ -32,15 +32,19 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
+import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -132,7 +136,17 @@ public class DruidQueryBuilder {
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
-        Filter filter = druidFilterBuilder.buildFilters(request.getApiFilters());
+
+        ApiFilters apiFilters = new ApiFilters(request.getApiFilters());
+        logicalTable.getFilters().forEach(
+                apiFilter -> {
+                    Set<ApiFilter> existingFilters = apiFilters.getOrDefault(apiFilter.getDimension(), new HashSet<>());
+                    existingFilters.add(apiFilter);
+                    apiFilters.put(apiFilter.getDimension(), existingFilters);
+                }
+        );
+
+        Filter filter = druidFilterBuilder.buildFilters(apiFilters);
 
         return druidTopNMetric != null ?
             buildTopNQuery(
