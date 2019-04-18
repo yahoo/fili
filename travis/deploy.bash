@@ -43,6 +43,7 @@ export FILI_TEST_LIST=a,2,bc,234
 mvn install -Pcoverage.build
 MAVEN_RETURN_CODE=$?
 mvn post-site sonar:sonar -Pcoverage.report,sonar
+mvn sonar:sonar -Pcoverage.report,sonar
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Maven verify did not succeed."
     exit ${MAVEN_RETURN_CODE}

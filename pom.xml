@@ -1030,6 +1030,12 @@
             </activation>
             <properties>
                 <sonar.login>${env.SONAR_TOKEN}</sonar.login>
+                <sonar.organization>yahoo</sonar.organization>
+                <sonar.projectKey>yahoo_fili</sonar.projectKey>
+                <sonar.java.spotbugs.reportPaths>target/spotbugs.xml</sonar.java.spotbugs.reportPaths>
+                <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
+                <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
+                <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
             </properties>
             <build>
                 <pluginManagement>
