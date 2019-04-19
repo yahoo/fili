@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -80,15 +81,11 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * The default JSON builder puts only response body in the JSON response.
      */
     public static final Function<Response, JsonNode> DEFAULT_JSON_NODE_BUILDER_STRATEGY =
-            new Function<Response, JsonNode>() {
-
-        @Override
-        public JsonNode apply(Response response) {
-            try {
-                return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
-            } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
-            }
+            response -> {
+        try (JsonParser parser = new MappingJsonFactory().createParser(response.getResponseBodyAsStream())) {
+            return parser.readValueAsTree();
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
         }
     };
 
@@ -226,7 +223,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             throw new IllegalStateException(msg);
         }
 
-        LOG.info("Configured with druid server config: {}", config.toString());
+        LOG.info("Configured with druid server config: {}", config);
         this.headersToAppend = headersToAppend;
         this.webClient = asyncHttpClient;
         this.writer = mapper.writer();

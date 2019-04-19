@@ -6,7 +6,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
-
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -39,28 +39,28 @@ public class HeaderNestingJsonBuilderStrategy implements Function<Response, Json
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.set(DruidJsonResponseContentKeys.RESPONSE.getName(), baseStrategy.apply(response));
         try {
-            objectNode.set(
-                    DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName(),
-                    mappingJsonFactory
-                            .createParser(
-                                    response.getHeader(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName())
-                            )
-                            .readValueAsTree()
-            );
-            int statusCode = response.getStatusCode();
-            objectNode.set(
-                    DruidJsonResponseContentKeys.STATUS_CODE.getName(),
-                    mappingJsonFactory.createParser(String.valueOf(statusCode)).readValueAsTree()
-            );
-            if (CacheFeatureFlag.ETAG.isOn() && statusCode == OK.getStatusCode()) {
+            try (JsonParser parser = mappingJsonFactory.createParser(
+                    response.getHeader(DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName()))) {
                 objectNode.set(
-                        DruidJsonResponseContentKeys.ETAG.getName(),
-                        mappingJsonFactory
-                                .createParser(
-                                        response.getHeader(DruidJsonResponseContentKeys.ETAG.getName())
-                                )
-                                .readValueAsTree()
+                        DruidJsonResponseContentKeys.DRUID_RESPONSE_CONTEXT.getName(),
+                        parser.readValueAsTree()
                 );
+            }
+            int statusCode = response.getStatusCode();
+            try (JsonParser parser = mappingJsonFactory.createParser(String.valueOf(statusCode))) {
+                objectNode.set(
+                        DruidJsonResponseContentKeys.STATUS_CODE.getName(),
+                        parser.readValueAsTree()
+                );
+            }
+            if (CacheFeatureFlag.ETAG.isOn() && statusCode == OK.getStatusCode()) {
+                try (JsonParser parser = mappingJsonFactory.createParser(
+                        response.getHeader(DruidJsonResponseContentKeys.ETAG.getName()))) {
+                    objectNode.set(
+                            DruidJsonResponseContentKeys.ETAG.getName(),
+                                    parser.readValueAsTree()
+                    );
+                }
             }
         } catch (IOException ioe) {
             throw new IllegalStateException(ioe);

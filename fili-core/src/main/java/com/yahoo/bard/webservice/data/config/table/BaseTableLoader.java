@@ -64,14 +64,6 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
-     * Load user configured tables into resource dictionary.
-     *
-     * @param dictionaries dictionary to be loaded with configured tables
-     */
-    @Override
-    public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
-
-    /**
      * Builds a table group that derive its dimensions by taking the union of all the underlying physical dimensions.
      * <p>
      * Builds and loads the physical tables from table definitions for the current table group.
@@ -331,7 +323,7 @@ public abstract class BaseTableLoader implements TableLoader {
                         }
                 );
 
-        LOG.debug("Table Loader Building Physical Table {}");
+        LOG.debug("Table Loader Building Physical Table {}", currentTableName);
 
         // Build the current physical table using physical table dictionary to resolve dependency
         ConfigPhysicalTable currentTableBuilt = currentTableDefinition.build(
