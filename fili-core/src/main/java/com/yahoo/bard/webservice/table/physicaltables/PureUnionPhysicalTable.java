@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
  * PureUnionPhysicalTable uses PureUnionAvailability which returns the union of all dependent availabilities and the
  * union of all datasource names produced by child availabilities.
  */
-public class PureUnionPhysicalTable extends BasePhysicalTable { //implements ConfigPhysicalTable {
+public class PureUnionPhysicalTable extends BasePhysicalTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(PureUnionPhysicalTable.class);
 
@@ -92,23 +92,24 @@ public class PureUnionPhysicalTable extends BasePhysicalTable { //implements Con
 
         // Generate the unioned logical to physical name mapping
         Map<String, String> logicalToPhysicalColumnNames = new HashMap<>();
-        physicalColumnToLogicalName.entrySet().forEach(
-                entry -> {
-                    entry.getValue().stream().forEach(logicalName -> {
-                        if (logicalToPhysicalColumnNames.containsKey(logicalName)) {
-                            String msg = String.format(
-                                    "Error: when building a pure union table, found a single logical name that" +
+        for (Map.Entry<String, Set<String>> entry : physicalColumnToLogicalName.entrySet()) {
+            String key = entry.getKey();
+            Set<String> value = entry.getValue();
+            value.stream().forEach(logicalName -> {
+                if (logicalToPhysicalColumnNames.containsKey(logicalName)) {
+                    String msg = String.format(
+                            "Error: when building a pure union table, found a single logical name that" +
                                     " maps to multiple different physical columns. Found on tables %s",
-                                    basePhysicalTables.stream()
-                                            .map(ConfigPhysicalTable::getName)
-                                            .collect(Collectors.joining(", "))
-                                );
-                            LOG.error(msg);
-                            throw new IllegalStateException(msg);
-                        }
-                        logicalToPhysicalColumnNames.put(logicalName, entry.getKey());
-                    });
-        });
+                            basePhysicalTables.stream()
+                                    .map(ConfigPhysicalTable::getName)
+                                    .collect(Collectors.joining(", "))
+                    );
+                    LOG.error(msg);
+                    throw new IllegalStateException(msg);
+                }
+                logicalToPhysicalColumnNames.put(logicalName, key);
+            });
+        }
 
         // Make sure all tables share the same time grain. if so, use this as the grain
         Set<ZonedTimeGrain> grains = basePhysicalTables.stream()
@@ -185,7 +186,7 @@ public class PureUnionPhysicalTable extends BasePhysicalTable { //implements Con
         }
 
         String errMsg;
-        if (physicalColumnNames.size() == 0) {
+        if (physicalColumnNames.isEmpty()) {
             errMsg = String.format(
                     "Could not find any physical columns for logical column name %s from union table composed of: ",
                     logicalName
@@ -195,13 +196,13 @@ public class PureUnionPhysicalTable extends BasePhysicalTable { //implements Con
                     "Found multiple physical columns names for logical column %s. Physical names found: %s," +
                             "from union table composed of: ",
                     logicalName,
-                    physicalColumnNames.stream().reduce((so_far, name) -> so_far + ", " + name)
+                    physicalColumnNames.stream().reduce((reduction, name) -> reduction + ", " + name)
             );
         }
 
         errMsg += basePhysicalTables.stream()
                 .map(ConfigPhysicalTable::getName)
-                .reduce((so_far, name) -> so_far + ", " + name);
+                .reduce((reduction, name) -> reduction + ", " + name);
 
         LOG.error(errMsg);
         throw new IllegalStateException(errMsg);
