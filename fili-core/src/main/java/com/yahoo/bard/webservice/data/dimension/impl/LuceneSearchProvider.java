@@ -843,6 +843,7 @@ public class LuceneSearchProvider implements SearchProvider {
                         )
                         .map(document -> document.get(idKey))
                         .map(dimension::findDimensionRowByKeyValue)
+                        .filter(it -> it != null)
                         .collect(Collectors.toCollection(TreeSet::new));
             }
         } finally {

@@ -10,6 +10,12 @@ Current
 
 ### Added:
 
+- [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
+  * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
+  * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
+  * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
+  * If any of these flags are active partial data answers are included in responses. 
+
 - [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
   * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in
   queries
@@ -82,6 +88,12 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
+    * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
+      or the leaking of confidential information.
+    * This PR upgrades `com.puppycrawl.tools` to the safe-version.
+
 - [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
     * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
     dimension field, and filter operation.
@@ -201,10 +213,16 @@ Current
 
 ### Removed:
 
+- [Removed specialized `PhysicalDataSourceConstraint` methods from `Availability`](https://github.com/yahoo/fili/issues/884)
+
+- [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
+
 ### Fixed:
 
 - [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
     * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
+
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
 
 - [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
     * Many minor syntax and structual issues resolved.

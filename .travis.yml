@@ -8,6 +8,11 @@ jdk:
 cache:
   directories:
   - ~/.m2
+  - ~/.sonar/cache
+
+addons:
+  sonarcloud:
+    organization: "yahoo"
 
 env:
   global:
@@ -27,6 +32,9 @@ before_script:
 script:
 - travis/deploy.bash
 - ssh-agent -k || true
+
+before_cache:
+- rm -rf ~/.m2/repository/com/yahoo/fili
 
 after_success:
 - echo "Success."

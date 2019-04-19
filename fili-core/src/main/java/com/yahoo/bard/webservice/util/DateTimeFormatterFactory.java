@@ -19,7 +19,7 @@ public class DateTimeFormatterFactory {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String OUTPUT_DATETIME_FORMAT = SYSTEM_CONFIG.getPackageVariableName("output_datetime_format");
-    private static DateTimeFormatter DATETIME_OUTPUT_FORMATTER;
+    public static DateTimeFormatter DATETIME_OUTPUT_FORMATTER;
 
     // Default JodaTime zone to UTC
     private static final DateTimeZone SYSTEM_TIME_ZONE = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(

@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.ApiFilter;
 
@@ -38,17 +37,6 @@ public interface Availability {
      *
      * @return A set of names for data sources backing this availability
      */
-    default Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
-        return getDataSourceNames((DataSourceConstraint) constraint);
-    }
-
-    /**
-     * The names of the data sources backing this availability as filtered by the constraint.
-     *
-     * @param constraint  The constraint to filter data source names.
-     *
-     * @return A set of names for data sources backing this availability
-     */
     default Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
         return getDataSourceNames();
     }
@@ -74,20 +62,6 @@ public interface Availability {
     /**
      *
      * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
-     * filtered by the {@link PhysicalDataSourceConstraint}.
-     *
-     * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
-     * {@link com.yahoo.bard.webservice.table.Schema} and {@link ApiFilter}s
-     *
-     * @return A <tt>SimplifiedIntervalList</tt> of intervals available
-     */
-    default SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
-        return getAvailableIntervals();
-    }
-
-    /**
-     *
-     * Fetch a {@link SimplifiedIntervalList} representing the coalesced available intervals on this availability as
      * filtered by the {@link DataSourceConstraint}.
      *
      * @param constraint  <tt>PhysicalDataSourceConstraint</tt> containing
@@ -103,30 +77,10 @@ public interface Availability {
      * Availability can optionally specify a date that is expected (but not enforced) to be the first date the
      * the datasource on this availability contains data. An empty optional has no defined start date.
      *
-     * @param constraint the constraint to determine this availability's expected start date from
-     * @return A string representing the start date if present.
-     */
-    default Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
-        return Optional.empty();
-    }
-
-    /**
-     * Availability can optionally specify a date that is expected (but not enforced) to be the last date the
-     * the datasource on this availability contains data. An empty optional has no defined end date.
-     *
-     * @param constraint  The constraint to determine this availability's expected end from
-     * @return A optional string representing the end date if present.
-     */
-    default Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
-        return Optional.empty();
-    }
-
-    /**
-     * Availability can optionally specify a date that is expected (but not enforced) to be the first date the
-     * the datasource on this availability contains data. An empty optional has no defined start date.
-     *
      * @param constraint the constraint to determine this availability's expected start date against
+     *
      * @return A string representing the start date if present.
+     *
      */
     default Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
         return Optional.empty();
@@ -137,7 +91,9 @@ public interface Availability {
      * the datasource on this availability contains data. An empty optional has no defined end date.
      *
      * @param constraint  The constraint to determine this availability's expected end from
+     *
      * @return A optional string representing the end date if present.
+     *
      */
     default Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
         return Optional.empty();
