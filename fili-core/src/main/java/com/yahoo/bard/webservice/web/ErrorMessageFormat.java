@@ -16,6 +16,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "No PhysicalTable for Logical Table '%s' with the availability-based dimensions '%s', " +
                     "metrics '%s', and granularity '%s' found "
     ),
+    TABLE_SCHEMA_CONSTRAINT_MISMATCH(
+            "Received invalid request requesting for column(s): %s that are not available in this table: %s"
+    ),
 
     EMPTY_DICTIONARY("%s Dictionary is empty."),
 
