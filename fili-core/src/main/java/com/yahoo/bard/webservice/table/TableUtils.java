@@ -17,19 +17,21 @@ import java.util.stream.Stream;
  */
 public class TableUtils {
 
+    /**
+     * Private constructor for utility class.
+     */
+    private TableUtils() {
+
+    }
+
     public static final Function<Stream<Map<?, SimplifiedIntervalList>>, Map<?, SimplifiedIntervalList>>
-            ALL_INTERVALS_MERGER = mapStream -> {
-        return mapStream.map(Map::entrySet)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                SimplifiedIntervalList::union,
-                                HashMap::new
-                        )
-                );
-    };
+            ALL_INTERVALS_MERGER = mapStream -> mapStream.map(Map::entrySet)
+                    .flatMap(Set::stream)
+            .collect(Collectors.toMap(Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    SimplifiedIntervalList::union,
+                    HashMap::new));
+
 
     /**
      * Merge all the intervals in a stream of Physical Tables returning a map from column to union of available

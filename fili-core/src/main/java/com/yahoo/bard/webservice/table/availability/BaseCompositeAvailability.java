@@ -51,11 +51,6 @@ public abstract class BaseCompositeAvailability implements Availability {
         return dataSourcesNames;
     }
 
-    @Override
-    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
-        return dataSourcesNames;
-    }
-
     /**
      * Retrieve all available intervals for all data source fields across all the underlying datasources.
      * <p>

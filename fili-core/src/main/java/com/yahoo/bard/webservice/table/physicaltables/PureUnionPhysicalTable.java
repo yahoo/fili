@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -133,8 +132,8 @@ public class PureUnionPhysicalTable extends BasePhysicalTable { //implements Con
 
     /**
      * Generated the schema for this table, which is the logical union of the schemas of all sub tables. The
-     * physical columns and logical to physical column mapping of all sub schemas are all unioned.
-     * All sub tables to be on the same time grain.
+     * physical columns and logical to physical column mapping of all sub schemas are all unioned. All sub tables to
+     * be on the same time grain.
      *
      * @param basePhysicalTables  The base physical tables contributing to the schema
      *
@@ -146,16 +145,6 @@ public class PureUnionPhysicalTable extends BasePhysicalTable { //implements Con
                         .map(ConfigPhysicalTable::getAvailability)
                         .collect(Collectors.toSet())
         );
-    }
-
-    /**
-     * Setter for availability. Required for testing.
-     *
-     * @param availability  availability to use as new pure union availability
-     */
-    @Deprecated
-    protected void setAvailability(Availability availability) {
-        super.setAvailability(new PureUnionAvailability(Collections.singleton(availability)));
     }
 
     @Override

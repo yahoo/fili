@@ -254,12 +254,22 @@ class PureUnionPhysicalTableSpec extends Specification {
         }
 
         // Data source name
-        DataSourceName dataSourceName = Mock(DataSourceName)
-        baseAvailability1.getDataSourceNames(constraints) >> { [ dataSourceName ] as Set }
-        baseAvailability2.getDataSourceNames(constraints) >> { [ dataSourceName ] as Set }
+        DataSourceName dataSourceName1 = Mock(DataSourceName)
+        dataSourceName1.asName() >> "foo 1"
+        DataSourceName dataSourceName2 = Mock(DataSourceName)
+        dataSourceName2.asName() >> "foo 2"
+        baseAvailability1.getDataSourceNames(_ as DataSourceConstraint) >> { [dataSourceName1] as Set }
+        baseAvailability2.getDataSourceNames(_ as DataSourceConstraint) >> { [dataSourceName2] as Set }
+
+        baseAvailability1.getDataSourceNames() >> { [ dataSourceName1 ] as Set }
+        baseAvailability1.getDataSourceNames() >> { [ dataSourceName1 ] as Set }
 
         baseTable1.getAvailability() >> baseAvailability1
         baseTable2.getAvailability() >> baseAvailability2
+
+        baseTable1.getDataSourceNames() >> { [ dataSourceName1 ] as Set }
+        baseTable2.getDataSourceNames() >> { [ dataSourceName1 ] as Set }
+
 
         PureUnionPhysicalTable unionTable = new PureUnionPhysicalTable(Mock(TableName), [baseTable1, baseTable2] as Set)
         ConstrainedTable constrainedTable = unionTable.withConstraint(constraints)
@@ -269,5 +279,6 @@ class PureUnionPhysicalTableSpec extends Specification {
                 new Interval('2014-01-01/2014-06-01'),
                 new Interval('2015-01-01/2016-06-01')
         ])
+        constrainedTable.getDataSourceNames() == ([dataSourceName1, dataSourceName2] as Set)
     }
 }

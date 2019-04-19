@@ -403,6 +403,9 @@ Injectable custom response handling.
 
 - [Reverted addition of Verizon Media Group to copyright]()
 
+- [Fixed missing data source name constraint filtering on MetricsUnionAvailability](https://github.com/yahoo/fili/issues/892)
+    * Added implementation of getDataSourceNames(Constraint)
+
 - [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
     * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
 

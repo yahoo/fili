@@ -7,14 +7,11 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
-import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.TimeFilteredAvailability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -29,8 +26,6 @@ import javax.validation.constraints.NotNull;
  * interval to produce it's own availability.
  */
 public class TimeFilteredPhysicalTable extends BasePhysicalTable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TimeFilteredPhysicalTable.class);
 
     private ConfigPhysicalTable target;
     private Supplier<SimplifiedIntervalList> filterIntervalsSupplier;
@@ -54,16 +49,6 @@ public class TimeFilteredPhysicalTable extends BasePhysicalTable {
         );
         this.target = target;
         this.filterIntervalsSupplier = filterIntervalsSupplier;
-    }
-
-    /**
-     * Sets the availability. Required for testing.
-     *
-     * @param availability  availability to use in new time filtered availability
-     */
-    @Deprecated
-    protected void setAvailability(Availability availability) {
-        setAvailability(new TimeFilteredAvailability(availability, filterIntervalsSupplier));
     }
 
     @Override
