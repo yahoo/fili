@@ -10,9 +10,6 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -60,8 +57,6 @@ import javax.validation.constraints.NotNull;
  * This class is thread-safe.
  */
 public class LeftPureUnionAvailability extends BaseCompositeAvailability {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LeftPureUnionAvailability.class);
 
     private final Availability representativeAvailability;
 
