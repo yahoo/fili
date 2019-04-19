@@ -8,18 +8,13 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.BaseSchema;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
-import com.yahoo.bard.webservice.table.SchemaConstraintValidator;
 import com.yahoo.bard.webservice.table.TableUtils;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.PureUnionAvailability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
-import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,18 +25,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * PureUnionPhysicalTable uses PureUnionAvailability which returns the union of all dependent availabilities and the
  * union of all datasource names produced by child availabilities.
  */
-public class PureUnionPhysicalTable implements ConfigPhysicalTable {
+public class PureUnionPhysicalTable extends BasePhysicalTable { //implements ConfigPhysicalTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(PureUnionPhysicalTable.class);
 
-    private TableName tableName;
     private Set<ConfigPhysicalTable> basePhysicalTables;
-    private Availability unionedAvailability;
-    private PhysicalTableSchema schema;
 
     /**
      * Constructor.
@@ -50,16 +44,11 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
      * @param basePhysicalTables  Set of physical tables which are unioned together.
      */
     public PureUnionPhysicalTable(
-            TableName tableName,
-            Set<ConfigPhysicalTable> basePhysicalTables
+            @NotNull TableName tableName,
+            @NotNull Set<ConfigPhysicalTable> basePhysicalTables
     ) {
-        this.tableName = tableName;
+        super(tableName, buildSchema(basePhysicalTables), buildAvailability(basePhysicalTables));
         this.basePhysicalTables = new HashSet<>(basePhysicalTables); // copy of set
-        this.unionedAvailability = new PureUnionAvailability(basePhysicalTables.stream()
-                .map(ConfigPhysicalTable::getAvailability)
-                .collect(Collectors.toSet())
-        );
-        this.schema = buildSchema();
     }
 
     /**
@@ -67,9 +56,16 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
      * physical columns and logical to physical column mapping of all sub schemas are all unioned. However, this
      * table requires all sub tables to be on the same time grain.
      *
+     * @param basePhysicalTables A collection of base physical tables contributing to the schema
+     *
      * @return the schema of the union table
      */
-    protected PhysicalTableSchema buildSchema() {
+    protected static PhysicalTableSchema buildSchema(Set<ConfigPhysicalTable> basePhysicalTables) {
+
+        if (basePhysicalTables.isEmpty()) {
+            throw new IllegalArgumentException("Cannot build a union of zero tables.");
+        }
+
         // Generate the list of columns on this unioned table
         Set<Column> columns = basePhysicalTables.stream()
                 .map(ConfigPhysicalTable::getSchema)
@@ -93,6 +89,7 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
                     physicalColumnToLogicalName.put(column.getName(), logicalColumnNames);
                 }
         );
+
 
         // Generate the unioned logical to physical name mapping
         Map<String, String> logicalToPhysicalColumnNames = new HashMap<>();
@@ -119,6 +116,7 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
                 .map(ConfigPhysicalTable::getSchema)
                 .map(PhysicalTableSchema::getTimeGrain)
                 .collect(Collectors.toSet());
+
         if (grains.size() > 1) {
             String msg = String.format(
                 "Error: unioned table contains physical tables with more than one time grain. Tried to union tables %s",
@@ -133,9 +131,21 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
         return new PhysicalTableSchema(grains.iterator().next(), columns, logicalToPhysicalColumnNames);
     }
 
-    @Override
-    public Availability getAvailability() {
-        return unionedAvailability;
+    /**
+     * Generated the schema for this table, which is the logical union of the schemas of all sub tables. The
+     * physical columns and logical to physical column mapping of all sub schemas are all unioned.
+     * All sub tables to be on the same time grain.
+     *
+     * @param basePhysicalTables  The base physical tables contributing to the schema
+     *
+     * @return the schema of the union table
+     */
+    protected static Availability buildAvailability(Set<ConfigPhysicalTable> basePhysicalTables) {
+        return new PureUnionAvailability(
+                basePhysicalTables.stream()
+                        .map(ConfigPhysicalTable::getAvailability)
+                        .collect(Collectors.toSet())
+        );
     }
 
     /**
@@ -145,7 +155,7 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
      */
     @Deprecated
     protected void setAvailability(Availability availability) {
-        this.unionedAvailability = new PureUnionAvailability(Collections.singleton(availability));
+        super.setAvailability(new PureUnionAvailability(Collections.singleton(availability)));
     }
 
     @Override
@@ -165,11 +175,6 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
         return basePhysicalTables.stream()
                 .map(table -> table.getAvailableIntervals(constraint))
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
-    }
-
-    @Override
-    public TableName getTableName() {
-        return tableName;
     }
 
     @Override
@@ -211,31 +216,5 @@ public class PureUnionPhysicalTable implements ConfigPhysicalTable {
 
         LOG.error(errMsg);
         throw new IllegalStateException(errMsg);
-    }
-
-
-    @Override
-    public PhysicalTableSchema getSchema() {
-        return schema;
-    }
-
-    @Override
-    public String getName() {
-        return tableName.asName();
-    }
-
-    @Override
-    public DateTime getTableAlignment() {
-        return getSchema().getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(getAllAvailableIntervals().values()).orElse(new DateTime())
-        );
-    }
-
-    @Override
-    public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
-        if (!SchemaConstraintValidator.validateConstraintSchema(constraint, getSchema())) {
-            SchemaConstraintValidator.logAndThrowConstraintError(LOG, this, constraint);
-        }
-        return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
 }

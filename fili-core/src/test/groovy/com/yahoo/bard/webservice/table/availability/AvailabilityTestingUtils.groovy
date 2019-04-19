@@ -53,6 +53,25 @@ class AvailabilityTestingUtils extends Specification {
         SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
             return (constraint instanceof QueryPlanningConstraint) ? getAvailableIntervals().intersect(SimplifiedIntervalList.simplifyIntervals(constraint.intervals)) : getAvailableIntervals()
         }
+
+        @Override
+        int hashCode() {
+            return Objects.hash(sourceDataSourceNames, intervals)
+        }
+
+        @Override
+        boolean equals(final Object obj) {
+            if (! (obj instanceof TestAvailability) ){
+                return false;
+            }
+
+            TestAvailability that = (TestAvailability) obj
+
+            return Objects.equals(sourceDataSourceNames, that.sourceDataSourceNames) && Objects.equals(
+                    intervals,
+                    that.intervals
+            )
+        }
     }
 
     /**

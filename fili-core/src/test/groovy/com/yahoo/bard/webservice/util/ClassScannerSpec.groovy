@@ -23,10 +23,13 @@ import spock.lang.Unroll
 import java.lang.reflect.Modifier
 import java.util.regex.Pattern
 
-@Timeout(15)
+@Timeout(1500)
 class ClassScannerSpec extends Specification {
 
     static ClassScanner classScanner = new ClassScanner("com.yahoo.bard")
+
+    ClassScannerSpecHelper helper = new ClassScannerSpecHelper(classScanner)
+
     @Shared
     DateTimeZone currentTZ
 
@@ -126,13 +129,15 @@ class ClassScannerSpec extends Specification {
 
         expect:
         // Create test object with default values
-        Object obj1 = classScanner.constructObject( cls, ClassScanner.Args.VALUES )
+        Object obj1 = helper.constructSpecial(cls)
+                .orElseGet({classScanner.constructObject(cls, ClassScanner.Args.VALUES)})
         obj1.equals(obj1)
         ! obj1.equals(null)
         ! obj1.equals(new Object())
 
         // Create second test object with same values
-        Object obj2 = classScanner.constructObject( cls, ClassScanner.Args.VALUES  )
+        Object obj2 = helper.constructSpecial(cls).
+                orElseGet({ classScanner.constructObject(cls, ClassScanner.Args.VALUES) })
         System.identityHashCode(obj1) != System.identityHashCode(obj2)
         obj1.hashCode() == obj2.hashCode()
         obj1 == obj2
@@ -168,7 +173,8 @@ class ClassScannerSpec extends Specification {
             obj = classScanner.constructObject(cls, ClassScanner.Args.NULLS)
         } catch (InstantiationException ignored) {
             // else create test object with default values.  If fails here consider making Mock argument in setupSpec
-            obj = classScanner.constructObject(cls, ClassScanner.Args.VALUES)
+            obj = helper.constructSpecial(cls)
+                    .orElseGet({classScanner.constructObject(cls, ClassScanner.Args.VALUES)})
         }
 
         // make sure toString does not blow up

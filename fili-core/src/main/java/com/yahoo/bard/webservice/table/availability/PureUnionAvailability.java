@@ -7,12 +7,10 @@ import com.yahoo.bard.webservice.table.TableUtils;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Availability that bases it's own availability on the union of all of it's wrapped Availability objects.
@@ -20,20 +18,6 @@ import java.util.stream.Stream;
 public class PureUnionAvailability implements Availability {
 
     private Set<Availability> baseAvailabilities;
-
-    public static final Function<Stream<Map<?, SimplifiedIntervalList>>, Map<?, SimplifiedIntervalList>>
-            ALL_INTERVALS_MERGER = mapStream -> {
-        return mapStream.map(Map::entrySet)
-                .flatMap(Set::stream)
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                SimplifiedIntervalList::union,
-                                HashMap::new
-                        )
-                );
-    };
 
     /**
      * Constructor.
@@ -77,5 +61,19 @@ public class PureUnionAvailability implements Availability {
         return baseAvailabilities.stream()
                 .map(availability -> availability.getAvailableIntervals(constraint))
                 .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (! (obj instanceof  PureUnionAvailability)) {
+            return false;
+        }
+        PureUnionAvailability that = (PureUnionAvailability) obj;
+        return Objects.equals(baseAvailabilities, that.baseAvailabilities);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(baseAvailabilities);
     }
 }
