@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.table;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
+import com.yahoo.bard.webservice.table.physicaltables.BasePhysicalTable;
 
 import java.util.Map;
 
