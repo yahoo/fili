@@ -1,9 +1,12 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.table;
+package com.yahoo.bard.webservice.table.physicaltables;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.table.BasePhysicalTable;
+import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.availability.Availability;
 
 import org.slf4j.Logger;
@@ -27,10 +30,10 @@ public class BaseCompositePhysicalTable extends BasePhysicalTable {
      * Constructor.
      *
      * @param name  Name that represents set of fact table names that are put together under this table
-     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
+     * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of each of the tables
      * @param columns  The columns for this table
-     * @param physicalTables  A set of PhysicalTables that are put together under this table. The
-     * tables shall have zoned time grains that all satisfy the provided timeGrain
+     * @param physicalTables  A set of PhysicalTables that are put together under this table. The tables shall have
+     * zoned time grains that all satisfy the provided timeGrain
      * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
      * @param availability  The Availability of this table
      */

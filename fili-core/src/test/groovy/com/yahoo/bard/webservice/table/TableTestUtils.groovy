@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable
 
 class TableTestUtils {
 

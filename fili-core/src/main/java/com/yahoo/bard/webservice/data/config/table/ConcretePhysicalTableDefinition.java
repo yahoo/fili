@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.StrictPhysicalTable;
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable;
 
 import org.joda.time.DateTime;
 

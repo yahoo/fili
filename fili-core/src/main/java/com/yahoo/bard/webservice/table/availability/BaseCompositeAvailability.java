@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,8 +22,8 @@ import java.util.stream.Stream;
  */
 public abstract class BaseCompositeAvailability implements Availability {
 
-    private final Set<Availability> sourceAvailabilities;
-    private final Set<DataSourceName> dataSourcesNames;
+    protected final Set<Availability> sourceAvailabilities;
+    protected final Set<DataSourceName> dataSourcesNames;
 
     /**
      * Constructor.
@@ -123,5 +124,23 @@ public abstract class BaseCompositeAvailability implements Availability {
                 .reduce((datetime1, datetime2) -> datetime1.isAfter(datetime2) ? datetime1 : datetime2)
                 .orElse(Availability.FAR_FUTURE);
         return maxDate.equals(FAR_FUTURE) ? Optional.empty() : Optional.of(maxDate);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof BaseCompositeAvailability)) {
+            return false;
+        }
+        final BaseCompositeAvailability that = (BaseCompositeAvailability) other;
+        return Objects.equals(sourceAvailabilities, that.sourceAvailabilities) &&
+                Objects.equals(dataSourcesNames, that.dataSourcesNames);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sourceAvailabilities, dataSourcesNames);
     }
 }
