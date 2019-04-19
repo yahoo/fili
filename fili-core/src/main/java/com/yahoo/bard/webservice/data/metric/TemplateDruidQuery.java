@@ -266,7 +266,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             // TODO: Need more clarity on what this is actually for
             if (thisOne.isSketch() && thatOne.isSketch() && thisOne.getFieldName().equals(thatOne.getFieldName())) {
                 SketchAggregation converted = FieldConverterSupplier
-                        .sketchConverter
+                        .getSketchConverter()
                         .asInnerSketch((SketchAggregation) thisOne);
                 resultAggregationsByName.remove(thisOne.getName());
                 resultAggregationsByName.put(converted.getName(), converted);

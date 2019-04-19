@@ -109,10 +109,10 @@ public class JerseyTestBinder {
         this.state = state;
 
         //Initializing the Sketch field converter
-        FieldConverterSupplier.sketchConverter = initializeSketchConverter();
+        FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
         //Initialize the metrics filter helper
-        FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
+        FieldConverterSupplier.setMetricsFilterSetBuilder(initializeMetricsFilterSetBuilder());
 
         // Set up the web services
         buildWebServices();

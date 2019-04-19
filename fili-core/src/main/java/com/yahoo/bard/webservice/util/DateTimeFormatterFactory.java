@@ -19,7 +19,7 @@ public class DateTimeFormatterFactory {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String OUTPUT_DATETIME_FORMAT = SYSTEM_CONFIG.getPackageVariableName("output_datetime_format");
-    public static DateTimeFormatter DATETIME_OUTPUT_FORMATTER;
+    private static DateTimeFormatter datetimeOutputFormatter;
 
     // Default JodaTime zone to UTC
     private static final DateTimeZone SYSTEM_TIME_ZONE = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
@@ -33,14 +33,14 @@ public class DateTimeFormatterFactory {
      * @return the output formatter, pulling it from a configuration if we've not gotten it before.
      */
     public static DateTimeFormatter getOutputFormatter() {
-        if (DATETIME_OUTPUT_FORMATTER == null) {
+        if (datetimeOutputFormatter == null) {
             String formatString = SYSTEM_CONFIG.getStringProperty(OUTPUT_DATETIME_FORMAT, "yyyy-MM-dd' 'HH:mm:ss.SSS");
-            DATETIME_OUTPUT_FORMATTER = DateTimeFormat.forPattern(formatString);
+            datetimeOutputFormatter = DateTimeFormat.forPattern(formatString);
         }
-        return DATETIME_OUTPUT_FORMATTER;
+        return datetimeOutputFormatter;
     }
 
-    final public static DateTimeFormatter FULLY_OPTIONAL_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
+    public static final DateTimeFormatter FULLY_OPTIONAL_DATETIME_FORMATTER = new DateTimeFormatterBuilder()
             .append(
                     (DateTimePrinter) null,
                     new DateTimeParser[] {
@@ -57,4 +57,10 @@ public class DateTimeFormatterFactory {
                             DateTimeFormat.forPattern("yyyy").getParser()
                     }
             ).toFormatter().withZone(SYSTEM_TIME_ZONE);
+
+    /**
+     * Private constructor to hide default public constructor of utility class.
+     */
+    private DateTimeFormatterFactory() {
+    }
 }

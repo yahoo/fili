@@ -161,8 +161,8 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
     def "test json format with format #outputDateTimeFormat"() {
         setup:
         formattedDateTime = dateTime.toString(outputDateTimeFormat)
-        DateTimeFormatter originalFormat = DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = null
+        DateTimeFormatter originalFormat = DateTimeFormatterFactory.datetimeOutputFormatter
+        DateTimeFormatterFactory.datetimeOutputFormatter = null
         systemConfig.setProperty(
                 DateTimeFormatterFactory.OUTPUT_DATETIME_FORMAT,
                 outputDateTimeFormat
@@ -185,7 +185,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
 
         cleanup:
         systemConfig.clearProperty(DateTimeFormatterFactory.OUTPUT_DATETIME_FORMAT)
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = originalFormat
+        DateTimeFormatterFactory.datetimeOutputFormatter = originalFormat
 
         where:
         outputDateTimeFormat << [
