@@ -122,6 +122,11 @@ Injectable custom response handling.
     * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
     * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
 
+- [Add additional availability views](https://github.com/yahoo/fili/issues/892)
+    * `LeftPureUnion` attaches data from another table to a representative table (resembles left join)
+    * `PureUnion` combines all data from multiple tables, merging away missing data
+    * `TimeFiltered' shows only data within a filtered window of time as available
+
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
 
@@ -154,8 +159,7 @@ Injectable custom response handling.
     * Filename parameter is currently only available to data queries.
 
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
-    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
-    the Dimension
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for the Dimension
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
@@ -228,6 +232,14 @@ Injectable custom response handling.
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
+
+- [Refactored packaging on physical table implementations](https://github.com/yahoo/fili/issues/892)
+    * Put implementations of physical table into their own package.
+
+- [Resolved some test problems](https://github.com/yahoo/fili/pull/891)
+    * Added Retry to flaky tests
+    * Tweaked jacoco variable substitution to unbreak intellij unit testing
+    * Pegged DateTimeZone used in test dates to avoid interactions between tests
 
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
