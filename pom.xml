@@ -1003,6 +1003,15 @@
 
     <profiles>
         <profile>
+            <id>coverage.off</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <jacoco.args></jacoco.args>
+            </properties>
+        </profile>
+        <profile>
             <id>coverage.build</id>
             <activation>
                 <activeByDefault>false</activeByDefault>

@@ -207,6 +207,7 @@ class RateLimitFilterSpec extends Specification {
         TestMultiAccess.fail.get() == 0
     }
 
+    @Retry(count = 3, delay = 10)
     def "UI header triggers UI user limit"() {
         when: "UI user opens 20 simultaneous requests"
         Map headers = [

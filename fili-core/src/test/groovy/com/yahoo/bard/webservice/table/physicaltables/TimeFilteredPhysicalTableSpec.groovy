@@ -137,7 +137,7 @@ class TimeFilteredPhysicalTableSpec extends Specification {
 
         then:
         RuntimeException exception = thrown()
-        exception.message == 'Received invalid request requesting for columns: un_configured that is not available in this table: test table'
+        exception.message.endsWith("test table")
     }
 
     @Unroll
