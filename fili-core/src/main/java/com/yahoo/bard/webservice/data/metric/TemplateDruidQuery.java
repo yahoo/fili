@@ -156,8 +156,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         LinkedHashSet<Aggregation> outerAggregations = new LinkedHashSet<>();
         for (Aggregation agg : aggregations) {
             Pair<Optional<Aggregation>, Optional<Aggregation>> split = agg.nest();
-            split.getRight().map(innerAggregations::add);
-            split.getLeft().map(outerAggregations::add);
+            split.getRight().ifPresent(innerAggregations::add);
+            split.getLeft().ifPresent(outerAggregations::add);
         }
 
         // Create the inner query.

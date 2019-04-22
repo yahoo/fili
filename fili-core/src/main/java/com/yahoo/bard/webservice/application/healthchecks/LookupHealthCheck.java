@@ -15,7 +15,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 public class LookupHealthCheck extends HealthCheck {
-    private volatile RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask;
+    private final RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask;
 
     /**
      * Constructor.

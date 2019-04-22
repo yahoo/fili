@@ -135,7 +135,8 @@ public class ResponseException extends Exception {
         return druidQuery;
     }
 
-    public Throwable getCause() {
+    @Override
+    public synchronized Throwable getCause() {
         return cause;
     }
 }
