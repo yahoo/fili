@@ -16,6 +16,7 @@ import spock.lang.Specification
  * Tests for TimeFormatExtractionFunction serializations.
  */
 class TimeFormatExtractionFunctionSpec extends Specification {
+
     ObjectMapper objectMapper
 
     def setup() {
