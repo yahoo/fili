@@ -33,6 +33,12 @@ public class DruidDimensionsLoaderHealthCheck extends HealthCheck {
     @Override
     public Result check() throws Exception {
         // check if loader ran within the lastRunDuration (i.e. X milliseconds ago)
+        if (loader.getLastRunTimestamp() == null) {
+            return Result.unhealthy(
+                    "Druid dimension loader has not yet run.",
+                    loader.getLastRunTimestamp()
+            );
+        }
         if (loader.getLastRunTimestamp().isAfter(DateTime.now().minus(lastRunDuration))) {
             return Result.healthy("Druid dimensions loader is healthy, last run: %s.", loader.getLastRunTimestamp());
         }

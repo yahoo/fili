@@ -219,8 +219,10 @@ Current
 
 ### Fixed:
 
-- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
+- [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
+    * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
 
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
 
 - [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
     * Many minor syntax and structual issues resolved.
