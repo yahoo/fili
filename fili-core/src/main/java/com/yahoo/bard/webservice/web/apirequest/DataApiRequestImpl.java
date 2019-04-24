@@ -18,8 +18,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -55,6 +53,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -114,8 +113,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
-
-    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
 
     /**
@@ -1034,14 +1031,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTime adjustedNow = new DateTime();
 
         if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
-            String adjustedTimezone = SYSTEM_CONFIG.getStringProperty(
-                    BardFeatureFlag.ADJUSTED_TIME_ZONE.getName(),
-                    "UTC"
-                    );
-            if (!adjustedTimezone.equalsIgnoreCase("UTC")) {
-                adjustedNow = adjustedNow.withZone(DateTimeZone.forID(adjustedTimezone))
-                                         .withZoneRetainFields(DateTimeZone.UTC);
-            }
+            adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
             result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
         } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
             if (! availability.isEmpty()) {
