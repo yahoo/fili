@@ -21,7 +21,7 @@ public class RegexFilteredDimensionSpec extends DimensionSpec {
      * Constructor.
      *
      * @param delegate  dimension spec provided by user.
-     * @param pattern  regex patter to be used for filtering.
+     * @param pattern  regex pattern to be used for filtering.
      */
     public RegexFilteredDimensionSpec(DimensionSpec delegate, Pattern pattern) {
         super(DefaultDimensionSpecType.REGEX_FILTERED);
