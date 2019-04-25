@@ -220,6 +220,8 @@ Current
 
 ### Fixed:
 
+- [Reverted addition of Verizon Media Group to copyright]()
+
 - [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
     * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
 

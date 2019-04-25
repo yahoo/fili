@@ -1,4 +1,4 @@
-// Copyright 2019 Verizon Media Group
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
@@ -48,6 +48,10 @@ public class TagExtractionFunctionFactory {
      * @return A cascading extraction function that will allow yes/no filtering on a string list dimension value.
      */
     public static ExtractionFunction buildTagExtractionFunction(String tagValue, String trueValue, String falseValue) {
+        if ("".equals(tagValue)) {
+            throw new IllegalArgumentException("Tag values should not be empty strings.");
+        }
+
         String regExPattern = String.format(DEFAULT_TAG_REG_EX_FORMAT, tagValue);
         Integer index = 2;
         String replaceValue = "";

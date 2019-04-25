@@ -1,4 +1,4 @@
-// Copyright 2019 Verizon Media Group
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction
 
@@ -40,6 +40,7 @@ class TagExtractionFunctionFactorySpec extends Specification {
         }
 """
 
+
     def "Mapping function serializes as expected"() {
         setup:
         ObjectMapper mapper = new ObjectMappersSuite().mapper
@@ -47,6 +48,17 @@ class TagExtractionFunctionFactorySpec extends Specification {
 
         expect:
         mapper.valueToTree(function) == mapper.readTree(expectedSerialization)
+    }
+
+    def "Empty string tag value marked as invalid"() {
+        setup:
+        ObjectMapper mapper = new ObjectMappersSuite().mapper
+
+        when:
+        ExtractionFunction function = TagExtractionFunctionFactory.buildTagExtractionFunction("");
+
+        then:
+        thrown(IllegalArgumentException)
     }
 
     @Unroll
@@ -61,6 +73,5 @@ class TagExtractionFunctionFactorySpec extends Specification {
         "11"       | "11"       | true
         "10,11"    | "11"       | true
         "111"      | "11"       | false
-        ""         | ""         | true
     }
 }
