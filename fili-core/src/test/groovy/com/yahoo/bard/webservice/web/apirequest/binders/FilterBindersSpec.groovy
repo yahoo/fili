@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.BadFilterException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import org.joda.time.DateTime
 
@@ -26,7 +25,7 @@ class FilterBindersSpec extends Specification {
     Dimension dimension2
     Dimension dimension3
 
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()

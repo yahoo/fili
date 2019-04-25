@@ -82,7 +82,7 @@ class AggregatabilityValidationSpec extends Specification {
         setup:
         DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
-        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.INSTANCE.generateFilters(filterString, table, dimensionDict)
+        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.instance.generateFilters(filterString, table, dimensionDict)
 
         when:
         apiRequest.validateAggregatability(dims, filters)
@@ -168,7 +168,7 @@ class AggregatabilityValidationSpec extends Specification {
         setup:
         DataApiRequest apiRequest = new TestingDataApiRequestImpl()
         Set<Dimension> dims = apiRequest.generateDimensions(aggDims + nonAggDims, dimensionDict)
-        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.INSTANCE.generateFilters(filterString, table, dimensionDict)
+        Map<Dimension, Set<ApiFilter>> filters = FilterBinders.instance.generateFilters(filterString, table, dimensionDict)
 
         when:
         apiRequest.validateAggregatability(dims, filters)

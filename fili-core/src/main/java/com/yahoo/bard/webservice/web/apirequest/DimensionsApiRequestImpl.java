@@ -36,7 +36,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     private final LinkedHashSet<Dimension> dimensions;
     private final LinkedHashSet<ApiFilter> filters;
 
-    protected FilterBinders filterBinders = FilterBinders.INSTANCE;
+    protected FilterBinders filterBinders = FilterBinders.getInstance();
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -255,7 +255,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
      */
     protected ApiFilter generateFilter(String apiFilter, DimensionDictionary dimensionDictionary)
             throws BadFilterException {
-        return FilterBinders.INSTANCE.generateApiFilter(apiFilter, dimensionDictionary);
+        return FilterBinders.getInstance().generateApiFilter(apiFilter, dimensionDictionary);
     }
 
     @Override

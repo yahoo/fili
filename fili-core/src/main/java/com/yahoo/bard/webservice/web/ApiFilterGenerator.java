@@ -14,7 +14,15 @@ import javax.validation.constraints.NotNull;
  * @deprecated Methods merged with {@link FilterBinders}
  */
 @Deprecated
-public class ApiFilterGenerator {
+public final class ApiFilterGenerator {
+
+    /**
+     * Private constructor to avoid construction.
+     */
+    private ApiFilterGenerator() {
+
+    }
+
     /**
      * Parses the URL filter Query and generates the ApiFilter object.
      *
@@ -33,7 +41,7 @@ public class ApiFilterGenerator {
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
-        return FilterBinders.INSTANCE.generateApiFilter(filterQuery, dimensionDictionary);
+        return FilterBinders.getInstance().generateApiFilter(filterQuery, dimensionDictionary);
     }
 
     /**
@@ -48,6 +56,6 @@ public class ApiFilterGenerator {
      */
     @Deprecated
     public static ApiFilter union(ApiFilter one, ApiFilter two) {
-        return FilterBinders.INSTANCE.union(one, two);
+        return FilterBinders.getInstance().union(one, two);
     }
 }

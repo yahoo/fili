@@ -27,7 +27,7 @@ class DruidInFilterBuilderSpec extends Specification {
     Map apiFilters
     Map druidFilters
     DruidFilterBuilder filterBuilder
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()

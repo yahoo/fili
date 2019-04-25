@@ -323,7 +323,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * @return  An implementation of FilterGenerator.
      */
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.INSTANCE::generateFilters;
+        return FilterBinders.getInstance()::generateFilters;
     }
 
     /**
