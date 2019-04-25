@@ -147,7 +147,6 @@
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
         
         <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
-        <jacoco.args></jacoco.args>
     </properties>
 
     <dependencyManagement>
@@ -1043,5 +1042,13 @@
                 </pluginManagement>
             </build>
         </profile>
+        <profile>
+            <id>Jacoco Off</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                    <jacoco.args></jacoco.args>
+            </properties>
+        </profile>
+
     </profiles>
 </project>

@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  *  e.g.
  *  111
  */
-public class TagExtractionFunctionFactory {
+public final class TagExtractionFunctionFactory {
 
     public static final String DEFAULT_TRUE = "Yes";
     public static final String DEFAULT_FALSE = "No";
