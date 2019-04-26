@@ -95,6 +95,13 @@ Current
 
 ### Changed:
 
+- [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
+    * Changed FilterBinder.INSTANCE from final to static with accessors
+    * Refactored FilterBinders to support chain-of-responsibility FilterFactory
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
       or the leaking of confidential information.

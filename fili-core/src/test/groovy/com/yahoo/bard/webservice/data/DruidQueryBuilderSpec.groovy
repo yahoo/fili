@@ -77,7 +77,7 @@ public class DruidQueryBuilderSpec extends Specification {
     static final DruidFilterBuilder DRUID_FILTER_BUILDER = new DruidOrFilterBuilder()
 
     List<Interval> intervals
-    static FilterBinders filterBinders = FilterBinders.INSTANCE
+    static FilterBinders filterBinders = FilterBinders.instance
 
 
     def staticInitialize() {
