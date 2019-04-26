@@ -53,6 +53,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -1026,9 +1027,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
-            DateTime adjustedNow = new DateTime();
+        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
+        DateTime adjustedNow = new DateTime();
+
+        if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
+            adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
+            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
+        } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
