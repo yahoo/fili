@@ -88,7 +88,7 @@ public class IntervalUtils {
      * @return A set of intervals describing the time common to both sets
      */
     public static Set<Interval> getOverlappingSubintervals(Set<Interval> left, Set<Interval> right) {
-        return getOverlappingSubintervals((Collection) left, (Collection) right);
+        return getOverlappingSubintervals((Collection<Interval>) left, (Collection<Interval>) right);
     }
 
     /**

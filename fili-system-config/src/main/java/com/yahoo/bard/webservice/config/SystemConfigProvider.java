@@ -33,7 +33,7 @@ public class SystemConfigProvider {
                 if (systemConfigImplementation == null) {
                     systemConfigImplementation = System.getProperty(SYSTEM_CONFIG_IMPL_KEY, DEFAULT_SYSTEM_CONFIG_IMPL);
                 }
-                return (SystemConfig) Class.forName(systemConfigImplementation).newInstance();
+                return Class.forName(systemConfigImplementation).asSubclass(SystemConfig.class).newInstance();
             } catch (Exception e) {
                 LOG.error("Exception while loading System configuration: {}", e.getMessage(), e);
                 throw new IllegalStateException(e);

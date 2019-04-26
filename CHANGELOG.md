@@ -10,18 +10,41 @@ Current
 
 ### Added:
 
+- [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
+    * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
+    * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
+    * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+  
+- [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
+    * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
+    * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
+    * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
+    * If any of these flags are active partial data answers are included in responses. 
+
+- [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
+    * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in queries
+        - this setting is turned ON by default
+    * This property is controlled through the feature flag BardFeatureFlag.REQUIRE_METRICS_QUERY
+
+- [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
+    * Added minimum and maximum arguments to FilterOperation
+    * Added validation on number of arguments to the bound filter builder
+    * Added hook for normalizing BoundFilterBuilder arguments
+
 - [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
-  * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
-    - default implementation just defers to existing method `int getDimensionCardinality()`
-    - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
+    * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
+        - default implementation just defers to existing method `int getDimensionCardinality()`
+        - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
 
 - [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
-  * Filter ops now have aliases that match the relevant ops and aliases for havings.
+    * Filter ops now have aliases that match the relevant ops and aliases for havings.
 
 - [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
-  * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
-  filename. The download format depends on the format provided to the format parameter. 
-  * Filename parameter is currently only available to data queries.
+    * If the filename parameter is present in the request the response is assumed to be downloaded with the provided filename. The download format depends on the format provided to the format parameter. 
+    * Filename parameter is currently only available to data queries.
   
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
     * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
@@ -65,7 +88,44 @@ Current
     * Added helper constructor to `DimensionRow`
     * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
 
+- [Added LogicalTable name metdata interface and BaseTableLoader methods to accept it](https://github.com/yahoo/fili/issues/872)
+    * `LogicalTable` accepts LogicalTableName as a constructor parameter
+    * `BaseTableLoader.loadLogicalTablesWithGranularities` accepts LogicalTableNames to pass to new LogicalTable constructor
+    * Changed default retention for `LogicalTable` to null rather that P1Y
+
 ### Changed:
+
+- [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
+    * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
+      or the leaking of confidential information.
+    * This PR upgrades `com.puppycrawl.tools` to the safe-version.
+
+- [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
+    * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
+    dimension field, and filter operation.
+    * The values in each constructed `ApiFilter` are sorted. 
+
+- [Better expose lucene analyzer LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Continue to make LuceneSearchProvider internals protected over private so extending classes have an easier time
+  extending behavior.
+  * removed protected getter and setter on `LuceneSearchProvider.analyzer` field in favor of just making the field 
+  protected
+
+- [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
+  * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the 
+  lock is erroneously never released the requesting thread will hang forever.
+  * The new behavior is to timeout after some amount of time, throw an error, and fail the query.
+
+- [Strict Availability no longer returns no availability when queried with constraint with no columns](https://github.com/yahoo/fili/issues/862)
+  * Currently, `StrictAvailability.getAvailableIntervals(Constraint)` returns an empty interval list when called with
+  a constraint with an empty column list. This behavior is now changed to defer the call to 
+  `StrictAvailability.getAvailableIntervals()`
+  * This behavior change is only relevant to StrictAvailability, all other default availability implementations are 
+  composite availabilities and defer this call to their underlying availabilities. 
+
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  log for the entire query response. Change log level to trace to avoid log spamming.
 
 - [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
@@ -159,7 +219,21 @@ Current
 
 ### Removed:
 
+- [Removed specialized `PhysicalDataSourceConstraint` methods from `Availability`](https://github.com/yahoo/fili/issues/884)
+
+- [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
+
 ### Fixed:
+
+- [Reverted addition of Verizon Media Group to copyright]()
+
+- [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
+    * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
+
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
+
+- [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
+    * Many minor syntax and structual issues resolved.
 
 - [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
     * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
@@ -171,7 +245,10 @@ Current
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
 
-- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/865)
+    * Bumped dependency version to 2.9.8 
+
+- [Bump Jackson version again to patch vulnerability](https://github.com/yahoo/fili/issues/770)
     * Bumped dependency version to 2.9.5 
     * Made serialization order more specific in several classes
     * Fixed bad format in error message
@@ -188,6 +265,13 @@ Current
 - [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
 
 - [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
+
+- [Log exception messages in DataApiExceptionHandler](https://github.com/yahoo/fili/issues/860)
+    * DataApiExceptionHandler clearly intended to log error messages but improperly used the sl4j log syntax.
+    * Added original URI logging to exception handling cases.
+
+- [Fixed corrupted getDefaultDimensionFields after show](https://github.com/yahoo/fili/pull/897)
+    * map merge incorrectly modified source set
 
 ### Known Issues:
 

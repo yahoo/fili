@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 import com.yahoo.bard.webservice.table.availability.BaseMetadataAvailability;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.Interval;
@@ -120,7 +120,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
         }
 
         @Override
-        public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+        public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
             return ETERNITY;
         }
 

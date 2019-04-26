@@ -3,6 +3,7 @@ package com.yahoo.bard.webservice.table.availability
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
 
@@ -26,6 +27,11 @@ class BaseCompositeAvailabilitySpec extends Specification {
          */
         protected SimpleCompositeAvailability(Stream<Availability> availabilityStream) {
             super(availabilityStream)
+        }
+
+        @Override
+        SimplifiedIntervalList getAvailableIntervals(final DataSourceConstraint constraint) {
+            return getAvailableIntervals()
         }
     }
 
@@ -164,7 +170,7 @@ class BaseCompositeAvailabilitySpec extends Specification {
     }
 
     @Unroll
-    def "latest end is at position #pos in the availabilities stream"() {
+    def "latest end is at position #desc in the availabilities stream"() {
         given:
         end_1 = Optional.ofNullable((DateTime) testExpectedEnd_1)
         end_2 = Optional.ofNullable((DateTime) testExpectedEnd_2)

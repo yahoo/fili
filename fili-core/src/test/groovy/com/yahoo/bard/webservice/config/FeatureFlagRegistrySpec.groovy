@@ -35,12 +35,14 @@ class FeatureFlagRegistrySpec extends Specification {
                 .collect(Collectors.toSet()) as Set
 
         then:
-        values == ["partial_data_enabled", "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
+        values == ["partial_data_enabled", "partial_data_protection", "partial_data_query_optimization",
+                   "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
                    "cache_partial_data", "top_n_enabled", "current_macro_uses_latest",
                    "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
-                   "case_sensitive_keys_enabled", "default_in_filter_enabled"] as Set
+                   "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query",
+                   "current_time_zone_adjustment", "adjusted_time_zone"] as Set
     }
 
     @Unroll

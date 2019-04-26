@@ -40,8 +40,10 @@ fi
 export FILI_TEST_LIST=a,2,bc,234
 
 # We're not on a release tag, so build and test the code
-mvn verify
+mvn install -Pcoverage.build
 MAVEN_RETURN_CODE=$?
+mvn post-site -Pcoverage.report,sonar
+mvn sonar:sonar -Dsonar.projectKey=yahoo_fili -Dsonar.organization=yahoo -Dsonar.login=${SONAR_TOKEN} -Pcoverage.report,sonar
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Maven verify did not succeed."
     exit ${MAVEN_RETURN_CODE}

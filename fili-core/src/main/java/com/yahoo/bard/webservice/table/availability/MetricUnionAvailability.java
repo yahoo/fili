@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.collect.ImmutableSet;
@@ -108,7 +108,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
 
         Set<String> dataSourceMetricNames = availabilitiesToMetricNames.values().stream()
                 .flatMap(Set::stream)
@@ -152,8 +152,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      *
      * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
      */
-    private Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
-            PhysicalDataSourceConstraint constraint
+    private Map<Availability, DataSourceConstraint> constructSubConstraint(
+            DataSourceConstraint constraint
     ) {
         return availabilitiesToMetricNames.entrySet().stream()
                 .map(entry ->

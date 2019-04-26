@@ -11,12 +11,14 @@ import com.yahoo.bard.webservice.web.endpoints.TestFilterServlet
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 
 import spock.lang.IgnoreIf
+import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Timeout
 
 import java.util.concurrent.atomic.AtomicInteger
 
 /* Do not test on Jenkins since URL requests are inconsistent */
+@Retry
 @Timeout(30)    // Fail test if hangs
 @IgnoreIf({System.getenv("BUILD_NUMBER") != null})
 class RateLimitFilterSpec extends Specification {

@@ -21,7 +21,6 @@ import org.joda.time.format.DateTimeFormat
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
 /**
  * Test for partition availability behavior.
  */
@@ -50,7 +49,6 @@ class PartitionAvailabilitySpec extends Specification{
 
     DateTime endDate_1
     DateTime endDate_2
-
 
     def setup() {
         availability1 = Mock(Availability)
@@ -108,8 +106,8 @@ class PartitionAvailabilitySpec extends Specification{
         availability1.getDataSourceNames() >> ([name1] as Set)
         availability2.getDataSourceNames() >> ([name2] as Set)
 
-        availability1.getDataSourceNames(_ as PhysicalDataSourceConstraint) >> ([name1] as Set)
-        availability2.getDataSourceNames(_ as PhysicalDataSourceConstraint) >> ([name2] as Set)
+        availability1.getDataSourceNames(_ as DataSourceConstraint) >> ([name1] as Set)
+        availability2.getDataSourceNames(_ as DataSourceConstraint) >> ([name2] as Set)
 
         DataSourceFilter partition1 = Mock(DataSourceFilter)
         DataSourceFilter partition2 = Mock(DataSourceFilter)

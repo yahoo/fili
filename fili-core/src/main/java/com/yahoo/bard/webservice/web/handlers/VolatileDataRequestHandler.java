@@ -87,6 +87,7 @@ public class VolatileDataRequestHandler implements DataRequestHandler {
      *
      * @return the volatile intervals from the request or an empty list
      */
+    @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getVolatileIntervalsWithDefault(Map<String, Serializable> context) {
         return new SimplifiedIntervalList(
                 (Collection<Interval>) context.computeIfAbsent(

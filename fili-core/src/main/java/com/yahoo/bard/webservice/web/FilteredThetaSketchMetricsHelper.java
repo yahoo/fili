@@ -326,7 +326,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             Map<String, List<FilteredAggregation>> filteredAggDictionary
     ) {
         if (postAggregation instanceof WithFields) {
-            WithFields withFieldsPostAgg = (WithFields) postAggregation;
+            WithFields<?> withFieldsPostAgg = (WithFields<?>) postAggregation;
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             //In case the postAgg has the function NOT, we apply INTERSECT on the left operand of the
@@ -356,7 +356,6 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                 return withFieldsPostAgg.withFields(resultPostAggsList);
             }
 
-            @SuppressWarnings("unchecked")
             List<PostAggregation> childPostAggs = withFieldsPostAgg.getFields();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(
@@ -398,22 +397,19 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             String fieldName = ((FieldAccessorPostAggregation) postAggregation).getFieldName();
             if (oldNameToNewAggregationMapping.containsKey(fieldName)) {
                 return new FieldAccessorPostAggregation(oldNameToNewAggregationMapping.get(fieldName));
-
-            } else {
-                //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
-                return postAggregation;
             }
+            //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
+            return postAggregation;
 
         } else if (postAggregation instanceof WithFields) {
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
-            @SuppressWarnings("unchecked")
-            List<PostAggregation> childPostAggs = ((WithFields) postAggregation).getFields();
+            List<PostAggregation> childPostAggs = ((WithFields<?>) postAggregation).getFields();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(replacePostAggWithPostAggFromMap(postAgg, oldNameToNewAggregationMapping));
             }
 
-            return ((WithFields) postAggregation).withFields(resultPostAggsList);
+            return ((WithFields<?>) postAggregation).withFields(resultPostAggsList);
         } else {
             return postAggregation;
         }

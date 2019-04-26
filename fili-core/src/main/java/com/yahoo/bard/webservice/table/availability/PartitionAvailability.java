@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
  * An implementation of {@link Availability} which describes a union of source availabilities, filtered by request
  * parameters, such that all sources which pertain to a query are considered when calculating availability.
  * The supplied availabilityFilters also allows the query to be optimized such that only relevant availabilities are
- * used to determine the availability for a given {@link PhysicalDataSourceConstraint}.
+ * used to determine the availability for a given {@link DataSourceConstraint}.
  * <p>
  * The typical use is that the schemas of all sources will be the same, and if they are not, the non merging fields
  * will be added and filled with null values.
@@ -79,7 +79,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      *
      * @return  A stream of availabilities which participate given the constraint
      */
-    private Stream<Availability> filteredAvailabilities(PhysicalDataSourceConstraint constraint) {
+    private Stream<Availability> filteredAvailabilities(DataSourceConstraint constraint) {
         return availabilityFilters.entrySet().stream()
                 .filter(entry -> entry.getValue().apply(constraint))
                 .map(Map.Entry::getKey);
@@ -94,7 +94,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      *
      * @return The intervals which are available for the given constraint
      */
-    private SimplifiedIntervalList mergeAvailabilities(PhysicalDataSourceConstraint constraint) {
+    private SimplifiedIntervalList mergeAvailabilities(DataSourceConstraint constraint) {
         SimplifiedIntervalList unionOfAvailableIntervals = new SimplifiedIntervalList();
         SimplifiedIntervalList unionOfMissingIntervals = new SimplifiedIntervalList();
         for (Availability availability : filteredAvailabilities(constraint).collect(Collectors.toSet())) {
@@ -117,7 +117,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
      */
     private SimplifiedIntervalList getBoundedMissingIntervalsWithConstraint(
             Availability availability,
-            PhysicalDataSourceConstraint constraint
+            DataSourceConstraint constraint
     ) {
         SimplifiedIntervalList availableIntervals = availability.getAvailableIntervals(constraint);
         DateTime expectedStart = availability.getExpectedStartDate(constraint).orElse(Availability.DISTANT_PAST);
@@ -127,19 +127,19 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
         return mergeAvailabilities(constraint);
     }
 
     @Override
-    public Set<DataSourceName> getDataSourceNames(PhysicalDataSourceConstraint constraint) {
+    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
         return filteredAvailabilities(constraint)
                 .map(availability -> availability.getDataSourceNames(constraint))
                 .flatMap(Set::stream).collect(Collectors.toSet());
     }
 
     @Override
-    public Optional<DateTime> getExpectedStartDate(PhysicalDataSourceConstraint constraint) {
+    public Optional<DateTime> getExpectedStartDate(DataSourceConstraint constraint) {
         return getEarliestStart(
                 constraint,
                 filteredAvailabilities(constraint).collect(Collectors.toSet())
@@ -147,7 +147,7 @@ public class PartitionAvailability extends BaseCompositeAvailability implements 
     }
 
     @Override
-    public Optional<DateTime> getExpectedEndDate(PhysicalDataSourceConstraint constraint) {
+    public Optional<DateTime> getExpectedEndDate(DataSourceConstraint constraint) {
         return getLatestEnd(
                 constraint,
                 filteredAvailabilities(constraint).collect(Collectors.toSet())

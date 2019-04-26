@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.aggregation
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
@@ -13,6 +14,7 @@ import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
+
 import org.apache.commons.lang3.tuple.Pair
 import org.joda.time.DateTimeZone
 
@@ -40,7 +42,7 @@ class CardinalityAggregationSpec extends Specification {
                 DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         )
         d1 = Mock(Dimension)
         d2 = Mock(Dimension)

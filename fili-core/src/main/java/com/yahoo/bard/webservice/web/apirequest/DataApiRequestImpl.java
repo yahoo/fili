@@ -53,6 +53,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -90,6 +91,7 @@ import javax.ws.rs.core.Response;
  */
 public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
+
     private final LogicalTable table;
 
     private final Granularity granularity;
@@ -525,7 +527,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Requested sort on metrics - optional, can be empty Set
         this.sorts = bindToColumnDirectionMap(
                 removeDateTimeSortColumn(sortColumnDirection),
-                logicalMetrics, metricDictionary
+                logicalMetrics,
+                metricDictionary
         );
         validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
 
@@ -1024,9 +1027,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
-            DateTime adjustedNow = new DateTime();
+        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
+        DateTime adjustedNow = new DateTime();
+
+        if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
+            adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
+            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
+        } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
@@ -1313,10 +1320,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     .collect(Collectors.toMap(
                             pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
-                                e.addAll(i);
-                                return e;
-                            },
+                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
+                                    StreamUtils.orderedSetMerge(e, i),
                             LinkedHashMap::new
                     ));
         }
@@ -1503,10 +1508,15 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
             LOG.trace("Metric dictionary: {}", metricDictionary);
 
-            if (apiMetricQuery == null || "".equals(apiMetricQuery)) {
+            if (apiMetricQuery == null) {
+                apiMetricQuery = "";
+            }
+
+            if (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && apiMetricQuery.isEmpty()) {
                 LOG.debug(METRICS_MISSING.logFormat());
                 throw new BadApiRequestException(METRICS_MISSING.format());
             }
+
             // set of logical metric objects
             LinkedHashSet<LogicalMetric> generated = new LinkedHashSet<>();
             List<String> invalidMetricNames = new ArrayList<>();
@@ -1716,6 +1726,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
     }
 
+    @Override
     @Deprecated
     public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
         return withIntervals(new ArrayList<>(intervals));

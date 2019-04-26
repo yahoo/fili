@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.query
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
@@ -41,7 +42,7 @@ class TimeSeriesQuerySpec extends Specification {
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         ))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null

@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -77,17 +78,25 @@ import java.util.stream.Stream;
 public class LuceneSearchProvider implements SearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchProvider.class);
 
-    private static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
-    private Analyzer analyzer;
+    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    protected static final Analyzer STANDARD_LUCENE_ANALYZER = new StandardAnalyzer();
     private static final double BUFFER_SIZE = 48;
+
+    public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"),
+            600000
+    );
+
+    // Default is 1.2 * modifier, just long enough for a single read query to timeout.
+    public static final float WRITE_LOCK_TIMEOUT_MULTIPLIER = SYSTEM_CONFIG.getFloatProperty(
+            SYSTEM_CONFIG.getPackageVariableName("lucene_search_write_lock_timeout_multiplier"),
+            1.2f
+    );
+
+    protected Analyzer analyzer;
 
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
-
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    public static final int LUCENE_SEARCH_TIMEOUT_MS = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("lucene_search_timeout_ms"), 600000
-    );
 
     public static String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
 
@@ -139,6 +148,75 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
+     * Attempts to acquire the read lock. If waiting for the read lock times out or is interrupted an exception is
+     * thrown and the query is failed. Timeout is equivalent to the timeout on a search.
+     */
+    protected void readLock() {
+        try {
+            if (!lock.readLock().tryLock(searchTimeout, TimeUnit.MILLISECONDS)) {
+                String msg = String.format(
+                        ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                        getDimension().getApiName()
+                );
+
+                LOG.error(msg);
+                throw new IllegalStateException(msg);
+            }
+        } catch (InterruptedException e) {
+            String msg = String.format(
+                    ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
+                    getDimension()
+            );
+            LOG.error(msg);
+            throw new IllegalStateException(msg, e);
+        }
+    }
+
+    /**
+     * Unlocks the held read lock for this thread.
+     */
+    protected void readUnlock() {
+        lock.readLock().unlock();
+    }
+
+    /**
+     * Attempts to acquire the write lock. If waiting for the write lock times out or is interrupted an exception is
+     * thrown and the query is failed. Timeout is equivalent to the timeout on a search multiplied by a constant
+     * write timeout multiplier.
+     */
+    protected void writeLock() {
+        try {
+            if (!lock.writeLock().tryLock(
+                    (int) (searchTimeout * WRITE_LOCK_TIMEOUT_MULTIPLIER),
+                    TimeUnit.MILLISECONDS)
+            ) {
+                String msg = String.format(
+                        ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                        getDimension().getApiName()
+                );
+
+                LOG.error(msg);
+                throw new IllegalStateException(msg);
+            }
+        } catch (InterruptedException e) {
+            String msg = String.format(
+                    ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
+                    getDimension().getApiName()
+            );
+
+            LOG.error(msg);
+            throw new IllegalStateException(msg, e);
+        }
+    }
+
+    /**
+     * Unlocks the write lock for this thread.
+     */
+    protected void writeUnlock() {
+        lock.writeLock().unlock();
+    }
+
+    /**
      * Initializes the `luceneIndexSearcher` if it has not been initialized already.
      * <p>
      * Note that the index searcher cannot be built at construction time, because it needs the dimension and
@@ -160,7 +238,7 @@ public class LuceneSearchProvider implements SearchProvider {
      * @param firstTimeThrough  If true, will write an empty index and will then re-open the searcher
      */
     private void reopenIndexSearcher(boolean firstTimeThrough) {
-        lock.writeLock().lock();
+        writeLock();
         try {
             // Close the current reader if open
             if (luceneIndexSearcher != null) {
@@ -191,16 +269,8 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new RuntimeException(reopenException);
             }
         } finally {
-            lock.writeLock().unlock();
+            writeUnlock();
         }
-    }
-
-    protected Analyzer getAnalyzer() {
-        return analyzer;
-    }
-
-    protected void setAnalyzer(Analyzer analyzer) {
-        this.analyzer = analyzer;
     }
 
     /**
@@ -299,7 +369,7 @@ public class LuceneSearchProvider implements SearchProvider {
 
         // Write the rows to the document
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
-        lock.writeLock().lock();
+        writeLock();
         try {
             try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                 // Update the document fields for each row and update the document
@@ -322,7 +392,7 @@ public class LuceneSearchProvider implements SearchProvider {
             reopenIndexSearcher(true);
             refreshCardinality();
         } finally {
-            lock.writeLock().unlock();
+            writeUnlock();
         }
     }
 
@@ -367,7 +437,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 newLuceneIndexPathString
         );
 
-        lock.writeLock().lock();
+        writeLock();
         try {
             Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
             String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
@@ -389,7 +459,7 @@ public class LuceneSearchProvider implements SearchProvider {
 
             reopenIndexSearcher(false);
         } finally {
-            lock.writeLock().unlock();
+            writeUnlock();
         }
     }
 
@@ -466,7 +536,7 @@ public class LuceneSearchProvider implements SearchProvider {
     public void clearDimension() {
         Set<DimensionRow> dimensionRows = findAllDimensionRows();
         IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer).setRAMBufferSizeMB(BUFFER_SIZE);
-        lock.writeLock().lock();
+        writeLock();
         try {
             try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                 //Remove all dimension data from the store.
@@ -498,7 +568,7 @@ public class LuceneSearchProvider implements SearchProvider {
             reopenIndexSearcher(true);
             refreshCardinality();
         } finally {
-            lock.writeLock().unlock();
+            writeUnlock();
         }
     }
 
@@ -510,11 +580,11 @@ public class LuceneSearchProvider implements SearchProvider {
     private void refreshCardinality() {
         int numDocs;
         initializeIndexSearcher();
-        lock.readLock().lock();
+        readLock();
         try {
             numDocs = luceneIndexSearcher.getIndexReader().numDocs();
         } finally {
-            lock.readLock().unlock();
+            readUnlock();
         }
         keyValueStore.put(
                 DimensionStoreKeyUtils.getCardinalityKey(),
@@ -718,7 +788,7 @@ public class LuceneSearchProvider implements SearchProvider {
         initializeIndexSearcher();
         LOG.trace("Lucene Query {}", query);
 
-        lock.readLock().lock();
+        readLock();
         try {
             ScoreDoc[] hits;
             try (TimedPhase timer = RequestLog.startTiming("QueryingLucene")) {
@@ -773,10 +843,11 @@ public class LuceneSearchProvider implements SearchProvider {
                         )
                         .map(document -> document.get(idKey))
                         .map(dimension::findDimensionRowByKeyValue)
+                        .filter(it -> it != null)
                         .collect(Collectors.toCollection(TreeSet::new));
             }
         } finally {
-            lock.readLock().unlock();
+            readUnlock();
         }
         return new SinglePagePagination<>(
                 Collections.unmodifiableList(filteredDimRows.stream().collect(Collectors.toList())),
@@ -820,7 +891,7 @@ public class LuceneSearchProvider implements SearchProvider {
             int perPage
     ) {
         TimeLimitingCollectorManager manager = new TimeLimitingCollectorManager(searchTimeout, lastEntry, perPage);
-        lock.readLock().lock();
+        readLock();
         try {
             return indexSearcher.search(query, manager);
         } catch (IOException e) {
@@ -831,7 +902,7 @@ public class LuceneSearchProvider implements SearchProvider {
             LOG.warn("Lucene query timeout: {}. {}", query, e.getMessage());
             throw new TimeoutException(e.getMessage(), e);
         } finally {
-            lock.readLock().unlock();
+            readUnlock();
         }
     }
 }

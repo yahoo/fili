@@ -4,6 +4,9 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.application.AbstractBinderFactory
+import com.yahoo.bard.webservice.config.BardFeatureFlag
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -14,15 +17,18 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.AllGranularity
-import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
+import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -160,15 +166,60 @@ class DataApiRequestImplSpec extends Specification {
         e.getMessage() == expectedMessage
     }
 
-    def "check weekly granularity has the expected alignment description"() {
+    def "if metrics are required an exception is thrown on request with no metrics"() {
         setup:
-        String expectedMessage = " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
-                "week",
-                new StandardGranularityParser()
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(true)
+
+        // set class to handle static provider method
+        MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
+
+        when:
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "",
+                metricDict,
+                dimensionDict,
+                table
         )
 
-        expect:
-        granularity.getAlignmentDescription() == expectedMessage
+        then:
+        thrown(BadApiRequestException)
+
+        cleanup:
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
+        FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
+    }
+
+    @Unroll
+    def "If metrics are NOT required and intersection reporting is #interreport then no error is thrown on request with no metrics"() {
+        setup:
+        // backup static system config
+        BardFeatureFlag.INTERSECTION_REPORTING.setOn(intersectionReportingOn)
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
+
+        // set class to handle static provider method
+        MetricsFilterSetBuilder backupFilterSetBuilder = FieldConverterSupplier.metricsFilterSetBuilder
+        FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
+
+        when:
+        new TestingDataApiRequestImpl().generateLogicalMetrics(
+                "",
+                metricDict,
+                dimensionDict,
+                table
+        )
+
+        then:
+        noExceptionThrown()
+
+        cleanup:
+        BardFeatureFlag.INTERSECTION_REPORTING.reset()
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
+        FieldConverterSupplier.metricsFilterSetBuilder = backupFilterSetBuilder
+
+        where:
+        intersectionReportingOn | interreport
+        false                   | "disabled"
+        true                    | "enabled"
     }
 }

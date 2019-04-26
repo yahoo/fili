@@ -348,7 +348,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
     ) {
         LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
         List<String> invalidMetricNames = new ArrayList<>();
-        for (String metricName : apiMetricQuery.split(",")) {
+
+        String[] parsedMetrics = apiMetricQuery.split(",");
+        if (parsedMetrics.length == 1 && parsedMetrics[0].isEmpty()) {
+            parsedMetrics = new String[0];
+        }
+
+        // TODO extract into checkInvalidMetricNames method
+        for (String metricName : parsedMetrics) {
             LogicalMetric logicalMetric = metricDictionary.get(metricName);
             if (logicalMetric == null) {
                 invalidMetricNames.add(metricName);

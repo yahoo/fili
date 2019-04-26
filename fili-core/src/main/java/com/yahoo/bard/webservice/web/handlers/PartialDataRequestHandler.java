@@ -74,7 +74,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
 
             responseContext.put(MISSING_INTERVALS_CONTEXT_KEY.getName(), missingIntervals);
 
-            if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
+            if (BardFeatureFlag.PARTIAL_DATA.isOn()  || BardFeatureFlag.PARTIAL_DATA_PROTECTION.isOn()) {
                 PartialDataResultSetMapper mapper = new PartialDataResultSetMapper(
                         missingIntervals,
                         () -> VolatileDataRequestHandler.getVolatileIntervalsWithDefault(responseContext)
@@ -98,6 +98,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
      *
      * @return the missing intervals from the request or an empty list
      */
+    @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {
         return new SimplifiedIntervalList(
                 (Collection<Interval>) context.computeIfAbsent(

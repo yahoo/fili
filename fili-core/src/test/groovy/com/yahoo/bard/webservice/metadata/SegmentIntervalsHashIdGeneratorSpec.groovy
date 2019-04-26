@@ -117,7 +117,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
                                 DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
                                 [:],
-                                Mock(DataSourceMetadataService)
+                                Mock(DataSourceMetadataService) {getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
                         )
                 )
         )
