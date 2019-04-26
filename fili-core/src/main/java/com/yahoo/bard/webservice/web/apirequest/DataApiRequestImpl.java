@@ -1316,7 +1316,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                             pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
                             (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
-                            (LinkedHashSet<DimensionField>) StreamUtils.orderedSetMerge(e, i),
+                                    StreamUtils.orderedSetMerge(e, i),
                             LinkedHashMap::new
                     ));
         }

@@ -90,6 +90,9 @@ Current
 
 ### Changed:
 
+- [StreamUtils::orderedSetMerge returns a LinkedHashSet](https://github.com/yahoo/fili/pull/898)
+    * This saves casting in places that expect a LinkedHashSet, and shouldn't affect anybody else using it.
+
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
       or the leaking of confidential information.
