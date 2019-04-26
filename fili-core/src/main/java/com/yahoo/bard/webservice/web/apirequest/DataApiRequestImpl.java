@@ -1362,6 +1362,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         }
     }
 
+    /**
+     * Wrap LinkedHashSet as immutable LinkedHashSet.
+     * @param <E> type
+     * @param values source data
+     * @return immutable LinkedHashSet
+     */
     private static <E> LinkedHashSet<E> immutableLinkedHashSet(LinkedHashSet<E> values) {
         return new LinkedHashSet<E>(values) {
             private boolean locked = false;
