@@ -69,6 +69,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -1348,17 +1349,55 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
         if (showFields.size() == 1 && showFields.contains(DimensionFieldSpecifierKeywords.ALL.toString())) {
             // Show all fields
-            return dimension.getDimensionFields();
+            return immutableLinkedHashSet(dimension.getDimensionFields());
         } else if (showFields.size() == 1 && showFields.contains(DimensionFieldSpecifierKeywords.NONE.toString())) {
             // Show no fields
-            return new LinkedHashSet<>();
+            return immutableLinkedHashSet(new LinkedHashSet<>());
         } else if (!showFields.isEmpty()) {
             // Show the requested fields
-            return bindDimensionFields(dimension, showFields);
+            return immutableLinkedHashSet(bindDimensionFields(dimension, showFields));
         } else {
             // Show the default fields
-            return dimension.getDefaultDimensionFields();
+            return immutableLinkedHashSet(dimension.getDefaultDimensionFields());
         }
+    }
+
+    private static <E> LinkedHashSet<E> immutableLinkedHashSet(LinkedHashSet<E> values) {
+        return new LinkedHashSet<E>(values) {
+            private boolean locked = false;
+            @Override
+            public boolean add(E e) {
+                if (locked) {
+                    throw new UnsupportedOperationException();
+                }
+                return super.add(e);
+            }
+            @Override
+            public boolean remove(Object o) {
+                throw new UnsupportedOperationException();
+            }
+            @Override
+            public void clear() {
+                throw new UnsupportedOperationException();
+            }
+            @Override
+            public boolean removeIf(Predicate filter) {
+                throw new UnsupportedOperationException();
+            }
+            @Override
+            public boolean removeAll(Collection c) {
+                throw new UnsupportedOperationException();
+            }
+            @Override
+            public boolean addAll(Collection c) {
+                if (locked) {
+                    throw new UnsupportedOperationException();
+                }
+                boolean b = super.addAll(c);
+                locked = true;
+                return b;
+            }
+        };
     }
 
     /**
@@ -1723,6 +1762,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
     }
 
+    @Override
     @Deprecated
     public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
         return withIntervals(new ArrayList<>(intervals));
