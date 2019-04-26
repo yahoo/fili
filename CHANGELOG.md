@@ -265,6 +265,9 @@ Current
     * DataApiExceptionHandler clearly intended to log error messages but improperly used the sl4j log syntax.
     * Added original URI logging to exception handling cases.
 
+- [Fixed corrupted getDefaultDimensionFields after show](https://github.com/yahoo/fili/pull/897)
+    * map merge incorrectly modified source set
+
 ### Known Issues:
 
 ## Contract changes:
