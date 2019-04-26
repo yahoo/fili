@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
+
 /**
  * Test selector filter serialization.
  */
@@ -128,5 +129,59 @@ class BoundFilterSpec extends Specification {
 
         expect:
         objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerializationBoundFilter)
+    }
+
+    def "Static buildUpperBoundFilter() works as expected"() {
+        given:
+        BoundFilter upperBoundFilter = BoundFilter.buildUpperBoundFilter(dimension, "20.0", true)
+        String expectedSerializationUpperBoundFilter =
+                """
+                    {
+                        "dimension": "foo",
+                        "type":"bound",
+                        "upper":"20.0",
+                        "upperStrict":false,
+                        "extractionFn":{
+                            "type":"registeredLookup",
+                            "lookup":"lookup",
+                            "retainMissingValue":false,
+                            "replaceMissingValueWith":"none",
+                            "injective":false,
+                            "optimize":false
+                        }
+                    }
+                """
+        druidQuery.getFilter() >> upperBoundFilter
+        String serializedFilter = objectMapper.writeValueAsString(druidQuery)
+
+        expect:
+        objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerializationUpperBoundFilter)
+    }
+
+    def "Static buildLowerBoundFilter() works as expected"() {
+        given:
+        BoundFilter lowerBoundFilter = BoundFilter.buildLowerBoundFilter(dimension, "20.0", false)
+        String expectedSerializationLowerBoundFilter =
+                """
+                    {
+                        "dimension": "foo",
+                        "type":"bound",
+                        "lower":"20.0",
+                        "lowerStrict":true,
+                        "extractionFn":{
+                            "type":"registeredLookup",
+                            "lookup":"lookup",
+                            "retainMissingValue":false,
+                            "replaceMissingValueWith":"none",
+                            "injective":false,
+                            "optimize":false
+                        }
+                    }
+                """
+        druidQuery.getFilter() >> lowerBoundFilter
+        String serializedFilter = objectMapper.writeValueAsString(druidQuery)
+
+        expect:
+        objectMapper.readTree(serializedFilter).get("filter") == objectMapper.readTree(expectedSerializationLowerBoundFilter)
     }
 }

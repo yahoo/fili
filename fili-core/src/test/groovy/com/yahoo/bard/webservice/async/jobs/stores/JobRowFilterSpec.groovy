@@ -21,7 +21,7 @@ class JobRowFilterSpec extends Specification {
 
         then:
         jobRowFilter.jobField?.name == jobField
-        jobRowFilter.operation == DefaultFilterOperation.valueOf(op)
+        jobRowFilter.operation == DefaultFilterOperation.fromString(op)
         jobRowFilter.values == expected as Set
 
         where:

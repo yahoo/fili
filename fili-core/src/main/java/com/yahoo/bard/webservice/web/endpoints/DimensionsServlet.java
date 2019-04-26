@@ -102,6 +102,8 @@ public class DimensionsServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  the format to use for the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * username. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
@@ -119,6 +121,7 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
@@ -131,6 +134,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null,
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     dimensionDictionary
@@ -147,7 +151,7 @@ public class DimensionsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null
             );
-            LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimensions Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -189,6 +193,7 @@ public class DimensionsServlet extends EndpointServlet {
                     dimensionName,
                     null,
                     null,
+                    null,
                     "",
                     "",
                     dimensionDictionary
@@ -205,7 +210,7 @@ public class DimensionsServlet extends EndpointServlet {
             );
 
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Dimension Endpoint Response: {}", output);
+            LOG.trace("Dimension Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -232,6 +237,8 @@ public class DimensionsServlet extends EndpointServlet {
      * @param page  The page number
      * @param perPage  The number of rows per page
      * @param format  The format of the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo The injected UriInfo
      * @param containerRequestContext The injected request context
      *
@@ -263,10 +270,10 @@ public class DimensionsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
         DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
@@ -276,6 +283,7 @@ public class DimensionsServlet extends EndpointServlet {
                     dimensionName,
                     filterQuery,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     dimensionDictionary
@@ -316,7 +324,7 @@ public class DimensionsServlet extends EndpointServlet {
                     null
             );
 
-            LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());
+            LOG.trace("Dimension Value Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -466,7 +474,7 @@ public class DimensionsServlet extends EndpointServlet {
      *
      * @return a description dimension field with name "description"
      */
-    private static String getDescriptionKey(String fieldName) {
+    public static String getDescriptionKey(String fieldName) {
         return fieldName.contains("description") ? fieldName : fieldName.replace("desc", "description");
     }
 }

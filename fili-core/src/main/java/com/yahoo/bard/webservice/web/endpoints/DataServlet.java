@@ -21,7 +21,7 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
@@ -42,7 +42,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -273,6 +273,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param timeZone  Requested time zone (impacts day based granularities and intervals)
      * @param asyncAfter  The maximum time length (in milliseconds) a request is allowed to be synchronous before
      * becoming asynchronous, if "never" then the request is forever synchronous
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param readCache  false to bypass cache
@@ -297,6 +299,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
             @QueryParam("asyncAfter") String asyncAfter,
+            @QueryParam("filename") String downloadFilename,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @DefaultValue("true") @NotNull @QueryParam("_cache") Boolean readCache,
@@ -318,6 +321,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 format,
                 timeZone,
                 asyncAfter,
+                downloadFilename,
                 perPage,
                 page,
                 readCache,
@@ -344,6 +348,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param format  Requested format
      * @param asyncAfter  The maximum time length (in milliseconds) a request is allowed to be synchronous before
      * becoming asynchronous, if "never" then the request is forever synchronous
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param readCache  false to bypass cache
@@ -369,6 +375,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
             @QueryParam("asyncAfter") String asyncAfter,
+            @QueryParam("filename") String downloadFilename,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @DefaultValue("true") @NotNull @QueryParam("_cache") Boolean readCache,
@@ -389,6 +396,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         count,
                         topN,
                         formatResolver.apply(format, containerRequestContext),
+                        downloadFilename,
                         timeZone,
                         asyncAfter,
                         perPage,
@@ -441,7 +449,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
-                RequestLog.record(new DruidFilterInfo(apiRequest.getDruidFilter()));
+                RequestLog.record(new DruidFilterInfo(druidQuery.getFilter()));
             }
 
             // Process the request

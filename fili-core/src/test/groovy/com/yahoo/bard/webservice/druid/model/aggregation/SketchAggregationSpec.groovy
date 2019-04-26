@@ -15,9 +15,11 @@ class SketchAggregationSpec extends Specification {
         Aggregation original = originalSketch.newInstance(["name", "fieldName", 1024].toArray())
         Aggregation outer = outerSketch.newInstance(["name", "name", 1024].toArray())
         Aggregation inner = innerSketch.newInstance(["name", "fieldName", 1024].toArray())
+        Optional<Aggregation> outerOptional = Optional.of(outer);
+        Optional<Aggregation> innerOptional = Optional.of(inner);
 
         expect:
-        original.nest().equals(Pair.of(outer, inner))
+        original.nest().equals(Pair.of(outerOptional, innerOptional))
 
         where:
         originalSketch         | outerSketch            | innerSketch

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Optional;
+
 /**
  * Aggregation for counts.
  */
@@ -48,11 +50,11 @@ public class CountAggregation extends Aggregation {
      * Base class aggregation transformation is also performed.
      */
     @Override
-    public Pair<Aggregation, Aggregation> nest() {
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
         String nestingName = getName();
         Aggregation inner = withName(nestingName);
         Aggregation outer = new LongSumAggregation(getName(), nestingName);
-        return new ImmutablePair<>(outer, inner);
+        return new ImmutablePair<>(Optional.of(outer), Optional.of(inner));
     }
 
     @JsonIgnore

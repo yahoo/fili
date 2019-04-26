@@ -35,18 +35,23 @@ public class ConstrainedTable implements PhysicalTable {
      * @param constraint  The constraint being applied
      */
     public ConstrainedTable(ConfigPhysicalTable sourceTable, DataSourceConstraint constraint) {
+        this(sourceTable, new PhysicalDataSourceConstraint(constraint, sourceTable.getSchema()));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param sourceTable  The table being constrained
+     * @param constraint  The constraint being applied
+     */
+    public ConstrainedTable(ConfigPhysicalTable sourceTable, PhysicalDataSourceConstraint constraint) {
         this.constraint = constraint;
         this.sourceTable = sourceTable;
 
         Availability sourceAvailability = sourceTable.getAvailability();
 
-        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(
-                constraint,
-                sourceTable.getSchema()
-        );
-
         availableIntervals = new SimplifiedIntervalList(
-                sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint)
+                sourceAvailability.getAvailableIntervals(constraint)
         );
 
         allAvailableIntervals = Collections.unmodifiableMap(
@@ -56,7 +61,7 @@ public class ConstrainedTable implements PhysicalTable {
                 )
         );
         dataSourceNames = Collections.unmodifiableSet(
-                sourceAvailability.getDataSourceNames(physicalDataSourceConstraint)
+                sourceAvailability.getDataSourceNames(constraint)
         );
     }
 
@@ -72,9 +77,14 @@ public class ConstrainedTable implements PhysicalTable {
 
         Availability sourceAvailability = sourceTable.getAvailability();
 
-        availableIntervals = new SimplifiedIntervalList(
-                sourceAvailability.getAvailableIntervals(constraint)
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(
+                constraint,
+                getSchema()
         );
+
+        // Physical constraint is necessary to respect column sensitive tables
+        availableIntervals =
+                sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint);
 
         allAvailableIntervals = Collections.unmodifiableMap(
                 mapToSchemaAvailability(

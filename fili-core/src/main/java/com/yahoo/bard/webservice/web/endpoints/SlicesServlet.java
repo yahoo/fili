@@ -86,6 +86,8 @@ public class SlicesServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
 
      * @return OK(200) else Bad Request(400) Response format:
@@ -106,6 +108,7 @@ public class SlicesServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context ContainerRequestContext containerRequestContext
     ) {
         SlicesApiRequest apiRequest = null;
@@ -117,6 +120,7 @@ public class SlicesServlet extends EndpointServlet {
             apiRequest = new SlicesApiRequestImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     physicalTableDictionary,
@@ -136,7 +140,7 @@ public class SlicesServlet extends EndpointServlet {
                     null
             );
 
-            LOG.debug("Slice Endpoint Response: {}", response.getEntity());
+            LOG.trace("Slice Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -201,7 +205,7 @@ public class SlicesServlet extends EndpointServlet {
             }
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
-            LOG.debug("Slice Endpoint Response: {}", output);
+            LOG.trace("Slice Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(

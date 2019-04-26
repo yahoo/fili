@@ -1,6 +1,6 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.filterbuilders;
+package com.yahoo.bard.webservice.druid.model.builders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOO_MANY_DRUID_FILTERS;
 
@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
@@ -54,7 +55,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
     private static final String NON_NEGATIVE_FILTER_ERROR_FORMAT = "Negating a non-negative filter - '%s'";
 
     @Override
-    public Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException {
+    public Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws FilterBuilderException {
         LOG.trace("Building filters using filter map: {}", filterMap);
 
         // return null when no filter is specified in the API
@@ -229,7 +230,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
 
         return rows.stream()
-                .map(row -> finalFilterBuilder.apply(row))
+                .map(finalFilterBuilder::apply)
                 .collect(Collectors.toList());
     }
 }

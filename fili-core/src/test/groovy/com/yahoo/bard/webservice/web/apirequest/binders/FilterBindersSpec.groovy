@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.BadFilterException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import org.joda.time.DateTime
 
@@ -60,7 +61,7 @@ class FilterBindersSpec extends Specification {
         then:
         filter.getDimension()?.getApiName() == dimension
         filter.getDimensionField() == filter.getDimension()?.getFieldByName(field)
-        filter.getOperation() == DefaultFilterOperation.valueOf(op)
+        filter.getOperation() == DefaultFilterOperation.fromString(op)
         filter.getValues() == expected as Set
 
         where:
@@ -95,7 +96,7 @@ class FilterBindersSpec extends Specification {
         then:
         filter.getDimension()?.getApiName() == dimension
         filter.getDimensionField() == filter.getDimension()?.getFieldByName(field)
-        filter.getOperation() == DefaultFilterOperation.valueOf(op)
+        filter.getOperation() == DefaultFilterOperation.fromString(op)
         filter.getValues() == expected as Set
 
         where:
@@ -152,6 +153,32 @@ class FilterBindersSpec extends Specification {
         'dimension1|id-contains[  ]'        | BadFilterException | 'Filter requests empty string'
         'dimension1|id-contains[]'          | BadFilterException | 'Filter requests empty string'
 //        'dimension1|id-in[foo'       | BadFilterException | 'Missing Closing Bracket' // This one's actually OK, since it ends the line
+    }
+
+    @Unroll
+    def "Alias \"#alias\" is properly interpreted as the filter operation \"#op.getName()\""() {
+
+        given:
+        String query = 'dimension1|id-' + alias + '[foo]'
+
+        when:
+        ApiFilter filter = filterBinders.generateApiFilter(query, dimStore)
+
+        then:
+        filter.getOperation() == op
+
+        where:
+        alias               |   op
+        'equals'            |   DefaultFilterOperation.eq
+        'less'              |   DefaultFilterOperation.lt
+        'notgt'             |   DefaultFilterOperation.lte
+        'notGreater'        |   DefaultFilterOperation.lte
+        'notGreaterThan'    |   DefaultFilterOperation.lte
+        'greater'           |   DefaultFilterOperation.gt
+        'notlt'             |   DefaultFilterOperation.gte
+        'notLess'           |   DefaultFilterOperation.gte
+        'notLessThan'       |   DefaultFilterOperation.gte
+        'bet'               |   DefaultFilterOperation.between
     }
 
     def "toString method returns a correctly formatted ApiFilter object"() {

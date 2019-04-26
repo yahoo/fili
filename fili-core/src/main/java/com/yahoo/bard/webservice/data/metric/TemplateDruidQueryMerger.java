@@ -2,11 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -39,20 +42,21 @@ public class TemplateDruidQueryMerger {
             }
         }
 
-        if (allQueries.isEmpty()) {
+        if (BardFeatureFlag.REQUIRE_METRICS_QUERY.isOn() && allQueries.isEmpty()) {
             LOG.debug("No template queries selected by API request.");
             throw new IllegalStateException("No template queries selected by API request.");
         }
 
-        // TODO: Simplify when merge can handle nulls
-        TemplateDruidQuery merged = null;
-        for (TemplateDruidQuery query : allQueries) {
-            if (merged == null) {
-                merged = query;
-            } else {
-                LOG.trace("Merging TDQs: Left: {} | right: {}", merged, query);
-                merged = merged.merge(query);
-            }
+        Iterator<TemplateDruidQuery> queries = allQueries.iterator();
+        if (!queries.hasNext()) {
+            return new TemplateDruidQuery(new ArrayList<>(0), new ArrayList<>(0));
+        }
+
+        TemplateDruidQuery merged = queries.next();
+        while (queries.hasNext()) {
+            TemplateDruidQuery query = queries.next();
+            LOG.trace("Merging TDQs: Left: {} | right: {}", merged, query);
+            merged = merged.merge(query);
         }
 
         LOG.trace("Merged template druid query: {}", merged);

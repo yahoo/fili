@@ -7,7 +7,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -19,7 +19,7 @@ import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
-import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -107,6 +107,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
@@ -125,13 +127,14 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         if (format != null && format.toLowerCase(Locale.ENGLISH).equals("fullview")) {
             return getTablesFullView(perPage, page, uriInfo, containerRequestContext);
         } else {
-            return getTable(null, perPage, page, format, containerRequestContext);
+            return getTable(null, perPage, page, format, downloadFilename, containerRequestContext);
         }
     }
 
@@ -143,6 +146,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of grain-specific logical tables
@@ -162,6 +167,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         TablesApiRequestImpl tablesApiRequestImpl = null;
@@ -174,6 +180,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     tableName,
                     null,
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     this
@@ -193,7 +200,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
                     null
             );
-            LOG.debug("Tables Endpoint Response: {}", response.getEntity());
+            LOG.trace("Tables Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -255,7 +262,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
 
             Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Tables Endpoint Response: {}", output);
+            LOG.trace("Tables Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -343,7 +350,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     containerRequestContext.getUriInfo()
             );
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Tables Endpoint Response: {}", output);
+            LOG.trace("Tables Endpoint Response: {}", output);
             return Response.status(OK).entity(output).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -404,7 +411,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     null
             );
 
-            LOG.debug("Tables Endpoint Response: {}", response.getEntity());
+            LOG.trace("Tables Endpoint Response: {}", response.getEntity());
             return response;
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
@@ -487,7 +494,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         resultRow.put("category", logicalTable.getCategory());
         resultRow.put("name", logicalTable.getName());
         resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("retention", logicalTable.getRetention().toString());
+        resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
         resultRow.put("granularity", logicalTable.getGranularity().getName());
         resultRow.put("description", logicalTable.getDescription());
         resultRow.put(
@@ -524,7 +531,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 new SimpleImmutableEntry<>("category", logicalTable.getCategory()),
                 new SimpleImmutableEntry<>("name", logicalTable.getName()),
                 new SimpleImmutableEntry<>("longName", logicalTable.getLongName()),
-                new SimpleImmutableEntry<>("retention", logicalTable.getRetention().toString()),
+                new SimpleImmutableEntry<>(
+                        "retention",
+                        logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : ""
+                ),
                 new SimpleImmutableEntry<>("granularity", logicalTable.getGranularity().getName()),
                 new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
                 new SimpleImmutableEntry<>(

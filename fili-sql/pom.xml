@@ -4,14 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
 
     <parent>
         <artifactId>fili-parent-pom</artifactId>
         <groupId>com.yahoo.fili</groupId>
-        <version>0.10-SNAPSHOT</version>
+        <version>0.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-sql</artifactId>

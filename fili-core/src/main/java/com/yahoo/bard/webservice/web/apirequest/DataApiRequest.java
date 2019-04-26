@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -34,10 +34,135 @@ import javax.ws.rs.core.Response;
 /**
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
  */
- public interface DataApiRequest extends ApiRequest {
+public interface DataApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
     String RATIO_METRIC_CATEGORY = "Ratios";
     String DATE_TIME_STRING = "dateTime";
+
+    // Schema fields
+
+    /**
+     * The logical table for this request.
+     *
+     * @return A logical table
+     */
+    LogicalTable getTable();
+
+    /**
+     * The grain to group the results of this request.
+     *
+     * @return a granularity
+     */
+    Granularity getGranularity();
+
+    /**
+     * The set of grouping dimensions on this ApiRequest.
+     *
+     * @return a set of dimensions
+     */
+    Set<Dimension> getDimensions();
+
+    /**
+     * A map of dimension fields specified for the output schema.
+     *
+     * @return The dimension fields for output grouped by their dimension
+     */
+    LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getDimensionFields();
+
+    /**
+     * The logical metrics requested in this query.
+     *
+     * @return A set of logical metrics
+     */
+    Set<LogicalMetric> getLogicalMetrics();
+
+    // Aggregation constraints
+
+    /**
+     * The interval constraints for this query.
+     *
+     * @return A list of intervals
+     */
+    List<Interval> getIntervals();
+
+    /**
+     * The filters for this ApiRequest, grouped by dimensions.
+     *
+     * @return a map of filters by dimension
+     */
+    ApiFilters getApiFilters();
+
+    /**
+     * Get the dimensions used in filters on this request.
+     *
+     * @return A set of dimensions
+     *
+     * @deprecated Use {@link #getApiFilters()} keyset
+     */
+    @Deprecated
+    default Set<Dimension> getFilterDimensions() {
+        return getApiFilters().keySet();
+    }
+
+    /**
+     * The api having constraints for this request, grouped by logical metrics.
+     *
+     * @return a map of havings by metrics.
+     */
+    Map<LogicalMetric, Set<ApiHaving>> getHavings();
+
+    // Row sequence constraints
+
+    /**
+     * The list of sorting predicates for this query.
+     *
+     * @return The sorting columns
+     */
+    LinkedHashSet<OrderByColumn> getSorts();
+
+    /**
+     * An optional sorting predicate for the time column.
+     *
+     * @return The sort direction
+     */
+    Optional<OrderByColumn> getDateTimeSort();
+
+    /**
+     * The date time zone to apply to the dateTime parameter and to express the response and granularity in.
+     *
+     * @return A time zone
+     */
+    DateTimeZone getTimeZone();
+
+    // Result Set Truncations
+
+    /**
+     * The limit per time bucket for a top n query.
+     *
+     * @return The number of values per bucket.
+     */
+    OptionalInt getTopN();
+
+    /**
+     * An optional limit of records returned.
+     *
+     * @return An optional integer.
+     */
+    OptionalInt getCount();
+
+    // Query model objects
+
+    /**
+     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
+     * <p>
+     * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
+     *
+     * @return the filter used in the Query Model
+     *
+     * @deprecated Build query filters outside the API Request using FilterBuilders
+     */
+    @Deprecated
+    Filter getQueryFilter();
 
     /**
      * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
@@ -46,126 +171,45 @@ import javax.ws.rs.core.Response;
      *
      * @return the Druid filter
      */
-     Filter getDruidFilter();
+    @Deprecated
+    default Filter getDruidFilter() {
+        return getQueryFilter();
+    }
 
     /**
-     * The having constraints for this request, grouped by logical metrics.
+     * The fact model having (should probably remove this).
      *
-     * @return a map of havings by metrics.
+     * @return A fact model having
+     *
+     * @deprecated Query builders should have responsibility for building Having
      */
-     Map<LogicalMetric, Set<ApiHaving>> getHavings();
+    @Deprecated
+    Having getQueryHaving();
 
     /**
      *  The fact model having (should probably remove this).
      *
-     *  @return A fact model having
+     * @return A fact model having
+     *
+     * @deprecated Use {@link #getQueryHaving()}
      */
-     Having getHaving();
+    default Having getHaving() {
+        return getQueryHaving();
+    }
+
+    // Builder methods
 
     /**
-     * A prioritized list of sort columns.
+     *  Get the filter builder tool for downstream filter building.
      *
-     * @return sort columns.
-     */
-     LinkedHashSet<OrderByColumn> getSorts();
-
-    /**
-     * An optional limit of records returned.
+     * @return A favtory for building filters.
      *
-     * @return An optional integer.
-     */
-     OptionalInt getCount();
-
-    /**
-     * The limit per time bucket for a top n query.
-     *
-     * @return The number of values per bucket.
-     */
-     OptionalInt getTopN();
-
-    /**
-     * The date time zone to apply to the dateTime parameter and to express the response and granularity in.
-     *
-     * @return A time zone
-     */
-     DateTimeZone getTimeZone();
-
-    /**
-     * A filter builder (remove).
-     *
-     * @return a filter builder.
-     *
-     * @deprecated use {@link com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders#INSTANCE} if possible
+     * @deprecated Current client should provide their own filter builders.
      */
     @Deprecated
     DruidFilterBuilder getFilterBuilder();
 
-    /**
-     * An optional sorting predicate for the time column.
-     *
-     * @return The sort direction
-     */
-     Optional<OrderByColumn> getDateTimeSort();
-
-    /**
-     * Get the dimensions used in filters on this request.
-     *
-     * @return A set of dimensions
-     */
-     default Set<Dimension> getFilterDimensions() {
-         return getApiFilters().keySet();
-     }
-
-    /**
-     * The logical table for this request.
-     *
-     * @return A logical table
-     */
-     LogicalTable getTable();
-
-    /**
-     * The grain to group the results of this request.
-     *
-     * @return a granularity
-     */
-     Granularity getGranularity();
-
-    /**
-     * The set of grouping dimensions on this ApiRequest.
-     *
-     * @return a set of dimensions
-     */
-     Set<Dimension> getDimensions();
-
-    /**
-     * A map of dimension fields specified for the output schema.
-     *
-     * @return  The dimension fields for output grouped by their dimension
-     */
-     LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getDimensionFields();
-
-    /**
-     * The logical metrics requested in this query.
-     *
-     * @return A set of logical metrics
-     */
-     Set<LogicalMetric> getLogicalMetrics();
-
-    /**
-     * The intervals for this query.
-     *
-     * @return A set of intervals
-     */
-     List<Interval> getIntervals();
-
-    /**
-     * The filters for this ApiRequest, grouped by dimensions.
-     *
-     * @return a map of filters by dimension
-     */
-     ApiFilters getApiFilters();
-
-    /**
+     /**
      * Generates filter objects on the based on the filter query in the api request.
      *
      * @param filterQuery  Expects a URL filter query String in the format:
@@ -184,29 +228,31 @@ import javax.ws.rs.core.Response;
     );
 
     // CHECKSTYLE:OFF
-    DataApiRequest withFormat(ResponseFormatType format);
 
-    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
-
-    DataApiRequest withBuilder(Response.ResponseBuilder builder);
-
+    // Schema fields
     DataApiRequest withTable(LogicalTable table);
 
     DataApiRequest withGranularity(Granularity granularity);
 
     DataApiRequest withDimensions(LinkedHashSet<Dimension> dimensions);
 
-    DataApiRequest withPerDimensionFields(LinkedHashMap<Dimension,
-            LinkedHashSet<DimensionField>> perDimensionFields);
+    DataApiRequest withPerDimensionFields(
+            LinkedHashMap<Dimension,
+                    LinkedHashSet<DimensionField>> perDimensionFields
+    );
 
     DataApiRequest withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics);
 
     DataApiRequest withIntervals(List<Interval> intervals);
 
-    @Deprecated
     /**
+     * @param intervals  The intervals being applied.
+     *
+     * @return a new DataApiRequest
+     *
      * @deprecated Use @see{{@link #withIntervals(List)}}
      */
+    @Deprecated
     DataApiRequest withIntervals(Set<Interval> intervals);
 
     DataApiRequest withFilters(ApiFilters filters);
@@ -217,13 +263,33 @@ import javax.ws.rs.core.Response;
 
     DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
 
-    DataApiRequest withCount(int count);
+    DataApiRequest withTimeZone(DateTimeZone timeZone);
+
+    // Result Set Truncations
 
     DataApiRequest withTopN(int topN);
 
+    DataApiRequest withCount(int count);
+
+    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+
+    // Presentation
+
+    DataApiRequest withFormat(ResponseFormatType format);
+
+    DataApiRequest withDownloadFilename(String downloadFilename);
+
+    // Processing concerns
+
     DataApiRequest withAsyncAfter(long asyncAfter);
 
-    DataApiRequest withTimeZone(DateTimeZone timeZone);
+    // Builder with methods
 
+    @Deprecated
+    DataApiRequest withBuilder(Response.ResponseBuilder builder);
+
+    @Deprecated
     DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
+
+    // CHECKSTYLE:ON
 }

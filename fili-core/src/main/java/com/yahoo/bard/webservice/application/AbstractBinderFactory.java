@@ -53,9 +53,6 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidInFilterBuilder;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -68,6 +65,11 @@ import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
 import com.yahoo.bard.webservice.druid.client.impl.HeaderNestingJsonBuilderStrategy;
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
@@ -109,20 +111,21 @@ import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -142,7 +145,6 @@ import rx.subjects.PublishSubject;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Constructor;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -253,7 +255,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
                 }
 
-                // Bind the timeGrain provider
+                // Bind the timeGrain
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
                 bind(getGranularityParser()).to(GranularityParser.class);
 
@@ -262,6 +264,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(TemplateDruidQueryMerger.class).to(TemplateDruidQueryMerger.class);
                 bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
+                bind(buildDruidHavingBuilder()).to(DruidHavingBuilder.class);
 
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
@@ -277,14 +280,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the configuration loader and load configuration
                 loader = getConfigurationLoader();
                 loader.load();
-
-                // Bind the configuration dictionaries
-                bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
-                bind(loader.getMetricDictionary()).to(MetricDictionary.class);
-                bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
-                bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
-                bind(loader.getDictionaries()).to(ResourceDictionaries.class);
-
+                bindDictionaries(this);
                 bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
 
                 // Bind the request mappers
@@ -346,6 +342,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
 
+                bind(buildResponseUtils()).to(ResponseUtils.class);
+
                 bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
 
                 bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
@@ -377,6 +375,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             }
 
         };
+    }
+
+    /**
+     * Binds all the resource dictionaries.
+     *
+     * @param binder The binder to bind the dictionaries to.
+     */
+    private void bindDictionaries(AbstractBinder binder) {
+        // Bind the configuration dictionaries
+        binder.bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
+        binder.bind(loader.getMetricDictionary()).to(MetricDictionary.class);
+        binder.bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
+        binder.bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
+        binder.bind(loader.getDictionaries()).to(ResourceDictionaries.class);
     }
 
     /**
@@ -721,6 +733,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         } else {
             return new DruidOrFilterBuilder();
         }
+    }
+
+    /**
+     * Creates an object that constructs Druid dimension filters from Bard dimension filters.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DruidHavingBuilder buildDruidHavingBuilder() {
+        return new DefaultDruidHavingBuilder();
     }
 
     /**
@@ -1092,6 +1115,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Builds a response utils object with only CSV as a default always csv format.
+     *
+     * @return the response utils
+     */
+    protected ResponseUtils buildResponseUtils() {
+        return new ResponseUtils();
+    }
+
+    /**
      * Builder for ResponseWriter, a serializer allowing customized response from Fili.
      *
      * @param mappers Shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
@@ -1210,9 +1242,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         String customSupplierClassString = SYSTEM_CONFIG.getStringProperty(DRUID_HEADER_SUPPLIER_CLASS, null);
         if (customSupplierClassString != null && !customSupplierClassString.equals("")) {
             try {
-                Class<?> c = Class.forName(customSupplierClassString);
-                Constructor<?> constructor = c.getConstructor();
-                supplier = (Supplier<Map<String, String>>) constructor.newInstance();
+                @SuppressWarnings("unchecked")
+                Class<? extends Supplier<Map<String, String>>> c = (Class) Class
+                        .forName(customSupplierClassString).asSubclass(Supplier.class);
+                supplier = c.getConstructor().newInstance();
             } catch (Exception e) {
                 LOG.error(
                         "Unable to load the Druid query header supplier, className: {}, exception: {}",

@@ -81,12 +81,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
-    private static final String SYNCHRONOUS_REQUEST_FLAG = "never";
-    private static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
+    protected static final String SYNCHRONOUS_REQUEST_FLAG = "never";
+    protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
 
     protected final ResponseFormatType format;
     protected final Optional<PaginationParameters> paginationParameters;
     protected final long asyncAfter;
+    protected final String downloadFilename;
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -100,9 +101,36 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * present, must be the empty string.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
+     * @deprecated prefer constructor with downloadFilename
+     */
+    @Deprecated
+    public ApiRequestImpl(
+            String format,
+            String asyncAfter,
+            @NotNull String perPage,
+            @NotNull String page
+    ) throws BadApiRequestException {
+        this(format, null, asyncAfter, perPage, page);
+    }
+
+    /**
+     * Parses the API request URL and generates the API request object.
+     *
+     * @param format  response data format JSON or CSV. Default is JSON.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
+     * defaults to the system config {@code default_asyncAfter}
+     * @param downloadFilename  The filename for the response to be downloaded as. If null or empty indicates response
+     * should not be downloaded.
+     * @param perPage  number of rows to display per page of results. If present in the original request, must be a
+     * positive integer. If not present, must be the empty string.
+     * @param page  desired page of results. If present in the original request, must be a positive integer. If not
+     * present, must be the empty string.
+     *
+     * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
     public ApiRequestImpl(
             String format,
+            String downloadFilename,
             String asyncAfter,
             @NotNull String perPage,
             @NotNull String page
@@ -114,7 +142,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
-
+        this.downloadFilename = downloadFilename;
     }
 
     /**
@@ -133,7 +161,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String perPage,
             @NotNull String page
     ) throws BadApiRequestException {
-        this(format, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        this(format, null, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
     }
 
     /**
@@ -142,13 +170,37 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param format  The format of the response
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
+     * @deprecated prefer constructor with downloadFilename
      */
+    @Deprecated
     protected ApiRequestImpl(
             ResponseFormatType format,
             long asyncAfter,
             Optional<PaginationParameters> paginationParameters
     ) {
         this.format = format;
+        this.asyncAfter = asyncAfter;
+        this.paginationParameters = paginationParameters;
+        this.downloadFilename = null;
+    }
+
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  The format of the response
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
+     * @param paginationParameters  The parameters used to describe pagination
+     */
+    protected ApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            long asyncAfter,
+            Optional<PaginationParameters> paginationParameters
+    ) {
+        this.format = format;
+        this.downloadFilename = downloadFilename;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
     }
@@ -296,7 +348,14 @@ public abstract class ApiRequestImpl implements ApiRequest {
     ) {
         LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
         List<String> invalidMetricNames = new ArrayList<>();
-        for (String metricName : apiMetricQuery.split(",")) {
+
+        String[] parsedMetrics = apiMetricQuery.split(",");
+        if (parsedMetrics.length == 1 && parsedMetrics[0].isEmpty()) {
+            parsedMetrics = new String[0];
+        }
+
+        // TODO extract into checkInvalidMetricNames method
+        for (String metricName : parsedMetrics) {
             LogicalMetric logicalMetric = metricDictionary.get(metricName);
             if (logicalMetric == null) {
                 invalidMetricNames.add(metricName);
@@ -587,6 +646,11 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
         LOG.trace("Generated logical table: {} with granularity {}", generated, granularity);
         return generated;
+    }
+
+    @Override
+    public Optional<String> getDownloadFilename() {
+        return Optional.ofNullable(downloadFilename);
     }
 
     @Override

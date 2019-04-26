@@ -97,7 +97,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
         resultRow.put("name", grain);
         resultRow.put("longName", StringUtils.capitalize(grain));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
-        resultRow.put("retention", logicalTable.getRetention().toString());
+        resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
         resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), uriInfo));
         resultRow.put(
                 "metrics",

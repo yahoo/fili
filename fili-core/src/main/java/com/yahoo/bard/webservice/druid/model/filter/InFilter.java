@@ -53,7 +53,7 @@ public class InFilter extends DimensionalFilter<InFilter> {
      * @return The set of values to filter on
      */
     public TreeSet<String> getValues() {
-        return new TreeSet(values);
+        return new TreeSet<>(values);
     }
 
     @Override

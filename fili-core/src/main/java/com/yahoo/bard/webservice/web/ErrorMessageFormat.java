@@ -83,6 +83,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     FILTER_DIMENSION_NOT_IN_TABLE("Filter dimension '%s' is not supported by the table '%s'."),
     FILTER_FIELD_NOT_IN_DIMENSIONS("Filter dimension field '%s' is not supported by the dimension '%s'."),
     FILTER_OPERATOR_INVALID("Filter operator '%s' is invalid."),
+    FILTER_WRONG_NUMBER_OF_VALUES("Filter operator '%s' expects %s argument(s).  Found %d in '%s'."),
     FILTER_SUBSTRING_OPERATIONS_DISABLED(
             "Filter operations 'startswith' and 'contains' are disabled for data requests.",
             "Filter operations 'startswith' and 'contains' are disabled for data requests. Enable by setting feature" +
@@ -142,7 +143,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),
-    UNABLE_TO_SERIALIZE("Unable to serialize the % object"),
+    UNABLE_TO_SERIALIZE("Unable to serialize the %s object"),
     METRIC_VALUE_CLASS_NOT_FOUND("Metric value type class %s is not found"),
 
     UNAUTHORIZED_WITH_RETRY("Not authorized to access the resource for given id %s. Retrying again %s more times"),
@@ -272,6 +273,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
     REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s"),
 
     TWO_VALUES_OF_THE_SAME_KEY("Values %s and %s are associated with the same key"),
+
+    LUCENE_LOCK_TIMEOUT("Waiting for lock timed out in LuceneSearchProvider for dimension %s"),
+    LUCENE_LOCK_INTERRUPTED("Waiting for lock was interrupted in LuceneSearchProvider for dimension %s")
     ;
 
     private final String messageFormat;

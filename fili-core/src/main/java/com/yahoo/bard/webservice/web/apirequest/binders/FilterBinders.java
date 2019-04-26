@@ -23,14 +23,12 @@ import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -46,10 +44,11 @@ import javax.validation.constraints.NotNull;
  * This utility class captures default implementations for binding and validating API models for filtering requests.
  */
 public class FilterBinders {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FilterBinders.class);
 
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
-    private static final Pattern FILTER_PATTERN = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
+    protected static final Pattern API_FILTER_PATTERN =
+            Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
 
     public static final FilterBinders INSTANCE = new FilterBinders();
 
@@ -126,7 +125,6 @@ public class FilterBinders {
         }
     }
 
-
     /**
      * Parses the URL filter Query and generates the ApiFilter object.
      *
@@ -143,7 +141,6 @@ public class FilterBinders {
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
         LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
-
         /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
          *
          *  e.g.    locale|name-in[US,India]
@@ -154,11 +151,12 @@ public class FilterBinders {
          *          operation:      in          eq
          *          values:         US,India    5
          */
-        ApiFilter inProgressApiFilter = new ApiFilter(null, null, null, new HashSet<>());
+        ApiFilter inProgressApiFilter = new ApiFilter(null, null, null, new LinkedHashSet<>());
 
-        Matcher matcher = FILTER_PATTERN.matcher(filterQuery);
+        Matcher matcher = API_FILTER_PATTERN.matcher(filterQuery);
 
         // if pattern match found, extract values else throw exception
+
         if (!matcher.matches()) {
             LOG.debug(FILTER_INVALID.logFormat(filterQuery));
             throw new BadFilterException(FILTER_INVALID.format(filterQuery));
@@ -188,7 +186,7 @@ public class FilterBinders {
             }
             String operationName = matcher.group(3);
             try {
-                FilterOperation operation = DefaultFilterOperation.valueOf(operationName);
+                FilterOperation operation = DefaultFilterOperation.fromString(operationName);
                 inProgressApiFilter = inProgressApiFilter.withOperation(operation);
             } catch (IllegalArgumentException ignored) {
                 LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
@@ -196,7 +194,7 @@ public class FilterBinders {
             }
 
             // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-            Set<String> values = new LinkedHashSet<>(
+            LinkedHashSet<String> values = new LinkedHashSet<>(
                     FilterTokenizer.split(
                             matcher.group(4)
                                     .replaceAll("\\[", "")

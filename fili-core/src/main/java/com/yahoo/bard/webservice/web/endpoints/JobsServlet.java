@@ -139,6 +139,8 @@ public class JobsServlet extends EndpointServlet {
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param format  Requested format
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param filters  Filters to be applied on the JobRows. Expects a URL filter query String that may contain multiple
      * filter strings separated by comma.  The format of a filter String is :
      * (JobField name)-(operation)[(value or comma separated values)]?
@@ -151,6 +153,7 @@ public class JobsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("filters") String filters,
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
@@ -163,6 +166,7 @@ public class JobsServlet extends EndpointServlet {
 
             apiRequest = new JobsApiRequestImpl(
                     formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
@@ -267,6 +271,8 @@ public class JobsServlet extends EndpointServlet {
      *
      * @param ticket  The ticket that can uniquely identify a Job
      * @param format  Requested format of the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
      * @param perPage  Requested number of rows of data to be displayed on each page of results
@@ -281,6 +287,7 @@ public class JobsServlet extends EndpointServlet {
     public void getJobResultsByTicket(
             @PathParam("ticket") String ticket,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("asyncAfter") String asyncAfter,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
@@ -296,6 +303,7 @@ public class JobsServlet extends EndpointServlet {
 
             apiRequest = new JobsApiRequestImpl(
                     format,
+                    downloadFilename,
                     asyncAfter,
                     perPage,
                     page,

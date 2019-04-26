@@ -69,9 +69,24 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * @param format  Format of the request
          * @param perPage  How many items to show per page
          * @param page  Which page to show
+         * @deprecated prefer constructor with downloadFilename
          */
+        @Deprecated
         FeatureFlagApiRequest(String format, String perPage, String page) {
             super(format, perPage, page);
+        }
+
+        /**
+         * Constructor.
+         *
+         * @param format  Format of the request
+         * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client
+         * with the provided filename. Otherwise indicates the response should be rendered in the browser.
+         * @param perPage  How many items to show per page
+         * @param page  Which page to show
+         */
+        FeatureFlagApiRequest(String format, String downloadFilename, String perPage, String page) {
+            super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
         }
     }
 
@@ -100,6 +115,8 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param perPage the number per page to return
      * @param page the page to start from
      * @param format the format to use
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext the request context needed to process responses
      *
      * @return Response Format:
@@ -121,6 +138,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @Context ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
@@ -130,6 +148,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
 
             FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
                     format,
+                    downloadFilename,
                     perPage,
                     page
             );
@@ -145,7 +164,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "feature flags" : "rows",
                     Arrays.asList("name", "value")
             );
-            LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
+            LOG.trace("Feature Flags Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;
         } catch (Error | Exception e) {
             String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
@@ -162,7 +181,6 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * Get the status of a specific feature flag.
      *
      * @param flagName The feature flag
-     * @param format  The format to return results in
      *
      * @return Response Format:
      * <pre><code>
@@ -179,8 +197,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{flagName}")
     public Response getFeatureFlagStatus(
-            @PathParam("flagName") String flagName,
-            @QueryParam("format") String format
+            @PathParam("flagName") String flagName
     ) {
         Supplier<Response> responseSender;
         try {
@@ -192,7 +209,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
 
             String output = objectMappers.getMapper().writeValueAsString(status);
 
-            LOG.debug("Feature Flags Endpoint Response: {}", output);
+            LOG.trace("Feature Flags Endpoint Response: {}", output);
             responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
         } catch (JsonProcessingException e) {
             String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());

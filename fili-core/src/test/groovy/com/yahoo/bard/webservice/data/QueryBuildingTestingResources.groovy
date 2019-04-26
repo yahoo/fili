@@ -40,6 +40,10 @@ import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
@@ -100,6 +104,10 @@ class QueryBuildingTestingResources {
     public MetricDictionary metricDictionary
 
     public DataSourceMetadataService metadataService
+
+    public DruidFilterBuilder druidFilterBuilder = new DruidInFilterBuilder()
+
+    public DruidHavingBuilder druidHavingBuilder = new DefaultDruidHavingBuilder()
 
     QueryBuildingTestingResources() {
         init()

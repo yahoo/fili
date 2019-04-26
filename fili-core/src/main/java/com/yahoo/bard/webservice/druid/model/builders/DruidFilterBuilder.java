@@ -1,9 +1,9 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.filterbuilders;
+package com.yahoo.bard.webservice.druid.model.builders;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.web.ApiFilter;
 
@@ -23,7 +23,7 @@ public interface DruidFilterBuilder {
      *
      * @return A filter that combines the filters for each of the dimensions, or null if there is no filter
      *
-     * @throws DimensionRowNotFoundException if filtering on a dimension that does not have dimension rows
+     * @throws FilterBuilderException if exceptions are created building a filter
      */
-    Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws DimensionRowNotFoundException;
+    Filter buildFilters(Map<Dimension, Set<ApiFilter>> filterMap) throws FilterBuilderException;
 }

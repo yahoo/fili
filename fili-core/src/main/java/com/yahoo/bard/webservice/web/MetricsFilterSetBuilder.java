@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -52,8 +52,8 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return A Logical Metric that is filtered
-     * @throws DimensionRowNotFoundException if the dimension mentioned in the
-     * metric filter is not found
+     * @throws FilterBuilderException if the dimension mentioned in the
+     * metric filter is not found or other filter building error occurs
      */
     LogicalMetric getFilteredLogicalMetric(
             LogicalMetric logicalMetric,
@@ -61,7 +61,7 @@ public interface MetricsFilterSetBuilder {
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * A method to update outer query aggregations and postAggregations.
@@ -121,8 +121,8 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return updated query which contains filtered aggregations
-     * @throws DimensionRowNotFoundException if the dimension row in the metric
-     * filter is not found.
+     * @throws FilterBuilderException if the dimension row in the metric
+     * filter is not found or other filter building issue occurs
      */
     TemplateDruidQuery updateTemplateDruidQuery(
             TemplateDruidQuery query,
@@ -130,7 +130,7 @@ public interface MetricsFilterSetBuilder {
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * A method to replace postAggs with new postAggs that access the intersection or union of filteredAggregators.
@@ -174,8 +174,7 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return A set of FilteredAggregators for the given aggregator and Filter
-     * @throws DimensionRowNotFoundException if the dimension row in the metric
-     * filter is not found.
+     * @throws FilterBuilderException if the dimension row in the metric filter is not found or other error occurs.
      */
     Set<FilteredAggregation> getFilteredAggregation(
             JsonNode filter,
@@ -183,7 +182,7 @@ public interface MetricsFilterSetBuilder {
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * Method to prepare filter string.

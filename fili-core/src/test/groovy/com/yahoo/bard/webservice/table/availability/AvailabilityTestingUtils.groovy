@@ -17,7 +17,6 @@ import spock.lang.Specification
 
 import java.util.stream.Collectors
 import java.util.stream.Stream
-
 /**
  * Contains a collection of utility methods to aid in testing functionality that relies on table availability, like
  * partial data and volatility.
@@ -36,6 +35,11 @@ class AvailabilityTestingUtils extends Specification {
         @Override
         Set<DataSourceName> getDataSourceNames() {
             return sourceDataSourceNames
+        }
+
+        @Override
+        Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+            return getDataSourceNames()
         }
 
         @Override
