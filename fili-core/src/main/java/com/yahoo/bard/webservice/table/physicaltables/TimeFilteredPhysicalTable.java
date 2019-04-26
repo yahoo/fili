@@ -27,8 +27,8 @@ import javax.validation.constraints.NotNull;
  */
 public class TimeFilteredPhysicalTable extends BasePhysicalTable {
 
-    private ConfigPhysicalTable target;
-    private Supplier<SimplifiedIntervalList> filterIntervalsSupplier;
+    private final ConfigPhysicalTable target;
+    private final Supplier<SimplifiedIntervalList> filterIntervalsSupplier;
 
     /**
      * Constructor.

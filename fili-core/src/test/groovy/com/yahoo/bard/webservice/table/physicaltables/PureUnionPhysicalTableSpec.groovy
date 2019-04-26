@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table.physicaltables
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.table.BaseSchema
 import com.yahoo.bard.webservice.table.Column
@@ -14,6 +15,7 @@ import com.yahoo.bard.webservice.table.availability.Availability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
 import spock.lang.Shared
@@ -98,8 +100,11 @@ class PureUnionPhysicalTableSpec extends Specification {
 
     def "If not all physical table schemas share the same time grain throw an error"() {
         setup:
-        schema1 = new PhysicalTableSchema(Mock(ZonedTimeGrain), physicalColumns1, logicalToPhysicalNames1)
-        schema2 = new PhysicalTableSchema(Mock(ZonedTimeGrain), physicalColumns2, logicalToPhysicalNames2)
+        ZonedTimeGrain dayGrain = DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC)
+        ZonedTimeGrain weekGrain = DefaultTimeGrain.WEEK.buildZonedTimeGrain(DateTimeZone.UTC)
+
+        schema1 = new PhysicalTableSchema(dayGrain, physicalColumns1, logicalToPhysicalNames1)
+        schema2 = new PhysicalTableSchema(weekGrain, physicalColumns2, logicalToPhysicalNames2)
 
         baseTable1 = Mock(ConfigPhysicalTable)
         baseTable2 = Mock(ConfigPhysicalTable)
@@ -112,7 +117,7 @@ class PureUnionPhysicalTableSpec extends Specification {
         new PureUnionPhysicalTable(Mock(TableName), [baseTable1, baseTable2] as Set)
 
         then:
-        IllegalStateException exception = thrown()
+        IllegalArgumentException exception = thrown()
         exception.message == 'Error: unioned table contains physical tables with more than one time grain. Tried to union tables null, null'
     }
 

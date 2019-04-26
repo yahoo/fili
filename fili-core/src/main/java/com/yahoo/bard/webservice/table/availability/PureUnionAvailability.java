@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.table.TableUtils;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public class PureUnionAvailability implements Availability {
 
-    private Set<Availability> baseAvailabilities;
+    private final Set<Availability> baseAvailabilities;
 
     /**
      * Constructor.
@@ -25,7 +27,7 @@ public class PureUnionAvailability implements Availability {
      * @param availabilities  The set of availabilities this class unions to produce it's own availability
      */
     public PureUnionAvailability(Set<Availability> availabilities) {
-        baseAvailabilities = availabilities;
+        this.baseAvailabilities = Collections.unmodifiableSet(new LinkedHashSet<>(availabilities));
     }
 
     @Override

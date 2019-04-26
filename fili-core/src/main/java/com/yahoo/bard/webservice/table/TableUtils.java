@@ -15,14 +15,7 @@ import java.util.stream.Stream;
 /**
  * Utility methods to reduce code duplication in table implementations.
  */
-public class TableUtils {
-
-    /**
-     * Private constructor for utility class.
-     */
-    private TableUtils() {
-
-    }
+public final class TableUtils {
 
     public static final Function<Stream<Map<?, SimplifiedIntervalList>>, Map<?, SimplifiedIntervalList>>
             ALL_INTERVALS_MERGER = mapStream -> mapStream.map(Map::entrySet)
@@ -32,6 +25,12 @@ public class TableUtils {
                     SimplifiedIntervalList::union,
                     HashMap::new));
 
+    /**
+     * Private constructor for utility class.
+     */
+    private TableUtils() {
+
+    }
 
     /**
      * Merge all the intervals in a stream of Physical Tables returning a map from column to union of available

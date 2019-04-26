@@ -18,8 +18,9 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class PureUnionPhysicalTable extends BasePhysicalTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(PureUnionPhysicalTable.class);
 
-    private Set<ConfigPhysicalTable> basePhysicalTables;
+    private final Set<ConfigPhysicalTable> basePhysicalTables;
 
     /**
      * Constructor.
@@ -47,7 +48,8 @@ public class PureUnionPhysicalTable extends BasePhysicalTable {
             @NotNull Set<ConfigPhysicalTable> basePhysicalTables
     ) {
         super(tableName, buildSchema(basePhysicalTables), buildAvailability(basePhysicalTables));
-        this.basePhysicalTables = new HashSet<>(basePhysicalTables); // copy of set
+        // Make an unmodifiable copy.
+        this.basePhysicalTables = Collections.unmodifiableSet(new LinkedHashSet<>(basePhysicalTables));
     }
 
     /**
@@ -125,7 +127,7 @@ public class PureUnionPhysicalTable extends BasePhysicalTable {
                         .collect(Collectors.joining(", "))
             );
             LOG.error(msg);
-            throw new IllegalStateException(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         return new PhysicalTableSchema(grains.iterator().next(), columns, logicalToPhysicalColumnNames);
@@ -186,23 +188,27 @@ public class PureUnionPhysicalTable extends BasePhysicalTable {
         }
 
         String errMsg;
+
+        String errorSuffix =  basePhysicalTables.stream()
+                .map(ConfigPhysicalTable::getName)
+                .reduce((reduction, name) -> reduction + ", " + name).orElse("No tables found.");
+
+
         if (physicalColumnNames.isEmpty()) {
             errMsg = String.format(
-                    "Could not find any physical columns for logical column name %s from union table composed of: ",
-                    logicalName
+                    "Could not find any physical columns for logical column name %s from union table composed of: %s",
+                    logicalName,
+                    errorSuffix
             );
         } else {
             errMsg = String.format(
                     "Found multiple physical columns names for logical column %s. Physical names found: %s," +
-                            "from union table composed of: ",
+                            "from union table composed of: %s",
                     logicalName,
-                    physicalColumnNames.stream().reduce((reduction, name) -> reduction + ", " + name)
+                    physicalColumnNames.stream().reduce((reduction, name) -> reduction + ", " + name),
+                    errorSuffix
             );
         }
-
-        errMsg += basePhysicalTables.stream()
-                .map(ConfigPhysicalTable::getName)
-                .reduce((reduction, name) -> reduction + ", " + name);
 
         LOG.error(errMsg);
         throw new IllegalStateException(errMsg);
