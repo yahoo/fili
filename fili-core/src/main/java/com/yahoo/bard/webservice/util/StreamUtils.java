@@ -210,7 +210,7 @@ public class StreamUtils {
      *
      * @return A new set containing the values of the original sets
      */
-    public static <T> Set<T> orderedSetMerge(Set<T> a, Set<T> b) {
+    public static <T> LinkedHashSet<T> orderedSetMerge(Set<T> a, Set<T> b) {
         return Stream.concat(a.stream(), b.stream()).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }
