@@ -174,8 +174,8 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
         Optional<Integer> minArgs = op.getMinimumArguments();
         Optional<Integer> maxArgs = op.getMaximumArguments();
         if (
-                (minArgs.isPresent() && minArgs.get() < values.size()) ||
-                (maxArgs.isPresent() && maxArgs.get() > values.size())
+                minArgs.isPresent() && minArgs.get() < values.size() ||
+                maxArgs.isPresent() && maxArgs.get() > values.size()
         ) {
             String error = ErrorMessageFormat.FILTER_WRONG_NUMBER_OF_VALUES.format(
                     op,
