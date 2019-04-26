@@ -1315,10 +1315,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     .collect(Collectors.toMap(
                             pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
-                                e.addAll(i);
-                                return e;
-                            },
+                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
+                            (LinkedHashSet<DimensionField>) StreamUtils.orderedSetMerge(e, i),
                             LinkedHashMap::new
                     ));
         }
@@ -1724,6 +1722,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
     }
 
+    @Override
     @Deprecated
     public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
         return withIntervals(new ArrayList<>(intervals));

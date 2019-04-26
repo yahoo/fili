@@ -10,35 +10,36 @@ Current
 
 ### Added:
 
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+
 - [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
-  * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
-  * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
-  * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
-  * If any of these flags are active partial data answers are included in responses. 
+    * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
+    * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
+    * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
+    * If any of these flags are active partial data answers are included in responses. 
 
 - [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
-  * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in
-  queries
-    - this setting is turned ON by default
-  * This property is controlled through the feature flag BardFeatureFlag.REQUIRE_METRICS_QUERY
+    * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in queries
+        - this setting is turned ON by default
+    * This property is controlled through the feature flag BardFeatureFlag.REQUIRE_METRICS_QUERY
 
 - [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
-  * Added minimum and maximum arguments to FilterOperation
-  * Added validation on number of arguments to the bound filter builder
-  * Added hook for normalizing BoundFilterBuilder arguments
+    * Added minimum and maximum arguments to FilterOperation
+    * Added validation on number of arguments to the bound filter builder
+    * Added hook for normalizing BoundFilterBuilder arguments
 
 - [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
-  * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
-    - default implementation just defers to existing method `int getDimensionCardinality()`
-    - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
+    * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
+        - default implementation just defers to existing method `int getDimensionCardinality()`
+        - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
 
 - [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
-  * Filter ops now have aliases that match the relevant ops and aliases for havings.
+    * Filter ops now have aliases that match the relevant ops and aliases for havings.
 
 - [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
-  * If the filename parameter is present in the request the response is assumed to be downloaded with the provided 
-  filename. The download format depends on the format provided to the format parameter. 
-  * Filename parameter is currently only available to data queries.
+    * If the filename parameter is present in the request the response is assumed to be downloaded with the provided filename. The download format depends on the format provided to the format parameter. 
+    * Filename parameter is currently only available to data queries.
   
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
     * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
@@ -219,8 +220,12 @@ Current
 
 ### Fixed:
 
-- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
+- [Reverted addition of Verizon Media Group to copyright]()
 
+- [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
+    * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
+
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
 
 - [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
     * Many minor syntax and structual issues resolved.
@@ -259,6 +264,9 @@ Current
 - [Log exception messages in DataApiExceptionHandler](https://github.com/yahoo/fili/issues/860)
     * DataApiExceptionHandler clearly intended to log error messages but improperly used the sl4j log syntax.
     * Added original URI logging to exception handling cases.
+
+- [Fixed corrupted getDefaultDimensionFields after show](https://github.com/yahoo/fili/pull/897)
+    * map merge incorrectly modified source set
 
 ### Known Issues:
 

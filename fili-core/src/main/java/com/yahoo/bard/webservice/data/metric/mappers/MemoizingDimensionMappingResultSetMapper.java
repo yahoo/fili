@@ -1,4 +1,4 @@
-// Copyright 2019 Verizon Media Group
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
@@ -66,7 +66,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
 
         if (memoize) {
             entryMemo = new HashMap<>();
-            entryMapper = (entry) -> {
+            entryMapper = entry -> {
                 if (!entryMemo.containsKey(entry)) {
                     Map.Entry<DimensionColumn, DimensionRow> value = mapEntry(entry);
                     entryMemo.put(entry, value);
