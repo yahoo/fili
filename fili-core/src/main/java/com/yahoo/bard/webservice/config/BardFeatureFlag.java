@@ -8,6 +8,8 @@ package com.yahoo.bard.webservice.config;
 public enum BardFeatureFlag implements FeatureFlag {
 
     CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
+    CURRENT_TIME_ZONE_ADJUSTMENT("current_time_zone_adjustment"),
+    ADJUSTED_TIME_ZONE("adjusted_time_zone"),
 
     /** Partial Data is the old form global flag.  It will only govern behavior is the new flags are off.*/
     PARTIAL_DATA("partial_data_enabled"),

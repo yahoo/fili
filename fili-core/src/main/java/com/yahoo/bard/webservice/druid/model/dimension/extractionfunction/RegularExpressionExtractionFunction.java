@@ -84,7 +84,7 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
     @JsonProperty(value = "replaceMissingValue")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Boolean isReplaceMissingValue() {
-        return replaceValue == null ? null : true;
+        return replaceValue == null ? null : Boolean.TRUE;
     }
 
     /**
@@ -124,11 +124,14 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
         if (this == obj) { return true; }
         if (obj == null || getClass() != obj.getClass()) { return false; }
         RegularExpressionExtractionFunction other = (RegularExpressionExtractionFunction) obj;
+
+        boolean patternsMatch = (pattern == null ?
+                                    other.pattern == null
+                                : other.pattern != null
+                                    && Objects.equals(pattern.pattern(), other.pattern.pattern()));
         // CHECKSTYLE:OFF
-        return super.equals(obj) &&
-                (pattern == null ?
-                        other.pattern == null
-                        : other.pattern != null && Objects.equals(pattern.pattern(), other.pattern.pattern()))
+        return super.equals(obj)
+                && patternsMatch
                 && Objects.equals(index, other.index)
                 && Objects.equals(replaceValue, other.replaceValue);
         // CHECKSTYLE:ON

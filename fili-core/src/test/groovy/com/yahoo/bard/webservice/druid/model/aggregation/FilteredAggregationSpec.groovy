@@ -47,7 +47,7 @@ class FilteredAggregationSpec extends Specification{
     KeyValueStoreDimension genderDimension
     static MetricsFilterSetBuilder oldBuilder = FieldConverterSupplier.metricsFilterSetBuilder
 
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper()

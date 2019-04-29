@@ -27,7 +27,7 @@ public enum DefaultFilterOperation implements FilterOperation {
     between(2, "bet")
     ;
 
-    private static final Map<String, DefaultFilterOperation> ALIASES = new HashMap<>();
+    private static final Map<String, FilterOperation> GLOBAL_ALIASES = new HashMap<>();
 
     private final List<String> aliases;
     private final Integer minimumArguments;
@@ -35,9 +35,9 @@ public enum DefaultFilterOperation implements FilterOperation {
 
     static {
         for (DefaultFilterOperation op : DefaultFilterOperation.values()) {
-            ALIASES.put(op.name(), op);
+            GLOBAL_ALIASES.put(op.name(), op);
             for (String alias : op.aliases) {
-                ALIASES.put(alias, op);
+                GLOBAL_ALIASES.put(alias, op);
             }
         }
     }
@@ -94,10 +94,9 @@ public enum DefaultFilterOperation implements FilterOperation {
      * @param value  Candidate string
      *
      * @return  the filter operation if one was found
-     * @throws IllegalArgumentException if no filter operation was found
      */
-    static public DefaultFilterOperation fromString(@NotNull String value) throws IllegalArgumentException {
-        return Optional.ofNullable(ALIASES.get(value))
+    public static FilterOperation fromString(@NotNull String value) {
+        return Optional.ofNullable(GLOBAL_ALIASES.get(value))
                 .orElseThrow(() -> new IllegalArgumentException("unknown filter operation: " + value));
     }
 

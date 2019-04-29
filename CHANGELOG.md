@@ -10,9 +10,14 @@ Current
 
 ### Added:
 
+- [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
+    * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
+    * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
+    * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
+
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
-
+  
 - [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
     * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
     * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
@@ -89,6 +94,13 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
+    * Changed FilterBinder.INSTANCE from final to static with accessors
+    * Refactored FilterBinders to support chain-of-responsibility FilterFactory
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
 
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks

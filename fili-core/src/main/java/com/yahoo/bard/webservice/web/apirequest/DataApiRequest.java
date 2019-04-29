@@ -218,7 +218,7 @@ public interface DataApiRequest extends ApiRequest {
      * @param dimensionDictionary  DimensionDictionary
      *
      * @return Set of filter objects.
-     * @deprecated Use FilterBinders.INSTANCE::generateFilters as an alternative
+     * @deprecated Use FilterBinders.getInstance()::generateFilters as an alternative
      */
     @Deprecated
     Map<Dimension, Set<ApiFilter>> generateFilters(
