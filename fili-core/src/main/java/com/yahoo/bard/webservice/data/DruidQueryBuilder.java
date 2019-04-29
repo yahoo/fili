@@ -439,12 +439,12 @@ public class DruidQueryBuilder {
     }
 
     protected ApiFilters mergeTableAndRequestFilters(ApiFilters tableFilters, ApiFilters requestFilters) {
-        ApiFilters result = new ApiFilters();
+        ApiFilters result = new ApiFilters(requestFilters);
         tableFilters.forEach(
                 (dim, value) -> {
                     Set<ApiFilter> filters = new HashSet<>(value);
-                    if (requestFilters.containsKey(dim)) {
-                        filters.addAll(requestFilters.get(dim));
+                    if (result.containsKey(dim)) {
+                        filters.addAll(result.get(dim));
                     }
                     result.put(dim, filters);
                 }
