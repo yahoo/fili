@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 
@@ -59,8 +60,8 @@ public interface LogicalTableName extends TableName {
      *
      * @return the list of ApiFilters on this logical table.
      */
-    default List<ApiFilter> getTableFilters() {
-        return new ArrayList<>();
+    default ApiFilters getTableFilters() {
+        return new ApiFilters();
     }
 
     /**

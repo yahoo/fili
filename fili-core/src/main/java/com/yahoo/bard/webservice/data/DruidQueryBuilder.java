@@ -137,13 +137,10 @@ public class DruidQueryBuilder {
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
-        ApiFilters apiFilters = new ApiFilters(request.getApiFilters());
-        logicalTable.getFilters().forEach(
-                apiFilter -> {
-                    Set<ApiFilter> existingFilters = apiFilters.getOrDefault(apiFilter.getDimension(), new HashSet<>());
-                    existingFilters.add(apiFilter);
-                    apiFilters.put(apiFilter.getDimension(), existingFilters);
-                }
+        // combine the filters on the requested logical table with the api query filters
+        ApiFilters apiFilters = mergeTableAndRequestFilters(
+                logicalTable.getFilters(),
+                new ApiFilters(request.getApiFilters())
         );
 
         Filter filter = druidFilterBuilder.buildFilters(apiFilters);
@@ -439,5 +436,19 @@ public class DruidQueryBuilder {
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&
                 apiRequest.getHavings().isEmpty();
+    }
+
+    protected ApiFilters mergeTableAndRequestFilters(ApiFilters tableFilters, ApiFilters requestFilters) {
+        ApiFilters result = new ApiFilters();
+        tableFilters.forEach(
+                (dim, value) -> {
+                    Set<ApiFilter> filters = new HashSet<>(value);
+                    if (requestFilters.containsKey(dim)) {
+                        filters.addAll(requestFilters.get(dim));
+                    }
+                    result.put(dim, filters);
+                }
+        );
+        return result;
     }
 }

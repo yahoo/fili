@@ -8,11 +8,11 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +37,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     private ReadablePeriod retention;
     private String description;
 
-    private List<ApiFilter> viewFilters;
+    private ApiFilters viewFilters;
 
     // parameter used by the compare to method
     private String comparableParam;
@@ -127,7 +127,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 description,
                 tableGroup,
                 new LogicalTableSchema(tableGroup, granularity, metricDictionary),
-                new ArrayList<>()
+                new ApiFilters()
         );
     }
 
@@ -153,7 +153,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             String description,
             TableGroup tableGroup,
             MetricDictionary metricDictionary,
-            List<ApiFilter> viewFilters
+            ApiFilters viewFilters
     ) {
         this(
                 name,
@@ -193,7 +193,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             TableGroup tableGroup,
             LogicalTableSchema schema
     ) {
-        this(name, category, longName, granularity, retention, description, tableGroup, schema, new ArrayList<>());
+        this(name, category, longName, granularity, retention, description, tableGroup, schema, new ApiFilters());
     }
 
     /**
@@ -219,7 +219,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             String description,
             TableGroup tableGroup,
             LogicalTableSchema schema,
-            List<ApiFilter> viewFilters
+            ApiFilters viewFilters
     ) {
         this.name = name;
         this.tableGroup = tableGroup;
@@ -267,9 +267,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         return schema.getGranularity();
     }
 
-    public List<ApiFilter> getFilters() {
-        // defensive copy
-        return new ArrayList<>(viewFilters);
+    public ApiFilters getFilters() {
+        return viewFilters;
     }
 
     @Override
@@ -280,5 +279,47 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     @Override
     public LogicalTableSchema getSchema() {
         return schema;
+    }
+
+    public LogicalTable copyWithLogicalTableName(LogicalTableName logicalTableName) {
+        return new LogicalTable(
+                logicalTableName.asName(),
+                logicalTableName.getCategory(),
+                logicalTableName.getLongName(),
+                getGranularity(),
+                logicalTableName.getRetention().orElse(DEFAULT_RETENTION),
+                logicalTableName.getDescription(),
+                getTableGroup(),
+                getSchema(),
+                getFilters()
+        );
+    }
+
+    public LogicalTable withSchema(LogicalTableSchema newSchema) {
+        return new LogicalTable(
+                getName(),
+                getCategory(),
+                getLongName(),
+                getGranularity(),
+                getRetention(),
+                getDescription(),
+                getTableGroup(),
+                newSchema,
+                getFilters()
+        );
+    }
+
+    public LogicalTable withViewFilters(ApiFilters newFilters) {
+        return new LogicalTable(
+                getName(),
+                getCategory(),
+                getLongName(),
+                getGranularity(),
+                getRetention(),
+                getDescription(),
+                getTableGroup(),
+                getSchema(),
+                newFilters
+        );
     }
 }
