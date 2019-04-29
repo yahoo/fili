@@ -1,6 +1,6 @@
 // Copyright 2019 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package groovy.com.yahoo.bard.webservice.web.apirequest.binders
+package com.yahoo.bard.webservice.web.apirequest.binders
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
