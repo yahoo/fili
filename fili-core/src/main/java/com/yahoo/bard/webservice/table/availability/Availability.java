@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
+import static org.joda.time.DateTimeZone.UTC;
+
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -19,9 +21,9 @@ import java.util.Set;
 public interface Availability {
 
     // 9999-12-31 23:59
-    DateTime FAR_FUTURE = new DateTime(9999, 12, 31, 23, 59);
+    DateTime FAR_FUTURE = new DateTime(9999, 12, 31, 23, 59, UTC);
     // 0000-01-01 00:00
-    DateTime DISTANT_PAST = new DateTime(-9999, 1, 1, 0, 0);
+    DateTime DISTANT_PAST = new DateTime(-9999, 1, 1, 0, 0, UTC);
 
     /**
      * The names of the data sources backing this availability.

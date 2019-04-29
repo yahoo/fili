@@ -53,6 +53,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -108,7 +109,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final int topN;
     private final DateTimeZone timeZone;
 
-    protected FilterGenerator filterGenerator = FilterBinders.INSTANCE::generateFilters;
+    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
@@ -1026,9 +1027,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
-            DateTime adjustedNow = new DateTime();
+        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
+        DateTime adjustedNow = new DateTime();
+
+        if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
+            adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
+            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
+        } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
@@ -1315,10 +1320,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     .collect(Collectors.toMap(
                             pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) -> {
-                                e.addAll(i);
-                                return e;
-                            },
+                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
+                                    StreamUtils.orderedSetMerge(e, i),
                             LinkedHashMap::new
                     ));
         }
@@ -1669,7 +1672,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      */
     @Deprecated
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.INSTANCE::generateFilters;
+        return FilterBinders.getInstance()::generateFilters;
     }
 
     // CHECKSTYLE:OFF
@@ -1723,6 +1726,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, Optional.ofNullable(dateTimeSort), timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
     }
 
+    @Override
     @Deprecated
     public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
         return withIntervals(new ArrayList<>(intervals));

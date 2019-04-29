@@ -147,7 +147,6 @@
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
         
         <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
-        <jacoco.args></jacoco.args>
     </properties>
 
     <dependencyManagement>
@@ -646,7 +645,7 @@
                     <configuration>
                         <forkCount>1</forkCount>
                         <reuseForks>true</reuseForks>
-                        <argLine>@{jacoco.args} -Xmx3G</argLine>
+                        <argLine>${jacoco.args} -Xmx3G</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
@@ -1024,12 +1023,12 @@
             <id>sonar</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
-                <property>
-                    <name>env.SONAR_TOKEN</name>
-                </property>
             </activation>
             <properties>
-                <sonar.login>${env.SONAR_TOKEN}</sonar.login>
+                <sonar.java.spotbugs.reportPaths>target/spotbugs.xml</sonar.java.spotbugs.reportPaths>
+                <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
+                <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
+                <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
             </properties>
             <build>
                 <pluginManagement>
@@ -1043,5 +1042,13 @@
                 </pluginManagement>
             </build>
         </profile>
+        <profile>
+            <id>Jacoco Off</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                    <jacoco.args></jacoco.args>
+            </properties>
+        </profile>
+
     </profiles>
 </project>

@@ -43,7 +43,7 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
     LogicalTable animalTable
     DimensionDictionary spaceIdDictionary
 
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         childSetupSpec()
