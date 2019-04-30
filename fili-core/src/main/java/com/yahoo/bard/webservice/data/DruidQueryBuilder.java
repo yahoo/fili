@@ -138,7 +138,7 @@ public class DruidQueryBuilder {
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
         // combine the filters on the requested logical table with the api query filters
-        ApiFilters apiFilters = mergeTableAndRequestFilters(
+        ApiFilters apiFilters = ApiFilters.merge(
                 logicalTable.getFilters(),
                 new ApiFilters(request.getApiFilters())
         );
@@ -436,19 +436,5 @@ public class DruidQueryBuilder {
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&
                 apiRequest.getHavings().isEmpty();
-    }
-
-    protected ApiFilters mergeTableAndRequestFilters(ApiFilters tableFilters, ApiFilters requestFilters) {
-        ApiFilters result = new ApiFilters(requestFilters);
-        tableFilters.forEach(
-                (dim, value) -> {
-                    Set<ApiFilter> filters = new HashSet<>(value);
-                    if (result.containsKey(dim)) {
-                        filters.addAll(result.get(dim));
-                    }
-                    result.put(dim, filters);
-                }
-        );
-        return result;
     }
 }

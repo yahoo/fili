@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -138,7 +139,10 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         intervals = Collections.emptyList();
         dimensions = new LinkedHashSet<>();
         logicalMetrics = new LinkedHashSet<>();
-        apiFilters = new ApiFilters(Collections.emptyMap());
+        apiFilters = this.tables.stream()
+                .map(LogicalTable::getFilters)
+                .reduce(ApiFilters::merge)
+                .orElseGet(ApiFilters::new);
 
         LOG.debug(
                 "Api request: Tables: {},\nGranularity: {},\nFormat: {},\nFilename: {},\nPagination: {}" +
@@ -289,7 +293,13 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.apiFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
+        this.apiFilters = Stream.concat(
+                Stream.of(getFilterGenerator().generate(filters, table, dimensionDictionary)),
+                tables.stream().map(LogicalTable::getFilters)
+        )
+                .reduce(ApiFilters::merge)
+                .orElseGet(ApiFilters::new);
+
         validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
@@ -320,7 +330,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     /**
      * Get a filter generator binder for writing ApiFilters.
      *
-     * @return  An implementation of FilterGenerator.
+     * @return An implementation of FilterGenerator.
      */
     protected FilterGenerator getFilterGenerator() {
         return FilterBinders.getInstance()::generateFilters;
@@ -389,7 +399,12 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.dimensions = dimensions;
         this.logicalMetrics = metrics;
         this.intervals = intervals;
-        this.apiFilters = filters;
+        this.apiFilters = Stream.concat(
+                Stream.of(filters),
+                tables.stream().map(LogicalTable::getFilters)
+        )
+                .reduce(ApiFilters::merge)
+                .orElseGet(ApiFilters::new);
     }
 
     /**
@@ -553,6 +568,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     public TablesApiRequest withIntervals(Set<Interval> intervals) {
             return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, new ArrayList<>(intervals), apiFilters);
     }
+
     @Override
     public TablesApiRequest withIntervals(List<Interval> intervals) {
         return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);

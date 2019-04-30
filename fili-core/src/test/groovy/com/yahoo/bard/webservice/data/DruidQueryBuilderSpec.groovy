@@ -529,40 +529,4 @@ public class DruidQueryBuilderSpec extends Specification {
         DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | "groupBy"
         DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | "groupBy"
     }
-
-    def "Request api filters and table api filters are merged properly"() {
-        setup:
-        Dimension dim1 = Mock()
-        Dimension dim2 = Mock()
-        Dimension dim3 = Mock()
-
-        ApiFilter t_dim2_filter1 = Mock()
-        ApiFilter t_dim3_filter1 = Mock()
-        ApiFilter r_dim1_filter1 = Mock()
-        ApiFilter r_dim2_filter1 = Mock()
-        ApiFilter r_dim2_filter2 = Mock()
-
-        ApiFilters tableFilters = new ApiFilters(
-                [
-                        (dim2) : [t_dim2_filter1] as Set,
-                        (dim3) : [t_dim3_filter1] as Set
-                ] as Map
-        )
-
-        ApiFilters requestFilters = new ApiFilters(
-                [
-                        (dim1) : [r_dim1_filter1] as Set,
-                        (dim2) : [r_dim2_filter1, r_dim2_filter2] as Set
-                ] as Map
-        )
-
-        expect:
-        builder.mergeTableAndRequestFilters(tableFilters, requestFilters) == new ApiFilters(
-                [
-                        (dim1) : [r_dim1_filter1] as Set,
-                        (dim2) : [r_dim2_filter1, r_dim2_filter2, t_dim2_filter1] as Set,
-                        (dim3) : [t_dim3_filter1] as Set
-                ] as Map
-        )
-    }
 }
