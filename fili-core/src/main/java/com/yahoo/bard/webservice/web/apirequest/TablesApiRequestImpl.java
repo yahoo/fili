@@ -297,8 +297,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                 Stream.of(getFilterGenerator().generate(filters, table, dimensionDictionary)),
                 tables.stream().map(LogicalTable::getFilters)
         )
-                .reduce(ApiFilters::merge)
-                .orElseGet(ApiFilters::new);
+                .reduce(new ApiFilters(), ApiFilters::merge);
 
         validateRequestDimensions(getFilterDimensions(), this.table);
 
@@ -403,8 +402,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                 Stream.of(filters),
                 tables.stream().map(LogicalTable::getFilters)
         )
-                .reduce(ApiFilters::merge)
-                .orElseGet(ApiFilters::new);
+                .reduce(new ApiFilters(), ApiFilters::merge);
     }
 
     /**

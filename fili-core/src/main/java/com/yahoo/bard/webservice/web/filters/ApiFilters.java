@@ -30,6 +30,29 @@ public class ApiFilters extends LinkedHashMap<Dimension, Set<ApiFilter>> {
         super(filters);
     }
 
+    /**
+     * Merges two ApiFilters.
+     *
+     * e.g.
+     * ApiFilters f1 = {
+     *      dim1: [apiFilter1, apiFilter2]
+     *      dim2: [apiFilter3]
+     * }
+     * ApiFilters f2 = {
+     *      dim2: [apiFilter3, apiFilter4]
+     *      dim3: [apiFilter5]
+     * }
+     *
+     * result = {
+     *      dim1: [apiFilter1, apiFilter2]
+     *      dim2: [apiFilter3, apiFilter4]
+     *      dim3: [apiFilter5]
+     * }
+     *
+     * @param f1  One of the ApiFilters object to be merged
+     * @param f2  The other ApiFilters object to be merged
+     * @return the result of merging the two ApiFilters objects
+     */
     public static ApiFilters merge(ApiFilters f1, ApiFilters f2) {
         ApiFilters result = new ApiFilters(f1);
         f2.forEach(
@@ -44,4 +67,3 @@ public class ApiFilters extends LinkedHashMap<Dimension, Set<ApiFilter>> {
         return result;
     }
 }
-

@@ -3,13 +3,10 @@
 package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 

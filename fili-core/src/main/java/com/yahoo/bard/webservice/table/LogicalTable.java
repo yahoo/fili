@@ -7,14 +7,12 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -143,6 +141,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
+     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table. These
+     * filters, along with the schema, are used to make this logical table into a view on its backing table group.
      */
     public LogicalTable(
             @NotNull String name,
@@ -279,47 +279,5 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     @Override
     public LogicalTableSchema getSchema() {
         return schema;
-    }
-
-    public LogicalTable copyWithLogicalTableName(LogicalTableName logicalTableName) {
-        return new LogicalTable(
-                logicalTableName.asName(),
-                logicalTableName.getCategory(),
-                logicalTableName.getLongName(),
-                getGranularity(),
-                logicalTableName.getRetention().orElse(DEFAULT_RETENTION),
-                logicalTableName.getDescription(),
-                getTableGroup(),
-                getSchema(),
-                getFilters()
-        );
-    }
-
-    public LogicalTable withSchema(LogicalTableSchema newSchema) {
-        return new LogicalTable(
-                getName(),
-                getCategory(),
-                getLongName(),
-                getGranularity(),
-                getRetention(),
-                getDescription(),
-                getTableGroup(),
-                newSchema,
-                getFilters()
-        );
-    }
-
-    public LogicalTable withViewFilters(ApiFilters newFilters) {
-        return new LogicalTable(
-                getName(),
-                getCategory(),
-                getLongName(),
-                getGranularity(),
-                getRetention(),
-                getDescription(),
-                getTableGroup(),
-                getSchema(),
-                newFilters
-        );
     }
 }

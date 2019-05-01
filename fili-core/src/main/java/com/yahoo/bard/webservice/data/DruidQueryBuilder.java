@@ -32,7 +32,6 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
@@ -41,10 +40,8 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -140,7 +137,7 @@ public class DruidQueryBuilder {
         // combine the filters on the requested logical table with the api query filters
         ApiFilters apiFilters = ApiFilters.merge(
                 logicalTable.getFilters(),
-                new ApiFilters(request.getApiFilters())
+                request.getApiFilters()
         );
 
         Filter filter = druidFilterBuilder.buildFilters(apiFilters);
