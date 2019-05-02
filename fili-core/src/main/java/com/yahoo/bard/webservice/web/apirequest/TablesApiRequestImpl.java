@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -133,10 +132,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         } else {
             this.table = null;
             this.granularity = null;
-            this.apiFilters = this.tables.stream()
-                    .map(LogicalTable::getFilters)
-                    .reduce(ApiFilters::merge)
-                    .orElseGet(ApiFilters::new);
+            this.apiFilters = null;
         }
 
         intervals = Collections.emptyList();
@@ -291,7 +287,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.apiFilters = ApiFilters.merge(
+        this.apiFilters = ApiFilters.union(
                 getFilterGenerator().generate(filters, table, dimensionDictionary),
                 this.table.getFilters()
         );
@@ -394,9 +390,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.dimensions = dimensions;
         this.logicalMetrics = metrics;
         this.intervals = intervals;
-        if (this.table != null) {
-            this.apiFilters = ApiFilters.merge(filters, table.getFilters());
-        }
+        this.apiFilters = ApiFilters.union(filters, table.getFilters());
     }
 
     /**
@@ -473,17 +467,6 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             LOG.trace("Generated set of logical metric: {}", generated);
             return generated;
         }
-    }
-
-    protected ApiFilters mergeRequestAndLogicalTableFilters(
-            ApiFilters requestFilters,
-            LinkedHashSet<LogicalTable> logicalTables
-    ) {
-        return Stream.concat(
-                Stream.of(requestFilters),
-                logicalTables.stream().map(LogicalTable::getFilters)
-        )
-                .reduce(new ApiFilters(), ApiFilters::merge);
     }
 
     @Override

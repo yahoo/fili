@@ -135,7 +135,7 @@ public class DruidQueryBuilder {
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
         // combine the filters on the requested logical table with the api query filters
-        ApiFilters apiFilters = ApiFilters.merge(
+        ApiFilters apiFilters = ApiFilters.union(
                 logicalTable.getFilters(),
                 request.getApiFilters()
         );

@@ -34,7 +34,7 @@ class ApiFiltersSpec extends Specification {
         )
 
         expect:
-        ApiFilters.merge(apiFilters1, apiFilters2) == new ApiFilters(
+        ApiFilters.union(apiFilters1, apiFilters2) == new ApiFilters(
                 [
                         (dim1) : [f2_dim1_filter1] as Set,
                         (dim2) : [f2_dim2_filter1, f2_dim2_filter2, f1_dim2_filter1] as Set,

@@ -53,7 +53,7 @@ public class ApiFilters extends LinkedHashMap<Dimension, Set<ApiFilter>> {
      * @param f2  The other ApiFilters object to be merged
      * @return the result of merging the two ApiFilters objects
      */
-    public static ApiFilters merge(ApiFilters f1, ApiFilters f2) {
+    public static ApiFilters union(ApiFilters f1, ApiFilters f2) {
         ApiFilters result = new ApiFilters(f1);
         f2.forEach(
                 (dim, value) -> {

@@ -6,14 +6,19 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.PaginationParameters
@@ -23,6 +28,8 @@ import org.joda.time.Interval
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import javax.ws.rs.core.PathSegment
 
 class TablesApiRequestImplSpec extends Specification {
 
@@ -136,49 +143,112 @@ class TablesApiRequestImplSpec extends Specification {
 
     def "test request api filters and logical tables filters are properly merged"() {
         setup:
-        Dimension dim1 = Mock()
-        Dimension dim2 = Mock()
-        Dimension dim3 = Mock()
+        // prep dimensions and dimension dictionary
+        DimensionField dim1Field = Mock()
+        Dimension dim1 = Mock() {
+            getApiName() >> "dim1"
+            getFieldByName(_ as String) >> { _ -> dim1Field}
+        }
+        DimensionField dim2Field = Mock()
+        Dimension dim2 = Mock() {
+            getApiName() >> "dim2"
+            getFieldByName(_ as String) >> { _ -> dim2Field}
+        }
+        Dimension dim3 = Mock() { getApiName() >> "dim3" }
 
-        ApiFilter r_dim1_filter1 = Mock()
-        ApiFilter r_dim2_filter1 = Mock()
+        DimensionDictionary dimensionDictionary = new DimensionDictionary([dim1, dim2, dim3] as Set)
+
+        // prep logical tables
+        LogicalTable t1 = Mock(LogicalTable) {
+            getName() >> "table1"
+            getGranularity() >> DAY
+            getDimensions() >> [dim1, dim2, dim3]
+            getLogicalMetrics() >> []
+        }
+
+        LogicalTable t2 = Mock(LogicalTable) {
+            getName() >> "table2"
+            getGranularity() >> DAY
+        }
+        LogicalTableDictionary logicalDictionary = new LogicalTableDictionary()
+        logicalDictionary.put(new TableIdentifier(t1), t1)
+        logicalDictionary.put(new TableIdentifier(t2), t2)
+
+        // Prep tables servlet (bard config resources)
+        tablesServlet.getDimensionDictionary() >> dimensionDictionary
+        tablesServlet.getLogicalTableDictionary() >> logicalDictionary
+        tablesServlet.getMetricDictionary() >> new MetricDictionary()
+
+        // Setup api filters that will be tested
+        ApiFilter r_dim1_filter1 = FilterBinders.getInstance().generateApiFilter("dim1|unused-in[val]", dimensionDictionary)
+        ApiFilter r_dim2_filter1 = FilterBinders.getInstance().generateApiFilter("dim2|unused-in[val]", dimensionDictionary)
         ApiFilter t1_dim2_filter1 = r_dim2_filter1
         ApiFilter t1_dim2_filter2 = Mock()
+        ApiFilter t1_dim3_filter1 = Mock()
         ApiFilter t2_dim3_filter1 = Mock()
-
-        ApiFilters requestFilters = new ApiFilters(
-                [
-                        (dim1) : [r_dim1_filter1] as Set,
-                        (dim2) : [r_dim2_filter1] as Set
-                ] as Map
-        )
 
         ApiFilters tableFilters_1 = new ApiFilters(
                 [
                         (dim2) : [t1_dim2_filter1, t1_dim2_filter2] as Set,
+                        (dim3) : [t1_dim3_filter1] as Set,
                 ] as Map
         )
-        LogicalTable t1 = Mock(LogicalTable) {getFilters() >> tableFilters_1}
+        t1.getFilters() >> tableFilters_1
 
+        // note: these should never be used. They are defined here to ensure we are not accidentally adding filters from logical tables that are NOT part of the query
         ApiFilters tableFilters_2 = new ApiFilters(
                 [
                         (dim3) : [t2_dim3_filter1] as Set,
                 ] as Map
         )
-        LogicalTable t2 = Mock(LogicalTable) {getFilters() >> tableFilters_2}
+        t2.getFilters() >> tableFilters_2
 
-        expect:
+
+        when: "create TARI with basic constructor"
         TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
-                null, // ResponseFormatType
-                null, // downloadFilename
-                null, // paginationParameters,
-                [t1, t2] as LinkedHashSet,
-                LogicalTable table,
-                Granularity granularity,
-                LinkedHashSet<Dimension> dimensions,
-                LinkedHashSet<LogicalMetric> metrics,
-                List<Interval> intervals,
-                ApiFilters filters
+                "table1",  // tableName
+                "day",  // granularity
+                null,  // format
+                "",  // per page
+                "",  // page
+                tablesServlet
+        )
+
+        then: "TARI api filters are the filters on the target logical table"
+        tablesApiRequestImpl.getApiFilters() == new ApiFilters(
+                [
+                        (dim2) : [t1_dim2_filter1, t1_dim2_filter2] as Set,
+                        (dim3) : [t1_dim3_filter1] as Set,
+                ] as Map
+        )
+
+        when: "create TARI using complex constructor"
+        tablesApiRequestImpl = new TablesApiRequestImpl(
+                "table1",  // tableName
+                "day",  // granularity
+                null,  // format
+                "",  // downloadFilename
+                "",  // per page
+                "",  // page
+                tablesServlet,
+                [
+                        Mock(PathSegment) {getPath() >> "dim1"},
+                        Mock(PathSegment) {getPath() >> "dim2"},
+                        Mock(PathSegment) {getPath() >> "dim3"},
+                ] as List, // dimensions
+                "", // metrics
+                "current/P1D", // intervals
+                "dim1|unused-in[val],dim2|unused-in[val]", // filters
+                "UTC" // time zone id
+        )
+
+        then: "TARI filters are a union of target table filters and api request"
+        tablesApiRequestImpl.getApiFilters() == new ApiFilters(
+                [
+                        (dim1) : [r_dim1_filter1] as Set,
+                        (dim2) : [t1_dim2_filter1, t1_dim2_filter2, r_dim2_filter1] as Set,
+                        (dim3) : [t1_dim3_filter1] as Set,
+                ] as Map
         )
     }
 }
