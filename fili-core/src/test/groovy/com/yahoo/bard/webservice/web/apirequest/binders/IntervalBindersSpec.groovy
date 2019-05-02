@@ -1,10 +1,11 @@
 // Copyright 2019 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package groovy.com.yahoo.bard.webservice.web.apirequest.binders
+package com.yahoo.bard.webservice.web.apirequest.binders
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders
+
 import org.joda.time.DateTime
 
 import spock.lang.Specification
@@ -15,11 +16,11 @@ class IntervalBindersSpec extends Specification {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
 
     @Unroll
-    def "Test adjustmet of server time when #description"() {
+    def "Test adjustment of server time when #description"() {
 
         when:
 
-        SYSTEM_CONFIG.setProperty("adjusted_time_zone",zone)
+        SYSTEM_CONFIG.setProperty("bard__adjusted_time_zone",zone)
         DateTime adjustedNow = IntervalBinders.getAdjustedTime(new DateTime(serverTime))
 
         then:
