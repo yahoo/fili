@@ -5,13 +5,20 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
+import com.yahoo.bard.webservice.web.filters.ApiFilters
+import com.yahoo.bard.webservice.web.util.PaginationParameters
+
+import org.joda.time.Interval
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -125,5 +132,53 @@ class TablesApiRequestImplSpec extends Specification {
         "beasts" | "day"     | fullDictionary  | BadApiRequestException | ".*Table name.*does not exist.*"
         "pets"   | "century" | fullDictionary  | BadApiRequestException | ".*not a valid granularity.*"
         "pets"   | "hour"    | fullDictionary  | BadApiRequestException | "Invalid pair of granularity .* and table.*"
+    }
+
+    def "test request api filters and logical tables filters are properly merged"() {
+        setup:
+        Dimension dim1 = Mock()
+        Dimension dim2 = Mock()
+        Dimension dim3 = Mock()
+
+        ApiFilter r_dim1_filter1 = Mock()
+        ApiFilter r_dim2_filter1 = Mock()
+        ApiFilter t1_dim2_filter1 = r_dim2_filter1
+        ApiFilter t1_dim2_filter2 = Mock()
+        ApiFilter t2_dim3_filter1 = Mock()
+
+        ApiFilters requestFilters = new ApiFilters(
+                [
+                        (dim1) : [r_dim1_filter1] as Set,
+                        (dim2) : [r_dim2_filter1] as Set
+                ] as Map
+        )
+
+        ApiFilters tableFilters_1 = new ApiFilters(
+                [
+                        (dim2) : [t1_dim2_filter1, t1_dim2_filter2] as Set,
+                ] as Map
+        )
+        LogicalTable t1 = Mock(LogicalTable) {getFilters() >> tableFilters_1}
+
+        ApiFilters tableFilters_2 = new ApiFilters(
+                [
+                        (dim3) : [t2_dim3_filter1] as Set,
+                ] as Map
+        )
+        LogicalTable t2 = Mock(LogicalTable) {getFilters() >> tableFilters_2}
+
+        expect:
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+                null, // ResponseFormatType
+                null, // downloadFilename
+                null, // paginationParameters,
+                [t1, t2] as LinkedHashSet,
+                LogicalTable table,
+                Granularity granularity,
+                LinkedHashSet<Dimension> dimensions,
+                LinkedHashSet<LogicalMetric> metrics,
+                List<Interval> intervals,
+                ApiFilters filters
+        )
     }
 }
