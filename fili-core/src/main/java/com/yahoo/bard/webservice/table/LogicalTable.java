@@ -97,49 +97,14 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 name.getRetention().orElse(null),
                 name.getDescription(),
                 tableGroup,
-                metricDictionary,
-                null
+                metricDictionary
         );
     }
 
     /**
      * Constructor.
      *
-     * Uses the LogicalTableName interface to package metadata.
-     *
-     * Defaults to TableGroup for schema.
-     *
-     * @param name  The logical table name
-     * @param granularity  The logical table time grain
-     * @param tableGroup  The tablegroup for the logical table
-     * @param metricDictionary  The metric dictionary to bind tableGroup's metrics
-     * @param viewFilters  A collection of filter predicates that will be attached to any API query sent to this
-     * LogicalTable.
-     */
-    public LogicalTable(
-            @NotNull LogicalTableName name,
-            @NotNull Granularity granularity,
-            TableGroup tableGroup,
-            MetricDictionary metricDictionary,
-            ApiFilters viewFilters
-    ) {
-        this(
-                name.asName(),
-                name.getCategory(),
-                name.getLongName(),
-                granularity,
-                name.getRetention().orElse(null),
-                name.getDescription(),
-                tableGroup,
-                metricDictionary,
-                null
-        );
-    }
-
-    /**
-     * Constructor.
-     *
-     * Defaults to the TableGroup schema and no ApiFilters.
+     * Defaults to the TableGroup schema.
      *
      * @param name  The logical table name
      * @param category  The category of the logical table
@@ -170,79 +135,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 description,
                 tableGroup,
                 new LogicalTableSchema(tableGroup, granularity, metricDictionary),
-                null
+                tableGroup.getApiFilters()
         );
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * Defaults to the TableGroup schema.
-     *
-     * @param name  The logical table name
-     * @param category  The category of the logical table
-     * @param longName  The long name of the logical table
-     * @param granularity  The logical table time grain
-     * @param retention  The period the data in the logical table is retained for
-     * @param description  The description for this logical table
-     * @param tableGroup  The tablegroup for the logical table
-     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
-     * @param viewFilters  A collection of filter predicates that will be attached to any API query sent to this
-     * LogicalTable.
-     */
-    public LogicalTable(
-            @NotNull String name,
-            String category,
-            String longName,
-            @NotNull Granularity granularity,
-            ReadablePeriod retention,
-            String description,
-            TableGroup tableGroup,
-            MetricDictionary metricDictionary,
-            ApiFilters viewFilters
-    ) {
-        this(
-                name,
-                category,
-                longName,
-                granularity,
-                retention,
-                description,
-                tableGroup,
-                new LogicalTableSchema(tableGroup, granularity, metricDictionary),
-                viewFilters
-        );
-    }
-
-    /**
-     * Copy Constructor.
-     *
-     * Defaults to no ApiFilters.
-     *
-     * @param name  The logical table name
-     * @param category  The category of the logical table
-     * @param longName  The long name of the logical table
-     * @param granularity  The logical table time grain
-     * @param retention  The period the data in the logical table is retained for
-     * @param description  The description for this logical table
-     * @param tableGroup  The table group for the logical table
-     * @param schema The LogicalTableSchema backing this LogicalTable
-     *
-     * @deprecated prefer constructor with viewFilters param
-     */
-    @Deprecated
-    protected LogicalTable(
-            @NotNull String name,
-            String category,
-            String longName,
-            @NotNull Granularity granularity,
-            ReadablePeriod retention,
-            String description,
-            TableGroup tableGroup,
-            LogicalTableSchema schema
-    ) {
-        this(name, category, longName, granularity, retention, description, tableGroup, schema, null);
     }
 
     /**

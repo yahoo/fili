@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.table;
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -24,10 +25,36 @@ public class TableGroup {
     private final LinkedHashSet<Dimension> dimensions;
     private final Set<ApiMetricName> apiMetricNames;
 
+    private final ApiFilters apiFilters;
+
     /**
      * Builds a TableGroup.
      * A TableGroup contains the dimensions, metrics, and backing physical tables intended to be attached to a
      * LogicalTable.
+     *
+     * @param tables  The backing physical tables
+     * @param apiMetricNames  The metric names for a LogicalTable
+     * @param dimensions  The dimensions for a LogicalTable
+     * @param apiFilters  A collection of ApiFilters to apply to the rows on this table group
+     */
+    public TableGroup(
+            LinkedHashSet<PhysicalTable> tables,
+            Set<ApiMetricName> apiMetricNames,
+            Set<Dimension> dimensions,
+            ApiFilters apiFilters
+    ) {
+        this.tables = tables;
+        this.apiMetricNames = apiMetricNames;
+        this.dimensions = new LinkedHashSet<>(dimensions);
+        this.apiFilters = apiFilters;
+    }
+
+    /**
+     * Builds a TableGroup.
+     * A TableGroup contains the dimensions, metrics, and backing physical tables intended to be attached to a
+     * LogicalTable.
+     *
+     * Default ApiFilters to no filters (null).
      *
      * @param tables  The backing physical tables
      * @param apiMetricNames  The metric names for a LogicalTable
@@ -38,17 +65,16 @@ public class TableGroup {
             Set<ApiMetricName> apiMetricNames,
             Set<Dimension> dimensions
     ) {
-        this.tables = tables;
-        this.apiMetricNames = apiMetricNames;
-        this.dimensions = new LinkedHashSet<>(dimensions);
+        this(tables, apiMetricNames, dimensions, null);
     }
+
 
     /**
      * Getter for set of physical tables.
      *
      * @return physicalTableSchema
      */
-    public Set<PhysicalTable> getPhysicalTables() {
+    public LinkedHashSet<PhysicalTable> getPhysicalTables() {
         return this.tables;
     }
 
@@ -59,6 +85,15 @@ public class TableGroup {
      */
     public Set<Dimension> getDimensions() {
         return dimensions;
+    }
+
+    /**
+     * Getter the row filtering ApiFilters for this table.
+     *
+     * @return apiFilters, null if no filters
+     */
+    public ApiFilters getApiFilters() {
+        return apiFilters;
     }
 
     @Override

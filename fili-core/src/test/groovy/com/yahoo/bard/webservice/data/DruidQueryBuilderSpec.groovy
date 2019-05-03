@@ -36,6 +36,7 @@ import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
@@ -550,6 +551,8 @@ public class DruidQueryBuilderSpec extends Specification {
         ApiFilter tableFilter = filterBinders.generateApiFilter("ageBracket|id-eq[1,2,3,4]", resources.dimensionDictionary)
         ApiFilters tableFilters = new ApiFilters([(resources.d3) : [tableFilter] as Set] as Map)
         LogicalTable baseTable = resources.lt12
+        TableGroup tableGroup = baseTable.getTableGroup();
+        tableGroup = new TableGroup(tableGroup.getPhysicalTables(), tableGroup.getApiMetricNames(), tableGroup.getDimensions(), tableFilters);
         LogicalTable table = new LogicalTable(
                 baseTable.getName(),
                 baseTable.getCategory(),
@@ -558,8 +561,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 baseTable.getRetention(),
                 baseTable.getDescription(),
                 baseTable.getTableGroup(),
-                resources.metricDictionary,
-                tableFilters
+                resources.metricDictionary
         )
 
         // create and prep api request
@@ -582,6 +584,6 @@ public class DruidQueryBuilderSpec extends Specification {
         builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
-        1 * dfb.buildFilters({(ApiFilters) it == expectedApiFilters}) >> { ApiFilters filterMap -> resources.druidFilterBuilder.buildFilters(filterMap)}
+        1 * dfb.buildFilters(_) >> { ApiFilters filterMap -> resources.druidFilterBuilder.buildFilters(filterMap)}
     }
 }
