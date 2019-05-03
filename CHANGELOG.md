@@ -15,6 +15,7 @@ Current
     by restricting access to only a subset of the data present on the logical table.
     * These filters are merged with `ApiFilters` from the api request during druid query building and on the
     `TablesApiRequestImpl` for requests to the tables servlet.
+    * Small Patch: ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
 
 - [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
     * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
@@ -100,9 +101,6 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
-
-- [Tweaking ApiFilters on LogicalTable to use Optional](https://github.com/yahoo/fili/issues/902)
-    * ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
 
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
