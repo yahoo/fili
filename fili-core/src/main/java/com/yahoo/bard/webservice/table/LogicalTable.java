@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;
@@ -34,6 +35,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     private ReadablePeriod retention;
     private String description;
 
+    private ApiFilters viewFilters;
+
     // parameter used by the compare to method
     private String comparableParam;
 
@@ -46,14 +49,17 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param granularity  The logical table granularity
      * @param tableGroup  The tablegroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
+     *
+     * @deprecated prefer constructor that uses the LogicalTableName class
      */
+    @Deprecated
     public LogicalTable(
             @NotNull String name,
             @NotNull Granularity granularity,
             TableGroup tableGroup,
             MetricDictionary metricDictionary
     ) {
-        this(name, DEFAULT_CATEGORY, name, granularity, DEFAULT_RETENTION, name, tableGroup, metricDictionary);
+        this(LogicalTableName.forName(name), granularity, tableGroup, metricDictionary);
     }
 
     /**
@@ -80,7 +86,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 name.getRetention().orElse(null),
                 name.getDescription(),
                 tableGroup,
-                metricDictionary
+                metricDictionary,
+                name.getTableFilters()
         );
     }
 
@@ -95,7 +102,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
+     *
+     * @deprecated prefer the version of this constructor with the viewFilters param
      */
+    @Deprecated
     public LogicalTable(
             @NotNull String name,
             String category,
@@ -114,7 +124,47 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 retention,
                 description,
                 tableGroup,
-                new LogicalTableSchema(tableGroup, granularity, metricDictionary)
+                new LogicalTableSchema(tableGroup, granularity, metricDictionary),
+                new ApiFilters()
+        );
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * @param name  The logical table name
+     * @param category  The category of the logical table
+     * @param longName  The long name of the logical table
+     * @param granularity  The logical table time grain
+     * @param retention  The period the data in the logical table is retained for
+     * @param description  The description for this logical table
+     * @param tableGroup  The tablegroup for the logical table
+     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
+     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table. These
+     * filters, along with the schema, are used to make this logical table into a view on its backing table group.
+     */
+    public LogicalTable(
+            @NotNull String name,
+            String category,
+            String longName,
+            @NotNull Granularity granularity,
+            ReadablePeriod retention,
+            String description,
+            TableGroup tableGroup,
+            MetricDictionary metricDictionary,
+            ApiFilters viewFilters
+    ) {
+        this(
+                name,
+                category,
+                longName,
+                granularity,
+                retention,
+                description,
+                tableGroup,
+                new LogicalTableSchema(tableGroup, granularity, metricDictionary),
+                viewFilters
         );
     }
 
@@ -129,7 +179,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
      * @param schema The LogicalTableSchema backing this LogicalTable
+     *
+     * @deprecated prefer constructor with viewFilters param
      */
+    @Deprecated
     protected LogicalTable(
             @NotNull String name,
             String category,
@@ -140,6 +193,34 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             TableGroup tableGroup,
             LogicalTableSchema schema
     ) {
+        this(name, category, longName, granularity, retention, description, tableGroup, schema, new ApiFilters());
+    }
+
+    /**
+     * Copy Constructor.
+     *
+     * @param name  The logical table name
+     * @param category  The category of the logical table
+     * @param longName  The long name of the logical table
+     * @param granularity  The logical table time grain
+     * @param retention  The period the data in the logical table is retained for
+     * @param description  The description for this logical table
+     * @param tableGroup  The tablegroup for the logical table
+     * @param schema The LogicalTableSchema backing this LogicalTable
+     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table. These
+     * filters, along with the schema, are used to make this logical table into a view on its backing table group.
+     */
+    protected LogicalTable(
+            @NotNull String name,
+            String category,
+            String longName,
+            @NotNull Granularity granularity,
+            ReadablePeriod retention,
+            String description,
+            TableGroup tableGroup,
+            LogicalTableSchema schema,
+            ApiFilters viewFilters
+    ) {
         this.name = name;
         this.tableGroup = tableGroup;
         this.category = category;
@@ -148,6 +229,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.description = description;
         this.comparableParam = name + granularity.toString();
         this.schema = schema;
+        this.viewFilters = viewFilters;
     }
 
     public TableGroup getTableGroup() {
@@ -183,6 +265,10 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
 
     public Granularity getGranularity() {
         return schema.getGranularity();
+    }
+
+    public ApiFilters getFilters() {
+        return viewFilters;
     }
 
     @Override

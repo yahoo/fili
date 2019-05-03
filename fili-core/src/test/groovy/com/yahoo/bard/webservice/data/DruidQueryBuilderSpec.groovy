@@ -11,8 +11,6 @@ import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
-import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -22,6 +20,8 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.druid.model.datasource.DefaultDataSourceType
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.having.Having
@@ -35,6 +35,8 @@ import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
@@ -130,9 +132,12 @@ public class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
+
+        // Is this correct? All filters use the same dimension, and since we are not merging with the existing set the result only picks up the last filter.
         ApiFilters apiFilters = new ApiFilters(
                 apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
         )
+
         apiRequest.getApiFilters() >> apiFilters
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
@@ -528,5 +533,55 @@ public class DruidQueryBuilderSpec extends Specification {
         DefaultQueryType.GROUP_BY   | [:]                               | 1     | false  | 0      | "groupBy"
         DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | "groupBy"
         DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | "groupBy"
+    }
+
+    def "LogicalTable filters and ApiRequest filters merge properly"() {
+        setup:
+        // inject druid filter builder to test interactions against
+        DruidFilterBuilder dfb = Mock()
+        DruidQueryBuilder builder = new DruidQueryBuilder(
+                resources.logicalDictionary,
+                resolver,
+                dfb,
+                resources.druidHavingBuilder
+        )
+
+        // create logical table with test filter
+        ApiFilter tableFilter = filterBinders.generateApiFilter("ageBracket|id-eq[1,2,3,4]", resources.dimensionDictionary)
+        ApiFilters tableFilters = new ApiFilters([(resources.d3) : [tableFilter] as Set] as Map)
+        LogicalTable baseTable = resources.lt12
+        LogicalTable table = new LogicalTable(
+                baseTable.getName(),
+                baseTable.getCategory(),
+                baseTable.getLongName(),
+                baseTable.getGranularity(),
+                baseTable.getRetention(),
+                baseTable.getDescription(),
+                baseTable.getTableGroup(),
+                resources.metricDictionary,
+                tableFilters
+        )
+
+        // create and prep api request
+        apiRequest = Mock(DataApiRequest)
+        apiRequest.getTable() >> table
+        initDefault(apiRequest)
+
+        // put table into table dictionary
+        resources.logicalDictionary.put(TableIdentifier.create(apiRequest), table)
+
+        // prep expected api filters
+        ApiFilter requestFilter = apiRequest.getApiFilters().get(resources.d3).iterator().next()
+        ApiFilters expectedApiFilters = new ApiFilters(
+                [
+                    (resources.d3): [tableFilter, requestFilter] as Set
+                ] as Map
+        )
+
+        when:
+        builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+
+        then:
+        1 * dfb.buildFilters({(ApiFilters) it == expectedApiFilters}) >> { ApiFilters filterMap -> resources.druidFilterBuilder.buildFilters(filterMap)}
     }
 }

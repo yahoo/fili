@@ -10,6 +10,12 @@ Current
 
 ### Added:
 
+- [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
+    * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
+    by restricting access to only a subset of the data present on the logical table.
+    * These filters are merged with `ApiFilters` from the api request during druid query building and on the
+    `TablesApiRequestImpl` for requests to the tables servlet.
+
 - [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
     * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
     * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
