@@ -101,6 +101,9 @@ Current
 
 ### Changed:
 
+- [Tweaking ApiFilters on LogicalTable to use Optional](https://github.com/yahoo/fili/issues/902)
+    * ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
+
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
     * Refactored FilterBinders to support chain-of-responsibility FilterFactory

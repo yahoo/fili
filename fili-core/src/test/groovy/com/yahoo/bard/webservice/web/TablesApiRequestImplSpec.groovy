@@ -8,10 +8,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
-import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
@@ -21,9 +18,6 @@ import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
-import com.yahoo.bard.webservice.web.util.PaginationParameters
-
-import org.joda.time.Interval
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -187,20 +181,20 @@ class TablesApiRequestImplSpec extends Specification {
         ApiFilter t1_dim3_filter1 = Mock()
         ApiFilter t2_dim3_filter1 = Mock()
 
-        ApiFilters tableFilters_1 = new ApiFilters(
+        Optional<ApiFilters> tableFilters_1 = Optional.of(new ApiFilters(
                 [
                         (dim2) : [t1_dim2_filter1, t1_dim2_filter2] as Set,
                         (dim3) : [t1_dim3_filter1] as Set,
                 ] as Map
-        )
+        ))
         t1.getFilters() >> tableFilters_1
 
         // note: these should never be used. They are defined here to ensure we are not accidentally adding filters from logical tables that are NOT part of the query
-        ApiFilters tableFilters_2 = new ApiFilters(
+        Optional<ApiFilters> tableFilters_2 = Optional.of(new ApiFilters(
                 [
                         (dim3) : [t2_dim3_filter1] as Set,
                 ] as Map
-        )
+        ))
         t2.getFilters() >> tableFilters_2
 
 

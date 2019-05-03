@@ -13,6 +13,7 @@ import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -267,8 +268,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         return schema.getGranularity();
     }
 
-    public ApiFilters getFilters() {
-        return viewFilters;
+    public Optional<ApiFilters> getFilters() {
+        return Optional.ofNullable(viewFilters);
     }
 
     @Override
