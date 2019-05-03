@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.data.config.names;
 
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.ReadablePeriod;
 
@@ -49,16 +48,6 @@ public interface LogicalTableName extends TableName {
      */
     default String getDescription() {
         return asName();
-    }
-
-    /**
-     * Provides a list of API Filters for this logical table. These filters are used to constrain access to the
-     * underlying table group, functioning as a way to make the logical table into a view.
-     *
-     * @return the list of ApiFilters on this logical table.
-     */
-    default ApiFilters getTableFilters() {
-        return new ApiFilters();
     }
 
     /**

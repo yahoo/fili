@@ -10,12 +10,18 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A TableGroup is a list of schemas.
+ * A TableGroup has a list of Physical Tables and a set of columns representing the collective schema of these tables.
+ * These tables are scanned by query planning to determine a best table.
+ *
+ * The dimensions and apiMetricNames on the TableGroup are only consumed at config time to aid in building
+ * LogicalTable schemas.
+ *
  */
 public class TableGroup {
 
-    private final LinkedHashSet<Dimension> dimensions;
     private final LinkedHashSet<PhysicalTable> tables;
+
+    private final LinkedHashSet<Dimension> dimensions;
     private final Set<ApiMetricName> apiMetricNames;
 
     /**

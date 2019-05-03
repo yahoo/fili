@@ -19,6 +19,7 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -200,6 +201,39 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
+     * Load several logical tables into the logicalDictionary, each with their own scoped metric dictionary.
+     * <p>
+     * Note: This builds the logical tables as well.
+     *
+     * @param logicalTableNames a list of LogicalTableNames to be constructed
+     * @param nameGroupMap  A map of logical table name to table group information
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The logical table dictionary to be populated
+     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     * @param apiFilters A collection of filters for the LogicalTable view
+     */
+    public void loadLogicalTablesWithGranularities(
+            List<LogicalTableName> logicalTableNames,
+            Map<String, TableGroup> nameGroupMap,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            Map<String, MetricDictionary> scopedMetrics,
+            ApiFilters apiFilters
+    ) {
+        for (LogicalTableName logicalTableName : logicalTableNames) {
+            TableGroup group = nameGroupMap.get(logicalTableName.asName());
+
+            loadLogicalTableWithGranularities(
+                    logicalTableName,
+                    group,
+                    validGrains,
+                    tableDictionary,
+                    scopedMetrics.get(logicalTableName.asName())
+            );
+        }
+    }
+
+    /**
      * Load a logical table into the logicalDictionary.
      * <p>
      * Use a default LogicalTableName based on the string name
@@ -266,7 +300,8 @@ public abstract class BaseTableLoader implements TableLoader {
             TableGroup nameGroup,
             Set<? extends Granularity> validGrains,
             LogicalTableDictionary tableDictionary,
-            MetricDictionary metricDictionary
+            MetricDictionary metricDictionary,
+            ApiFilters apiFilters
     ) {
         // For every legal grain
         for (Granularity grain : validGrains) {
