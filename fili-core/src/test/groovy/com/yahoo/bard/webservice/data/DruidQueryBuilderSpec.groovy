@@ -23,7 +23,10 @@ import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.druid.model.datasource.DefaultDataSourceType
+import com.yahoo.bard.webservice.druid.model.filter.AndFilter
 import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.filter.InFilter
+import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
@@ -552,7 +555,12 @@ public class DruidQueryBuilderSpec extends Specification {
         ApiFilters tableFilters = new ApiFilters([(resources.d3) : [tableFilter] as Set] as Map)
         LogicalTable baseTable = resources.lt12
         TableGroup tableGroup = baseTable.getTableGroup();
-        tableGroup = new TableGroup(tableGroup.getPhysicalTables(), tableGroup.getApiMetricNames(), tableGroup.getDimensions(), tableFilters);
+        tableGroup = new TableGroup(
+                tableGroup.getPhysicalTables(),
+                tableGroup.getApiMetricNames(),
+                tableGroup.getDimensions(),
+                tableFilters
+        );
         LogicalTable table = new LogicalTable(
                 baseTable.getName(),
                 baseTable.getCategory(),
@@ -560,7 +568,7 @@ public class DruidQueryBuilderSpec extends Specification {
                 baseTable.getGranularity(),
                 baseTable.getRetention(),
                 baseTable.getDescription(),
-                baseTable.getTableGroup(),
+                tableGroup,
                 resources.metricDictionary
         )
 
@@ -581,9 +589,26 @@ public class DruidQueryBuilderSpec extends Specification {
         )
 
         when:
-        builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+        DruidAggregationQuery daq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+        AndFilter andFilter = (AndFilter) daq.getFilter()
 
-        then:
-        1 * dfb.buildFilters(_) >> { ApiFilters filterMap -> resources.druidFilterBuilder.buildFilters(filterMap)}
+        then: "The combined ApiFilters are used to build the druid filter"
+        1 * dfb.buildFilters({(ApiFilters) it == expectedApiFilters}) >> {
+            ApiFilters filterMap ->
+                System.println(filterMap)
+                resources.druidFilterBuilder.buildFilters(filterMap)
+        }
+
+        and: "it now has the negative assertion from the request"
+
+        andFilter != null
+        andFilter.getFields().any() {
+            it instanceof NotFilter && ((InFilter) ((NotFilter) it).field).values.contains("3")
+        }
+
+        and: "it also contains the positive assertion from the table"
+        andFilter.getFields().any() {
+            it instanceof InFilter && ((InFilter) it).values.equals(["1", "2", "3", "4"] as TreeSet)
+        }
     }
 }
