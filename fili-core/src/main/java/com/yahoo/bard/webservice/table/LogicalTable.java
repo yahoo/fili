@@ -13,13 +13,20 @@ import org.joda.time.ReadablePeriod;
 import org.joda.time.Years;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * A LogicalTable has a grain and a tablegroup of physical tables that satisfy the logical table.
+ * A LogicalTable can be conceived as a view on the underlying physical dataSources that it supports.
+ *
+ * The LogicalTableSchema defines the grains and columns available on that view.  The viewFilters field provides row
+ * filtering on that view.
+ *
+ * The TableGroup field provides a collection of tables that should, collectively, satisfy the schema of this
+ * LogicalTable.  During query planning that collection is scanned and compared for lowest row cardinality.
  */
 public class LogicalTable implements Table, Comparable<LogicalTable> {
 
@@ -27,14 +34,14 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
     public static final ReadablePeriod DEFAULT_RETENTION = Years.ONE;
 
     private String name;
-    private TableGroup tableGroup;
-    private LogicalTableSchema schema;
 
     private String category;
     private String longName;
     private ReadablePeriod retention;
     private String description;
 
+    private TableGroup tableGroup;
+    private LogicalTableSchema schema;
     private ApiFilters viewFilters;
 
     // parameter used by the compare to method
@@ -44,6 +51,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * Constructor
      * <p>
      * Sets the Category and Retention to the defaults, and sets the long name and description to the name.
+     *
+     * Defaults to the TableGroup for schema and no ApiFilters.
      *
      * @param name  The logical table name
      * @param granularity  The logical table granularity
@@ -67,6 +76,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      *
      * Uses the LogicalTableName interface to package metadata.
      *
+     * Defaults to TableGroup for schema and no ApiFilters.
+     *
      * @param name  The logical table name
      * @param granularity  The logical table time grain
      * @param tableGroup  The tablegroup for the logical table
@@ -86,13 +97,14 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 name.getRetention().orElse(null),
                 name.getDescription(),
                 tableGroup,
-                metricDictionary,
-                name.getTableFilters()
+                metricDictionary
         );
     }
 
     /**
      * Constructor.
+     *
+     * Defaults to the TableGroup schema.
      *
      * @param name  The logical table name
      * @param category  The category of the logical table
@@ -103,9 +115,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param tableGroup  The tablegroup for the logical table
      * @param metricDictionary The metric dictionary to bind tableGroup's metrics
      *
-     * @deprecated prefer the version of this constructor with the viewFilters param
      */
-    @Deprecated
     public LogicalTable(
             @NotNull String name,
             String category,
@@ -125,46 +135,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 description,
                 tableGroup,
                 new LogicalTableSchema(tableGroup, granularity, metricDictionary),
-                new ApiFilters()
-        );
-    }
-
-
-    /**
-     * Constructor.
-     *
-     * @param name  The logical table name
-     * @param category  The category of the logical table
-     * @param longName  The long name of the logical table
-     * @param granularity  The logical table time grain
-     * @param retention  The period the data in the logical table is retained for
-     * @param description  The description for this logical table
-     * @param tableGroup  The tablegroup for the logical table
-     * @param metricDictionary The metric dictionary to bind tableGroup's metrics
-     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table. These
-     * filters, along with the schema, are used to make this logical table into a view on its backing table group.
-     */
-    public LogicalTable(
-            @NotNull String name,
-            String category,
-            String longName,
-            @NotNull Granularity granularity,
-            ReadablePeriod retention,
-            String description,
-            TableGroup tableGroup,
-            MetricDictionary metricDictionary,
-            ApiFilters viewFilters
-    ) {
-        this(
-                name,
-                category,
-                longName,
-                granularity,
-                retention,
-                description,
-                tableGroup,
-                new LogicalTableSchema(tableGroup, granularity, metricDictionary),
-                viewFilters
+                tableGroup.getApiFilters()
         );
     }
 
@@ -179,36 +150,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
      * @param schema The LogicalTableSchema backing this LogicalTable
-     *
-     * @deprecated prefer constructor with viewFilters param
-     */
-    @Deprecated
-    protected LogicalTable(
-            @NotNull String name,
-            String category,
-            String longName,
-            @NotNull Granularity granularity,
-            ReadablePeriod retention,
-            String description,
-            TableGroup tableGroup,
-            LogicalTableSchema schema
-    ) {
-        this(name, category, longName, granularity, retention, description, tableGroup, schema, new ApiFilters());
-    }
-
-    /**
-     * Copy Constructor.
-     *
-     * @param name  The logical table name
-     * @param category  The category of the logical table
-     * @param longName  The long name of the logical table
-     * @param granularity  The logical table time grain
-     * @param retention  The period the data in the logical table is retained for
-     * @param description  The description for this logical table
-     * @param tableGroup  The tablegroup for the logical table
-     * @param schema The LogicalTableSchema backing this LogicalTable
-     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table. These
-     * filters, along with the schema, are used to make this logical table into a view on its backing table group.
+     * @param viewFilters  A list of filters that get attached to any API query sent to this logical table.
      */
     protected LogicalTable(
             @NotNull String name,
@@ -229,7 +171,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.description = description;
         this.comparableParam = name + granularity.toString();
         this.schema = schema;
-        this.viewFilters = viewFilters;
+        this.viewFilters = viewFilters == null ? null : new ApiFilters(viewFilters);
     }
 
     public TableGroup getTableGroup() {
@@ -267,8 +209,8 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         return schema.getGranularity();
     }
 
-    public ApiFilters getFilters() {
-        return viewFilters;
+    public Optional<ApiFilters> getFilters() {
+        return Optional.ofNullable(viewFilters);
     }
 
     @Override

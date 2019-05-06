@@ -128,7 +128,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         if (tableName != null && granularity != null) {
             this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
             this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
-            this.apiFilters = new ApiFilters(this.table.getFilters());
+            this.apiFilters = table.getFilters().map(ApiFilters::new).orElse(new ApiFilters());
         } else {
             this.table = null;
             this.granularity = null;
@@ -287,10 +287,11 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.apiFilters = ApiFilters.union(
-                getFilterGenerator().generate(filters, table, dimensionDictionary),
-                this.table.getFilters()
-        );
+        ApiFilters requestFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
+        this.apiFilters = table.getFilters()
+                .map(f -> ApiFilters.union(f, requestFilters))
+                .orElse(requestFilters);
+
         validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
@@ -390,7 +391,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.dimensions = dimensions;
         this.logicalMetrics = metrics;
         this.intervals = intervals;
-        this.apiFilters = ApiFilters.union(filters, table.getFilters());
+        this.apiFilters = table.getFilters().map(f -> ApiFilters.union(f, filters)).orElse(filters);
     }
 
     /**
