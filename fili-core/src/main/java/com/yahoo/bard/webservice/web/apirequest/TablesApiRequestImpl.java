@@ -375,7 +375,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private TablesApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters,
+            Optional<PaginationParameters> paginationParameters, // TODO should this be refactored to not be optional?
             LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
@@ -391,7 +391,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.dimensions = dimensions;
         this.logicalMetrics = metrics;
         this.intervals = intervals;
-        this.apiFilters = table.getFilters().map(f -> ApiFilters.union(f, filters)).orElse(filters);
+        this.apiFilters = table == null ?
+                filters
+                : table.getFilters().map(f -> ApiFilters.union(f, filters)).orElse(filters);
     }
 
     /**

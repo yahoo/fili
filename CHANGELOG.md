@@ -16,6 +16,7 @@ Current
     * These filters are merged with `ApiFilters` from the api request during druid query building and on the
     `TablesApiRequestImpl` for requests to the tables servlet.
     * Small Patch: ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
+    * Second small patch: Fix null pointer errors with TablesApiRequestImpl
 
 - [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
     * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
