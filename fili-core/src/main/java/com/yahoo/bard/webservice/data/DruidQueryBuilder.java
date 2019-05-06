@@ -33,6 +33,7 @@ import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -132,7 +133,13 @@ public class DruidQueryBuilder {
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
-        Filter filter = druidFilterBuilder.buildFilters(request.getApiFilters());
+
+        // combine the filters on the requested logical table with the api query filters
+        ApiFilters apiFilters = logicalTable.getFilters()
+                .map(f -> ApiFilters.union(f, request.getApiFilters()))
+                .orElse(request.getApiFilters());
+
+        Filter filter = druidFilterBuilder.buildFilters(apiFilters);
 
         return druidTopNMetric != null ?
             buildTopNQuery(

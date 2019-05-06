@@ -10,6 +10,13 @@ Current
 
 ### Added:
 
+- [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
+    * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
+    by restricting access to only a subset of the data present on the logical table.
+    * These filters are merged with `ApiFilters` from the api request during druid query building and on the
+    `TablesApiRequestImpl` for requests to the tables servlet.
+    * Small Patch: ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
+
 - [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
     * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
     * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
@@ -94,6 +101,13 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
+    * Changed FilterBinder.INSTANCE from final to static with accessors
+    * Refactored FilterBinders to support chain-of-responsibility FilterFactory
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
 
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
