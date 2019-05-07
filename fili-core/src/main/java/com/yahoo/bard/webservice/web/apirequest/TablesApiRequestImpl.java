@@ -77,9 +77,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      *     <li>Invalid table in the API request.</li>
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
-     * @deprecated prefer constructor with downloadFilename
      */
-    @Deprecated
     public TablesApiRequestImpl(
             String tableName,
             String granularity,
@@ -130,15 +128,16 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         if (tableName != null && granularity != null) {
             this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
             this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
+            this.apiFilters = table.getFilters().map(ApiFilters::new).orElse(new ApiFilters());
         } else {
             this.table = null;
             this.granularity = null;
+            this.apiFilters = null;
         }
 
         intervals = Collections.emptyList();
         dimensions = new LinkedHashSet<>();
         logicalMetrics = new LinkedHashSet<>();
-        apiFilters = new ApiFilters(Collections.emptyMap());
 
         LOG.debug(
                 "Api request: Tables: {},\nGranularity: {},\nFormat: {},\nFilename: {},\nPagination: {}" +
@@ -252,19 +251,18 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     ) throws BadApiRequestException {
         super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
-        LogicalTableDictionary logicalTableDictionary = bardConfigResources.getLogicalTableDictionary();
-        this.tables = generateTables(tableName, logicalTableDictionary);
-
-        if (tableName != null && granularity != null) {
-            this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
-            this.table = generateTable(tableName, this.granularity, logicalTableDictionary);
-        } else {
-            this.table = null;
-            this.granularity = null;
+        if (granularity == null || tableName == null) {
+            throw new BadApiRequestException("Logical table and granularity cannot be null");
         }
 
-        // parse dimensions
+        LogicalTableDictionary logicalTableDictionary = bardConfigResources.getLogicalTableDictionary();
         DimensionDictionary dimensionDictionary = bardConfigResources.getDimensionDictionary();
+        this.tables = generateTables(tableName, logicalTableDictionary);
+
+        this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
+        this.table = generateTable(tableName, this.granularity, logicalTableDictionary);
+
+        // parse dimensions
         this.dimensions = generateDimensions(dimensions, dimensionDictionary);
         validateRequestDimensions(this.dimensions, this.table);
 
@@ -289,7 +287,11 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
-        this.apiFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
+        ApiFilters requestFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
+        this.apiFilters = table.getFilters()
+                .map(f -> ApiFilters.union(f, requestFilters))
+                .orElse(requestFilters);
+
         validateRequestDimensions(getFilterDimensions(), this.table);
 
         LOG.debug(
@@ -320,7 +322,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     /**
      * Get a filter generator binder for writing ApiFilters.
      *
-     * @return  An implementation of FilterGenerator.
+     * @return An implementation of FilterGenerator.
      */
     protected FilterGenerator getFilterGenerator() {
         return FilterBinders.getInstance()::generateFilters;
@@ -373,7 +375,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private TablesApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters,
+            Optional<PaginationParameters> paginationParameters, // TODO should this be refactored to not be optional?
             LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
@@ -389,7 +391,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         this.dimensions = dimensions;
         this.logicalMetrics = metrics;
         this.intervals = intervals;
-        this.apiFilters = filters;
+        this.apiFilters = table == null ?
+                filters
+                : table.getFilters().map(f -> ApiFilters.union(f, filters)).orElse(filters);
     }
 
     /**
@@ -511,61 +515,194 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     //CHECKSTYLE:OFF
     @Override
     public TablesApiRequest withFormat(ResponseFormatType format) {
-        return new TablesApiRequestImpl(format, downloadFilename,  paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withBuilder(Response.ResponseBuilder builder) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withTables(LinkedHashSet<LogicalTable> tables) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     public TablesApiRequest withTable(LogicalTable table) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
 
     @Override
     public TablesApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withGranularity(Granularity granularity) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     public TablesApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     @Deprecated
     public TablesApiRequest withIntervals(Set<Interval> intervals) {
-            return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, new ArrayList<>(intervals), apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                new ArrayList<>(intervals),
+                apiFilters
+        );
     }
+
     @Override
     public TablesApiRequest withIntervals(List<Interval> intervals) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withDownloadFilename(String downloadFilename) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
 
     @Override
     public TablesApiRequest withFilters(Map<Dimension, Set<ApiFilter>> filters) {
-        return new TablesApiRequestImpl(format, downloadFilename, paginationParameters, tables, table, granularity, dimensions, logicalMetrics, intervals, apiFilters);
+        return new TablesApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                tables,
+                table,
+                granularity,
+                dimensions,
+                logicalMetrics,
+                intervals,
+                apiFilters
+        );
     }
     //CHECKSTYLE:ON
 }

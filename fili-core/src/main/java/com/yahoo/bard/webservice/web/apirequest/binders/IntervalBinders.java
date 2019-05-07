@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
-import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -14,6 +14,7 @@ import org.joda.time.DateTimeZone;
 public class IntervalBinders {
 
     protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final String ADJUSTED_TIME_ZONE_KEY = "adjusted_time_zone";
 
     /**
      * Adjusts the DateTime for the query interval.
@@ -23,11 +24,10 @@ public class IntervalBinders {
      * @return either adjusted dateTime or the current dateTime as is.
      */
     public static DateTime getAdjustedTime (DateTime dateTime) {
-        String adjustedTimezone = SYSTEM_CONFIG.getStringProperty(
-                BardFeatureFlag.ADJUSTED_TIME_ZONE.getName(),
-                "UTC"
+        String adjustedTimeZone = SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName(
+                ADJUSTED_TIME_ZONE_KEY), "UTC"
         );
-        return dateTime.withZone(DateTimeZone.forID(adjustedTimezone))
+        return dateTime.withZone(DateTimeZone.forID(adjustedTimeZone))
                        .withZoneRetainFields(DateTimeZone.UTC);
     }
 }
