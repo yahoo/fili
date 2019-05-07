@@ -27,11 +27,10 @@ class IntervalBindersSpec extends Specification {
         adjustedNow.toString() == expectedDateTime
 
         where:
-        serverTime                          |   expectedDateTime                    | zone      | description
-        "2019-04-24T00:13:00.564Z"          |   "2019-04-23T17:13:00.564Z"          | "PST8PDT" | "server time is past midnight UTC and timezone to adjust is PST"
-        "2019-04-23T19:13:00.564Z"          |   "2019-04-23T19:13:00.564Z"          | "UTC"     | "server time is in UTC and timezone to adjust to is also UTC"
-        "2019-04-23T10:13:00.564Z"          |   "2019-04-23T03:13:00.564Z"          | "PST8PDT" | "server time is before midnight UTC and timezone to adjust is PST"
-
+        serverTime                          |   expectedDateTime                    | zone                  | description
+        "2019-04-24T00:13:00.564Z"          |   "2019-04-23T17:13:00.564Z"          | "America/Los_Angeles" | "server time is past midnight UTC and timezone to adjust is PST"
+        "2019-04-23T19:13:00.564Z"          |   "2019-04-23T19:13:00.564Z"          | "UTC"                 | "server time is in UTC and timezone to adjust to is also UTC"
+        "2019-04-23T10:13:00.564Z"          |   "2019-04-23T03:13:00.564Z"          | "America/Los_Angeles" | "server time is before midnight UTC and timezone to adjust is PST"
     }
 
 }

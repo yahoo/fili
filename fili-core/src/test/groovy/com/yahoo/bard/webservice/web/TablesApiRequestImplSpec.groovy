@@ -110,6 +110,35 @@ class TablesApiRequestImplSpec extends Specification {
     }
 
     @Unroll
+    def "test pojo constructor doesn't crash on #desc"() {
+        when:
+        new TablesApiRequestImpl(
+                null, // ResponseFormatType
+                null, // downloadFilename
+                pagination, // Optional<PaginationParameters>
+                tables, // LinkedHashSet<LogicalTable> tables
+                null, // LogicalTable
+                null, // Granularity
+                dimensions, // LinkedHashSet<Dimension> dimensions
+                metrics, // LinkedHashSet<LogicalMetric> metrics
+                intervals, // List<Interval> intervals
+                filters, // ApiFilters filters
+        )
+
+        then:
+        noExceptionThrown()
+
+        where:
+        pagination << [null, Optional.empty()]
+        filters << [null, new ApiFilters()]
+        tables << [null, new LinkedHashSet<>()]
+        dimensions << [null, new LinkedHashSet<>()]
+        metrics << [null, new LinkedHashSet<>()]
+        intervals << [null, []]
+        desc << ["all inputs are null", "relevant inputs are non null but empty"]
+    }
+
+    @Unroll
     def "api request construction throws #exception.simpleName because #reason"() {
         tablesServlet.getLogicalTableDictionary() >> dictionary
 
