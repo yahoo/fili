@@ -23,7 +23,7 @@ class DimensionsApiRequestImplSpec extends Specification {
     @Shared
     DimensionDictionary emptyDictionary = new DimensionDictionary()
 
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setup() {
         jtb = new JerseyTestBinder(DimensionsServlet.class)

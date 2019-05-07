@@ -28,7 +28,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     ConjunctionDruidFilterBuilder filterBuilder
     Map<String, ApiFilter> apiFilters
 
-    FilterBinders filterBinders = FilterBinders.INSTANCE
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()

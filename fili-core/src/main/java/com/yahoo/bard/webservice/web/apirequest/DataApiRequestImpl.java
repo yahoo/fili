@@ -109,7 +109,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final int topN;
     private final DateTimeZone timeZone;
 
-    protected FilterGenerator filterGenerator = FilterBinders.INSTANCE::generateFilters;
+    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
@@ -1672,7 +1672,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      */
     @Deprecated
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.INSTANCE::generateFilters;
+        return FilterBinders.getInstance()::generateFilters;
     }
 
     // CHECKSTYLE:OFF

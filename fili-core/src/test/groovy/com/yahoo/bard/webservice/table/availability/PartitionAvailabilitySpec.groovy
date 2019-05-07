@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter
@@ -15,6 +13,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.google.common.collect.Sets
 
 import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 import org.joda.time.format.DateTimeFormat
 
@@ -26,13 +25,17 @@ import spock.lang.Unroll
  */
 class PartitionAvailabilitySpec extends Specification{
 
+    static DateTimeZone originalTimeZone
+    static {
+        originalTimeZone = DateTimeZone.getDefault()
+        DateTimeZone.setDefault(DateTimeZone.UTC)
+    }
+
     public static final String DISTANT_PAST_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.DISTANT_PAST)
     public static final String FAR_FUTURE_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.FAR_FUTURE)
     public static final String SOURCE1 = 'source1'
     public static final String SOURCE2 = 'source2'
     PartitionAvailability partitionAvailability
-
-    ZonedTimeGrain testTimeGrain = ZonedTimeGrainSpec.DAY_UTC
 
     Availability availability1
     Availability availability2
@@ -49,6 +52,10 @@ class PartitionAvailabilitySpec extends Specification{
 
     DateTime endDate_1
     DateTime endDate_2
+
+    def cleanupSpec() {
+        DateTimeZone.setDefault(originalTimeZone)
+    }
 
     def setup() {
         availability1 = Mock(Availability)

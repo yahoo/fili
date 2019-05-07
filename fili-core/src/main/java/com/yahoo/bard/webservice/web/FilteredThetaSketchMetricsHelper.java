@@ -54,7 +54,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     private static final Logger LOG = LoggerFactory.getLogger(FilteredThetaSketchMetricsHelper.class);
     private static final String ALPHANUMERIC_REGEX = "[^a-zA-Z0-9]";
 
-    protected FilterGenerator filterGenerator = FilterBinders.INSTANCE::generateFilters;
+    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
     protected DruidFilterBuilder filterBuilder;
 
     /**
