@@ -6,11 +6,14 @@ import com.yahoo.bard.webservice.data.config.names.DimensionName;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -105,6 +108,57 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
                 keyValueStore,
                 searchProvider,
                 registeredLookupExtractionFns
+        );
+    }
+
+    /**
+     * Construct a DefaultKeyValueStoreDimensionConfig instance from a dimension and physical column name.
+     *
+     *
+     * @param dimension  The dimension whose config should be copied.
+     * @param physicalName  The internal, physical name for the dimension.
+     */
+    public DefaultRegisteredLookupDimensionConfig(
+            RegisteredLookupDimension dimension,
+            String physicalName
+    ) {
+        this(
+                (DimensionName) () -> dimension.getApiName(),
+                physicalName,
+                dimension.getDescription(),
+                dimension.getLongName(),
+                dimension.getCategory(),
+                dimension.getDimensionFields(),
+                dimension.getDefaultDimensionFields(),
+                dimension.getKeyValueStore(),
+                dimension.getSearchProvider(),
+                dimension.getRegisteredLookupExtractionFns()
+        );
+    }
+
+    /**
+     * Construct a copy of this config with additional extraction functions appended.
+     *
+     * @param additionalFunctions  ExtractionFunctions to add to the end of the function list.
+     *
+     * @return  A modified copy with additional extraction functions.
+     */
+    public DefaultRegisteredLookupDimensionConfig withAddedLookupFunctions(
+            List<ExtractionFunction> additionalFunctions
+    ) {
+        return new DefaultRegisteredLookupDimensionConfig(
+                this::getApiName,
+                getPhysicalName(),
+                getDescription(),
+                getLongName(),
+                getCategory(),
+                getFields(),
+                getDefaultDimensionFields(),
+                getKeyValueStore(),
+                getSearchProvider(),
+                Stream.of(getRegisteredLookupExtractionFns(), additionalFunctions)
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList())
         );
     }
 

@@ -427,6 +427,10 @@ public class KeyValueStoreDimension implements Dimension {
         return searchProvider;
     }
 
+    public KeyValueStore getKeyValueStore() {
+        return keyValueStore;
+    }
+
     @Override
     public void addDimensionRow(DimensionRow dimensionRow) {
         addAllDimensionRows(Collections.singleton(dimensionRow));
