@@ -814,9 +814,8 @@ public class LuceneSearchProvider implements SearchProvider {
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
                         return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
-                    } else {
-                        throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                     }
+                    throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                 }
                 for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
                     ScoreDoc lastEntry = hits[hits.length - 1];

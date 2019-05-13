@@ -1215,12 +1215,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             if (!isDateTimeFirstSortField(sortColumns)) {
                 LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
                 throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
-            } else {
-                return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
             }
-        } else {
-            return Optional.empty();
+            return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
         }
+        return Optional.empty();
     }
 
     /**

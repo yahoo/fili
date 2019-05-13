@@ -399,32 +399,31 @@ public class JobsServlet extends EndpointServlet {
             // to behave like the results are not ready in the store, and the asynchronous timeout has expired even
             // if the results are available.
             return Observable.empty();
-        } else {
-            /*
-             * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any
-             * subscribers. We use the replay operator so that the preResponseObservable upon connection, will begin
-             * collecting values.
-             * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
-             */
-            ConnectableObservable<String> broadcastChannelNotifications = broadcastChannel.getNotifications()
-                    .filter(ticket::equals)
-                    .take(1)
-                    .replay(1);
-            broadcastChannelNotifications.connect();
-            /*
-             * In the cases where we may get a synchronous response (asyncAfter is a number, or
-             * ApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ), then we start the timer, and
-             * go to the store and check to see if it has the results. If it doesn't, and 'asyncAfter' is a number
-             * then it starts listening to the broadcast channel, and waiting for the timer to expire.
-             *
-             * What this means is that in the case of `asyncAfter=0`, we have the following semantics:
-             * If the results are already in the response store, then return them to me. Otherwise, very quickly
-             * send back the asynchronous payload.
-             */
-            return preResponseStore.get(ticket).switchIfEmpty(
-                    applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
-            );
         }
+        /*
+         * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any
+         * subscribers. We use the replay operator so that the preResponseObservable upon connection, will begin
+         * collecting values.
+         * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
+         */
+        ConnectableObservable<String> broadcastChannelNotifications = broadcastChannel.getNotifications()
+                .filter(ticket::equals)
+                .take(1)
+                .replay(1);
+        broadcastChannelNotifications.connect();
+        /*
+         * In the cases where we may get a synchronous response (asyncAfter is a number, or
+         * ApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ), then we start the timer, and
+         * go to the store and check to see if it has the results. If it doesn't, and 'asyncAfter' is a number
+         * then it starts listening to the broadcast channel, and waiting for the timer to expire.
+         *
+         * What this means is that in the case of `asyncAfter=0`, we have the following semantics:
+         * If the results are already in the response store, then return them to me. Otherwise, very quickly
+         * send back the asynchronous payload.
+         */
+        return preResponseStore.get(ticket).switchIfEmpty(
+                applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
+        );
     }
 
     /**

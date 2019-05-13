@@ -47,10 +47,9 @@ public class FiliJobsExceptionHandler implements MetadataExceptionHandler {
             LOG.debug(e.getMessage(), e);
             RequestValidationException rve = (RequestValidationException) e;
             return RequestHandlerUtils.makeErrorResponse(rve.getStatus(), rve, mappers.getMapper().writer());
-        } else {
-            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
+        String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
+        LOG.info(msg, e);
+        return Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
 }
