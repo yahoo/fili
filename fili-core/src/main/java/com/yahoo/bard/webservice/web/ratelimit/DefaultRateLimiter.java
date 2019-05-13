@@ -160,29 +160,28 @@ public class DefaultRateLimiter implements RateLimiter {
             // Bypass and CORS Preflight requests are unlimited
             requestBypassMeter.mark();
             return BYPASS_TOKEN;
-        } else {
-            SecurityContext securityContext = request.getSecurityContext();
-            Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
-            String userName = String.valueOf(user == null ? null : user.getName());
-
-            boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
-            Meter requestMeter;
-            Meter rejectMeter;
-            int requestLimit;
-
-            if (isUIQuery) {
-                requestMeter = requestUiMeter;
-                rejectMeter = rejectUiMeter;
-                requestLimit = requestLimitUi;
-            } else {
-                requestMeter = requestUserMeter;
-                rejectMeter = rejectUserMeter;
-                requestLimit = requestLimitPerUser;
-            }
-
-            AtomicInteger count = getCount(userName);
-            return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
         }
+        SecurityContext securityContext = request.getSecurityContext();
+        Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
+        String userName = String.valueOf(user == null ? null : user.getName());
+
+        boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
+        Meter requestMeter;
+        Meter rejectMeter;
+        int requestLimit;
+
+        if (isUIQuery) {
+            requestMeter = requestUiMeter;
+            rejectMeter = rejectUiMeter;
+            requestLimit = requestLimitUi;
+        } else {
+            requestMeter = requestUserMeter;
+            rejectMeter = rejectUserMeter;
+            requestLimit = requestLimitPerUser;
+        }
+
+        AtomicInteger count = getCount(userName);
+        return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
     }
 
     /**
