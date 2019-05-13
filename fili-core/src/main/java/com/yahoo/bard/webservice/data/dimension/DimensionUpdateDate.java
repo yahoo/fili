@@ -80,9 +80,8 @@ public class DimensionUpdateDate {
         if (obj instanceof DimensionUpdateDate) {
             DimensionUpdateDate that = (DimensionUpdateDate) obj;
             return Objects.equals(this.getName(), that.getName());
-        } else {
-            return super.equals(obj);
         }
+        return super.equals(obj);
     }
 
     @Override

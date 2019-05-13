@@ -489,14 +489,13 @@ public class KeyValueStoreDimension implements Dimension {
                     this
             );
             throw new IllegalArgumentException(error);
-        } else {
-            Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
-            for (DimensionField dimensionField : getDimensionFields()) {
-                dimensionFieldValueMap.put(dimensionField, "");
-            }
-            dimensionFieldValueMap.put(getKey(), keyFieldValue);
-            return new DimensionRow(key, dimensionFieldValueMap);
         }
+        Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
+        for (DimensionField dimensionField : getDimensionFields()) {
+            dimensionFieldValueMap.put(dimensionField, "");
+        }
+        dimensionFieldValueMap.put(getKey(), keyFieldValue);
+        return new DimensionRow(key, dimensionFieldValueMap);
     }
 
     @Override

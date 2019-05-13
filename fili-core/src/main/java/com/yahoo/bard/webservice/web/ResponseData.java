@@ -175,9 +175,8 @@ public class ResponseData {
     public Stream<String> generateDimensionColumnHeaders(Map.Entry<Dimension, LinkedHashSet<DimensionField>> entry) {
         if (entry.getValue().isEmpty()) {
             return Stream.empty();
-        } else {
-            return entry.getValue().stream().map(dimField -> getDimensionColumnName(entry.getKey(), dimField));
         }
+        return entry.getValue().stream().map(dimField -> getDimensionColumnName(entry.getKey(), dimField));
     }
 
     /**
