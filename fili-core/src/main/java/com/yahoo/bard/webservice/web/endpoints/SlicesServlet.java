@@ -137,7 +137,7 @@ public class SlicesServlet extends EndpointServlet {
                     containerRequestContext,
                     apiRequest.getSlices(),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "slices" : "rows",
-                    apiRequest.getSlicesSchema()
+                    NameAliasList.fromNames(apiRequest.getSlicesSchema())
             );
 
             LOG.debug("Slice Endpoint Response: {}", response.getEntity());

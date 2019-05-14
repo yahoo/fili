@@ -199,7 +199,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     containerRequestContext,
                     getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
-                    getLogicalTableListSummaryViewSchema()
+                    NameAliasList.fromNames(getLogicalTableListSummaryViewSchema())
             );
             LOG.debug("Tables Endpoint Response: {}", response.getEntity());
             return response;

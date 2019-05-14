@@ -162,7 +162,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
                     containerRequestContext,
                     status,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "feature flags" : "rows",
-                    Arrays.asList("name", "value")
+                    NameAliasList.fromNames(Arrays.asList("name", "value"))
             );
             LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;

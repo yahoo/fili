@@ -152,7 +152,7 @@ public class DimensionsServlet extends EndpointServlet {
                     containerRequestContext,
                     getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
-                    getDimensionListSummaryViewSchema()
+                    NameAliasList.fromNames(getDimensionListSummaryViewSchema())
             );
             LOG.debug("Dimensions Endpoint Response: {}", response.getEntity());
             return response;
@@ -323,11 +323,14 @@ public class DimensionsServlet extends EndpointServlet {
                     apiRequest,
                     pagedRows,
                     containerRequestContext,
+                    Response.status(Response.Status.OK),
                     rows,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
-                    Response.status(Response.Status.OK),
-                    apiRequest.getDimension().getDimensionFields().stream()
-                            .map(DimensionField::getDescription).collect(Collectors.toList())
+                    NameAliasList.fromNames(
+                            apiRequest.getDimension().getDimensionFields().stream()
+                                    .map(DimensionField::getDescription)
+                                    .collect(Collectors.toList())
+                    )
             );
 
             LOG.debug("Dimension Value Endpoint Response: {}", response.getEntity());

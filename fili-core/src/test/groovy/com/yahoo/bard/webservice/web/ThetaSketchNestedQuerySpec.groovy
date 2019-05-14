@@ -125,7 +125,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
 
     def "When metrics of Ratio category are filtered, BadApiException is thrown"() {
         when:
-        DefaultLogicalMetricsGenerators.generateLogicalMetrics(
+        DefaultLogicalMetricsGenerators.INSTANCE.generateLogicalMetrics(
                 "ratioMetric(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -146,6 +146,6 @@ class ThetaSketchNestedQuerySpec extends Specification {
         )
 
         expect:
-        logicalMetrics.first().templateDruidQuery.metricDimensions.sort() == [resources.propertyDim, resources.countryDim].sort()
+        logicalMetrics.first().templateDruidQuery.dimensions.sort() == [resources.propertyDim, resources.countryDim].sort()
     }
 }

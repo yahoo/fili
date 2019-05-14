@@ -31,7 +31,7 @@ public class CsvResponse<T> extends AbstractResponse<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(CsvResponse.class);
 
-    private final List<String> columnNames;
+    private final List<Map.Entry<String, String>> columnAliases;
 
     /**
      * Constructor.
@@ -39,19 +39,19 @@ public class CsvResponse<T> extends AbstractResponse<T> {
      * @param entries  The data entries to generate the response for.
      * @param pages  The paginated set of results containing the pages being linked to.
      * @param uriInfo  UriInfo to generate the URL for the page links.
-     * @param columnNames  The CSV header. If null this class will try to extract the header given that the entries
-     * represent maps with strings as keys.
+     * @param columnAliases  The CSV header column names. If null this class will try to extract the header given
+     * that the entries represent maps with strings as keys.
      * @param objectMappers  Suite of Object Mappers to use when serializing the response.
      */
     public CsvResponse(
             Stream<T> entries,
             Pagination<?> pages,
             UriInfo uriInfo,
-            List<String> columnNames,
+            List<Map.Entry<String, String>> columnAliases,
             ObjectMappersSuite objectMappers
     ) {
         super(entries, pages, uriInfo, objectMappers);
-        this.columnNames = columnNames;
+        this.columnAliases = columnAliases;
     }
 
     /**
@@ -69,7 +69,7 @@ public class CsvResponse<T> extends AbstractResponse<T> {
         ObjectMapper csvMapper = objectMappers.getCsvMapper();
 
         try {
-            entries.peek(row -> schema.compareAndSet(null, setOrGuessHeader(row, columnNames)))
+            entries.peek(row -> schema.compareAndSet(null, setOrGuessHeader(row, columnAliases)))
                     .forEachOrdered(
                             row -> {
                                 try {
@@ -91,23 +91,25 @@ public class CsvResponse<T> extends AbstractResponse<T> {
      * Get the header (schema) of the response.
      *
      * @param entry  Entry to examine if we need to guess at the header (ie. we have no column names)
-     * @param columnNames  Column names to use for the header if we have them
+     * @param columnAliases  Column names to use for the header if we have them
      * @param <T>  Type of the entry we're examining
      *
      * @return the schema (header)
      */
-    private static <T> CsvSchema setOrGuessHeader(T entry, List<String> columnNames) {
+    private static <T> CsvSchema setOrGuessHeader(T entry,  List<Map.Entry<String, String>> columnAliases) {
         try {
             @SuppressWarnings("unchecked")
             Map<String, ?> map = ((Map<String, ?>) entry);
-            return buildCsvHeaders(
-                    columnNames != null ?
-                            columnNames :
-                            map.entrySet().stream()
-                                    .filter(e -> e.getValue() != null)
-                                    .map(Map.Entry::getKey)
-                                    .collect(Collectors.toList())
-            );
+
+            List<String> names = columnAliases == null ?
+                    columnAliases.stream()
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList())
+                    : map.entrySet().stream()
+                            .filter(e -> e.getValue() != null)
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList());
+            return buildCsvHeaders(names);
         } catch (ClassCastException cce) {
             String msg = "Unable to extract CSV column names from data. Headers need to be specified explicitly.";
             LOG.error(msg, cce);

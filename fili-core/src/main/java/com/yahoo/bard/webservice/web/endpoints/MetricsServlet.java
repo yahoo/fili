@@ -21,9 +21,11 @@ import com.codahale.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -140,7 +142,7 @@ public class MetricsServlet extends EndpointServlet {
                     containerRequestContext,
                     getLogicalMetricListSummaryView(apiRequest.getMetrics(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "metrics" : "rows",
-                    null
+                    NameAliasList.fromNames(getLogicalMetricSummaryViewSchema())
             );
             LOG.debug("Metrics Endpoint Response: {}", response.getEntity());
             return response;
@@ -235,6 +237,10 @@ public class MetricsServlet extends EndpointServlet {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    public static List<String> getLogicalMetricSummaryViewSchema() {
+        return Arrays.asList("category", "name", "longName", "type", "uri");
+    }
+
     /**
      * Get the summary view of the logical metric.
      *
@@ -244,12 +250,13 @@ public class MetricsServlet extends EndpointServlet {
      * @return Summary view of the logical metric
      */
     public static Map<String, String> getLogicalMetricSummaryView(LogicalMetric logicalMetric, UriInfo uriInfo) {
+        List<String> schemaKeys = getLogicalMetricSummaryViewSchema();
         Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalMetric.getCategory());
-        resultRow.put("name", logicalMetric.getName());
-        resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("type", logicalMetric.getType());
-        resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
+        resultRow.put(schemaKeys.get(0), logicalMetric.getCategory());
+        resultRow.put(schemaKeys.get(1), logicalMetric.getName());
+        resultRow.put(schemaKeys.get(2), logicalMetric.getLongName());
+        resultRow.put(schemaKeys.get(3), logicalMetric.getType());
+        resultRow.put(schemaKeys.get(4), getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }
 

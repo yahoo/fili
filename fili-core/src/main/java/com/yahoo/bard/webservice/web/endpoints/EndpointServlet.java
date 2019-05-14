@@ -15,7 +15,6 @@ import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
 import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -34,7 +33,6 @@ public abstract class EndpointServlet {
     protected final ObjectMappersSuite objectMappers;
     protected final ResponseUtils responseUtils;
     private final Supplier<Response.ResponseBuilder> responseBuilderSupplier;
-
 
     /**
      * Constructor.
@@ -65,9 +63,9 @@ public abstract class EndpointServlet {
      * Format and build the response as JSON or CSV.
      *
      * @param apiRequest  The api request object
-     * @param builder  The builder for the http response
      * @param pagination  The object used to build pages of results and links to other pages
      * @param containerRequestContext  The context of the http request
+     * @param builder  The builder for the http response
      * @param rows  The stream that describes the data to be formatted
      * @param jsonName  Top-level title for the JSON data
      * @param csvColumnNames  Header for the CSV data
@@ -79,10 +77,10 @@ public abstract class EndpointServlet {
             ApiRequest apiRequest,
             Pagination pagination,
             ContainerRequestContext containerRequestContext,
+            Response.ResponseBuilder builder,
             Stream<T> rows,
             String jsonName,
-            Response.ResponseBuilder builder,
-            List<String> csvColumnNames
+            NameAliasList csvColumnNames
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
         StreamingOutput output;
@@ -92,9 +90,8 @@ public abstract class EndpointServlet {
                 apiRequest.getDownloadFilename().orElse(null),
                 apiRequest.getFormat()
         );
-        Response.ResponseBuilder responseBuilderWithHeaders = builder;
         for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
-            responseBuilderWithHeaders = responseBuilderWithHeaders.header(entry.getKey(), entry.getValue());
+            builder.header(entry.getKey(), entry.getValue());
         }
 
         if (CSV.accepts(apiRequest.getFormat())) {
@@ -115,7 +112,7 @@ public abstract class EndpointServlet {
             ).getResponseStream();
 
         }
-        return responseBuilderWithHeaders.entity(output).build();
+        return builder.entity(output).build();
     }
 
     /**
@@ -136,7 +133,7 @@ public abstract class EndpointServlet {
             ContainerRequestContext containerRequestContext,
             Collection<T> rows,
             String jsonName,
-            List<String> csvColumnNames
+            NameAliasList csvColumnNames
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -153,9 +150,9 @@ public abstract class EndpointServlet {
                 apiRequest,
                 pagination,
                 containerRequestContext,
+                responseBuilder,
                 stream,
                 jsonName,
-                responseBuilder,
                 csvColumnNames
         );
     }
@@ -177,7 +174,7 @@ public abstract class EndpointServlet {
             ContainerRequestContext containerRequestContext,
             Pagination<T> pagination,
             String jsonName,
-            List<String> csvColumnNames
+            NameAliasList csvColumnNames
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -190,9 +187,9 @@ public abstract class EndpointServlet {
                 apiRequest,
                 pagination,
                 containerRequestContext,
+                responseBuilder,
                 stream,
                 jsonName,
-                responseBuilder,
                 csvColumnNames
         );
     }

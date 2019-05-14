@@ -351,8 +351,19 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     @Override
-    public Collection<Dimension> getDimensions() {
-        return Collections.emptySet();
+    public Set<Dimension> getDimensions() {
+        Set<Dimension>  myDimensions =
+                Stream.concat(
+                        aggregations.stream(),
+                        postAggregations.stream()
+                )
+                        .map(MetricField::getDependentDimensions)
+                        .flatMap(Set::stream)
+                        .collect(Collectors.toSet());;
+        if (getInnerQuery().isPresent()) {
+            myDimensions.addAll(getInnerQuery().get().getDimensions());
+        }
+        return myDimensions;
     }
 
     @Override
