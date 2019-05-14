@@ -268,20 +268,20 @@ the same basic pattern:
 3. Register your factory with Fili.
 
 Each Factory has a method `build` that takes in the current config and a
-`ResourceFactories` object.
+`LuthierIndustrialPark` object.
 
-## ResourceFactories
+## LuthierIndustrialPark
 
-`ResourceFactories` provides an API for constructing a configuration object's
+`LuthierIndustrialPark` provides an API for constructing a configuration object's
 dependencies. It has the following methods:
 
 ```java
-    LogicalTable getLogicalTable(String logicalTableType, String tableName, Map<String, JsonNode> configTable);
-    PhysicalTable getPhysicalTable(String physicalTableType, String tableName, Map<String, JsonNode> configTable);
-    LogicalMetric getLogicalMetric(String logicalMetricType, String metricName, Map<String, JsonNode> configTable);
-    Dimension getDimension(String dimensionType, String dimensionName, Map<String, JsonNode> configTable);
-    SearchProvider getSearchProvider(String searchProviderType, Map<String, JsonNode> configTable);
-    KeyValueStore getKeyValueStore(String keyValueStoreType, Map<String, JsonNode> configTable);
+    LogicalTable getLogicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
+    PhysicalTable getPhysicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
+    LogicalMetric getLogicalMetric(String factoryName, String metricName, Map<String, JsonNode> configTable);
+    Dimension getDimension(String factoryName, String dimensionName, Map<String, JsonNode> configTable);
+    SearchProvider getSearchProvider(String factoryName, Map<String, JsonNode> configTable);
+    KeyValueStore getKeyValueStore(String factoryName, Map<String, JsonNode> configTable);
 ```
 
 ## DimensionFactory
@@ -298,25 +298,25 @@ A `DimensionFactory` is an object that takes in configuration information
 and builds a `Dimension`. The `TFactory` interface has a single method:
 
 ```java
-    Dimension build(String name, Map<String, JsonNode> configTable, ResourceFactories resourceFactories);
+    Dimension build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
 Fili's AbstractBinderFactory has a method
-`void registerDimensionFactories(DimensionFactories factories)`. You
+`void registerDimensionFactories(LuthierIndustrialPark factories)`. You
 register all your custom dimension factories by overriding `registerDimensionFactories`
-and registering your dimension factory with the provided `ResourceFactories`
+and registering your dimension factory with the provided `LuthierIndustrialPark`
 object.
 
 For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerDimensionFactories(ResourceFactories factories) {
+    public void registerDimensionFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-mysql", new MySqlDimensionFactory());
     }
 ```
 
-The `ResourceFactories` object is preregistered with Fili's
+The `LuthierIndustrialPark` object is preregistered with Fili's
 builtin KeyValueStoreDimensions.
 
 The `register` method throws an `IllegalArgumentException` if customers attempt
@@ -342,18 +342,18 @@ A `SearchProviderFactory` is an object that takes in configuration information
 and builds a `SearchProvider` for a given Diemnsion. `TFactory` has a single method:
 
 ```java
-    SearchProvider build(Dimension dimension, Map<String, JsonNode> configTable, ResourceFactories resourceFactories);
+    SearchProvider build(Dimension dimension, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
 Fili's AbstractBinderFactory has a method
-`void registerSearchProviderFactories(ResourceFactories factories)`. You
+`void registerSearchProviderFactories(LuthierIndustrialPark factories)`. You
 register all your custom search provider factories here.
 
 For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerSearchProviderFactories(ResourceFactories factories) {
+    public void registerSearchProviderFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-mysql", new MySqlSearchProviderFactory());
     }
 ```
@@ -385,23 +385,23 @@ and builds an instance of `KeyValueStore` for a given Dimension. `TFactory` has 
 single method:
 
 ```java
-    KeyValueStore build(Dimension dimension, Map<String, JsonNode> configTable, ResourceFactories resourceFactories);
+    KeyValueStore build(Dimension dimension, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
 Fili's AbstractBinderFactory has a method
-`void registerKeyValueStoreFactories(ResourceFactories factories)`. You
+`void registerKeyValueStoreFactories(LuthierIndustrialPark factories)`. You
 register all your custom key value store factories here.
 
 For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerKeyValueStoreFactories(ResourceFactories factories) {
+    public void registerKeyValueStoreFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-mysql", new MySqlKeyValueStoreFactory());
     }
 ```
 
-The provided `ResourceFactories` object comes preregistered with Fili's
+The provided `LuthierIndustrialPark` object comes preregistered with Fili's
 builtin KeyValueStores.
 
 The `register` method throws an `IllegalArgumentException` if customers
@@ -496,14 +496,14 @@ To use a custom maker in the Lua config, you need to follow these three
 steps:
 
 1. Implement the `MetricMaker` interface.
-2. Register the `MetricMaker` with the `ResourceFactories` object.
+2. Register the `MetricMaker` with the `LuthierIndustrialPark` object.
 
 To add the new `MetricMaker` we override the
-`void registerMetricMakerFactories(ResourceFactories factories)` method in
+`void registerMetricMakerFactories(LuthierIndustrialPark factories)` method in
 our `BinderFactory`:
 
 ```java
-    public void registerMetricMakerFactories(ResourceFactories factories) {
+    public void registerMetricMakerFactories(LuthierIndustrialPark factories) {
         factories.register("customMaker", new CustomMetricMaker());
     }
 ```
@@ -691,7 +691,7 @@ be unique.
 TODO: Move this paragraph under metrics as well, and talk about namespaced metrics there as
 well, because this will impact how people write custom makers.
 Only the name `m1` is pased in to the `MetricMaker` when constructing the metric
-at configuration time. `m2` is stripped off and used in the `ResourceFactories`
+at configuration time. `m2` is stripped off and used in the `LuthierIndustrialPark`
 to populate the `MetricDictionary` appropriately.
 
 ## LogicalTableFactory
@@ -708,25 +708,25 @@ A `LogicalTableFactory` is an object that takes in configuration information
 and builds a `LogicalTable`. It has a single method:
 
 ```java
-    LogicalTable build(String name, Map<String, JsonNode> configTable, ResourceFactories resourceFactories);
+    LogicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
 Fili's AbstractBinderFactory has a method
 `void registerDimensionFactories(DimensionFactories factories)`. You
 register all your custom dimension factories by overriding `registerDimensionFactories`
-and registering your dimension factory with the provided `ResourceFactories`
+and registering your dimension factory with the provided `LuthierIndustrialPark`
 object.
 
 For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerLogicalTableFactories(ResourceFactories factories) {
+    public void registerLogicalTableFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-mysql", new CustomLogicalTableFactory());
     }
 ```
 
-The `ResourceFactories` object is preregistered with Fili's
+The `LuthierIndustrialPark` object is preregistered with Fili's
 builtin LogicalTables.
 
 The `register` method throws an `IllegalArgumentException` if customers attempt
@@ -752,25 +752,25 @@ A `DimensionFactory` is an object that takes in configuration information
 and builds a `Dimension`. It has a single method:
 
 ```java
-    PhysicalTable build(String name, Map<String, JsonNode> configTable, ResourceFactories resourceFactories);
+    PhysicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
 Fili's AbstractBinderFactory has a method
-`void registerDimensionFactories(ResourceFactories factories)`. You
+`void registerDimensionFactories(LuthierIndustrialPark factories)`. You
 register all your custom dimension factories by overriding `registerDimensionFactories`
-and registering your dimension factory with the provided `ResourceFactories`
+and registering your dimension factory with the provided `LuthierIndustrialPark`
 object.
 
 For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerPhysicalTableFactories(ResourceFactories factories) {
+    public void registerPhysicalTableFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-physicaltable", new CustomPhysicalTableFactory());
     }
 ```
 
-The `ResourceFactories` object is preregistered with Fili's
+The `LuthierIndustrialPark` object is preregistered with Fili's
 builtin PhysicalTables.
 
 The `register` method throws an `IllegalArgumentException` if customers attempt
@@ -799,7 +799,7 @@ LudierLoader is responsible for extracting from each JSON file a `Map<String,
 Map<String, JsonNode>>` that maps names to configuration objects.  We'll need
 one for logical tables, physical tables, dimensions, metrics, search providers
 and key value stores.  We'll need to inject these dictionaries into the 
-`ResourceDictionaries` object, and make sure the `ResourceFactories` have 
+`ResourceDictionaries` object, and make sure the `LuthierIndustrialPark` have 
 access to the `ResourceDictionaries`.
 
 It will iterate over the table configuration, and build
@@ -822,7 +822,7 @@ It will look something like:
     )
 ```
 
-The `ResourceFactories` will be responsible for extracting the appropriate 
+The `LuthierIndustrialPark` will be responsible for extracting the appropriate 
 configuration object from the appropriate `Map<String, Map<String, JsonNode>>`
 and passing it along to the appropriate factory.
 

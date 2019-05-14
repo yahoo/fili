@@ -234,6 +234,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         return new AbstractBinder() {
             @Override
             protected void configure() {
+
                 HealthCheckRegistry healthCheckRegistry = HealthCheckRegistryFactory.getRegistry();
 
                 Stream.concat(
