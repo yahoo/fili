@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.dimension.impl;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.dimension.ImmutableSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
@@ -19,11 +20,13 @@ import java.util.TreeSet;
 /**
  * MapSearchProvider allows for a read only view on a simple immutable map of in memory dimension rows.
  */
-public class MapSearchProvider extends ScanSearchProvider {
+public class MapSearchProvider extends ScanSearchProvider implements ImmutableSearchProvider {
+
+    protected static final String UNSUPPORTED_OP_EXCEPTION_MESSAGE = "MapSearchProvider does not support %s operation";
 
     private Dimension dimension;
 
-    private static Map<String, DimensionRow> dimensionRows = new TreeMap<>();
+    private final Map<String, DimensionRow> dimensionRows;
 
     /**
      * Constructor.
@@ -31,6 +34,7 @@ public class MapSearchProvider extends ScanSearchProvider {
      * @param dimensionRows Map of dimension rows 'indexed' only by key field
      */
     public MapSearchProvider(Map<String, DimensionRow> dimensionRows) {
+        // TODO is there a defined ordering of a tree set
         this.dimensionRows = new TreeMap<>(dimensionRows);
     }
 
@@ -41,25 +45,20 @@ public class MapSearchProvider extends ScanSearchProvider {
 
     @Override
     public void setKeyValueStore(KeyValueStore keyValueStore) {
-        // do nothing
+        // Do nothing. This search provider is not backed by a key values store, so quietly ignore it
     }
 
-    /**
-     * Get cardinality for the dimension.
-     * <p>
-     * @return The dimension cardinality
-     */
     @Override
     public int getDimensionCardinality() {
         return dimensionRows.size();
     }
 
-    /**
-     * For dimensions with NoOpSearchProvider, the dimension rows are unknown.
-     * So, returning an empty Set would prevent any NullPointerException.
-     *
-     * @return empty Set of dimension rows.
-     */
+    @Override
+    public int getDimensionCardinality(boolean refresh) {
+        // no way to refresh cardinality.
+        return getDimensionCardinality();
+    }
+
     @Override
     public TreeSet<DimensionRow> findAllOrderedDimensionRows() {
         return new TreeSet<>(dimensionRows.values());
@@ -67,17 +66,34 @@ public class MapSearchProvider extends ScanSearchProvider {
 
     @Override
     public void refreshIndex(String rowId, DimensionRow dimensionRow, DimensionRow dimensionRowOld) {
-        // do nothing
+        throw new UnsupportedOperationException(
+                String.format(
+                        UNSUPPORTED_OP_EXCEPTION_MESSAGE,
+                        "refresh index"
+                )
+        );
     }
 
     @Override
     public void refreshIndex(Map<String, HashDataCache.Pair<DimensionRow, DimensionRow>> changedRows) {
-        // do nothing
+        throw new UnsupportedOperationException(
+                String.format(
+                        UNSUPPORTED_OP_EXCEPTION_MESSAGE,
+                        "refresh index"
+                )
+        );
+
     }
 
     @Override
     public void clearDimension() {
-        //do nothing
+        throw new UnsupportedOperationException(
+            String.format(
+                    UNSUPPORTED_OP_EXCEPTION_MESSAGE,
+                    "clear dimension"
+            )
+    );
+
     }
 
     @Override
@@ -98,13 +114,5 @@ public class MapSearchProvider extends ScanSearchProvider {
     @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
         return new AllPagesPagination<>(dimensionRows.values(), paginationParameters);
-    }
-
-    @Override
-    public Pagination<DimensionRow> findFilteredDimensionRowsPaged(
-            Set<ApiFilter> filters,
-            PaginationParameters paginationParameters
-    ) {
-        return super.findFilteredDimensionRowsPaged(filters, paginationParameters);
     }
 }
