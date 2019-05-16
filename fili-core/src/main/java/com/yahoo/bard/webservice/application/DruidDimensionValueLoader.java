@@ -20,10 +20,9 @@ import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
-
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.joda.time.Years;
+import org.joda.time.Period;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -42,15 +41,22 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_dimensions");
     public static final String DRUID_DIM_LOADER_ROW_LIMIT =
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_row_limit");
+    public static final String DRUID_DIM_LOADER_LOOKBACK_PERIOD =
+            SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_lookback_period");
+
+
     private static final Integer ROW_LIMIT = SYSTEM_CONFIG.getIntProperty(DRUID_DIM_LOADER_ROW_LIMIT, 1000);
 
-    private static final Interval INTERVAL = new Interval(Years.years(10), DateTime.now());
+    //private static final Interval INTERVAL = new Interval(Years.years(10), DateTime.now());
+    private static final String DEFAULT_DIMENSION_LOOKBACK_PERIOD = "P10Y";
+
     private static final String ANY_MATCH_PATTERN = ".*";
     private static final SearchQuerySpec SEARCH_QUERY_SPEC = new RegexSearchQuerySpec(ANY_MATCH_PATTERN);
 
     private final DruidWebService druidWebService;
     private final LinkedHashSet<Dimension> dimensions;
     private final LinkedHashSet<DataSource> dataSources;
+    private final Period lookbackPeriod;
 
     private HttpErrorCallback errorCallback;
     private FailureCallback failureCallback;
@@ -102,6 +108,13 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         this.druidWebService = druidWebService;
+
+        this.lookbackPeriod = new Period(
+                SYSTEM_CONFIG.getStringProperty(
+                        DRUID_DIM_LOADER_LOOKBACK_PERIOD,
+                        DEFAULT_DIMENSION_LOOKBACK_PERIOD
+                )
+        );
     }
 
     @Override
@@ -133,7 +146,7 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
                 dataSource,
                 AllGranularity.INSTANCE,
                 null,
-                Collections.singletonList(INTERVAL),
+                Collections.singletonList(new Interval(lookbackPeriod, new DateTime())),
                 Collections.singletonList(dimension),
                 SEARCH_QUERY_SPEC,
                 null,
