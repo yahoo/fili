@@ -125,7 +125,7 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
             String physicalName
     ) {
         this(
-                (DimensionName) () -> dimension.getApiName(),
+                (DimensionName) dimension::getApiName,
                 physicalName,
                 dimension.getDescription(),
                 dimension.getLongName(),
@@ -150,7 +150,7 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
             String physicalName
     ) {
         this(
-                (DimensionName) () -> dimension.getApiName(),
+                (DimensionName) dimension::getApiName,
                 physicalName,
                 dimension.getDescription(),
                 dimension.getLongName(),
@@ -175,7 +175,7 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
             String physicalName
     ) {
         this(
-                (DimensionName) () -> dimension.getApiName(),
+                (DimensionName) dimension::getApiName,
                 physicalName,
                 dimension.getDescription(),
                 dimension.getLongName(),

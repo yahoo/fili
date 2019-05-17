@@ -6,9 +6,9 @@ import com.yahoo.bard.webservice.data.config.names.DimensionName;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.DefaultTagKeyDimensionField;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import javax.validation.constraints.NotNull;
@@ -33,6 +33,7 @@ public class FlagFromTagDimensionConfig implements DimensionConfig {
     private final String tagValue;
     private final String trueValue;
     private final String falseValue;
+
 
     /**
      * Configuration for a dimension that uses the presence of a tag as the basis for a true/false flag dimension.
@@ -137,12 +138,12 @@ public class FlagFromTagDimensionConfig implements DimensionConfig {
 
     @Override
     public LinkedHashSet<DimensionField> getFields() {
-        return DefaultTagKeyDimensionField.DEFAULT_FIELDS;
+        return new LinkedHashSet<>(Collections.singleton(DefaultDimensionField.ID));
     }
 
     @Override
     public LinkedHashSet<DimensionField> getDefaultDimensionFields() {
-        return DefaultTagKeyDimensionField.DEFAULT_FIELDS;
+        return new LinkedHashSet<>(Collections.singleton(DefaultDimensionField.ID));
     }
 
     @Override

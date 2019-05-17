@@ -2,7 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
+import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultRegisteredLookupDimensionConfig;
+import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -31,9 +33,9 @@ public class FlagFromTagDimension implements Dimension {
 
     private final DimensionRow trueRow;
     private final DimensionRow falseRow;
-    private final DimensionRow nullRow;
 
     private static final String NULL_VALUE = "";
+    private static final String UNUSED_PHYSICAL_NAME = "unused_physical_name";
 
     private final Dimension groupingDimension;
     private final Dimension filteringDimension;
@@ -43,12 +45,12 @@ public class FlagFromTagDimension implements Dimension {
 
 
     /**
-     * Create a Tag dimension based on a flag dimension.
+     * Create a flag dimension based on a tag dimension.
      *
-     * A tag dimensi on has values true and false, and corresponds to another dimension that has or doesn't have
+     * A flag dimension has values true and false, and corresponds to another dimension that has or doesn't have
      * a given identifier in a multivalued list of identifiers.  The expected contract for the flag dimension
      * is that it will have one dimension that can be filtered using default serialization, substituting the
-     * expression tag|key-in[true] with flag|key-eq[flagName] where flag is the targetted value.  The expectation
+     * expression tag|key-in[true] with flag|key-eq[flagName] where flag is the targeted value.  The expectation
      * for grouping is that a comma delimited string dimension will be present for which a custom extraction function
      * will be used for grouping.
      *
@@ -65,23 +67,23 @@ public class FlagFromTagDimension implements Dimension {
         String trueValue = dimensionConfig.getTrueValue();
         String falseValue = dimensionConfig.getFalseValue();
 
-        Dimension dimension = dimensionDictionary.findByApiName(dimensionConfig.getGroupingBaseDimensionApiName());
+        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(dimensionConfig.getGroupingBaseDimensionApiName());
         DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
 
-        if (dimension instanceof RegisteredLookupDimension) {
+        if (baseGroupingDimension instanceof RegisteredLookupDimension) {
             groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (RegisteredLookupDimension) dimension,
-                    dimensionConfig.getPhysicalName()
+                    (RegisteredLookupDimension) baseGroupingDimension,
+                    UNUSED_PHYSICAL_NAME
             );
-        } else if (dimension instanceof KeyValueStoreDimension) {
+        } else if (baseGroupingDimension instanceof KeyValueStoreDimension) {
             groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (KeyValueStoreDimension) dimension,
-                    dimensionConfig.getPhysicalName()
+                    (KeyValueStoreDimension) baseGroupingDimension,
+                    UNUSED_PHYSICAL_NAME
             );
         } else {
             groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    dimension,
-                    dimensionConfig.getPhysicalName()
+                    baseGroupingDimension,
+                    UNUSED_PHYSICAL_NAME
             );
         }
         groupingDimension = new RegisteredLookupDimension(
@@ -93,12 +95,11 @@ public class FlagFromTagDimension implements Dimension {
                                         falseValue)))
         );
 
-        DimensionField keyField = DefaultTagKeyDimensionField.DEFAULT_FIELD;
+        DimensionField keyField = DefaultDimensionField.ID;
         trueRow = new DimensionRow(keyField, Collections.singletonMap(keyField, trueValue));
         falseRow = new DimensionRow(keyField, Collections.singletonMap(keyField, falseValue));
-        nullRow = new DimensionRow(keyField, Collections.singletonMap(keyField, falseValue));
 
-        rowMap = Stream.of(trueRow, falseRow, nullRow)
+        rowMap = Stream.of(trueRow, falseRow)
                 .collect(Collectors.toMap(DimensionRow::getKeyValue, Function.identity()));
         searchProvider = new MapSearchProvider(rowMap);
     }
@@ -160,13 +161,13 @@ public class FlagFromTagDimension implements Dimension {
 
     @Override
     public DimensionField getKey() {
-        return DefaultTagKeyDimensionField.DEFAULT_FIELD;
+        return DefaultDimensionField.ID;
     }
 
     @Override
     public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
         if (!fieldNameValueMap.containsKey(getKey().getName())) {
-            return nullRow;
+            return falseRow;
         }
         return createEmptyDimensionRow(fieldNameValueMap.get(getKey().getName()));
     }
