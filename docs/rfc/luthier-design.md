@@ -434,36 +434,42 @@ Now, suppose we want another metric in Fili `baz` that computes the sum of `foo`
 and `bar`. For this, we need to use the ArithmeticMaker:
 
 ```
-baz = ArithmeticMaker(fili-foo, fili-bar)
+baz = ArithmeticMakerPlus(fili-foo, fili-bar)
 ```
 
 In our Lua config this would look like the following:
 ```lua
 {
     fili-foo = {
-        maker = simpleMakers.longSum,
+        maker = "longSum",
         druidMetric = "foo"
     },
     fili-bar = {
-        maker = simpleMakers.longSum,
+        maker = "longSum",
         druidMetric = "bar"
     },
     baz = {
-        maker = complexMakers.arithmeticPLUS,
+        maker = "arithmeticPLUS",
         dependencies = {"fili-foo", "fili-bar"}
     }
 }
 ```
 
-Fili has two built-in tables of makers: `simpleMakers` and `complexMakers`.
-`simpleMakers` are makers that directly aggregate a Druid metric, and correspond
-directly to a Druid aggregation (i.e. `longSum`, `doubleSum`). `complexMakers`
+Fili has two types of makers: flat makers and nested makers.
+Flat makers are makers that directly aggregate a Druid metric, and correspond
+directly to a Druid aggregation (i.e. `longSum`, `doubleSum`). Nested makers
 are makers that rely on already-defined Fili metrics (i.e. `arithmeticPLUS`).
 
-We define metrics by "building" them out of makers. The first step
-in configuring metrics is configuring their makers. Fili comes with a host of
+We define metrics by "building" them out of makers. Fili comes with a host of
 builtin makers that should fit most of your usecases, but it has deep support
 for supplying custom makers.
+
+Metrics also support the `type` field that allow customers to specify a custom
+type of `LogicalMetric` if so needed. If not provided, it defaults to 
+`com.yahoo.bard.webservice.data.metric.LogicalMetric`, the metric type provided
+by Fili. Note that customers should rarely if ever need to provide a custom
+`LogicalMetric`. Most needs will be met more cleanly by providing custom
+makers.
 
 # Custom Makers
 
@@ -478,7 +484,7 @@ JsonNode>`. For example, the following is the definition of the
 MetricMaker:
 
 ```lua
-complexMakers.arithemticPLUS = {
+M.arithmeticPLUS = {
     name = "ArithmeticMaker",
     ["function"] = "PLUS",
 }
@@ -495,8 +501,31 @@ by name in each metric that uses them, as demonstrated [earlier](#metrics).
 To use a custom maker in the Lua config, you need to follow these three
 steps:
 
-1. Implement the `MetricMaker` interface.
-2. Register the `MetricMaker` with the `LuthierIndustrialPark` object.
+1. Implement the `MetricMaker` interface with your custom maker.
+2. Implement the `MetricMakerFactory` interface to build your custom maker.
+3. Register the new `MetricMakerFactory` with the `LuthierIndustrialPark` object.
+
+To add the new `MetricMakerFactory` we override the
+`void registerMetricMakerFactories(LuthierIndustrialPark factories)` method in
+our `BinderFactory`:
+
+```java
+    public void registerMetricMakerFactories(LuthierIndustrialPark factories) {
+        factories.register(CustomMetricMaker.class.getName(), new CustomMetricMaker());
+    }
+```
+
+## MetricFactory
+
+Fili supports building custom instances of `LogicalMetric` (though it's 
+far more likely you'll want a custom `MetricMaker` rather than a custom
+`LogicalMetric`). 
+
+To define a custom `LogicalMetric`, we follow the same basic pattern as
+everything else:
+
+1. Extend the `LogicalMetric` class.
+2. Register the `MetricFactory` with the `LuthierIndustrialPark` object.
 
 To add the new `MetricMaker` we override the
 `void registerMetricMakerFactories(LuthierIndustrialPark factories)` method in
@@ -507,10 +536,6 @@ our `BinderFactory`:
         factories.register("customMaker", new CustomMetricMaker());
     }
 ```
-
-Note: A `MetricFactory` isn't necessary because `MetricMaker` is already
-responsible for building metrics. If you need a custom `LogicalMetric`, just
-have your custom `MetricMaker` build it!
 
 # Tables
 
