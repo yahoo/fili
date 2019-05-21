@@ -10,6 +10,9 @@ Current
 
 ### Added:
 
+- [Add config parameter to control lookback on druid dimension loader](https://github.com/yahoo/fili/issues/908)
+    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading. 
+
 - [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
     * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
     by restricting access to only a subset of the data present on the logical table.
@@ -239,6 +242,9 @@ Current
 - [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
 
 ### Fixed:
+
+- [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
+    * Unstuck lookback so that the window slides forward rather than stopping at static load time.
 
 - [Reverted addition of Verizon Media Group to copyright]()
 
