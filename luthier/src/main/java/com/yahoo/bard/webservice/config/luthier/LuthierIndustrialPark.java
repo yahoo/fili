@@ -27,6 +27,7 @@ public class LuthierIndustrialPark {
     LogicalTable getLogicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
     PhysicalTable getPhysicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
     LogicalMetric getLogicalMetric(String factoryName, String metricName, Map<String, JsonNode> configTable);
+    MetricMaker getMetricMaker(String factoryName, Map<String, JsonNode> configTable);  
 */
     Dimension getDimension(String factoryName, String dimensionName, Map<String, JsonNode> configTable) {
         DimensionDictionary dimensionDictionary = resourceDictionaries.getDimensionDictionary();

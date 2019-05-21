@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application
 
+import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA

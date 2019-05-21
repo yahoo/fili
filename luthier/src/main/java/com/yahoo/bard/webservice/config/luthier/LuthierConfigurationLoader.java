@@ -5,21 +5,47 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 // TODO Make Configuration Loader an interface
-public class LuthierConfigurationLoader extends ConfigurationLoader {
+public class LuthierConfigurationLoader implements ConfigurationLoader {
 
     ResourceDictionaries resourceDictionaries;
 
-    public LuthierConfigurationLoader(
-            final DimensionLoader dimensionLoader,
-            final MetricLoader metricLoader,
-            final TableLoader tableLoader,
-            final ResourceDictionaries resourceDictionaries
-    ) {
-        super(dimensionLoader, metricLoader, tableLoader);
+    public LuthierConfigurationLoader(ResourceDictionaries resourceDictionaries) {
         this.resourceDictionaries = resourceDictionaries;
     }
 
+    @Override
+    public void load() {
 
+    }
+
+    @Override
+    public DimensionDictionary getDimensionDictionary() {
+        return resourceDictionaries.getDimensionDictionary();
+    }
+
+    @Override
+    public MetricDictionary getMetricDictionary() {
+        return resourceDictionaries.getMetricDictionary();
+    }
+
+    @Override
+    public LogicalTableDictionary getLogicalTableDictionary() {
+        return resourceDictionaries.getLogicalDictionary();
+    }
+
+    @Override
+    public PhysicalTableDictionary getPhysicalTableDictionary() {
+        return getPhysicalTableDictionary();
+    }
+
+    @Override
+    public ResourceDictionaries getDictionaries() {
+        return resourceDictionaries;
+    }
 }
