@@ -156,11 +156,9 @@ The values of a parameter entry will contain a mandatory field 'type'.
 
 In this example, the `dimension` supports fields `dimensionName` and `defaultValue`.  Dimension name is the name of a dimension whose values are legal for this parameter.  
 
-The `defaultValue` typically represents the value to be used if no value is present for this parameter.  
+The `defaultValue` represents the value to be used for this parameter if no value is present in the request.  If no unselected value is legal, `null` should selected as the default value.
 
-Typically, this field can be used as an optimization for UI clients to provide a 'recommended' value for the parameter, if appropriate.  `defaultValue`, if used, is recommended to be equivalent to not supplying a value for this parameter at all.
-
-A null default value should be shown to indicate that a value must be selected.
+Typically, this field can be used as an optimization for UI clients to provide a 'recommended' value for the parameter, if appropriate.  
 
 For conciseness, the default output format for the metric endpoint will NOT include reserved word system-wide parameters.  A query parameter for verbose expansion may be subsequently defined. 
 
