@@ -156,7 +156,11 @@ The values of a parameter entry will contain a mandatory field 'type'.
 
 In this example, the `dimension` supports fields `dimensionName` and `defaultValue`.  Dimension name is the name of a dimension whose values are legal for this parameter.  
 
-The `defaultValue` field is an optimization for UI clients to provide a 'recommended' value for the parameter, if appropriate.  `defaultValue`, if used, is recommended to be equivalent to not supplying a value for this parameter at all.
+The `defaultValue` typically represents the value to be used if no value is present for this parameter.  
+
+Typically, this field can be used as an optimization for UI clients to provide a 'recommended' value for the parameter, if appropriate.  `defaultValue`, if used, is recommended to be equivalent to not supplying a value for this parameter at all.
+
+A null default value should be shown to indicate that a value must be selected.
 
 For conciseness, the default output format for the metric endpoint will NOT include reserved word system-wide parameters.  A query parameter for verbose expansion may be subsequently defined. 
 
@@ -175,6 +179,21 @@ Proposed future type extensions:
 
 `enum`: The parameter accepts values from an included list of values.
 
+```json
+{ 
+    "name": "population",
+    "type": "general",
+    "parameters": {
+        "ageBracket": {  
+            "type": "enum", 
+            "values": [
+              "0", "1", "2", "3", "4", "5"
+            ],
+            "defaultValue": "2" 
+        }
+    }
+}
+```
 `number`: The parameter accepts simple (signed) numeric values.
 
 `date`: The parameter accepts values that parse as the DateTime part of the interval used within dateTime query parameter.
