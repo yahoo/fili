@@ -83,7 +83,7 @@ class IntervalUtilsSpec extends Specification {
         ["2013/2015", "2016/2018"] | ["2014/2016", "2015/2017"]                         || ["2014/2015", "2016/2017"]
         ["2013/2015"]              | ["2013-03-01/2014-04-01", "2014/2016"]             || ["2014/2015", "2013-03-01/2014-04-01"]
     }
-    
+
     def "Empty interval collection returns no earliest DateTime"() {
         expect:
         IntervalUtils.firstMoment(Collections.emptySet()) == Optional.empty()

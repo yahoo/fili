@@ -14,7 +14,7 @@ class CascadeExtractionFunctionSpec extends Specification {
 
     String expectedSerialization ="""
     {
-        "type" : "cascade",  
+        "type" : "cascade",
         "extractionFns" : [
             {
                 "type" : "test"

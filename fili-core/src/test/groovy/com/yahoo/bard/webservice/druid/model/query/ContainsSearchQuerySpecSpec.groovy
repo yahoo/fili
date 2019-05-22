@@ -27,5 +27,4 @@ class ContainsSearchQuerySpecSpec extends Specification {
 
         caseSensitive = isCaseSensitive == null ? "Default" : (isCaseSensitive ? "Case sensitive" : "Case insensitive")
     }
-
 }
