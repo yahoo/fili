@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.ImmutableSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
+import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * MapSearchProvider allows for a read only view on a simple immutable map of in memory dimension rows.
@@ -62,6 +64,11 @@ public class MapSearchProvider extends ScanSearchProvider implements ImmutableSe
     @Override
     public TreeSet<DimensionRow> findAllOrderedDimensionRows() {
         return new TreeSet<>(dimensionRows.values());
+    }
+
+    @Override
+    protected TreeSet<DimensionRow> getAllOrderedDimensionRows() {
+        return findAllOrderedDimensionRows();
     }
 
     @Override

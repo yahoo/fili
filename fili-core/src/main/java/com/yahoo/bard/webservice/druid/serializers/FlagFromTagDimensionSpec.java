@@ -34,16 +34,24 @@ public class FlagFromTagDimensionSpec extends JsonSerializer<FlagFromTagDimensio
 
 
         JsonStreamContext context = gen.getOutputContext();
-        if (context.getCurrentValue() instanceof DruidQuery && context.getCurrentName().equals("dimensions")) {
+        /* I'm not sure what the first check wants to ask for, but currently I think it is wrong by definition. If the
+        parent is the dimensions block we can be at a druid query, the current context has to be a dimension object we
+        are serializing.
+        */
+// if (context.getCurrentValue() instanceof DruidQuery && context.getParent().getCurrentName().equals("dimensions")) {
+
+        // If we are in the dimensions block we are in a group by expression, so serialize the grouping dimension
+        if (context.getParent().getCurrentName().equals("dimensions")) {
             JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(RegisteredLookupDimension.class);
-            dimensionSerializer.serialize(value, gen, provider);
+            dimensionSerializer.serialize(value.getGroupingDimension(), gen, provider);
             return;
         }
 
 
+        // What case is this handling? I am assuming all non-grouping cases should use filter serialization.
         JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(value.getFilteringDimension()
                 .getClass());
-        dimensionSerializer.serialize(value.getCardinality(), gen, provider);
+        dimensionSerializer.serialize(value.getFilteringDimension(), gen, provider);
         return;
     }
 }

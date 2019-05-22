@@ -13,6 +13,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.TagExtractionFunctionFactory;
+import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
+import com.yahoo.bard.webservice.druid.serializers.FlagFromTagDimensionSpec;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.time.DateTime;
 
@@ -27,6 +31,7 @@ import java.util.stream.Stream;
 /**
  * Build a Flag dimension with a simple true and false filter corresponding to a multivalued 'tag' dimension.
  */
+@JsonSerialize(using = FlagFromTagDimensionSpec.class)
 public class FlagFromTagDimension implements Dimension {
 
     private final FlagFromTagDimensionConfig dimensionConfig;
@@ -39,6 +44,10 @@ public class FlagFromTagDimension implements Dimension {
 
     private final Dimension groupingDimension;
     private final Dimension filteringDimension;
+    private final String tagValue;
+    private final String trueValue;
+    private final String falseValue;
+
 
     protected final Map<String, DimensionRow> rowMap;
     protected SearchProvider searchProvider;
@@ -64,8 +73,9 @@ public class FlagFromTagDimension implements Dimension {
     ) {
         this.dimensionConfig = flagDimensionConfig;
         this.filteringDimension = dimensionDictionary.findByApiName(dimensionConfig.getFilteringDimensionApiName());
-        String trueValue = dimensionConfig.getTrueValue();
-        String falseValue = dimensionConfig.getFalseValue();
+        tagValue = dimensionConfig.getTagValue();
+        trueValue = dimensionConfig.getTrueValue();
+        falseValue = dimensionConfig.getFalseValue();
 
         Dimension baseGroupingDimension = dimensionDictionary.findByApiName(dimensionConfig.getGroupingBaseDimensionApiName());
         DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
@@ -211,5 +221,17 @@ public class FlagFromTagDimension implements Dimension {
 
     public Dimension getFilteringDimension() {
         return filteringDimension;
+    }
+
+    public String getTagValue() {
+        return tagValue;
+    }
+
+    public String getTrueValue() {
+        return trueValue;
+    }
+
+    public String getFalseValue() {
+        return falseValue;
     }
 }
