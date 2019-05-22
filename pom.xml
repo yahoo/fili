@@ -566,6 +566,25 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>3.0</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*.java</include>
+                            <include>**/*.groovy</include>
+                        </includes>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </configuration>
+
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>${maven-source-plugin-version}</version>
@@ -586,7 +605,7 @@
                         <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
                         <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                         <configLocation>${checkstyle.config.location}</configLocation>
-                        <includes>**\/*.java</includes>
+                        <includes>**\/*.java,**\/*.groovy</includes>
                         <resourceIncludes>**/*.properties,**/*.sample</resourceIncludes>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <consoleOutput>true</consoleOutput>
