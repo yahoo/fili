@@ -106,6 +106,9 @@ Current
 
 ### Changed:
 
+- [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
+    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
+
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
     * Refactored FilterBinders to support chain-of-responsibility FilterFactory
