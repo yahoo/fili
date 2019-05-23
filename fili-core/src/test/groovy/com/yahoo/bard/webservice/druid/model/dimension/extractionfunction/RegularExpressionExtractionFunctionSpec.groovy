@@ -16,14 +16,14 @@ class RegularExpressionExtractionFunctionSpec extends Specification {
 
     String expectedSerializationSimple ="""
     {
-        "type" : "regex",  
+        "type" : "regex",
         "expr" : "foo"
     }
 """
 
     String expectedSerializationComplex ="""
     {
-        "type" : "regex",  
+        "type" : "regex",
         "expr" : "foo",
         "index": 2,
         "replaceMissingValue": true,

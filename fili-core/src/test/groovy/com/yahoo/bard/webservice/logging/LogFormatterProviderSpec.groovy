@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.logging
 
 import static com.yahoo.bard.webservice.logging.LogFormatterProvider.LOG_FORMATTER_IMPLEMENTATION_SETTING_NAME
@@ -63,5 +65,4 @@ class LogFormatterProviderSpec extends Specification {
         then:
         LogFormatterProvider.instance instanceof JsonLogFormatter
     }
-
 }

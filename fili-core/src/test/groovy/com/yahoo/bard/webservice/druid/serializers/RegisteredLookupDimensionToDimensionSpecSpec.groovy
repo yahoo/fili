@@ -99,4 +99,3 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         serializedQuery.contains('"dimensions":["species"]')
     }
 }
-

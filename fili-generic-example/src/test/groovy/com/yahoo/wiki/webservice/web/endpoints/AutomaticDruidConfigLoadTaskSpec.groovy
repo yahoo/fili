@@ -1,3 +1,5 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
@@ -27,14 +29,14 @@ class AutomaticDruidConfigLoaderSpec extends Specification {
             "dataSource": "wikiticker",
             "interval": "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z",
             "version": "2017-02-27T03:06:09.422Z",
-            "loadSpec": 
+            "loadSpec":
                 {
                     "type": "local",
                     "path": "2015-09-12T00:00:00.000Z_2015-09-13T00:00:00.000Z/2017-02-27T03:06:09.422Z/0/index.zip"
                 },
             "dimensions": "${dimensions.join(",")}",
             "metrics":  "${metrics.join(",")}",
-            "shardSpec": 
+            "shardSpec":
                 {
                     "type": "none"
                 },

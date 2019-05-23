@@ -1,4 +1,4 @@
-// Copyright 2019 Yahoo Inc.
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders
 
@@ -32,5 +32,4 @@ class IntervalBindersSpec extends Specification {
         "2019-04-23T19:13:00.564Z"          |   "2019-04-23T19:13:00.564Z"          | "UTC"                 | "server time is in UTC and timezone to adjust to is also UTC"
         "2019-04-23T10:13:00.564Z"          |   "2019-04-23T03:13:00.564Z"          | "America/Los_Angeles" | "server time is before midnight UTC and timezone to adjust is PST"
     }
-
 }

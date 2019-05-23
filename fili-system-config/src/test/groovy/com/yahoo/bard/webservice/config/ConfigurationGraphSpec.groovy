@@ -33,7 +33,7 @@ import spock.lang.Unroll
 
 class ConfigurationGraphSpec extends Specification {
 
-    public static final ConfigurationGraph GRAPH = new ConfigurationGraph(namedConfigurations, {})
+    public static final ConfigurationGraph GRAPH = new ConfigurationGraph(ConfigurationTestUtils.namedConfigurations, {})
 
     def "Constructor loads vertices and edges correctly"() {
         setup:
@@ -136,5 +136,4 @@ class ConfigurationGraphSpec extends Specification {
         SystemConfigException systemConfigException = thrown(SystemConfigException)
         systemConfigException.getMessage() == ConfigMessageFormat.MISSING_DEPENDENCY.format(MODULE_NOT_APPEARING, [MODULE_MISSING_CHILD])
     }
-
 }

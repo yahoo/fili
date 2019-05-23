@@ -26,7 +26,7 @@ class TagExtractionFunctionFactorySpec extends Specification {
                 },
                 {
                     "type" : "lookup",
-                    "lookup" : 
+                    "lookup" :
                     {
                         "type" : "map",
                         "map" : {"11":"Yes"}

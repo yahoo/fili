@@ -88,7 +88,7 @@ class TableFullViewProcessorSpec extends Specification {
                 "[category:General, name:limbs, longName:limbs, type:number, uri:http://localhost:9998/v1/limbs], " +
                 "[category:General, name:dayAvgLimbs, longName:dayAvgLimbs, type:number, " +
                 "uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:]"
-        
+
         LogicalTable petsTable = petsShapesTables.find {it.getName() == "pets"}
 
         when:

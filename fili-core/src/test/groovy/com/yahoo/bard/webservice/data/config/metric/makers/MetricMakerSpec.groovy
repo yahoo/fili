@@ -157,7 +157,7 @@ class MetricMakerSpec extends Specification {
             protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
                 DEFAULT_METRIC
             }
-            
+
             @Override
             protected int getDependentMetricsRequired() {
                 DEPENDENT_METRICS

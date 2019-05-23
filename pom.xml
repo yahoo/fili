@@ -7,7 +7,7 @@
     <artifactId>fili-parent-pom</artifactId>
     <version>0.11-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <name>Fili: parent pom</name>
     <description>Shared dependencies for the Fili libraries</description>
     <url>http://fili.io/</url>
@@ -53,7 +53,7 @@
             <url>https://github.com/yahoo</url>
         </developer>
     </developers>
-    
+
     <mailingLists>
         <mailingList>
             <name>fili-users</name>
@@ -145,7 +145,7 @@
         <maven-checkstyle-plugin-version>3.0.0</maven-checkstyle-plugin-version>
         <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
-        
+
         <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
     </properties>
 
@@ -586,7 +586,7 @@
                         <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
                         <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                         <configLocation>${checkstyle.config.location}</configLocation>
-                        <includes>**\/*.java</includes>
+                        <includes>**\/*.java,**\/*.groovy</includes>
                         <resourceIncludes>**/*.properties,**/*.sample</resourceIncludes>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <consoleOutput>true</consoleOutput>
@@ -744,7 +744,7 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -855,7 +855,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -963,7 +963,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
         <profile>
             <id>coverage.build</id>

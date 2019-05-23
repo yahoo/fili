@@ -62,5 +62,4 @@ class CallbackRateLimitRequestTokenSpec extends Specification {
         token.isBound() == false
         token.bind() == false
     }
-
 }
