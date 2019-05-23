@@ -83,10 +83,15 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
 
     @Override
     public boolean set(String key, T value) throws IllegalStateException {
+        return set(key, value, EXPIRATION);
+    }
+
+    @Override
+    public boolean set(String key, T value, int expiration) throws IllegalStateException {
         try {
             // Omitting null checking for key since it should be rare.
             // An exception will be thrown by the memcached client.
-            return client.set(key, EXPIRATION, value).get();
+            return client.set(key, expiration, value).get();
         } catch (Exception e) {
             LOG.warn("set failed {} {}", key, e.toString());
             throw new IllegalStateException(e);
