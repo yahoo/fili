@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
+import org.joda.time.DateTime;
 import org.joda.time.Interval
 
 import net.spy.memcached.MemcachedClient
@@ -100,6 +101,33 @@ class MemcachedCacheSpec extends Specification {
         "key"        | "key2"       | "value"        | "value2"
         "key\ufe01@" | "key\ufe02@" | "value\ufe01#" | "value\ufe02#"
     }
+
+    @Unroll
+    def "cache set and get #key with expiration version"() {
+        when: "set"
+        DataCache<String> cache = (DataCache<String>) jtb.dataCache
+        cache.set(key, value, new DateTime().plusHours(5))
+        // Expires immediately
+        cache.set(key2, value2, new DateTime())
+
+        then: "get"
+        cache.get(key) == value
+        !cache.get(key2)
+
+        when: "update"
+        cache.set(key, value2, new DateTime().plusHours(5))
+        cache.set(key2, value, new DateTime().plusHours(5))
+
+        then: "get"
+        cache.get(key) == value2
+        cache.get(key2) == value
+
+        where:
+        key          | key2         | value          | value2
+        "key"        | "key2"       | "value"        | "value2"
+        "key\ufe01@" | "key\ufe02@" | "value\ufe01#" | "value\ufe02#"
+    }
+
 
     @Unroll
     def "cache throws #exception.simpleName because #reason"() {
