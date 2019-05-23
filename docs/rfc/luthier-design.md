@@ -69,6 +69,21 @@ format, and generates JSON: `src/external/DimensionConfig.json`,
 will read in these three JSON files and use them to populate the
 `TablesDictionary`, `MetricsDictionary`, and `DimensionsDictionary`.
 
+## Using Lua Configuration
+
+In order to use the Lua-based external configuration, a few changes need to 
+be made to your BinderFactory.
+
+1. Extend the
+[LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/6b27301334a427fcfc3ea2215afca862f75ff05f/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java).
+The ConfigurationLoader is the source of all the dictionaries that the configuration will be populating and is where we will be registering 
+any custom factories.
+2. Override the [getConfigurationLoader](https://github.com/yahoo/fili/blob/6b27301334a427fcfc3ea2215afca862f75ff05f/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java#L1066)
+to return an instance of our custom `LuthierConfigurationLoader`.
+
+3. The [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31)
+is where we can add our own custom search provider types, dimension types, metric makers, etc.
+
 ## Data Format
 
 Modules in Lua are tables. A module is defined by populating a table and
@@ -301,17 +316,18 @@ and builds a `Dimension`. The `TFactory` interface has a single method:
     Dimension build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-Fili's AbstractBinderFactory has a method
-`void registerDimensionFactories(LuthierIndustrialPark factories)`. You
-register all your custom dimension factories by overriding `registerDimensionFactories`
+The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
+ has a method
+`void registerFactories(LuthierIndustrialPark factories)`. You
+register all your custom dimension factories by overriding `registerFactories`
 and registering your dimension factory with the provided `LuthierIndustrialPark`
 object.
 
-For example the following may appear in your BinderFactory:
+For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
 
 ```java
     @Override
-    public void registerDimensionFactories(LuthierIndustrialPark factories) {
+    public void registerFactories(LuthierIndustrialPark factories) {
         factories.register("myproject-mysql", new MySqlDimensionFactory());
     }
 ```
@@ -349,12 +365,18 @@ Fili's AbstractBinderFactory has a method
 `void registerSearchProviderFactories(LuthierIndustrialPark factories)`. You
 register all your custom search provider factories here.
 
-For example the following may appear in your BinderFactory:
+
+The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
+ has a method
+`void registerFactories(LuthierIndustrialPark factories)`. You
+register all your custom search provider factories by overriding `registerFactories`.
+
+For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
 
 ```java
     @Override
-    public void registerSearchProviderFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-mysql", new MySqlSearchProviderFactory());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register("custom-searchprovider", new MyCustomSearchProviderFactory());
     }
 ```
 
@@ -380,24 +402,20 @@ the three following steps:
 custom KeyValueStore.
 3. Register your KeyValueStoreFactory.
 
-A `KeyValueStoreFactory` is an object that takes in configuration information
-and builds an instance of `KeyValueStore` for a given Dimension. `TFactory` has a
-single method:
 
-```java
-    KeyValueStore build(Dimension dimension, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
-```
+The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
+ has a method
+`void registerFactories(LuthierIndustrialPark factories)`. You
+register all your custom key value store factories by overriding `registerFactories`
+and registering your key value store factory with the provided `LuthierIndustrialPark`
+object.
 
-Fili's AbstractBinderFactory has a method
-`void registerKeyValueStoreFactories(LuthierIndustrialPark factories)`. You
-register all your custom key value store factories here.
-
-For example the following may appear in your BinderFactory:
+For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
 
 ```java
     @Override
-    public void registerKeyValueStoreFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-mysql", new MySqlKeyValueStoreFactory());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register("myproject-keyValueStore", new MyCustomKeyValueStoreFactory());
     }
 ```
 
@@ -506,12 +524,12 @@ steps:
 3. Register the new `MetricMakerFactory` with the `LuthierIndustrialPark` object.
 
 To add the new `MetricMakerFactory` we override the
-`void registerMetricMakerFactories(LuthierIndustrialPark factories)` method in
-our `BinderFactory`:
+`void registerFactories(LuthierIndustrialPark factories)` method in
+our `LuthierConfigurationLoader`:
 
 ```java
-    public void registerMetricMakerFactories(LuthierIndustrialPark factories) {
-        factories.register(CustomMetricMaker.class.getName(), new CustomMetricMaker());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register(CustomMetricMaker.class.getName(), new CustomMetricMakerFactory());
     }
 ```
 
@@ -527,13 +545,13 @@ everything else:
 1. Extend the `LogicalMetric` class.
 2. Register the `MetricFactory` with the `LuthierIndustrialPark` object.
 
-To add the new `MetricMaker` we override the
-`void registerMetricMakerFactories(LuthierIndustrialPark factories)` method in
+To add the new `MetricFactory` we override the
+`void registerFactories(LuthierIndustrialPark factories)` method in
 our `BinderFactory`:
 
 ```java
-    public void registerMetricMakerFactories(LuthierIndustrialPark factories) {
-        factories.register("customMaker", new CustomMetricMaker());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register("customMetricType", new CustomMetricFactory());
     }
 ```
 
@@ -736,18 +754,20 @@ and builds a `LogicalTable`. It has a single method:
     LogicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-Fili's AbstractBinderFactory has a method
-`void registerDimensionFactories(DimensionFactories factories)`. You
-register all your custom dimension factories by overriding `registerDimensionFactories`
-and registering your dimension factory with the provided `LuthierIndustrialPark`
+
+The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
+ has a method
+`void registerFactories(LuthierIndustrialPark factories)`. You
+register all your custom logical table factories by overriding `registerFactories`
+and registering your logical table factory with the provided `LuthierIndustrialPark`
 object.
 
-For example the following may appear in your BinderFactory:
+For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
 
 ```java
     @Override
-    public void registerLogicalTableFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-mysql", new CustomLogicalTableFactory());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register("myproject-tabletype", new MyCustomLogicalTableFactory());
     }
 ```
 
@@ -773,25 +793,26 @@ three steps:
 custom Dimension.
 3. Register your PhysicalTableFactory.
 
-A `DimensionFactory` is an object that takes in configuration information
-and builds a `Dimension`. It has a single method:
+A `PhysicalTableFactory` is an object that takes in configuration information
+and builds a `PhysicalTable`. It has a single method:
 
 ```java
     PhysicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-Fili's AbstractBinderFactory has a method
-`void registerDimensionFactories(LuthierIndustrialPark factories)`. You
-register all your custom dimension factories by overriding `registerDimensionFactories`
-and registering your dimension factory with the provided `LuthierIndustrialPark`
+The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
+ has a method
+`void registerFactories(LuthierIndustrialPark factories)`. You
+register all your custom physical table factories by overriding `registerFactories`
+and registering your physical table factory with the provided `LuthierIndustrialPark`
 object.
 
-For example the following may appear in your BinderFactory:
+For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
 
 ```java
     @Override
-    public void registerPhysicalTableFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-physicaltable", new CustomPhysicalTableFactory());
+    public void registerFactories(LuthierIndustrialPark factories) {
+        factories.register("myproject-custom-physical-table", new CustomPhysicalTableFactory());
     }
 ```
 
@@ -799,8 +820,8 @@ The `LuthierIndustrialPark` object is preregistered with Fili's
 builtin PhysicalTables.
 
 The `register` method throws an `IllegalArgumentException` if customers attempt
-to use a name that already exists as a dimension type. `override`
-does the same as `register`, except it overrides any dimension type that already
+to use a name that already exists as a physical table type. `override`
+does the same as `register`, except it overrides any physical table type that already
 exists with the provided name.
 
 `register` should be almost in almost every case.

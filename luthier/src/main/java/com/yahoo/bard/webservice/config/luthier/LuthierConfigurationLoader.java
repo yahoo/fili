@@ -28,7 +28,7 @@ public class LuthierConfigurationLoader implements ConfigurationLoader {
      * The method customers should overload to register factories for custom
      * configuration types. 
      */
-    publid void registerFactories() {
+    publid void registerFactories(LuthierIndustrialPark industrialPark) {
     }
 
     @Override
