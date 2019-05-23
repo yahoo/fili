@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.cache;
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 
 /**
@@ -41,16 +43,13 @@ public interface DataCache<T extends Serializable> {
      *
      * @param key  the key under which this object should be added.
      * @param value  the object to store
-     * @param expiration The expiration time, it may either be Unix time (number of seconds since January 1, 1970, as
-     * a 32-bit value), or a number of seconds starting from current time. In the latter case, this number of seconds
-     * may not exceed 60*60*24*30 (number of seconds in 30 days); if the number sent by a client is larger than that,
-     * the server will consider it to be real Unix time value rather than an offset from current time.
+     * @param expiration The date on which this key should expire
      *
      * @return a boolean representing success of this operation
      * @throws IllegalStateException in the rare circumstance where queue is too
      * full to accept any more requests
      */
-    default boolean set(String key, T value, int expiration) throws IllegalStateException {
+    default boolean set(String key, T value, DateTime expiration) throws IllegalStateException {
         return set(key, value);
     }
 
