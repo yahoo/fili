@@ -130,7 +130,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         [
                 "metrics": ["limbs"],
                 "dateTime": ["2014-06-02%2F2014-06-09"],
-                "filters": ["flagFromTag|id-notin[FALSE_VALUE]"],
+                "filters": ["flagFromTag|id-in[FALSE_VALUE]"],
         ]
     }
 
@@ -142,9 +142,8 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
             "rows" : [
                 {
                     "dateTime" : "2014-06-02 00:00:00.000",
-                    "model|id" : "Model1",
-                    "model|desc" : "Model1Desc",
-                    "width" : 10
+                    "flagFromTag|id" : "FALSE_VALUE",
+                    "limbs" : 4
                 }
             ]
         }"""
@@ -154,27 +153,81 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
     String getExpectedDruidQuery() {
         """{
             "queryType": "groupBy",
-            "granularity": ${getTimeGrainString("week")},
+            "granularity": ${getTimeGrainString("day")},
             "intervals": [ "2014-06-02T00:00:00.000Z/2014-06-09T00:00:00.000Z" ],
             "dataSource" : {
-                "name" : "all_shapes",
+                "name" : "all_pets",
                 "type" : "table"
             },
             "dimensions": [
-                "model"
+               {
+                  "dimension":"breed",
+                  "outputName":"flagFromTag",
+                  "type": "extraction",
+                  "extractionFn": {
+                      "type": "cascade",
+                      "extractionFns": [
+                        {
+                          "type": "lookup",
+                          "lookup": {
+                            "type": "namespace",
+                            "namespace": "NAMESPACE1"
+                          },
+                          "retainMissingValue": false,
+                          "replaceMissingValueWith": "Unknown NAMESPACE1",
+                          "injective": false,
+                          "optimize": true
+                        },
+                        {
+                          "type": "lookup",
+                          "lookup": {
+                            "type": "namespace",
+                            "namespace": "NAMESPACE2"
+                          },
+                          "retainMissingValue": false,
+                          "replaceMissingValueWith": "Unknown NAMESPACE2",
+                          "injective": false,
+                          "optimize": true
+                        },
+                        {
+                          "type": "regex",
+                          "expr": "(.+,)*(TAG_VALUE)(,.+)*",
+                          "index": 2,
+                          "replaceMissingValueWith": "",
+                          "replaceMissingValue": true
+                        },
+                        {
+                          "type": "lookup",
+                          "lookup": {
+                            "type": "map",
+                            "map": {
+                              "TAG_VALUE": "TRUE_VALUE"
+                            }
+                          },
+                          "retainMissingValue": false,
+                          "replaceMissingValueWith": "FALSE_VALUE",
+                          "injective": false,
+                          "optimize": false
+                        }
+                      ]
+                  }
+               }
             ],
             "filter": {
-                "fields": [
-                    {
-                        "dimension": "model",
-                        "type": "selector",
-                        "value": "Model1"
-                    }
-                ],
-                "type": "or"
+                "type": "not",
+                "field" : {
+                    "fields": [
+                        {
+                            "dimension": "filteringDimension",
+                            "type": "selector",
+                            "value": "TAG_VALUE"
+                        }
+                    ],
+                    "type": "or"
+                }
             },
             "aggregations": [
-                { "name": "width", "fieldName": "width", "type": "longSum" }
+                { "name": "limbs", "fieldName": "limbs", "type": "longSum" }
             ],
             "postAggregations": [],
             "context": {}
@@ -188,8 +241,8 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 "version" : "v1",
                 "timestamp" : "2014-06-02T00:00:00.000Z",
                 "event" : {
-                    "model" : "Model1",
-                    "width" : 10
+                    "flagFromTag" : "FALSE_VALUE",
+                    "limbs" : 4
                 }
             }
         ]"""

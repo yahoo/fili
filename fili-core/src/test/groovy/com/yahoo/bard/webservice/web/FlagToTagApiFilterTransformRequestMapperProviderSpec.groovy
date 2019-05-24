@@ -43,6 +43,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
         testDim.getDescription() >> "unused"
         testDim.getLongName() >> "unused"
         testDim.getCategory() >> "unused"
+        testDim.getKey() >> DefaultDimensionField.ID
         testDim.getDimensionFields() >> []
         testDim.getDefaultDimensionFields() >> []
         testDim.getSearchProvider() >> Mock(SearchProvider)
@@ -123,7 +124,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
                     it.containsKey(fft.getFilteringDimension()) &&
                     it.get(fft.getFilteringDimension()).size() == 1 &&
                     it.get(fft.getFilteringDimension()).iterator().next().dimension == fft.getFilteringDimension()
-                    it.get(fft.getFilteringDimension()).iterator().next().dimensionField == DefaultDimensionField.ID &&
+                    it.get(fft.getFilteringDimension()).iterator().next().dimensionField == fft.getFilteringDimension().getKey() &&
                     it.get(fft.getFilteringDimension()).iterator().next().operation == DefaultFilterOperation.in &&
                     it.get(fft.getFilteringDimension()).iterator().next().values == [fft.getTagValue()] as Set
         })

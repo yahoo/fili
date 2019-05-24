@@ -46,7 +46,7 @@ public class FlagFromTagDimension implements Dimension {
     private static final String NULL_VALUE = "";
     private static final String UNUSED_PHYSICAL_NAME = "unused_physical_name";
 
-    private final Dimension groupingDimension;
+    private final RegisteredLookupDimension groupingDimension;
     private final Dimension filteringDimension;
     private final String tagValue;
     private final String trueValue;
@@ -232,7 +232,7 @@ public class FlagFromTagDimension implements Dimension {
         return true;
     }
 
-    public Dimension getGroupingDimension() {
+    public RegisteredLookupDimension getGroupingDimension() {
         return groupingDimension;
     }
 

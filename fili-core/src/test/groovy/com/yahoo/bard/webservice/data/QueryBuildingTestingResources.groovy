@@ -206,7 +206,7 @@ class QueryBuildingTestingResources {
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
         FlagFromTagDimensionConfig lookupFftConfig = new FlagFromTagDimensionConfig(
-                {"flagFromTag"},
+                {"flagFromTagLookup"},
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
@@ -221,7 +221,7 @@ class QueryBuildingTestingResources {
         dimensionDictionary.add(d14)
 
         FlagFromTagDimensionConfig registeredLookupFftConfig = new FlagFromTagDimensionConfig(
-                {"flagFromTag"},
+                {"flagFromTagRegisteredLookup"},
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
@@ -286,7 +286,7 @@ class QueryBuildingTestingResources {
         t4h1.setAvailability(new StrictAvailability(DataSourceName.of(t4h1.name), new TestDataSourceMetadataService(availabilityMap1)))
         t4d1.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap1)))
 
-        t5h = new StrictPhysicalTable(TableName.of("table5d"), utcHour, [d8, d9, d10, d11, d12, d13, d14, m1].collect{toColumn(it)} as Set, [:], metadataService)
+        t5h = new StrictPhysicalTable(TableName.of("table5d"), utcHour, [d8, d9, d10, d11, d12, d13, d14, d15, m1].collect{toColumn(it)} as Set, [:], metadataService)
 
         t4h2.setAvailability(new StrictAvailability(DataSourceName.of(t4h2.name), new TestDataSourceMetadataService(availabilityMap2)))
         t4d2.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap2)))

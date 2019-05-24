@@ -44,10 +44,10 @@ class TagExtractionFunctionFactorySpec extends Specification {
     def "Mapping function serializes as expected"() {
         setup:
         ObjectMapper mapper = new ObjectMappersSuite().mapper
-        ExtractionFunction function = TagExtractionFunctionFactory.buildTagExtractionFunction("11");
+        List<ExtractionFunction> function = TagExtractionFunctionFactory.buildTagExtractionFunction("11")
 
-        expect:
-        mapper.valueToTree(function) == mapper.readTree(expectedSerialization)
+        expect: "wrap in a cascade extraction function because that is how a chain of extraction functions is serialized"
+        mapper.valueToTree(new CascadeExtractionFunction(function)) == mapper.readTree(expectedSerialization)
     }
 
     def "Empty string tag value marked as invalid"() {
@@ -55,7 +55,7 @@ class TagExtractionFunctionFactorySpec extends Specification {
         ObjectMapper mapper = new ObjectMappersSuite().mapper
 
         when:
-        ExtractionFunction function = TagExtractionFunctionFactory.buildTagExtractionFunction("");
+        List<ExtractionFunction> function = TagExtractionFunctionFactory.buildTagExtractionFunction("")
 
         then:
         thrown(IllegalArgumentException)

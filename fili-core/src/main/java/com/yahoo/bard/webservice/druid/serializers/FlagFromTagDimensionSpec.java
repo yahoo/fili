@@ -2,9 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.serializers;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
+import com.yahoo.bard.webservice.druid.model.dimension.ExtractionDimensionSpec;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
@@ -16,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Serializer to map LookupDimension to either DimensionSpec base on namespaces.
@@ -42,8 +47,27 @@ public class FlagFromTagDimensionSpec extends JsonSerializer<FlagFromTagDimensio
 
         // If we are in the dimensions block we are in a group by expression, so serialize the grouping dimension
         if (context.getParent().getCurrentName().equals("dimensions")) {
-            JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(RegisteredLookupDimension.class);
-            dimensionSerializer.serialize(value.getGroupingDimension(), gen, provider);
+//            JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(RegisteredLookupDimension.class);
+//            dimensionSerializer.serialize(value.getGroupingDimension(), gen, provider);
+
+            Optional<ExtractionFunction> extractionFunction = value.getGroupingDimension().getExtractionFunction();
+
+            // Use DimensionToDefaultDimensionSpec serializer if LookupDimension does not contain any namespace or lookups
+            // or is not the inner most query
+            if (!extractionFunction.isPresent() || SerializerUtil.hasInnerQuery(gen)) {
+                JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(Dimension.class);
+                dimensionSerializer.serialize(value, gen, provider);
+                return;
+            }
+
+            String apiName = value.getApiName();
+            String physicalName = SerializerUtil.findPhysicalName(value.getGroupingDimension(), gen).orElseThrow(() -> {
+                        LOG.error(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.logFormat(value.getApiName()));
+                        return new IllegalStateException(ErrorMessageFormat.PHYSICAL_NAME_NOT_FOUND.format());
+                    }
+            );
+
+            gen.writeObject(new ExtractionDimensionSpec(physicalName, apiName, extractionFunction.get(), value.getGroupingDimension()));
             return;
         }
 
