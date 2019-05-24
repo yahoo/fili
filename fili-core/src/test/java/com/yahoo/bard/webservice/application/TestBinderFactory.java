@@ -59,6 +59,9 @@ import java.util.UUID;
 
 /**
  * Bard test app configuration binder.
+ *
+ * TODO we can possibly make a provider version of this class for easy test level custom bindings that get wiped on
+ * each run.
  */
 public class TestBinderFactory extends AbstractBinderFactory {
 

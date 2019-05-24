@@ -21,31 +21,111 @@ import javax.ws.rs.container.ContainerRequestContext;
 // TODO write and refactor this entire class to not be garbage
 public class FlagToTagApiFilterTransformRequestMapperProvider {
 
-    private static RequestMapper<DataApiRequest> dataApiRequestRequestMapper;
-    private static RequestMapper<DimensionsApiRequest> dimensionsApiRequestRequestMapper;
-    private static RequestMapper<TablesApiRequest> tablesApiRequestRequestMapper;
-
-    private static final Set<FilterOperation> positiveOps = Stream.of(
+    public static final Set<FilterOperation> DEFAULT_POSITIVE_OPS = Stream.of(
             DefaultFilterOperation.in,
             DefaultFilterOperation.startswith,
             DefaultFilterOperation.contains,
             DefaultFilterOperation.eq
     ).collect(Collectors.toSet());
 
-    private static final Set<FilterOperation> negativeOps = Collections.singleton(DefaultFilterOperation.notin);
+    public static final Set<FilterOperation> DEFAULT_NEGATIVE_OPS = Collections.singleton(
+            DefaultFilterOperation.notin
+    );
 
-    public static RequestMapper<DataApiRequest> getDataRequestMapper(ResourceDictionaries dictionaries) {
-        if (dataApiRequestRequestMapper == null) {
-            synchronized (FlagToTagApiFilterTransformRequestMapperProvider.class) {
-                if (dataApiRequestRequestMapper == null) {
-                    dataApiRequestRequestMapper = new FlagToTagDataRequestMapper(dictionaries);
-                }
-            }
-        }
-        return dataApiRequestRequestMapper;
+    protected Set<FilterOperation> positiveOps;
+    protected Set<FilterOperation> negativeOps;
+
+    public FlagToTagApiFilterTransformRequestMapperProvider() {
+        this(DEFAULT_POSITIVE_OPS, DEFAULT_NEGATIVE_OPS);
     }
 
-    private static FilterOperation transformFilterOperation(
+    public FlagToTagApiFilterTransformRequestMapperProvider(
+            Set<FilterOperation> positiveOps,
+            Set<FilterOperation> negativeOps
+    ) {
+        this.positiveOps = positiveOps;
+        this.negativeOps = negativeOps;
+    }
+
+    public RequestMapper<DataApiRequest> dataApiRequestMapper(ResourceDictionaries dictionaries) {
+        return new RequestMapper<DataApiRequest>(dictionaries) {
+            @Override
+            public DataApiRequest apply(DataApiRequest request, ContainerRequestContext context)
+                    throws RequestValidationException {
+                return request.withFilters(transformApiFilters(request.getApiFilters()));
+            }
+        };
+    }
+
+    public RequestMapper<DimensionsApiRequest> dimensionsApiRequestMapper(ResourceDictionaries dictionaries) {
+        return new RequestMapper<DimensionsApiRequest>(dictionaries) {
+            @Override
+            public DimensionsApiRequest apply(DimensionsApiRequest request, ContainerRequestContext context)
+                    throws RequestValidationException {
+                return request.withFilters(transformSetOfApiFilters(request.getFilters()));
+            }
+        };
+    }
+
+    public RequestMapper<TablesApiRequest> tablesApiRequestMapper(ResourceDictionaries dictionaries) {
+        return new RequestMapper<TablesApiRequest>(dictionaries) {
+            @Override
+            public TablesApiRequest apply(TablesApiRequest request, ContainerRequestContext context)
+                    throws RequestValidationException {
+                return request.withFilters(transformApiFilters(request.getApiFilters()));
+            }
+        };
+    }
+
+    protected Set<ApiFilter> transformSetOfApiFilters(Set<ApiFilter> apiFilters) {
+        Set<ApiFilter> newFilters = new HashSet<>();
+        for (ApiFilter filter : apiFilters) {
+            ApiFilter newFilter = filter;
+            if (filter.getDimension() instanceof FlagFromTagDimension) {
+                FlagFromTagDimension dim = (FlagFromTagDimension) filter.getDimension();
+                newFilter = new ApiFilter(
+                        dim.getFilteringDimension(),
+                        filter.getDimensionField(),
+                        transformFilterOperation(
+                                dim,
+                                filter.getOperation(),
+                                filter.getValues()
+                        ),
+                        Collections.singleton(dim.getTagValue())
+                );
+            }
+            newFilters.add(newFilter);
+        }
+        return newFilters;
+    }
+
+    protected ApiFilters transformApiFilters(ApiFilters requestFilters) {
+        ApiFilters newFilters = new ApiFilters();
+        for (Map.Entry<Dimension, Set<ApiFilter>> entry : requestFilters.entrySet()) {
+            if (!(entry.getKey() instanceof FlagFromTagDimension)) {
+                newFilters.put(entry.getKey(), entry.getValue());
+                continue;
+            }
+            FlagFromTagDimension dim = (FlagFromTagDimension) entry.getKey();
+            Set<ApiFilter> transformedFilters = entry.getValue().stream()
+                    .map((ApiFilter filter) -> new ApiFilter(
+                                    dim.getFilteringDimension(),
+                                    dim.getFilteringDimension().getKey(),
+                                    transformFilterOperation(
+                                            dim,
+                                            filter.getOperation(),
+                                            filter.getValues()
+                                    ),
+                                    Collections.singleton(dim.getTagValue())
+                            )
+                    )
+                    .collect(Collectors.toSet());
+            newFilters.put(dim.getFilteringDimension(), transformedFilters);
+        }
+        return newFilters;
+    }
+
+    protected FilterOperation transformFilterOperation(
             FlagFromTagDimension dimension,
             FilterOperation op,
             Collection<String> values
@@ -90,48 +170,5 @@ public class FlagToTagApiFilterTransformRequestMapperProvider {
             }
         }
         return newOp;
-    }
-
-    private static class FlagToTagDataRequestMapper extends RequestMapper<DataApiRequest> {
-        /**
-         * Constructor.
-         *
-
-         * @param resourceDictionaries  The dictionaries to use for request mapping.
-         */
-        public FlagToTagDataRequestMapper(
-                final ResourceDictionaries resourceDictionaries
-        ) {
-            super(resourceDictionaries);
-        }
-
-        @Override
-        public DataApiRequest apply(DataApiRequest request, ContainerRequestContext context)
-                throws RequestValidationException {
-            ApiFilters newFilters = new ApiFilters();
-            for (Map.Entry<Dimension, Set<ApiFilter>> entry : request.getApiFilters().entrySet()) {
-                if (!(entry.getKey() instanceof FlagFromTagDimension)) {
-                    newFilters.put(entry.getKey(), entry.getValue());
-                    continue;
-                }
-                FlagFromTagDimension dim = (FlagFromTagDimension) entry.getKey();
-
-                Set<ApiFilter> transformedFilters = entry.getValue().stream()
-                        .map((ApiFilter filter) -> new ApiFilter(
-                                        dim.getFilteringDimension(),
-                                        filter.getDimensionField(),
-                                        transformFilterOperation(
-                                                dim,
-                                                filter.getOperation(),
-                                                filter.getValues()
-                                        ),
-                                        Collections.singleton(dim.getTagValue())
-                                )
-                        )
-                        .collect(Collectors.toSet());
-                newFilters.put(dim.getFilteringDimension(), transformedFilters);
-            }
-            return request.withFilters(newFilters);
-        }
     }
 }
