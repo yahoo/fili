@@ -60,12 +60,21 @@ class FlagFromTagDimensionSpecSpec extends Specification {
         apiRequest.getApiFilters() >> new ApiFilters([(resources.d14) : [new ApiFilter(resources.d14, DefaultDimensionField.ID, DefaultFilterOperation.in, ["TRUE_VALUE"] as Collection)] as Set] as Map)
     }
 
-    def "Flag from tag dimension serializes to regex extraction function in grouping context"() {
+    def "Flag from tag dimension based on lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
         given:
         apiRequest.getDimensions() >> ([resources.d14])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
-        objectMapper.writeValueAsString(druidQuery).contains('{"type":"extraction","dimension":"breed","outputName":"breed","extractionFn":{"type":"cascade","extractionFns":[{"type":"registeredLookup","lookup":"BREED__SPECIES","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__SPECIES","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__OTHER","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__OTHER","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__COLOR","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__COLOR","injective":false,"optimize":true},{"type":"cascade","extractionFns":[{"type":"regex","expr":"(.+,)*(TAG_VALUE)(,.+)*","index":2,"replaceMissingValue":true,"replaceMissingValueWith":""},{"type":"lookup","lookup":{"type":"map","map":{"TAG_VALUE":"TRUE_VALUE"}},"retainMissingValue":false,"replaceMissingValueWith":"FALSE_VALUE","injective":false,"optimize":false}]}]}}')
+        objectMapper.writeValueAsString(druidQuery).contains('{"type":"extraction","dimension":"shape","outputName":"shape","extractionFn":{"type":"cascade","extractionFns":[{"type":"lookup","lookup":{"type":"namespace","namespace":"SPECIES"},"retainMissingValue":false,"replaceMissingValueWith":"Unknown SPECIES","injective":false,"optimize":true},{"type":"regex","expr":"(.+,)*(TAG_VALUE)(,.+)*","index":2,"replaceMissingValue":true,"replaceMissingValueWith":""},{"type":"lookup","lookup":{"type":"map","map":{"TAG_VALUE":"TRUE_VALUE"}},"retainMissingValue":false,"replaceMissingValueWith":"FALSE_VALUE","injective":false,"optimize":false}]}}')
+    }
+
+    def "Flag from tag dimension based on *registered* lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
+        given:
+        apiRequest.getDimensions() >> ([resources.d15])
+        druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+
+        expect:
+        objectMapper.writeValueAsString(druidQuery).contains('{"type":"extraction","dimension":"breed","outputName":"breed","extractionFn":{"type":"cascade","extractionFns":[{"type":"registeredLookup","lookup":"BREED__SPECIES","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__SPECIES","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__OTHER","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__OTHER","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__COLOR","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__COLOR","injective":false,"optimize":true},{"type":"regex","expr":"(.+,)*(TAG_VALUE)(,.+)*","index":2,"replaceMissingValue":true,"replaceMissingValueWith":""},{"type":"lookup","lookup":{"type":"map","map":{"TAG_VALUE":"TRUE_VALUE"}},"retainMissingValue":false,"replaceMissingValueWith":"FALSE_VALUE","injective":false,"optimize":false}]}}')
     }
 }

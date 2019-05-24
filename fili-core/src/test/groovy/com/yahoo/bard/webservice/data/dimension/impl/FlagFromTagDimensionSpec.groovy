@@ -72,7 +72,7 @@ class FlagFromTagDimensionSpec extends Specification {
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == extractionFunctions.size() + 1
+        fft.groupingDimension.registeredLookupExtractionFns.size() == extractionFunctions.size() + 2
         fft.getSearchProvider() instanceof MapSearchProvider
 
         where:
@@ -103,7 +103,7 @@ class FlagFromTagDimensionSpec extends Specification {
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == 1
+        fft.groupingDimension.registeredLookupExtractionFns.size() == 2
         fft.groupingDimension.getKeyValueStore() == kvs
         fft.getSearchProvider() instanceof MapSearchProvider
     }
@@ -126,7 +126,7 @@ class FlagFromTagDimensionSpec extends Specification {
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == 1
+        fft.groupingDimension.registeredLookupExtractionFns.size() == 2
         fft.groupingDimension.getKeyValueStore() == null
         fft.getSearchProvider() instanceof MapSearchProvider
     }

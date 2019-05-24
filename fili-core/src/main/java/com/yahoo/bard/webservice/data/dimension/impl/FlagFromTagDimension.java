@@ -12,6 +12,8 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.TagExtractionFunctionFactory;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
 import com.yahoo.bard.webservice.druid.serializers.FlagFromTagDimensionSpec;
@@ -20,8 +22,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -80,12 +84,22 @@ public class FlagFromTagDimension implements Dimension {
         Dimension baseGroupingDimension = dimensionDictionary.findByApiName(dimensionConfig.getGroupingBaseDimensionApiName());
         DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
 
-        if (baseGroupingDimension instanceof RegisteredLookupDimension) {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (RegisteredLookupDimension) baseGroupingDimension,
-                    UNUSED_PHYSICAL_NAME
+        List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>();
+
+        // if present, pull off extraction functions into a list of extraction functions
+        if (baseGroupingDimension instanceof ExtractionFunctionDimension) {
+            groupingDimensionExtractionFunctions.addAll(
+                    ((ExtractionFunctionDimension) baseGroupingDimension).getExtractionFunction()
+                    .map((ExtractionFunction fn) ->
+                            fn instanceof CascadeExtractionFunction ?
+                                ((CascadeExtractionFunction) fn).getExtractionFunctions() :
+                                Collections.singletonList(fn)
+                    )
+                    .orElse(Collections.emptyList())
             );
-        } else if (baseGroupingDimension instanceof KeyValueStoreDimension) {
+        }
+
+        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
             groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
                     (KeyValueStoreDimension) baseGroupingDimension,
                     UNUSED_PHYSICAL_NAME
@@ -96,13 +110,16 @@ public class FlagFromTagDimension implements Dimension {
                     UNUSED_PHYSICAL_NAME
             );
         }
+
+        groupingDimensionExtractionFunctions.addAll(
+                TagExtractionFunctionFactory.buildTagExtractionFunction(
+                        dimensionConfig.getTagValue(),
+                        trueValue,
+                        falseValue)
+        );
+
         groupingDimension = new RegisteredLookupDimension(
-                groupingDimensionConfig.withAddedLookupFunctions(
-                        Collections.singletonList(
-                                TagExtractionFunctionFactory.buildTagExtractionFunction(
-                                        dimensionConfig.getTagValue(),
-                                        trueValue,
-                                        falseValue)))
+                groupingDimensionConfig.withAddedLookupFunctions(groupingDimensionExtractionFunctions)
         );
 
         DimensionField keyField = DefaultDimensionField.ID;

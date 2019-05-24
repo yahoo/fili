@@ -70,7 +70,7 @@ class QueryBuildingTestingResources {
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
 
     // Flag from tag dimension
-    public Dimension d14
+    public Dimension d14, d15
 
     // Logical metrics, numbered for identification
     public LogicalMetric m1, m2, m3, m4, m5, m6
@@ -205,7 +205,22 @@ class QueryBuildingTestingResources {
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
-        FlagFromTagDimensionConfig fftConfig = new FlagFromTagDimensionConfig(
+        FlagFromTagDimensionConfig lookupFftConfig = new FlagFromTagDimensionConfig(
+                {"flagFromTag"},
+                "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                "dim1", // filtering
+                "shape", // grouping
+                "TAG_VALUE",
+                "TRUE_VALUE",
+                "FALSE_VALUE",
+        )
+
+        d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
+        dimensionDictionary.add(d14)
+
+        FlagFromTagDimensionConfig registeredLookupFftConfig = new FlagFromTagDimensionConfig(
                 {"flagFromTag"},
                 "fftDescription",
                 "fftLongName",
@@ -217,11 +232,9 @@ class QueryBuildingTestingResources {
                 "FALSE_VALUE",
         )
 
-        d14 = new FlagFromTagDimension(
-                fftConfig,
-                dimensionDictionary
-        )
-        dimensionDictionary.add(d14)
+        d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
+        dimensionDictionary.add(d15)
+
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")

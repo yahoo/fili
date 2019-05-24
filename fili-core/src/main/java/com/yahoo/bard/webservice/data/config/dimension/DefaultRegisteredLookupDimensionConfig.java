@@ -114,31 +114,6 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
     }
 
     /**
-     * Construct a DefaultKeyValueStoreDimensionConfig instance from a RegisteredLookupDimension and a physical
-     * column name.
-     *
-     * @param dimension  The dimension whose config should be copied.
-     * @param physicalName  The internal, physical name for the dimension.
-     */
-    public DefaultRegisteredLookupDimensionConfig(
-            RegisteredLookupDimension dimension,
-            String physicalName
-    ) {
-        this(
-                (DimensionName) dimension::getApiName,
-                physicalName,
-                dimension.getDescription(),
-                dimension.getLongName(),
-                dimension.getCategory(),
-                dimension.getDimensionFields(),
-                dimension.getDefaultDimensionFields(),
-                dimension.getKeyValueStore(),
-                dimension.getSearchProvider(),
-                dimension.getRegisteredLookupExtractionFns()
-        );
-    }
-
-    /**
      * Construct a DefaultKeyValueStoreDimensionConfig instance from a KeyValueStoreDimension and physical column name.
      *
      *
