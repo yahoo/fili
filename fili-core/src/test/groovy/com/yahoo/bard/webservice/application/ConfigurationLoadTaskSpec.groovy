@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application
 
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
@@ -55,7 +57,7 @@ class ConfigurationLoadTaskSpec extends Specification {
         FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter()
         LinkedHashSet<DimensionConfig> dimensions = new TestDimensions().getAllDimensionConfigurations()
 
-        loader = new ConfigurationLoader(
+        loader = new DefaultConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
                 new TestTableLoader(new TestDataSourceMetadataService())
