@@ -63,27 +63,26 @@ public class ConsolidatingDruidFilterBuilder extends ConjunctionDruidFilterBuild
             // into a disjunction of selector filters on their ids for Druid to use.
             List<Filter> druidFilters = buildSelectorFilters(dimension, getFilteredDimensionRows(dimension, filters));
             return druidFilters.size() == 1 ? druidFilters.get(0) : new OrFilter(druidFilters);
-        } else {
-            // The search providers do not support disjunctions across dimension|field terms, so we can't use
-            // DeMorgan's Law to send the positive versions of all the filters to the search provider at once.
-            Set<ApiFilter> negatedFilters = filters.stream()
-                    .map(filter -> filter.withOperation(DefaultFilterOperation.in))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-
-            // Can't really stream because getFilteredDimensionRows throws a very specific checked exception.
-            List<Filter> druidFilters = new ArrayList<>(negatedFilters.size());
-            for (ApiFilter negatedFilter : negatedFilters) {
-                List<Filter> selectorFilters = buildSelectorFilters(
-                        dimension,
-                        getFilteredDimensionRows(dimension, Collections.singleton(negatedFilter))
-                );
-                druidFilters.add(new NotFilter(
-                        selectorFilters.size() == 1 ?
-                                selectorFilters.get(0) :
-                                new OrFilter(selectorFilters)
-                ));
-            }
-            return druidFilters.size() == 1 ? druidFilters.get(0) : new AndFilter(druidFilters);
         }
+        // The search providers do not support disjunctions across dimension|field terms, so we can't use
+        // DeMorgan's Law to send the positive versions of all the filters to the search provider at once.
+        Set<ApiFilter> negatedFilters = filters.stream()
+                .map(filter -> filter.withOperation(DefaultFilterOperation.in))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        // Can't really stream because getFilteredDimensionRows throws a very specific checked exception.
+        List<Filter> druidFilters = new ArrayList<>(negatedFilters.size());
+        for (ApiFilter negatedFilter : negatedFilters) {
+            List<Filter> selectorFilters = buildSelectorFilters(
+                    dimension,
+                    getFilteredDimensionRows(dimension, Collections.singleton(negatedFilter))
+            );
+            druidFilters.add(new NotFilter(
+                    selectorFilters.size() == 1 ?
+                            selectorFilters.get(0) :
+                            new OrFilter(selectorFilters)
+            ));
+        }
+        return druidFilters.size() == 1 ? druidFilters.get(0) : new AndFilter(druidFilters);
     }
 }

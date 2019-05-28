@@ -56,5 +56,4 @@ class DimensionRowSpec extends Specification {
         result.equals(expectedRow)
         ! expectedRow.equals(testRow)
     }
-
 }

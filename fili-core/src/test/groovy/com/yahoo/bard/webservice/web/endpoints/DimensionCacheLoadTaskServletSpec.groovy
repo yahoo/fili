@@ -77,7 +77,6 @@ class DimensionCacheLoadTaskServletSpec extends Specification {
         dimensionGender.addAllDimensionRows(dimensionRowsGender)
         dimensions << dimensionGender
 
-
         dimensionUserCountry = new KeyValueStoreDimension(
                 "user_country",
                 "user_country-description",
@@ -93,7 +92,6 @@ class DimensionCacheLoadTaskServletSpec extends Specification {
 
         dimensionUserCountry.addAllDimensionRows(dimensionRowsUserCountry)
         dimensions << dimensionUserCountry
-
 
         DimensionDictionary dimensionDict = new DimensionDictionary(dimensions)
         DataCache dataCache = Mock(DataCache)
@@ -119,7 +117,7 @@ class DimensionCacheLoadTaskServletSpec extends Specification {
         then: "The dimension row we updated has changed"
         dims.find { it.apiName == "gender" }.lastUpdated == newLastUpdated
         r.getStatusInfo() == Status.OK
-        
+
         and: "Others have not"
         dims.find { it.apiName == "user_country" }.lastUpdated == lastUpdated
     }

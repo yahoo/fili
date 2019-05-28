@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.cache;
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 
 /**
@@ -32,6 +34,24 @@ public interface DataCache<T extends Serializable> {
      * full to accept any more requests
      */
     boolean set(String key, T value) throws IllegalStateException;
+
+    /**
+     * Put a value on a key in a data cache with the specified expiration.
+     *
+     * By default, this method throws away the expiration.
+     *
+     *
+     * @param key  the key under which this object should be added.
+     * @param value  the object to store
+     * @param expiration The date on which this key should expire
+     *
+     * @return a boolean representing success of this operation
+     * @throws IllegalStateException in the rare circumstance where queue is too
+     * full to accept any more requests
+     */
+    default boolean set(String key, T value, DateTime expiration) throws IllegalStateException {
+        return set(key, value);
+    }
 
     /**
      * Removes all of the mappings from this cache.

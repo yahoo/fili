@@ -143,5 +143,4 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
         then: "The serialization is correct"
         GroovyTestUtils.compareJson(os.toString(), expectedJsonApi)
     }
-
 }

@@ -134,11 +134,13 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
      * @return An Observable containing a stream of Maps representing the job to be returned to the user
      */
     public Observable<Map<String, String>> getJobViews() {
+        Observable<JobRow> rows;
         if (filters == null || "".equals(filters)) {
-            return apiJobStore.getAllRows().map(this::mapJobRowsToJobViews);
+            rows = apiJobStore.getAllRows();
         } else {
-            return apiJobStore.getFilteredRows(buildJobStoreFilter(filters)).map(this::mapJobRowsToJobViews);
+            rows = apiJobStore.getFilteredRows(buildJobStoreFilter(filters));
         }
+        return rows.map(this::mapJobRowsToJobViews);
     }
 
     /**

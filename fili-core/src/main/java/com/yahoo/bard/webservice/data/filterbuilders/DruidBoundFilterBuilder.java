@@ -93,9 +93,8 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
         } catch (IllegalArgumentException e) {
             if (e.getCause() instanceof FilterBuilderException) {
                 throw (FilterBuilderException) e.getCause();
-            } else {
-                throw e;
             }
+            throw e;
         }
 
         if (filters.isEmpty()) {

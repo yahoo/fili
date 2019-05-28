@@ -70,21 +70,22 @@ class SplitQueryRequestHandlerSpec extends Specification {
         1         | MONTH     | month
         12        | MONTH     | year
     }
-  
-    @Unroll 
+
+    @Unroll
+
     def "Handler skips splitting for all time grain when the interval is #interval"() {
         groupByQuery.granularity >> timeGrain
         groupByQuery.intervals >> interval
         rc.numberOfIncoming >> new AtomicLong(1)
         rc.numberOfOutgoing >> new AtomicLong(1)
-        
+
         when:
         handler.handleRequest(rc, apiRequest, groupByQuery, response)
 
         then:
         (0) * groupByQuery.withAllIntervals(_) >> groupByQuerySplit
         (1) * next.handleRequest(rc, apiRequest, groupByQuery, response)
-        
+
         where:
         timeGrain | interval
         all       | buildIntervals(["2015-01-01/2015-01-10"])
@@ -109,7 +110,7 @@ class SplitQueryRequestHandlerSpec extends Specification {
         1 * hec.dispatch(400, _ as String, _ as String)
         0 * _._
     }
-    
+
     SimplifiedIntervalList buildIntervals(List<String> intervals) {
         intervals.collect({ new Interval(it) }) as SimplifiedIntervalList
     }

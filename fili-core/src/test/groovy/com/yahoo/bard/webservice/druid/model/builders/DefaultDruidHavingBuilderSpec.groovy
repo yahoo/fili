@@ -77,28 +77,33 @@ public class DefaultDruidHavingBuilderSpec extends Specification {
                                                        "havingSpecs": [
                                                          {"aggregation": "metric3", "type": "greaterThan", "value": 0},
                                                          {"aggregation": "metric3", "type": "equalTo", "value": 0}
-                                                       ]                                                    
+                                                       ]
+
                                                      },
                                                      {
                                                        "type": "or",
                                                        "havingSpecs": [
                                                          {"aggregation": "metric3", "type": "lessThan", "value": 5},
                                                          {"aggregation": "metric3", "type": "equalTo", "value": 5}
-                                                       ]                                                    
+                                                       ]
+
                                                      }
-                                                   ]                                                
+                                                   ]
+
                                                }"""
         resources.m3 | "metric3-nbet[10,50]" | """{
                                                     "type": "not",
                                                     "havingSpec": {
                                                       "type": "and",
-                                                      "havingSpecs": [ 
+                                                      "havingSpecs": [
+
                                                         {
                                                           "type": "or",
                                                           "havingSpecs": [
                                                             {"aggregation": "metric3", "type": "greaterThan", "value": 10},
                                                             {"aggregation": "metric3", "type": "equalTo", "value": 10}
-                                                          ]                                                          
+                                                          ]
+
                                                         },
                                                         {
                                                           "type": "or",
@@ -107,7 +112,8 @@ public class DefaultDruidHavingBuilderSpec extends Specification {
                                                             {"aggregation": "metric3", "type": "equalTo", "value": 50}
                                                           ]
                                                         }
-                                                      ]                                                          
+                                                      ]
+
                                                     }
                                                 }"""
     }

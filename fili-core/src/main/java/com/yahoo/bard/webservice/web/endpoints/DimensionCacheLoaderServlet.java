@@ -114,9 +114,8 @@ public class DimensionCacheLoaderServlet {
                 String message = "lastUpdated value not in json";
                 LOG.error(message);
                 return Response.status(BAD_REQUEST).entity(message).build();
-            } else {
-                dimension.setLastUpdated(lastUpdated);
             }
+            dimension.setLastUpdated(lastUpdated);
 
             LOG.debug("Successfully updated lastUpdated {} for dimension: {}", lastUpdated, dimensionName);
             return Response.status(Status.OK).build();

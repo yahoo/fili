@@ -10,6 +10,17 @@ Current
 
 ### Added:
 
+- [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
+    * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
+    to set the expiration date for a key when it is being added to the cache.
+    * The default implementation delegates to `boolean set(String key, T value)` (so throwing away the
+    expiration), so this won't affect any customers who have their own `DataCache`.
+    * The memcache-backed implementation implements the new `set`, and the old `set` delegates to it,
+    passing in the configured `EXPIRATION` constant. 
+
+- [Add config parameter to control lookback on druid dimension loader](https://github.com/yahoo/fili/issues/908)
+    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading. 
+
 - [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
     * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
     by restricting access to only a subset of the data present on the logical table.
@@ -102,6 +113,9 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
+    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
 
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
@@ -239,6 +253,9 @@ Current
 - [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
 
 ### Fixed:
+
+- [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
+    * Unstuck lookback so that the window slides forward rather than stopping at static load time.
 
 - [Reverted addition of Verizon Media Group to copyright]()
 

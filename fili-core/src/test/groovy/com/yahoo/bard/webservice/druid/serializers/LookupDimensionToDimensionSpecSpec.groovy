@@ -99,4 +99,3 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
         serializedQuery.contains('"dimensions":["shape"]')
     }
 }
-
