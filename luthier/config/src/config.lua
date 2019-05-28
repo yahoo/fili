@@ -16,6 +16,8 @@ local tableUtils = require("utils.tableUtils")
 
 -- dimensions returns dimension configuration keyed on name.
 local dimensions = require("dimensions")
+-- searchProviderTemplate returns preconfigured templates keyed on name.
+local searchProviderTemplates = require("searchProviderTemplates")
 -- metrics returns metric configuration keyed on name.
 local metrics = require("metrics")
 -- tables returns a table containing two keys:
@@ -24,6 +26,7 @@ local metrics = require("metrics")
 local tables = require("tables")
 
 local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
+local searchProviderConfig = dimensionUtils.build_search_provider_config(dimensions, searchProviderTemplates)
 local metricConfig = metricsUtils.build_metric_config(metrics)
 local tableConfig = tableUtils.build_table_config(tables)
 
@@ -34,6 +37,7 @@ os.execute("mkdir -p " .. testResources)
 
 -- add to the test/resource
 parser.save(testResources .. "DimensionConfig.json", dimensionConfig)
+parser.save(testResources .. "SearchProviderConfig.json", searchProviderConfig)
 parser.save(testResources .. "MetricConfig.json", metricConfig)
 parser.save(testResources .. "TableConfig.json", tableConfig)
 -- parser.save("../../src/test/resource/MakerConfig.json", require("makers"))

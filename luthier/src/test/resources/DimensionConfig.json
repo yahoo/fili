@@ -7,14 +7,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "PT08.S3(NOx)",
@@ -29,22 +29,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
-      },
-      {
-        "tags": [],
-        "name": "AGE"
-      },
-      {
-        "tags": [],
-        "name": "SEX"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki user",
@@ -59,14 +51,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki regionName",
@@ -81,14 +73,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki namespace",
@@ -103,14 +95,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki channel",
@@ -125,14 +117,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki isAnonymous",
@@ -147,14 +139,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki isMinor",
@@ -169,14 +161,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki isUnpatrolled",
@@ -191,14 +183,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "PT08.S1(CO)",
@@ -213,14 +205,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "AH",
@@ -235,14 +227,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki isRobot",
@@ -257,14 +249,22 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
+      },
+      {
+        "name": "AGE",
+        "tags": []
+      },
+      {
+        "name": "SEX",
+        "tags": []
       }
     ],
     "longName": "NOx(GT)",
@@ -279,10 +279,10 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
         "tags": [],
@@ -309,14 +309,22 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
+      },
+      {
+        "name": "COUNTY",
+        "tags": []
+      },
+      {
+        "name": "STATE",
+        "tags": []
       }
     ],
     "longName": "wiki metroCode",
@@ -331,14 +339,22 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "TEST_PK",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "TEST_FIELD_1",
+        "tags": []
+      },
+      {
+        "name": "TEST_FIELD_2",
+        "tags": []
+      },
+      {
+        "name": "TEST_FIELD_3",
+        "tags": []
       }
     ],
     "longName": "wiki countryName",
@@ -353,14 +369,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki isNew",
@@ -375,19 +391,19 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "C6H6(GT)",
     "keyValueStore": "com.yahoo.bard.webservice.data.dimension.MapStore",
-    "description": "C6H6(GT)"
+    "type": "KeyValueStoreDimensionFactory"
   },
   "regionIsoCode": {
     "category": "UNKNOWN_CATEGORY",
@@ -397,14 +413,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki regionIsoCode",
@@ -419,14 +435,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki comment",
@@ -441,14 +457,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "PT08.S5(O3)",
@@ -463,14 +479,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki page",
@@ -485,14 +501,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "PT08.S2(NMHC)",
@@ -507,14 +523,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "T",
@@ -529,14 +545,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "NO2(GT)",
@@ -554,6 +570,7 @@
     "isAggregatable": false,
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
         ],
@@ -584,14 +601,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "NMHC(GT)",
@@ -606,14 +623,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "RH",
@@ -628,14 +645,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "wiki cityName",
@@ -650,14 +667,14 @@
     "defaultFields": [],
     "fields": [
       {
+        "name": "ID",
         "tags": [
           "primaryKey"
-        ],
-        "name": "ID"
+        ]
       },
       {
-        "tags": [],
-        "name": "DESC"
+        "name": "DESC",
+        "tags": []
       }
     ],
     "longName": "CO(GT)",

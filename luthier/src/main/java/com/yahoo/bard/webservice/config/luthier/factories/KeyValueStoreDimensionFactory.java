@@ -106,7 +106,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
 
         LuthierValidationUtils.validateField(configTable.get("searchProvider"), DIMENSION, name, "searchProvider");
         SearchProvider searchProvider = resourceFactories.getSearchProvider(
-                configTable.get("searchProvider").textValue()
+                configTable.get("domain").textValue()
         );
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();

@@ -19,6 +19,7 @@ out
 # ignore them. If any *Config.json contains important information,
 # we do not add it to this list. 
 # example: luthier/src/test/resources/example.json
+luthier/tmp
 
 # Ignore generated jars
 *-system-config-*.jar
