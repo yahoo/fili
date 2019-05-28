@@ -1,4 +1,4 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2019 Verizon Media Group.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
@@ -43,7 +43,6 @@ public class FlagFromTagDimension implements Dimension {
     private final DimensionRow trueRow;
     private final DimensionRow falseRow;
 
-    private static final String NULL_VALUE = "";
     private static final String UNUSED_PHYSICAL_NAME = "unused_physical_name";
 
     private final RegisteredLookupDimension groupingDimension;
@@ -90,7 +89,7 @@ public class FlagFromTagDimension implements Dimension {
         if (baseGroupingDimension instanceof ExtractionFunctionDimension) {
             groupingDimensionExtractionFunctions.addAll(
                     ((ExtractionFunctionDimension) baseGroupingDimension).getExtractionFunction()
-                    .map((ExtractionFunction fn) ->
+                    .map(fn ->
                             fn instanceof CascadeExtractionFunction ?
                                 ((CascadeExtractionFunction) fn).getExtractionFunctions() :
                                 Collections.singletonList(fn)
@@ -99,17 +98,10 @@ public class FlagFromTagDimension implements Dimension {
             );
         }
 
-        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (KeyValueStoreDimension) baseGroupingDimension,
-                    UNUSED_PHYSICAL_NAME
-            );
-        } else {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    baseGroupingDimension,
-                    UNUSED_PHYSICAL_NAME
-            );
-        }
+        groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
+                baseGroupingDimension,
+                UNUSED_PHYSICAL_NAME
+        );
 
         groupingDimensionExtractionFunctions.addAll(
                 TagExtractionFunctionFactory.buildTagExtractionFunction(

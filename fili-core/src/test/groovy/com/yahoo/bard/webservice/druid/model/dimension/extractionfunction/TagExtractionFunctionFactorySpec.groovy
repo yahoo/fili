@@ -1,4 +1,4 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2019 Verizon Media Group.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction
 
@@ -51,11 +51,8 @@ class TagExtractionFunctionFactorySpec extends Specification {
     }
 
     def "Empty string tag value marked as invalid"() {
-        setup:
-        ObjectMapper mapper = new ObjectMappersSuite().mapper
-
         when:
-        List<ExtractionFunction> function = TagExtractionFunctionFactory.buildTagExtractionFunction("")
+        TagExtractionFunctionFactory.buildTagExtractionFunction("")
 
         then:
         thrown(IllegalArgumentException)
@@ -64,7 +61,7 @@ class TagExtractionFunctionFactorySpec extends Specification {
     @Unroll
     def "expression #expression matches #value is #expected"() {
         expect:
-        String patternString = String.format(TagExtractionFunctionFactory.DEFAULT_TAG_REG_EX_FORMAT, expression);
+        String patternString = String.format(TagExtractionFunctionFactory.DEFAULT_TAG_REG_EX_FORMAT, expression)
         Pattern.compile(patternString).matcher(value).matches() == expected
 
         where:

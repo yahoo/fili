@@ -216,9 +216,7 @@ class QueryBuildingTestingResources {
                 "TRUE_VALUE",
                 "FALSE_VALUE",
         )
-
         d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
-        dimensionDictionary.add(d14)
 
         FlagFromTagDimensionConfig registeredLookupFftConfig = new FlagFromTagDimensionConfig(
                 {"flagFromTagRegisteredLookup"},
@@ -231,10 +229,10 @@ class QueryBuildingTestingResources {
                 "TRUE_VALUE",
                 "FALSE_VALUE",
         )
-
         d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
-        dimensionDictionary.add(d15)
 
+        dimensionDictionary.add(d14)
+        dimensionDictionary.add(d15)
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")

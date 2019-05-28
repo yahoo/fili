@@ -15,9 +15,9 @@ import spock.lang.Specification
 
 import javax.ws.rs.container.ContainerRequestContext
 
-class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification {
+class FlagFromTagRequestMapperProviderSpec extends Specification {
 
-    FlagToTagApiFilterTransformRequestMapperProvider provider
+    FlagFromTagRequestMapperProvider provider
 
     FlagFromTagDimension fft
     Dimension testDim
@@ -25,7 +25,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
     ApiFilter fftFilter
 
     def setup() {
-        provider = new FlagToTagApiFilterTransformRequestMapperProvider()
+        provider = new FlagFromTagRequestMapperProvider.Builder().build()
 
         FlagFromTagDimensionConfig fftConfig = new FlagFromTagDimensionConfig(
                 {"flagFromTag"},
@@ -74,7 +74,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
                 DefaultFilterOperation.eq,
                 DefaultFilterOperation.notin
         ].each {
-            assert provider.transformFilterOperation(fft, it, ["TRUE_VALUE"]) == it
+            assert provider.transformFilterOperation(fft, it, "TRUE_VALUE") == it
         }
 
         and:
@@ -84,22 +84,26 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
                 DefaultFilterOperation.contains,
                 DefaultFilterOperation.eq,
         ].each {
-            assert provider.transformFilterOperation(fft, it, ["FALSE_VALUE"]) == DefaultFilterOperation.notin
+            assert provider.transformFilterOperation(fft, it, "FALSE_VALUE") == provider.negativeInvertedFilterOperation
         }
 
         and:
-        provider.transformFilterOperation(fft, DefaultFilterOperation.notin, ["FALSE_VALUE"]) == DefaultFilterOperation.in
+        provider.transformFilterOperation(fft, DefaultFilterOperation.notin, "FALSE_VALUE") == provider.positiveInvertedFilterOperation
     }
 
-    def "filter transformation fails gracefully when processing a filter that is malformed or not configured to handle"() {
+    def "Validating initial api filter fails on incorrectly formed filter"() {
+        setup:
+        ApiFilter filter = new ApiFilter(fft, fft.getKey(), DefaultFilterOperation.notin, ["TRUE_VALUE", "FALSE_VALUE"])
+
         when: "both tag values are in the same filter. this creates a nonsensical filter that can't be transformed"
-        provider.transformFilterOperation(fft, DefaultFilterOperation.notin, ["TRUE_VALUE", "FALSE_VALUE"])
+        provider.validateFlagFromTagFilter(filter)
 
         then:
         thrown(BadApiRequestException)
 
-        when: "try to invert a filter that is not invertable and thus not supported"
-        provider.transformFilterOperation(fft, DefaultFilterOperation.between, ["FALSE_VALUE"])
+        when: "try to invert a filter that is not invertible and thus not supported"
+        filter = new ApiFilter(fft, fft.getKey(), DefaultFilterOperation.between, ["FALSE_VALUE"])
+        provider.validateFlagFromTagFilter(filter)
 
         then:
         thrown(BadApiRequestException)
@@ -107,7 +111,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
 
     def "Filters on DataApiRequest that use a FFT dimension have those filters properly converted"() {
         setup:
-        RequestMapper<DataApiRequest> mapper = provider.dataApiRequestMapper(dictionaries)
+        RequestMapper<DataApiRequest> mapper = provider.dataMapper(dictionaries)
 
         DataApiRequest request = Mock(DataApiRequest)
         request.getApiFilters() >> new ApiFilters([
@@ -132,7 +136,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
 
     def "Filters on non-fft dimensions remain untouched"() {
         setup:
-        RequestMapper<DataApiRequest> mapper = provider.dataApiRequestMapper(dictionaries)
+        RequestMapper<DataApiRequest> mapper = provider.dataMapper(dictionaries)
 
         DataApiRequest request = Mock(DataApiRequest)
         Dimension otherDim = Mock(Dimension)
@@ -156,7 +160,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
 
     def "Dimensions properly filter. Non fft dimensions are not transformed"() {
         setup:
-        RequestMapper<DimensionsApiRequest> mapper = provider.dimensionsApiRequestMapper(dictionaries)
+        RequestMapper<DimensionsApiRequest> mapper = provider.dimensionsMapper(dictionaries)
 
         DimensionsApiRequest request = Mock()
         ApiFilter otherFilter = Mock(ApiFilter) { getDimension() >> Mock(Dimension) }
@@ -180,7 +184,7 @@ class FlagToTagApiFilterTransformRequestMapperProviderSpec extends Specification
 
     def "Tables api requests properly filter. Non fft dimensions are not transformed"() {
         setup:
-        RequestMapper<TablesApiRequest> mapper = provider.tablesApiRequestMapper(dictionaries)
+        RequestMapper<TablesApiRequest> mapper = provider.tablesMapper(dictionaries)
 
         TablesApiRequest request = Mock()
         Dimension otherDim = Mock(Dimension)

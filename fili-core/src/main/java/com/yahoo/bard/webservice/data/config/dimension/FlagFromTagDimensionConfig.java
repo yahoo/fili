@@ -1,4 +1,4 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2019 Verizon Media Group.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.dimension;
 
@@ -54,8 +54,8 @@ public class FlagFromTagDimensionConfig implements DimensionConfig {
             String description,
             String longName,
             String category,
-            String filteringDimensionApiName,
-            String groupingBaseDimensionApiName,
+            @NotNull String filteringDimensionApiName,
+            @NotNull String groupingBaseDimensionApiName,
             String tagValue,
             String trueValue,
             String falseValue

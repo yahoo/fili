@@ -1,4 +1,4 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2019 Verizon Media Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.bard.webservice.web.FlagToTagApiFilterTransformRequestMapperProvider
+import com.yahoo.bard.webservice.web.FlagFromTagRequestMapperProvider
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
@@ -45,7 +45,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
             Map<String, RequestMapper> mappers = [:] as Map
             mappers.put(
                     DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                    new FlagToTagApiFilterTransformRequestMapperProvider().dataApiRequestMapper(resourceDictionaries)
+                    new FlagFromTagRequestMapperProvider().dataApiRequestMapper(resourceDictionaries)
             )
             return mappers
         }
