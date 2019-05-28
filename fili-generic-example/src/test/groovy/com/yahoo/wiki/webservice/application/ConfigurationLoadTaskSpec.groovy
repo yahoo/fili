@@ -2,11 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.application
 
+import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -37,7 +40,7 @@ class ConfigurationLoadTaskSpec extends Specification {
         GenericDimensionConfigs genericDimensions = new GenericDimensionConfigs(wikiConfigLoader)
         LinkedHashSet<DimensionConfig> dimensions = genericDimensions.
                 getAllDimensionConfigurations()
-        loader = new ConfigurationLoader(
+        loader = new DefaultConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new GenericMetricLoader(wikiConfigLoader),
                 new GenericTableLoader(wikiConfigLoader, genericDimensions, new DataSourceMetadataService())
