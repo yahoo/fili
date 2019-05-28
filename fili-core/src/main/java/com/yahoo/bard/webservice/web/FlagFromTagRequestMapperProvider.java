@@ -1,29 +1,24 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2019 Verizon Media Group.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.xml.crypto.Data;
 
 /**
  * Provides mappers to transform API filters for flag from tag dimensions for different request types. A new mapper is
@@ -71,6 +66,7 @@ public class FlagFromTagRequestMapperProvider {
          * Set the accepted set of operations with positive truth value.
          *
          * @param positiveOps the set of ops to be set.
+         * @return the builder
          */
         public Builder positiveOps(Set<FilterOperation> positiveOps) {
             this.positiveOps = positiveOps;
@@ -81,6 +77,7 @@ public class FlagFromTagRequestMapperProvider {
          * Set the accepted set of operations with negative truth value.
          *
          * @param negativeOps the set of ops to be set.
+         * @return the builder
          */
         public Builder negativeOps(Set<FilterOperation> negativeOps) {
             this.negativeOps = negativeOps;
@@ -91,6 +88,7 @@ public class FlagFromTagRequestMapperProvider {
          * Sets the filter operation to be used if a negative filter needs to be inverted.
          *
          * @param positiveInvertedFilterOperation the filter operation
+         * @return the builder
          */
         public Builder positiveInvertedFilterOperation(FilterOperation positiveInvertedFilterOperation) {
             this.positiveInvertedFilterOperation = positiveInvertedFilterOperation;
@@ -101,6 +99,7 @@ public class FlagFromTagRequestMapperProvider {
          * Sets the filter operation to be used if a positive filter needs to be inverted.
          *
          * @param negativeInvertedFilterOperation the filter operation
+         * @return the builder
          */
         public Builder negativeInvertedFilterOperation(FilterOperation negativeInvertedFilterOperation) {
             this.negativeInvertedFilterOperation = negativeInvertedFilterOperation;
@@ -282,7 +281,11 @@ public class FlagFromTagRequestMapperProvider {
         }
 
         // The filter operation should be in either the positive or negative operation sets
-        if (Stream.of(positiveOps,negativeOps).flatMap(Set::stream).noneMatch(op -> op.equals(filter.getOperation()))) {
+        if (
+                Stream.of(positiveOps, negativeOps)
+                        .flatMap(Set::stream)
+                        .noneMatch(op -> op.equals(filter.getOperation()))
+        ) {
             throw new BadApiRequestException(
                     String.format(
                             "Dimension %s doesn't support the operation %s. Try using one of the " +

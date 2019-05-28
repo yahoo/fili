@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultRegisteredLookupDimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -15,7 +14,6 @@ import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.TagExtractionFunctionFactory;
-import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
 import com.yahoo.bard.webservice.druid.serializers.FlagFromTagDimensionSpec;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -80,7 +78,9 @@ public class FlagFromTagDimension implements Dimension {
         trueValue = dimensionConfig.getTrueValue();
         falseValue = dimensionConfig.getFalseValue();
 
-        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(dimensionConfig.getGroupingBaseDimensionApiName());
+        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(
+                dimensionConfig.getGroupingBaseDimensionApiName()
+        );
         DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
 
         List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>();
