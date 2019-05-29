@@ -74,15 +74,11 @@ will read in these three JSON files and use them to populate the
 In order to use the Lua-based external configuration, a few changes need to 
 be made to your BinderFactory.
 
-1. Extend the
-[LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/6b27301334a427fcfc3ea2215afca862f75ff05f/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java).
-The ConfigurationLoader is the source of all the dictionaries that the configuration will be populating and is where we will be registering 
-any custom factories.
-2. Override the [getConfigurationLoader](https://github.com/yahoo/fili/blob/6b27301334a427fcfc3ea2215afca862f75ff05f/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java#L1066)
-to return an instance of our custom `LuthierConfigurationLoader`.
-
-3. The [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31)
-is where we can add our own custom search provider types, dimension types, metric makers, etc.
+1. Override the
+   [getConfigurationLoader](https://github.com/yahoo/fili/blob/6b27301334a427fcfc3ea2215afca862f75ff05f/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java#L1066)
+to build and return an instance of the `LuthierIndustrialPark`.
+`LuthierIndustrialPark` has a Builder this is comes prepopulated with the
+default configuration types provided by Fili. Registering additional factories is as simple as `builder.with<Type>Factory(name, new CustomTypeFactory<>)`.
 
 ## Data Format
 
@@ -260,27 +256,31 @@ Fili supports the following built in KeyValueStores:
 See [KeyValueStoreFactory](#key-value-store-factory) for details on how to
 define and use a custom key value store.
 
-
 # Java Configuration
 
 It is a fact of life that every project has its own tech stack, architectural
 quirks, and business requirements.  Therefore, Fili provides deep support for
-customization. For example, Fili was built on the assumption that querying a
+customization.
+
+For example, Fili was built on the assumption that querying a
 MySQL database once per dimension per query would be expensive, and so it
 encourages customers to use Lucene to keep a local cache of dimension data.
 Some customers may have a large number of MySQL read slaves, so hitting MySQL
 directly is performant, and much simpler than maintaining a local cache. Such a
-customer can define their own SearchProvider that queries MySQL directly,
-register it with Fili in their Java code, and then reference their custom
-search provider in their Lua config.
+customer can define their own [`SearchProvider`](https://github.com/yahoo/fili/blob/luthier-design/fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/SearchProvider.java)
+implementation that queries MySQL directly,
+register it with Fili in their Java code, and then reference it
+in their Lua config.
 
 Every building block can be customized, and they are all customized following
 the same basic pattern:
 
 1. Implement the appropriate interface with your custom implementation.
-2. Implement the appropriate Factory interface, which builds your
-   custom implementation.
-3. Register your factory with Fili.
+2. Implement the Factory<T> interface, where `T` is the interface you 
+    implemented in step 1. The `Factory<T>` is responsible for building
+    instances of your custom implementation from te configuration.
+3. Register your factory with your `LuthierIndustrialPark` in your overridden 
+[AbstractBinderFactory::getConfigurationLoader](https://github.com/yahoo/fili/blob/706e5d899fce36a115581441f59abfd75f1c6f62/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java#L1066).
 
 Each Factory has a method `build` that takes in the current config and a
 `LuthierIndustrialPark` object.
@@ -291,13 +291,32 @@ Each Factory has a method `build` that takes in the current config and a
 dependencies. It has the following methods:
 
 ```java
-    LogicalTable getLogicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
-    PhysicalTable getPhysicalTable(String factoryName, String tableName, Map<String, JsonNode> configTable);
-    LogicalMetric getLogicalMetric(String factoryName, String metricName, Map<String, JsonNode> configTable);
-    Dimension getDimension(String factoryName, String dimensionName, Map<String, JsonNode> configTable);
-    SearchProvider getSearchProvider(String factoryName, Map<String, JsonNode> configTable);
-    KeyValueStore getKeyValueStore(String factoryName, Map<String, JsonNode> configTable);
+    LogicalTable getLogicalTable(String tableName);
+    PhysicalTable getPhysicalTable(String tableName);
+    LogicalMetric getLogicalMetric(String metricName);
+    Dimension getDimension(String dimensionName);
+    SearchProvider getSearchProvider(String searchProviderName);
+    KeyValueStore getKeyValueStore(String keyValueStoreName);
 ```
+
+It is constructed using a `LuthierIndustrialPark.Builder`. The `Builder` is where we register our custom
+factories. It includes the following methods:
+
+```java
+    LuthierIndustrialPark.Builder withLogicalTableFactory(String factoryName, Factory<LogicalTable> factory);
+    LuthierIndustrialPark.Builder withPhysicalTableFactory(String factoryName, Factory<PhysicalTable> factory);
+    LuthierIndustrialPark.Builder withLogicalMetricFactory(String factoryName, Factory<LogicalMetric> factory);
+    LuthierIndustrialPark.Builder withDimensionFactory(String factoryName, Factory<Dimension> factory);
+    LuthierIndustrialPark.Builder withSearchProviderFactory(String factoryName, Factory<SearchProvider> factory);
+    LuthierIndustrialPark.Builder withKeyValueStoreFactory(String factoryName, Factory<KeyValueStore> factory);
+    LuthierIndustrialPark.Builder withMetricFactory(String factoryName, Factory<Metric> factory);
+    LuthierIndustrialPark.Builder withMetricMakerFactory(String factoryName, Factory<MetricMaker> factory);
+```
+
+The `LuthierIndustrialPark` is an implementation of
+[`ConfigurationLoader`](https://github.com/yahoo/fili/blob/luthier-design/fili-core/src/main/java/com/yahoo/bard/webservice/data/config/ConfigurationLoader.java).
+As such, it should be built in your overridden `AbstractBinderFactory::getConfigurationLoader`. This is
+also where the `with` methods can be invoked on the builder to register custom factories.
 
 ## DimensionFactory
 
@@ -305,132 +324,94 @@ In order to use a custom dimension in your Lua config, you need to follow
 three steps:
 
 1. Implement the Dimension interface.
-2. Implement the DimensionFactory interface to build an instance of your
+2. Implement the Factory<Dimension> interface to build an instance of your
 custom Dimension.
-3. Register your DimensionFactory.
+3. Register your factory.
 
-A `DimensionFactory` is an object that takes in configuration information
-and builds a `Dimension`. The `TFactory` interface has a single method:
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    Dimension build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
- has a method
-`void registerFactories(LuthierIndustrialPark factories)`. You
-register all your custom dimension factories by overriding `registerFactories`
-and registering your dimension factory with the provided `LuthierIndustrialPark`
-object.
+We register all our custom dimension factories by attaching them to the
+`LuthierIndustrialPark.Builder` in your overridden
+`AbstractBinderFactory::getConfigurationLoader`.
 
-For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
+For example the following may appear in your BinderFactory:
 
 ```java
     @Override
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-mysql", new MySqlDimensionFactory());
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withDimensionFactory("custom-dimension", new MyCustomDimensionFactory());
+        return builder.build();
     }
 ```
-
-The `LuthierIndustrialPark` object is preregistered with Fili's
-builtin KeyValueStoreDimensions.
-
-The `register` method throws an `IllegalArgumentException` if customers attempt
-to use a name that already exists as a dimension type. `override`
-does the same as `register`, except it overrides any dimension type that already
-exists with the provided name.
-
-`register` should be almost in almost every case.
-`override` exists to support horrible, but perhaps necessary hacks that may come
-about in gnarly real world programs.
 
 ## SearchProviderFactory
 
 In order to use a custom search provider in your Lua config, you need to follow
 the three steps:
 
-1. Implement the SearchProvider interface with your custom SearchProvider.
-2. Implement the SearchProviderFactory interface to build an instance of your
+1. Implement the SearchProvider interface.
+2. Implement the Factory<SearchProvider> interface to build an instance of your
 custom SearchProvider.
-3. Register your SearchProviderFactory.
+3. Register your factory.
 
-A `SearchProviderFactory` is an object that takes in configuration information
-and builds a `SearchProvider` for a given Diemnsion. `TFactory` has a single method:
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    SearchProvider build(Dimension dimension, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-Fili's AbstractBinderFactory has a method
-`void registerSearchProviderFactories(LuthierIndustrialPark factories)`. You
-register all your custom search provider factories here.
+We register all our custom SearchProvider factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
 
-
-The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
- has a method
-`void registerFactories(LuthierIndustrialPark factories)`. You
-register all your custom search provider factories by overriding `registerFactories`.
-
-For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
+For example the following may appear in our BinderFactory:
 
 ```java
     @Override
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("custom-searchprovider", new MyCustomSearchProviderFactory());
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withSearchProviderFactory("custom-searchProvider", new MyCustomSearchProviderFactory());
+        return builder.build();
     }
 ```
-
-`factories` comes preregistered with Fili's builtin SearchProviders.
-
-The `register` method throws an `IllegalArgumentException` if customers
-attempt to a name that already exists. `override` does the same
-as `register`, except it does *not* throw an `IllegalArgumentException` if
-customers attempt to register a name that already exists. It *will* override
-a name if that name already exists.
-
-It's recommended that `register` is used for *all* new SearchProviders.
-`override` exists to support horrible, but perhaps necessary hacks that may come
-about in gnarly real world programs.
-
 ## KeyValueStoreFactory
 
-In order to use a custom key value store in your Lua config, you need to follow
-the three following steps:
+In order to use a custom search provider in your Lua config, you need to follow
+the three steps:
 
 1. Implement the KeyValueStore interface.
-2. Implement the `KeyValueStoreFactory` interface to build an instance of your
+2. Implement the Factory<KeyValueStore> interface to build an instance of your
 custom KeyValueStore.
-3. Register your KeyValueStoreFactory.
+3. Register your factory.
 
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
-The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
- has a method
-`void registerFactories(LuthierIndustrialPark factories)`. You
-register all your custom key value store factories by overriding `registerFactories`
-and registering your key value store factory with the provided `LuthierIndustrialPark`
-object.
+```java
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
+```
 
-For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
+We register all our custom KeyValueStore factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
+
+For example the following may appear in our BinderFactory:
 
 ```java
     @Override
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-keyValueStore", new MyCustomKeyValueStoreFactory());
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withKeyValueStoreFactory("custom-keyValueStore", new MyCustomKeyValueStoreFactory());
+        return builder.build();
     }
 ```
-
-The provided `LuthierIndustrialPark` object comes preregistered with Fili's
-builtin KeyValueStores.
-
-The `register` method throws an `IllegalArgumentException` if customers
-attempt to use a name that already exists. `override` does the same
-as `register`, except it does *not* throw an `IllegalArgumentException` if
-customers attempt to register a name that already exists. It *will* override
-a name if that name already exists.
-
-It's recommended that `register` is used for *all* new KeyValueStores.
-`override` exists to support horrible, but perhaps necessary hacks that may come
-about in gnarly real world program.
 
 # Metrics
 
@@ -519,17 +500,30 @@ by name in each metric that uses them, as demonstrated [earlier](#metrics).
 To use a custom maker in the Lua config, you need to follow these three
 steps:
 
-1. Implement the `MetricMaker` interface with your custom maker.
-2. Implement the `MetricMakerFactory` interface to build your custom maker.
-3. Register the new `MetricMakerFactory` with the `LuthierIndustrialPark` object.
+1. Implement the MetricMaker interface.
+2. Implement the Factory<MetricMaker> interface to build an instance of your
+custom MetricMaker.
+3. Register your factory.
 
-To add the new `MetricMakerFactory` we override the
-`void registerFactories(LuthierIndustrialPark factories)` method in
-our `LuthierConfigurationLoader`:
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register(CustomMetricMaker.class.getName(), new CustomMetricMakerFactory());
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
+```
+
+We register all our custom MetricMaker factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
+
+For example the following may appear in our BinderFactory:
+
+```java
+    @Override
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withMetricMakerFactory("custom-metricMaker", new MyCustomMetricMakerFactory());
+        return builder.build();
     }
 ```
 
@@ -542,16 +536,30 @@ far more likely you'll want a custom `MetricMaker` rather than a custom
 To define a custom `LogicalMetric`, we follow the same basic pattern as
 everything else:
 
-1. Extend the `LogicalMetric` class.
-2. Register the `MetricFactory` with the `LuthierIndustrialPark` object.
+1. Implement the LogicalMetric interface.
+2. Implement the Factory<LogicalMetric> interface to build an instance of your
+custom LogicalMetric.
+3. Register your factory.
 
-To add the new `MetricFactory` we override the
-`void registerFactories(LuthierIndustrialPark factories)` method in
-our `BinderFactory`:
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("customMetricType", new CustomMetricFactory());
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
+```
+
+We register all our custom LogicalMetric factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
+
+For example the following may appear in our BinderFactory:
+
+```java
+    @Override
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withLogicalMetricFactory("custom-logicalMetric", new MyCustomLogicalMetricFactory());
+        return builder.build();
     }
 ```
 
@@ -593,7 +601,7 @@ following keys:
 TODO: I know we have multiple types of physical tables built into Fili. We should name
 them and list them here.
 
-For example, suppose we define two new physicaltables, `physical1` and
+For example, suppose we define two new physical tables, `physical1` and
 `physical2`:
 
 ```lua
@@ -739,95 +747,71 @@ to populate the `MetricDictionary` appropriately.
 
 ## LogicalTableFactory
 
-In order to use a custom logical table type in your Lua config, you need to follow
-three steps:
 
-1. Implement the LogicalTable interface with your new custom LogicalTable type.
-2. Implement the LogicalTableFactory interface to build an instance of your
-    custom LogicalTable.
-3. Register your LogicalTableFactory.
+In order to use a custom search provider in your Lua config, you need to follow
+the three steps:
 
-A `LogicalTableFactory` is an object that takes in configuration information
-and builds a `LogicalTable`. It has a single method:
+1. Implement the LogicalTable interface.
+2. Implement the Factory<LogicalTable> interface to build an instance of your
+custom LogicalTable.
+3. Register your factory.
+
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    LogicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
 ```
 
+We register all our custom LogicalTable factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
 
-The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
- has a method
-`void registerFactories(LuthierIndustrialPark factories)`. You
-register all your custom logical table factories by overriding `registerFactories`
-and registering your logical table factory with the provided `LuthierIndustrialPark`
-object.
-
-For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
+For example the following may appear in our BinderFactory:
 
 ```java
     @Override
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-tabletype", new MyCustomLogicalTableFactory());
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withLogicalTableFactory("custom-logicalTable", new MyCustomLogicalTableFactory());
+        return builder.build();
     }
 ```
-
-The `LuthierIndustrialPark` object is preregistered with Fili's
-builtin LogicalTables.
-
-The `register` method throws an `IllegalArgumentException` if customers attempt
-to use a name that already exists as a dimension type. `override`
-does the same as `register`, except it overrides any dimension type that already
-exists with the provided name.
-
-`register` should be used in almost every case.
-`override` exists to support horrible, but perhaps necessary hacks that may come
-about in gnarly real world programs.
 
 ## PhysicalTableFactory
 
 In order to use a custom physical table in your Lua config, you need to follow
 three steps:
 
-1. Implement the PhysicalTable interface.
-2. Implement the PhysicalTableFactory interface to build an instance of your
-custom Dimension.
-3. Register your PhysicalTableFactory.
+In order to use a custom search provider in your Lua config, you need to follow
+the three steps:
 
-A `PhysicalTableFactory` is an object that takes in configuration information
-and builds a `PhysicalTable`. It has a single method:
+1. Implement the PhysicalTable interface.
+2. Implement the Factory<PhysicalTable> interface to build an instance of your
+custom PhysicalTable.
+3. Register your factory.
+
+A `Factory<T>` is an object that takes in configuration information
+and builds a `T`. The interface has a single method:
 
 ```java
-    PhysicalTable build(String name, Map<String, JsonNode> configTable, LuthierIndustrialPark resourceFactories);
+    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
 ```
 
-The [LuthierConfigurationLoader](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java)
- has a method
-`void registerFactories(LuthierIndustrialPark factories)`. You
-register all your custom physical table factories by overriding `registerFactories`
-and registering your physical table factory with the provided `LuthierIndustrialPark`
-object.
+We register all our custom PhysicalTable factories by attaching them to the
+`LuthierIndustrialPark.Builder` in our overridden
+`AbstractBinderFactory::getConfigurationLoader`.
 
-For example the following may appear in your [registerFactories](https://github.com/yahoo/fili/blob/1e4027ede286172fc5d6f16856496bdf8a35a193/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/LuthierConfigurationLoader.java#L31):
+For example the following may appear in our BinderFactory:
 
 ```java
     @Override
-    public void registerFactories(LuthierIndustrialPark factories) {
-        factories.register("myproject-custom-physical-table", new CustomPhysicalTableFactory());
+    public void getConfigurationLoader() {
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(new ResourceDictionaries());
+        builder.withPhysicalTableFactory("custom-physicalTable", new MyCustomPhysicalTableFactory());
+        return builder.build();
     }
 ```
-
-The `LuthierIndustrialPark` object is preregistered with Fili's
-builtin PhysicalTables.
-
-The `register` method throws an `IllegalArgumentException` if customers attempt
-to use a name that already exists as a physical table type. `override`
-does the same as `register`, except it overrides any physical table type that already
-exists with the provided name.
-
-`register` should be almost in almost every case.
-`override` exists to support horrible, but perhaps necessary hacks that may come
-about in gnarly real world programs.
-
 # Configuration In Action
 
 Fili comes with a folder `config` that includes a fully defined configuration
@@ -841,8 +825,8 @@ When executed, the Lua config generates `config/external/MetricConfig.json`,
 `config/external/DimensionConfig.json`, and `config/external/TableConig.json`.
 
 These JSON files will be read in and parsed by the LudierLoader.  The
-LudierLoader is responsible for extracting from each JSON file a `Map<String,
-Map<String, JsonNode>>` that maps names to configuration objects.  We'll need
+LudierLoader is responsible for extracting from each JSON file a `ObjectNode` 
+that maps names to configuration objects.  We'll need
 one for logical tables, physical tables, dimensions, metrics, search providers
 and key value stores.  We'll need to inject these dictionaries into the 
 `ResourceDictionaries` object, and make sure the `LuthierIndustrialPark` have 
@@ -857,7 +841,7 @@ It will look something like:
 ```java
     logicalTableConfiguration.entrySet().forEach(
         nameTableConfiguration -> {
-            Map<String, JsonNode> tableConfiguration = nameTableConfiguration.getValue();
+            ObjectNode tableConfiguration = nameTableConfiguration.getValue();
             String tableType = tableConfiguration.getText("type");
             return resourceFactories.getLogicalTable(
                 tableType == null ? "logicalTable" : tableType,
@@ -868,12 +852,12 @@ It will look something like:
     )
 ```
 
-The `LuthierIndustrialPark` will be responsible for extracting the appropriate 
-configuration object from the appropriate `Map<String, Map<String, JsonNode>>`
-and passing it along to the appropriate factory.
+Instances of
+[`FactoryPark<T>`](https://github.com/yahoo/fili/blob/luthier-design/luthier/src/main/java/com/yahoo/bard/webservice/config/luthier/FactoryPark.java)
+are responsible for extracting the appropriate configuration object from the
+appropriate `ObjectNode` and passing it along to the
+appropriate factory.
 
-This will require us to extend `ResourceDictionaries` with dictionaries for 
-all the objects that can be defined in Lua. We will need a dictionary for
+This will require us to extend `ResourceDictionaries` with dictionaries for all
+the objects that can be defined in Lua. We will need a dictionary for
 SearchProviders and for KeyValueStores.
-
-The code can be found on the `wiki-test` branch.
