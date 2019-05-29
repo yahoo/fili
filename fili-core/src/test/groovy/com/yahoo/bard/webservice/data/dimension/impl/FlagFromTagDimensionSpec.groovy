@@ -129,7 +129,7 @@ class FlagFromTagDimensionSpec extends Specification {
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
         fft.groupingDimension.registeredLookupExtractionFns.size() == 2
-        fft.groupingDimension.getKeyValueStore() == null
+        fft.groupingDimension.getKeyValueStore() != null
         fft.getSearchProvider() instanceof MapSearchProvider
     }
 }

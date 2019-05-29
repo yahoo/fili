@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
@@ -105,8 +106,16 @@ public class FlagFromTagDimension implements Dimension {
             );
         } else {
             groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    baseGroupingDimension,
-                    UNUSED_PHYSICAL_NAME
+                    baseGroupingDimension::getApiName,
+                    UNUSED_PHYSICAL_NAME,
+                    baseGroupingDimension.getDescription(),
+                    baseGroupingDimension.getLongName(),
+                    baseGroupingDimension.getCategory(),
+                    baseGroupingDimension.getDimensionFields(),
+                    baseGroupingDimension.getDefaultDimensionFields(),
+                    MapStoreManager.getInstance(flagDimensionConfig.getApiName()),
+                    baseGroupingDimension.getSearchProvider(),
+                    Collections.EMPTY_LIST
             );
         }
 

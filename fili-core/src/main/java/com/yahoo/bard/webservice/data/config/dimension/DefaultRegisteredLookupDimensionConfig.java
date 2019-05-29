@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.data.config.dimension;
 
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
@@ -137,30 +136,6 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
         );
     }
 
-    /**
-     * Construct a DefaultKeyValueStoreDimensionConfig instance from a Dimension and physical column name.
-     *
-     *
-     * @param dimension  The dimension whose config should be copied.
-     * @param physicalName  The internal, physical name for the dimension.
-     */
-    public DefaultRegisteredLookupDimensionConfig(
-            Dimension dimension,
-            String physicalName
-    ) {
-        this(
-                (DimensionName) dimension::getApiName,
-                physicalName,
-                dimension.getDescription(),
-                dimension.getLongName(),
-                dimension.getCategory(),
-                dimension.getDimensionFields(),
-                dimension.getDefaultDimensionFields(),
-                null,
-                dimension.getSearchProvider(),
-                Collections.EMPTY_LIST
-        );
-    }
     /**
      * Construct a copy of this config with additional extraction functions appended.
      *
