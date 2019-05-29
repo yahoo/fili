@@ -45,7 +45,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
             Map<String, RequestMapper> mappers = [:] as Map
             mappers.put(
                     DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                    new FlagFromTagRequestMapperProvider.Builder().build().dataMapper(resourceDictionaries)
+                    FlagFromTagRequestMapperProvider.Builder.simpleProvider().dataMapper(resourceDictionaries)
             )
             return mappers
         }
@@ -81,7 +81,6 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         filteringSP.setDimension(filteringDimension)
 
         filteringDimension.getSearchProvider() >> filteringSP
-
 
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.add(filteringDimension)

@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,8 +53,8 @@ public class FlagFromTagRequestMapperProvider {
                 )
         );
 
-        public static FilterOperation DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.eq;
-        public static FilterOperation DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.notin;
+        public static final FilterOperation DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.eq;
+        public static final FilterOperation DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.notin;
 
 
         private Set<FilterOperation> positiveOps = new HashSet<>(DEFAULT_POSITIVE_OPS);
@@ -119,6 +120,15 @@ public class FlagFromTagRequestMapperProvider {
                     negativeInvertedFilterOperation
             );
         }
+
+        /**
+         * Builds a FlagFromTagRequestMapperProvider with default values in all optional parameters.
+         *
+         * @return the mapper provider
+         */
+        public static FlagFromTagRequestMapperProvider simpleProvider() {
+            return new Builder().build();
+        }
     }
 
     /**
@@ -141,8 +151,8 @@ public class FlagFromTagRequestMapperProvider {
         this.positiveOps = Collections.unmodifiableSet(positiveOps);
         this.negativeOps = Collections.unmodifiableSet(negativeOps);
 
-        this.positiveInvertedFilterOperation = positiveInvertedFilterOperation;
-        this.negativeInvertedFilterOperation = negativeInvertedFilterOperation;
+        this.positiveInvertedFilterOperation = Objects.requireNonNull(positiveInvertedFilterOperation);
+        this.negativeInvertedFilterOperation = Objects.requireNonNull(negativeInvertedFilterOperation);
     }
 
     /**

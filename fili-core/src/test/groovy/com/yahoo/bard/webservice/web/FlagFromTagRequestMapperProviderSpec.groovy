@@ -27,7 +27,7 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
     ApiFilter fftFilter
 
     def setup() {
-        provider = new FlagFromTagRequestMapperProvider.Builder().build()
+        provider = FlagFromTagRequestMapperProvider.Builder.simpleProvider()
 
         FlagFromTagDimensionConfig fftConfig = new FlagFromTagDimensionConfig(
                 {"flagFromTag"},

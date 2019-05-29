@@ -10,6 +10,21 @@ Current
 
 ### Added:
 
+- [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
+    * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
+    based on the presence or absence of a tag value in an underlying multivalued dimension.
+    * This implementation is based on two underlying dimensions: a filtering dimension which can be efficiently 
+    filtered on using the default druid filter serialization, and a grouping dimension containing a comma separated
+    string of tag values, which is parsed to determined the presence of the desired tag value and converted to the 
+    appropriate truth value.
+    * The filtering behavior is supported through a `RequestMapper` provided by `FlagFromTagRequestMapperProvider`.
+    A request mapper from this provider must be used for ApiFilters to be transformed.
+
+- [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
+    * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
+    implementation is immutable.
+    * Adds the `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
+    
 - [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
     * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
     to set the expiration date for a key when it is being added to the cache.
@@ -35,7 +50,7 @@ Current
     * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
-    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+    * Create an extraction function to transform a comma list of values into a boolean dimension gvalue.
   
 - [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
     * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
