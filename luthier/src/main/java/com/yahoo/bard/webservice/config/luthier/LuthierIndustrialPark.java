@@ -12,19 +12,21 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * Dependency Injection container for Config Objects.
+ * Dependency Injection container for Config Objects configured via Luthier.
  */
 public class LuthierIndustrialPark implements ConfigurationLoader {
 
-    final ResourceDictionaries resourceDictionaries;
+    private final ResourceDictionaries resourceDictionaries;
 
-    final Map<String, Factory<Dimension>> dimensionFactories;
+    private final Map<String, Factory<Dimension>> dimensionFactories;
 
-    final FactoryPark<Dimension> dimensionFactoryPark;
+    private final FactoryPark<Dimension> dimensionFactoryPark;
 
     /**
      * Constructor.
@@ -32,7 +34,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with.
      * @param dimensionFactories The map of factories for creating dimensions from external config
      */
-    public LuthierIndustrialPark(
+    protected LuthierIndustrialPark(
             ResourceDictionaries resourceDictionaries,
             Map<String, Factory<Dimension>> dimensionFactories
     ) {
@@ -64,6 +66,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
         return dimensionDictionary.findByApiName(dimensionName);
     }
+
 /*
     SearchProvider getSearchProvider(String searchProviderName);
     KeyValueStore getKeyValueStore(String keyValueStoreName);
@@ -98,4 +101,32 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public ResourceDictionaries getDictionaries() {
         return resourceDictionaries;
     }
+
+    public class Builder {
+    
+        private Map<String, Factory<Dimension>> dimensionFactories;
+        private final ResourceDictionaries resourceDictionaries;
+        public Builder(ResourceDictionaries resourceDictionaries) {
+            this.resourceDictionaries = resourceDictionaries;
+            dimensionFactories = getDefaultDimensionFactories();
+        }
+
+        public Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
+            return new LinkedHashMap<>();
+        }
+
+        public Builder withDimensionFactories(Map<String, Factory<Dimension>> factories) {
+            this.dimensionFactories = factories;
+            return this;
+        }
+
+        public Builder withDimensionFactory(String name, Factory<Dimension> factory) {
+            dimensionFactories.put(name, factory);
+            return this;
+        }
+
+        public LuthierIndustrialPark build() {
+            return new LuthierIndustrialPark(resourceDictionaries, new LinkedHashMap<>(dimensionFactories));
+        }
+    } 
 }
