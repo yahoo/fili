@@ -45,7 +45,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
             Map<String, RequestMapper> mappers = [:] as Map
             mappers.put(
                     DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                    new FlagFromTagRequestMapperProvider().dataApiRequestMapper(resourceDictionaries)
+                    new FlagFromTagRequestMapperProvider.Builder().build().dataMapper(resourceDictionaries)
             )
             return mappers
         }

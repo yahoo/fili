@@ -98,10 +98,17 @@ public class FlagFromTagDimension implements Dimension {
             );
         }
 
-        groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                baseGroupingDimension,
-                UNUSED_PHYSICAL_NAME
-        );
+        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
+            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
+                    (KeyValueStoreDimension) baseGroupingDimension,
+                    UNUSED_PHYSICAL_NAME
+            );
+        } else {
+            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
+                    baseGroupingDimension,
+                    UNUSED_PHYSICAL_NAME
+            );
+        }
 
         groupingDimensionExtractionFunctions.addAll(
                 TagExtractionFunctionFactory.buildTagExtractionFunction(
