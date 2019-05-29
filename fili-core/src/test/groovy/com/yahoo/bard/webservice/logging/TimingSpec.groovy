@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import ch.qos.logback.classic.spi.ILoggingEvent
 import spock.lang.Ignore
+import spock.lang.Retry
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
@@ -20,6 +21,7 @@ import spock.lang.Unroll
 /**
  * Tests simple initialization of the outmost timing wrapper and the mega log line
  */
+@Retry
 @Timeout(30)    // Fail test if hangs
 class TimingSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
