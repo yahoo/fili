@@ -277,10 +277,7 @@ public class FlagFromTagRequestMapperProvider {
         // requested values should really only contain a single value. If it contains both true and false values we
         // need to fail the nonsensical filter, as there is no way to transform that into a meaningful api filter.
         Set<String> validFilterValues = Stream.of(dim.getTrueValue(), dim.getFalseValue()).collect(Collectors.toSet());
-        boolean properFilterFormat = filterValues.size() == 1 &&
-                validFilterValues.stream().anyMatch(filterValues::contains);
-
-        if (!properFilterFormat) {
+        if (filterValues.size() != 1 || validFilterValues.stream().noneMatch(filterValues::contains)) {
             throw new BadApiRequestException(
                     String.format(
                             "Filter on dimension %s formatted incorrectly. Flag dimensions must filter on " +

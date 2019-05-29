@@ -22,7 +22,7 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
     FlagFromTagRequestMapperProvider provider
 
     FlagFromTagDimension fft
-    Dimension testDim
+    Dimension fftBaseDim, otherDim
     ResourceDictionaries dictionaries
     ApiFilter fftFilter
 
@@ -34,24 +34,27 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
-                "unused", // filtering
-                "unused", // grouping
+                "baseDimension", // filtering
+                "baseDimension", // grouping
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
         )
-        testDim = Mock(Dimension)
-        testDim.getApiName() >> "unused"
-        testDim.getDescription() >> "unused"
-        testDim.getLongName() >> "unused"
-        testDim.getCategory() >> "unused"
-        testDim.getKey() >> DefaultDimensionField.ID
-        testDim.getDimensionFields() >> []
-        testDim.getDefaultDimensionFields() >> []
-        testDim.getSearchProvider() >> Mock(SearchProvider)
+        fftBaseDim = Mock(Dimension)
+        fftBaseDim.getApiName() >> "baseDimension"
+        fftBaseDim.getDescription() >> "unused"
+        fftBaseDim.getLongName() >> "unused"
+        fftBaseDim.getCategory() >> "unused"
+        fftBaseDim.getKey() >> DefaultDimensionField.ID
+        fftBaseDim.getDimensionFields() >> []
+        fftBaseDim.getDefaultDimensionFields() >> []
+        fftBaseDim.getSearchProvider() >> Mock(SearchProvider)
+
+        otherDim = Mock() { getApiName() >> "otherDim" }
 
         dictionaries = new ResourceDictionaries()
-        dictionaries.dimensionDictionary.add(testDim)
+        dictionaries.dimensionDictionary.add(fftBaseDim)
+        dictionaries.dimensionDictionary.add(otherDim)
 
         fft = new FlagFromTagDimension(
                 fftConfig,
@@ -65,6 +68,13 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
                 DefaultFilterOperation.in,
                 [fft.getTrueValue()]
         )
+    }
+
+    boolean transformedFftFilterTest(ApiFilter filter) {
+        return filter.dimension == fft.getFilteringDimension() &&
+                filter.dimensionField == fft.getFilteringDimension().getKey() &&
+                filter.operation == DefaultFilterOperation.in &&
+                filter.values == [fft.getTagValue()] as Set
     }
 
     def "filter operation is passed through when true value is filtered on and negated when false value is filtered on"() {
@@ -111,6 +121,52 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
         thrown(BadApiRequestException)
     }
 
+    def "Transforming set of filters containing filters on both FFT and non-FFT properly ignores non-FFT dimensions while transforming FFT dimensions"() {
+        setup:
+        ApiFilter nonFftFilter = Mock() {getDimension() >> otherDim}
+
+        Set<ApiFilter> input = [fftFilter, nonFftFilter] as Set
+
+        when:
+        Set<ApiFilter> result = provider.transformApiFilterSet(input)
+
+        then:
+        result.size() == 2
+        result.contains(nonFftFilter)
+        !result.contains(fftFilter)
+
+        and:
+        ApiFilter transformedFftFilter = result.stream()
+                .filter({filter -> filter != nonFftFilter})
+                .findFirst()
+                .orElseThrow({return new IllegalStateException("transformed flag for tag filter not found")})
+        transformedFftFilterTest(transformedFftFilter)
+    }
+
+    def "Transforming ApiFilters containing filters on both FFT and non-FFT dimensions properly ignores non-FFT dimensions while transforming FFT dimensions"() {
+        setup:
+        Set<ApiFilter> otherFilters = [Mock(ApiFilter), Mock(ApiFilter)]
+        ApiFilters testFilters = new ApiFilters([
+                (fft): [fftFilter] as Set,
+                (otherDim): (otherFilters)
+        ] as Map)
+
+        when:
+        ApiFilters resultFilters = provider.transformApiFilters(testFilters)
+
+        then: "non-FFT filters untouched"
+        resultFilters.containsKey(otherDim)
+        resultFilters.get(otherDim) == otherFilters
+
+        and: "fft dimension is not filtered on"
+        ! resultFilters.containsKey(fft)
+
+        and: "instead, fft filtering dimension is filtered on, with the correctly transformed filter"
+        resultFilters.containsKey(fft.getFilteringDimension())
+        resultFilters.get(fft.getFilteringDimension()).size() == 1
+        transformedFftFilterTest(resultFilters.get(fft.getFilteringDimension()).iterator().next())
+    }
+
     def "Filters on DataApiRequest that use a FFT dimension have those filters properly converted"() {
         setup:
         RequestMapper<DataApiRequest> mapper = provider.dataMapper(dictionaries)
@@ -129,10 +185,7 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
                     it.size() == 1 &&
                     it.containsKey(fft.getFilteringDimension()) &&
                     it.get(fft.getFilteringDimension()).size() == 1 &&
-                    it.get(fft.getFilteringDimension()).iterator().next().dimension == fft.getFilteringDimension()
-                    it.get(fft.getFilteringDimension()).iterator().next().dimensionField == fft.getFilteringDimension().getKey() &&
-                    it.get(fft.getFilteringDimension()).iterator().next().operation == DefaultFilterOperation.in &&
-                    it.get(fft.getFilteringDimension()).iterator().next().values == [fft.getTagValue()] as Set
+                    transformedFftFilterTest(it.get(fft.getFilteringDimension()).iterator().next())
         })
     }
 
@@ -141,7 +194,6 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
         RequestMapper<DataApiRequest> mapper = provider.dataMapper(dictionaries)
 
         DataApiRequest request = Mock(DataApiRequest)
-        Dimension otherDim = Mock(Dimension)
         Set<ApiFilter> otherFilters = [Mock(ApiFilter), Mock(ApiFilter)]
         request.getApiFilters() >> new ApiFilters([
                 (fft): [fftFilter] as Set,
@@ -189,7 +241,6 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
         RequestMapper<TablesApiRequest> mapper = provider.tablesMapper(dictionaries)
 
         TablesApiRequest request = Mock()
-        Dimension otherDim = Mock(Dimension)
         Set<ApiFilter> otherFilters = [Mock(ApiFilter), Mock(ApiFilter)]
         request.getApiFilters() >> new ApiFilters([
                 (fft): [fftFilter] as Set,
@@ -207,8 +258,7 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
                     it.get(otherDim) == otherFilters &&
                     it.containsKey(fft.getFilteringDimension()) &&
                     it.get(fft.getFilteringDimension()).size() == 1 &&
-                    it.get(fft.getFilteringDimension()).iterator().next().dimension == fft.getFilteringDimension()
-                    it.get(fft.getFilteringDimension()).iterator().next().values == [fft.getTagValue()] as Set
+                    transformedFftFilterTest(it.get(fft.getFilteringDimension()).iterator().next())
         })
     }
 }
