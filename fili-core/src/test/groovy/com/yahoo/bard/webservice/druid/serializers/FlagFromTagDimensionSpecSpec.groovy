@@ -13,7 +13,10 @@ import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
+import com.yahoo.bard.webservice.druid.model.datasource.DataSource
+import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
@@ -78,5 +81,28 @@ class FlagFromTagDimensionSpecSpec extends Specification {
 
         expect:
         objectMapper.writeValueAsString(druidQuery).contains('{"type":"extraction","dimension":"breed","outputName":"flagFromTagRegisteredLookup","extractionFn":{"type":"cascade","extractionFns":[{"type":"registeredLookup","lookup":"BREED__SPECIES","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__SPECIES","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__OTHER","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__OTHER","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__COLOR","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__COLOR","injective":false,"optimize":true},{"type":"regex","expr":"(.+,)*(TAG_VALUE)(,.+)*","index":2,"replaceMissingValue":true,"replaceMissingValueWith":""},{"type":"lookup","lookup":{"type":"map","map":{"TAG_VALUE":"TRUE_VALUE"}},"retainMissingValue":false,"replaceMissingValueWith":"FALSE_VALUE","injective":false,"optimize":false}]}}')
+    }
+
+    def "Flag from tag dimension pushes extraction and transformation to innermost query when nesting"() {
+        setup:
+        LogicalMetric nestedLogicalMetric = new LogicalMetric(resources.simpleNestedTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        String expectedInnerFlagFromTagSerialization = '{"type":"extraction","dimension":"breed","outputName":"flagFromTagRegisteredLookup","extractionFn":{"type":"cascade","extractionFns":[{"type":"registeredLookup","lookup":"BREED__SPECIES","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__SPECIES","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__OTHER","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__OTHER","injective":false,"optimize":true},{"type":"registeredLookup","lookup":"BREED__COLOR","retainMissingValue":false,"replaceMissingValueWith":"Unknown BREED__COLOR","injective":false,"optimize":true},{"type":"regex","expr":"(.+,)*(TAG_VALUE)(,.+)*","index":2,"replaceMissingValue":true,"replaceMissingValueWith":""},{"type":"lookup","lookup":{"type":"map","map":{"TAG_VALUE":"TRUE_VALUE"}},"retainMissingValue":false,"replaceMissingValueWith":"FALSE_VALUE","injective":false,"optimize":false}]}}'
+        String expectedOuterFlagFromTagSerialization = '"dimensions":["flagFromTagRegisteredLookup"]'
+
+        when:
+        apiRequest.getDimensions() >> ([resources.d15])
+        druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
+        DruidAggregationQuery<?> innerQuery = druidQuery.getInnerQuery().orElseThrow({return new IllegalStateException("Query is not nested")})
+        DruidAggregationQuery<?> outerQuery = druidQuery
+
+        then: "rebind logical metrics to use metric with nested tdq"
+        apiRequest.getLogicalMetrics() >> ([nestedLogicalMetric])
+
+        and: "inner query contains only extraction functions on the regex column"
+        objectMapper.writeValueAsString(innerQuery).contains(expectedInnerFlagFromTagSerialization)
+        ! objectMapper.writeValueAsString(innerQuery).contains(expectedOuterFlagFromTagSerialization)
+
+        and: "outer query contains just the dimension name of the flag from tag dimension"
+        objectMapper.writeValueAsString(outerQuery).contains(expectedOuterFlagFromTagSerialization)
     }
 }
