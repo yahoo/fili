@@ -72,6 +72,5 @@ public class FlagFromTagDimensionSpec extends JsonSerializer<FlagFromTagDimensio
         JsonSerializer<Object> dimensionSerializer = provider.findValueSerializer(value.getFilteringDimension()
                 .getClass());
         dimensionSerializer.serialize(value.getFilteringDimension(), gen, provider);
-        return;
     }
 }

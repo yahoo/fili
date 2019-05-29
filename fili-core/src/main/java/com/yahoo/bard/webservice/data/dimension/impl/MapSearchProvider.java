@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.ImmutableSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -22,8 +21,6 @@ public class MapSearchProvider extends ScanSearchProvider implements ImmutableSe
 
     protected static final String UNSUPPORTED_OP_EXCEPTION_MESSAGE = "MapSearchProvider does not support %s operation";
 
-    private Dimension dimension;
-
     private final Map<String, DimensionRow> dimensionRows;
 
     /**
@@ -33,11 +30,6 @@ public class MapSearchProvider extends ScanSearchProvider implements ImmutableSe
      */
     public MapSearchProvider(Map<String, DimensionRow> dimensionRows) {
         this.dimensionRows = new TreeMap<>(dimensionRows);
-    }
-
-    @Override
-    public void setDimension(Dimension dimension) {
-        this.dimension = dimension;
     }
 
     @Override
