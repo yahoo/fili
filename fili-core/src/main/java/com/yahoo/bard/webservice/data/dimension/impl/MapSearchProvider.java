@@ -103,16 +103,6 @@ public class MapSearchProvider extends ScanSearchProvider implements ImmutableSe
         return true;
     }
 
-    /**
-     * Make a DimensionRow by setting all of the field values to the given value.
-     *
-     * @param value Value for dimension fields
-     * @return a DimensionRow
-     */
-    private DimensionRow makeDimensionRow(String value) {
-        return dimension.createEmptyDimensionRow(value);
-    }
-
     @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
         return new AllPagesPagination<>(dimensionRows.values(), paginationParameters);
