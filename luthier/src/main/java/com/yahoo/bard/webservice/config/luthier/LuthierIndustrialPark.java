@@ -34,7 +34,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with.
      * @param dimensionFactories The map of factories for creating dimensions from external config
      */
-    protected LuthierIndustrialPark(
+    public LuthierIndustrialPark(
             ResourceDictionaries resourceDictionaries,
             Map<String, Factory<Dimension>> dimensionFactories
     ) {
