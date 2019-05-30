@@ -85,18 +85,23 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.add(filteringDimension)
 
-        FlagFromTagDimensionConfig fftConfig = new FlagFromTagDimensionConfig(
+        FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
                 {"flagFromTag"},
+                "breed", // grouping dimension physical name
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
+                [DefaultDimensionField.ID] as LinkedHashSet,
+                [DefaultDimensionField.ID] as LinkedHashSet,
                 "filteringDimension", // filtering
                 "breed", // grouping, should already be in dimension dictionary
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
+                dimensionStore
         )
-        fft = new FlagFromTagDimension(fftConfig, dimensionStore)
+
+        fft = new FlagFromTagDimension(fftConfig)
         dimensionStore.add(fft)
 
         LogicalTableDictionary logicalDictionary = jtb.configurationLoader.logicalTableDictionary

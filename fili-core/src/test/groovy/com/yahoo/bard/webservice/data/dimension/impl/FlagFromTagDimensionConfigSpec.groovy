@@ -18,38 +18,41 @@ import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.Lookup
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class FlagFromTagDimensionSpec extends Specification {
+//TODO refactor this to directly test construction in the config
+class FlagFromTagDimensionConfigSpec extends Specification {
 
     DimensionDictionary dimensionDictionary
-    FlagFromTagDimensionConfig config
 
     String apiName
     String filteringApiName
     String groupingApiName
 
     def setup() {
-        apiName = "flagFromTag"
-        filteringApiName = "filteringDimensionApiName"
-        groupingApiName = "groupingDimensionApiName"
-        String tagValue = "TAG_VALUE"
-        String trueValue = "TRUE_VALUE"
-        String falseValue = "FALSE_VALUE"
-
-        config = new FlagFromTagDimensionConfig(
-                {apiName},
-                "description",
-                "longName",
-                "category",
-                filteringApiName,
-                groupingApiName,
-                tagValue,
-                trueValue,
-                falseValue
-        )
-
         dimensionDictionary = new DimensionDictionary()
         // filtering dimension
         dimensionDictionary.add(Mock(Dimension) {getApiName() >> filteringApiName})
+
+        apiName = "flagFromTag"
+        filteringApiName = "filteringDimensionApiName"
+        groupingApiName = "groupingDimensionApiName"
+    }
+
+    FlagFromTagDimensionConfig getConfig(String physicalName) {
+        FlagFromTagDimensionConfig.build(
+                {apiName},
+                physicalName,
+                "description",
+                "longName",
+                "category",
+                [DefaultDimensionField.ID] as LinkedHashSet,
+                [DefaultDimensionField.ID] as LinkedHashSet,
+                filteringApiName,
+                groupingApiName,
+                "TAG_VALUE",
+                "TRUE_VALUE",
+                "FALSE_VALUE",
+                dimensionDictionary
+        )
     }
 
     @Unroll
@@ -70,7 +73,7 @@ class FlagFromTagDimensionSpec extends Specification {
         dimensionDictionary.add(new RegisteredLookupDimension(rldConfig))
 
         when:
-        Dimension fft = new FlagFromTagDimension(config, dimensionDictionary)
+        Dimension fft = new FlagFromTagDimension(getConfig("rldPhysicalName"))
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
@@ -101,7 +104,7 @@ class FlagFromTagDimensionSpec extends Specification {
         dimensionDictionary.add(new KeyValueStoreDimension((kvsConfig)))
 
         when:
-        Dimension fft = new FlagFromTagDimension(config, dimensionDictionary)
+        Dimension fft = new FlagFromTagDimension(getConfig("kvsPhysicalName"))
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension
@@ -124,7 +127,7 @@ class FlagFromTagDimensionSpec extends Specification {
         dimensionDictionary.add(testDim)
 
         when:
-        Dimension fft = new FlagFromTagDimension(config, dimensionDictionary)
+        Dimension fft = new FlagFromTagDimension(getConfig("unused_physical_name"))
 
         then:
         fft.groupingDimension instanceof RegisteredLookupDimension

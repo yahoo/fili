@@ -35,24 +35,17 @@ import java.util.stream.Stream;
  * Build a Flag dimension with a simple true and false filter corresponding to a multivalued 'tag' dimension.
  */
 @JsonSerialize(using = FlagFromTagDimensionSpec.class)
-public class FlagFromTagDimension implements Dimension {
+public class FlagFromTagDimension extends RegisteredLookupDimension {
 
     private final FlagFromTagDimensionConfig dimensionConfig;
 
-    private final DimensionRow trueRow;
-    private final DimensionRow falseRow;
-
-    private static final String UNUSED_PHYSICAL_NAME = "unused_physical_name";
+    private final Map<String, DimensionRow> rowMap;
 
     private final RegisteredLookupDimension groupingDimension;
     private final Dimension filteringDimension;
     private final String tagValue;
     private final String trueValue;
     private final String falseValue;
-
-
-    protected final Map<String, DimensionRow> rowMap;
-    protected SearchProvider searchProvider;
 
 
     /**
@@ -67,76 +60,75 @@ public class FlagFromTagDimension implements Dimension {
      *
      *
      * @param flagDimensionConfig  The dimension configuration for
-     * @param dimensionDictionary The dictionary containing the dependant dimensions
      */
-    public FlagFromTagDimension(
-            FlagFromTagDimensionConfig flagDimensionConfig,
-            DimensionDictionary dimensionDictionary
-    ) {
-        this.dimensionConfig = flagDimensionConfig;
-        this.filteringDimension = dimensionDictionary.findByApiName(dimensionConfig.getFilteringDimensionApiName());
+    public FlagFromTagDimension(FlagFromTagDimensionConfig config) {
+        super(config);
+        this.dimensionConfig = config;
+        this.filteringDimension = config.getFilteringDimension();
+        this.groupingDimension = config.getGroupingDimension();
         tagValue = dimensionConfig.getTagValue();
         trueValue = dimensionConfig.getTrueValue();
         falseValue = dimensionConfig.getFalseValue();
+        this.rowMap = Collections.unmodifiableMap(config.getRowMap());
 
-        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(
-                dimensionConfig.getGroupingBaseDimensionApiName()
-        );
-        DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
-
-        List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>();
-
-        // if present, pull off extraction functions into a list of extraction functions
-        if (baseGroupingDimension instanceof ExtractionFunctionDimension) {
-            groupingDimensionExtractionFunctions.addAll(
-                    ((ExtractionFunctionDimension) baseGroupingDimension).getExtractionFunction()
-                    .map(fn ->
-                            fn instanceof CascadeExtractionFunction ?
-                                ((CascadeExtractionFunction) fn).getExtractionFunctions() :
-                                Collections.singletonList(fn)
-                    )
-                    .orElse(Collections.emptyList())
-            );
-        }
-
-        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (KeyValueStoreDimension) baseGroupingDimension,
-                    UNUSED_PHYSICAL_NAME
-            );
-        } else {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    baseGroupingDimension::getApiName,
-                    UNUSED_PHYSICAL_NAME,
-                    baseGroupingDimension.getDescription(),
-                    baseGroupingDimension.getLongName(),
-                    baseGroupingDimension.getCategory(),
-                    baseGroupingDimension.getDimensionFields(),
-                    baseGroupingDimension.getDefaultDimensionFields(),
-                    MapStoreManager.getInstance(flagDimensionConfig.getApiName()),
-                    baseGroupingDimension.getSearchProvider(),
-                    Collections.EMPTY_LIST
-            );
-        }
-
-        groupingDimensionExtractionFunctions.addAll(
-                TagExtractionFunctionFactory.buildTagExtractionFunction(
-                        dimensionConfig.getTagValue(),
-                        trueValue,
-                        falseValue)
-        );
-
-        groupingDimension = new RegisteredLookupDimension(
-                groupingDimensionConfig.withAddedLookupFunctions(groupingDimensionExtractionFunctions)
-        );
-
-        DimensionField keyField = DefaultDimensionField.ID;
-        trueRow = new DimensionRow(keyField, Collections.singletonMap(keyField, trueValue));
-        falseRow = new DimensionRow(keyField, Collections.singletonMap(keyField, falseValue));
-
-        rowMap = Stream.of(trueRow, falseRow)
-                .collect(Collectors.toMap(DimensionRow::getKeyValue, Function.identity()));
-        searchProvider = new MapSearchProvider(rowMap);
+//        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(
+//                dimensionConfig.getGroupingBaseDimensionApiName()
+//        );
+//        DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
+//
+//        List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>();
+//
+//        // if present, pull off extraction functions into a list of extraction functions
+//        if (baseGroupingDimension instanceof ExtractionFunctionDimension) {
+//            groupingDimensionExtractionFunctions.addAll(
+//                    ((ExtractionFunctionDimension) baseGroupingDimension).getExtractionFunction()
+//                    .map(fn ->
+//                            fn instanceof CascadeExtractionFunction ?
+//                                ((CascadeExtractionFunction) fn).getExtractionFunctions() :
+//                                Collections.singletonList(fn)
+//                    )
+//                    .orElse(Collections.emptyList())
+//            );
+//        }
+//
+//        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
+//            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
+//                    (KeyValueStoreDimension) baseGroupingDimension,
+//                    UNUSED_PHYSICAL_NAME
+//            );
+//        } else {
+//            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
+//                    baseGroupingDimension::getApiName,
+//                    UNUSED_PHYSICAL_NAME,
+//                    baseGroupingDimension.getDescription(),
+//                    baseGroupingDimension.getLongName(),
+//                    baseGroupingDimension.getCategory(),
+//                    baseGroupingDimension.getDimensionFields(),
+//                    baseGroupingDimension.getDefaultDimensionFields(),
+//                    MapStoreManager.getInstance(flagDimensionConfig.getApiName()),
+//                    baseGroupingDimension.getSearchProvider(),
+//                    Collections.EMPTY_LIST
+//            );
+//        }
+//
+//        groupingDimensionExtractionFunctions.addAll(
+//                TagExtractionFunctionFactory.buildTagExtractionFunction(
+//                        dimensionConfig.getTagValue(),
+//                        trueValue,
+//                        falseValue)
+//        );
+//
+//        groupingDimension = new RegisteredLookupDimension(
+//                groupingDimensionConfig.withAddedLookupFunctions(groupingDimensionExtractionFunctions)
+//        );
+//
+//        DimensionField keyField = DefaultDimensionField.ID;
+//        trueRow = new DimensionRow(keyField, Collections.singletonMap(keyField, trueValue));
+//        falseRow = new DimensionRow(keyField, Collections.singletonMap(keyField, falseValue));
+//
+//        rowMap = Stream.of(trueRow, falseRow)
+//                .collect(Collectors.toMap(DimensionRow::getKeyValue, Function.identity()));
+//        searchProvider = new MapSearchProvider(rowMap);
     }
 
     @Override
@@ -175,11 +167,6 @@ public class FlagFromTagDimension implements Dimension {
     }
 
     @Override
-    public SearchProvider getSearchProvider() {
-        return searchProvider;
-    }
-
-    @Override
     public void addDimensionRow(DimensionRow dimensionRow) {
         throw new UnsupportedOperationException("Dimension values for Tag Dimensions are immutable");
     }
@@ -191,28 +178,7 @@ public class FlagFromTagDimension implements Dimension {
 
     @Override
     public DimensionRow findDimensionRowByKeyValue(String value) {
-        return rowMap.computeIfAbsent(value, this::createEmptyDimensionRow);
-    }
-
-    @Override
-    public DimensionField getKey() {
-        return DefaultDimensionField.ID;
-    }
-
-    @Override
-    public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
-        if (!fieldNameValueMap.containsKey(getKey().getName())) {
-            return falseRow;
-        }
-        return createEmptyDimensionRow(fieldNameValueMap.get(getKey().getName()));
-    }
-
-    @Override
-    public DimensionRow createEmptyDimensionRow(String keyFieldValue) {
-        if (rowMap.containsKey(keyFieldValue)) {
-            return rowMap.get(keyFieldValue);
-        }
-        throw new IllegalArgumentException(String.format("Unparseable flag value: %s", keyFieldValue));
+        return rowMap.getOrDefault(value, null);
     }
 
     @Override

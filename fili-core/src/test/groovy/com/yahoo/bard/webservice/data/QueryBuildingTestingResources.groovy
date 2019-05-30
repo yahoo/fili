@@ -14,6 +14,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
@@ -205,31 +206,42 @@ class QueryBuildingTestingResources {
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
-        FlagFromTagDimensionConfig lookupFftConfig = new FlagFromTagDimensionConfig(
+        LinkedHashSet<DimensionField> fftFields = [DefaultDimensionField.ID] as LinkedHashSet
+
+        FlagFromTagDimensionConfig lookupFftConfig = FlagFromTagDimensionConfig.build(
                 {"flagFromTagLookup"},
+                "shape", //grouping dim physical name
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
+                fftFields,
+                fftFields,
                 "dim1", // filtering
                 "shape", // grouping
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
+                dimensionDictionary
         )
-        d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
+        d14 = new FlagFromTagDimension(lookupFftConfig)
 
-        FlagFromTagDimensionConfig registeredLookupFftConfig = new FlagFromTagDimensionConfig(
+        FlagFromTagDimensionConfig registeredLookupFftConfig = FlagFromTagDimensionConfig.build(
                 {"flagFromTagRegisteredLookup"},
+                "breed", // grouping dim physical name
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
+                fftFields,
+                fftFields,
                 "dim1", // filtering
                 "breed", // grouping
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
+                dimensionDictionary
         )
-        d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
+
+        d15 = new FlagFromTagDimension(registeredLookupFftConfig)
 
         dimensionDictionary.add(d14)
         dimensionDictionary.add(d15)

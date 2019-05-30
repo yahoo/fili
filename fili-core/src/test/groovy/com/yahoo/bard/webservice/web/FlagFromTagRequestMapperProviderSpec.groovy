@@ -28,18 +28,6 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
 
     def setup() {
         provider = FlagFromTagRequestMapperProvider.Builder.simpleProvider()
-
-        FlagFromTagDimensionConfig fftConfig = new FlagFromTagDimensionConfig(
-                {"flagFromTag"},
-                "fftDescription",
-                "fftLongName",
-                "fftCategory",
-                "baseDimension", // filtering
-                "baseDimension", // grouping
-                "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-        )
         fftBaseDim = Mock(Dimension)
         fftBaseDim.getApiName() >> "baseDimension"
         fftBaseDim.getDescription() >> "unused"
@@ -56,10 +44,23 @@ class FlagFromTagRequestMapperProviderSpec extends Specification {
         dictionaries.dimensionDictionary.add(fftBaseDim)
         dictionaries.dimensionDictionary.add(otherDim)
 
-        fft = new FlagFromTagDimension(
-                fftConfig,
+        FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
+                {"flagFromTag"},
+                "baseDimension",
+                "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                [DefaultDimensionField.ID] as LinkedHashSet,
+                [DefaultDimensionField.ID] as LinkedHashSet,
+                "baseDimension", // filtering
+                "baseDimension", // grouping
+                "TAG_VALUE",
+                "TRUE_VALUE",
+                "FALSE_VALUE",
                 dictionaries.dimensionDictionary
         )
+
+        fft = new FlagFromTagDimension(fftConfig)
         dictionaries.dimensionDictionary.add(fft)
 
         fftFilter = new ApiFilter(
