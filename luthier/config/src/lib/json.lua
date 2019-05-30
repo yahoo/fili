@@ -22,6 +22,9 @@
 -- SOFTWARE.
 --
 
+-- Modified by Gabriel on May 29, 2019 to create a better formatting when encoding 
+-- JSON. Slack: @gluo; GitHub: @gab-umich
+
 local json = { _version = "0.1.1" }
 
 -------------------------------------------------------------------------------
@@ -83,7 +86,7 @@ local function encode_table(val, stack)
             table.insert(res, encode(v, stack))
         end
         stack[val] = nil
-        return "[" .. table.concat(res, ",") .. "]"
+        return "[ " .. table.concat(res, ", ") .. " ]"
 
     else
         -- Treat as an object
@@ -91,10 +94,10 @@ local function encode_table(val, stack)
             if type(k) ~= "string" then
                 error("invalid table: mixed or invalid key types")
             end
-            table.insert(res, encode(k, stack) .. ":" .. encode(v, stack))
+            table.insert(res, "  " .. encode(k, stack) .. ":" .. encode(v, stack))
         end
         stack[val] = nil
-        return "{" .. table.concat(res, ",") .. "}"
+        return "\n  {\n  " .. table.concat(res, ",\n  ") .. "\n  }"
     end
 end
 
