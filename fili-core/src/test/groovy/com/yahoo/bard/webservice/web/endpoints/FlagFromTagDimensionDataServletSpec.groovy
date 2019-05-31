@@ -16,10 +16,15 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
+import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
+import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
+import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
@@ -38,44 +43,44 @@ import java.util.stream.Collectors
 class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
     // We need to inject the FlagFromTagRequestMapperProvider into the set of data request mappers
-    class TestResultMapperBinderFactory extends TestBinderFactory {
-
-        TestResultMapperBinderFactory(
-                LinkedHashSet<DimensionConfig> dimensionConfig,
-                MetricLoader metricLoader,
-                TableLoader tableLoader,
-                ApplicationState state
-        ) {
-            super(dimensionConfig, metricLoader, tableLoader, state)
-        }
-
-        @Override
-        Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
-            Map<String, RequestMapper> mappers = [:] as Map
-            mappers.put(
-                    DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                    FlagFromTagRequestMapperProvider.Builder.simpleProvider().dataMapper(resourceDictionaries)
-            )
-            return mappers
-        }
-    }
-
-    class TestResultMapperBinder extends JerseyTestBinder {
-
-        TestResultMapperBinder(final Class<?>... resourceClasses) {
-            super(resourceClasses)
-        }
-
-        @Override
-        TestBinderFactory buildBinderFactory(
-                LinkedHashSet<DimensionConfig> dimensionConfiguration,
-                MetricLoader metricLoader,
-                TableLoader tableLoader,
-                ApplicationState state
-        ) {
-            return new TestResultMapperBinderFactory(dimensionConfiguration, metricLoader, tableLoader, state)
-        }
-    }
+//    class TestResultMapperBinderFactory extends TestBinderFactory {
+//
+//        TestResultMapperBinderFactory(
+//                LinkedHashSet<DimensionConfig> dimensionConfig,
+//                MetricLoader metricLoader,
+//                TableLoader tableLoader,
+//                ApplicationState state
+//        ) {
+//            super(dimensionConfig, metricLoader, tableLoader, state)
+//        }
+//
+//        @Override
+//        Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
+//            Map<String, RequestMapper> mappers = [:] as Map
+//            mappers.put(
+//                    DataApiRequest.REQUEST_MAPPER_NAMESPACE,
+//                    FlagFromTagRequestMapperProvider.Builder.simpleProvider().dataMapper(resourceDictionaries)
+//            )
+//            return mappers
+//        }
+//    }
+//
+//    class TestResultMapperBinder extends JerseyTestBinder {
+//
+//        TestResultMapperBinder(final Class<?>... resourceClasses) {
+//            super(resourceClasses)
+//        }
+//
+//        @Override
+//        TestBinderFactory buildBinderFactory(
+//                LinkedHashSet<DimensionConfig> dimensionConfiguration,
+//                MetricLoader metricLoader,
+//                TableLoader tableLoader,
+//                ApplicationState state
+//        ) {
+//            return new TestResultMapperBinderFactory(dimensionConfiguration, metricLoader, tableLoader, state)
+//        }
+//    }
 
     FlagFromTagDimension fft
 
@@ -95,6 +100,9 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.add(filteringDimension)
 
+        ExtractionFunction fn = ((LookupDimension) dimensionStore.findByApiName("breed")).getExtractionFunction().orElseThrow({new IllegalStateException("no extraction functions")})
+        List<ExtractionFunction> fns = fn instanceof CascadeExtractionFunction ? ((CascadeExtractionFunction) fn).getExtractionFunctions() : [fn]
+
         FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
                 { "flagFromTag" },
                 "breed", // grouping dimension physical name
@@ -103,15 +111,18 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 "fftCategory",
                 [DefaultDimensionField.ID] as LinkedHashSet,
                 [DefaultDimensionField.ID] as LinkedHashSet,
+                fns,
                 "filteringDimension", // filtering
-                "breed", // grouping, should already be in dimension dictionary
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
-                dimensionStore
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
         )
 
-        fft = new FlagFromTagDimension(fftConfig)
+        fft = new FlagFromTagDimension(fftConfig, dimensionStore)
         dimensionStore.add(fft)
 
         // Flag from tag dimension needs to be on the logical table and relevant physical tables
@@ -149,10 +160,10 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         newTables.each { it -> table.tableGroup.tables.add(it)}
     }
 
-    @Override
-    JerseyTestBinder buildTestBinder() {
-        new TestResultMapperBinder(resourceClasses)
-    }
+//    @Override
+//    JerseyTestBinder buildTestBinder() {
+//        new TestResultMapperBinder(resourceClasses)
+//    }
 
     @Override
     Class<?>[] getResourceClasses() {

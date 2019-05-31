@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,13 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         if (filterMap.isEmpty()) {
             return null;
         }
+
+        // before building anything, see if filters can be optimized.
+        filterMap = filterMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> new HashSet<>(entry.getKey().optimizeFilters(entry.getValue()))
+                ));
 
         List<Filter> dimensionFilters = new ArrayList<>(filterMap.size());
         for (Map.Entry<Dimension, Set<ApiFilter>> entry : filterMap.entrySet()) {

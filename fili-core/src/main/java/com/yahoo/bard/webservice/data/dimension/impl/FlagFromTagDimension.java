@@ -6,10 +6,17 @@ import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfi
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.FilterOperation;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Build a Flag dimension with a simple true and false filter corresponding to a multivalued 'tag' dimension.
@@ -17,13 +24,19 @@ import java.util.Set;
 public class FlagFromTagDimension extends RegisteredLookupDimension {
 
     private final FlagFromTagDimensionConfig dimensionConfig;
-
     private final Map<String, DimensionRow> rowMap;
 
     private final Dimension filteringDimension;
+
     private final String tagValue;
     private final String trueValue;
     private final String falseValue;
+
+    private final Set<FilterOperation> positiveOps;
+    private final Set<FilterOperation> negativeOps;
+
+    private final FilterOperation positiveInvertedFilterOperation;
+    private final FilterOperation negativeInvertedFilterOperation;
 
 
     /**
@@ -42,11 +55,15 @@ public class FlagFromTagDimension extends RegisteredLookupDimension {
     public FlagFromTagDimension(FlagFromTagDimensionConfig config, DimensionDictionary dimensionDictionary) {
         super(config);
         this.dimensionConfig = config;
-        this.filteringDimension = dimensionDictionary.findByApiName(config.getFilteringDimensionApiName());
-        tagValue = dimensionConfig.getTagValue();
-        trueValue = dimensionConfig.getTrueValue();
-        falseValue = dimensionConfig.getFalseValue();
-        this.rowMap = Collections.unmodifiableMap(config.getRowMap());
+        this.filteringDimension = dimensionDictionary.findByApiName(config.filteringDimensionApiName);
+        this.tagValue = dimensionConfig.tagValue;
+        this.trueValue = dimensionConfig.trueValue;
+        this.falseValue = dimensionConfig.falseValue;
+        this.positiveOps = config.positiveOps;
+        this.negativeOps = config.negativeOps;
+        this.positiveInvertedFilterOperation = config.positiveInvertedFilterOperation;
+        this.negativeInvertedFilterOperation = config.negativeInvertedFilterOperation;
+        this.rowMap = Collections.unmodifiableMap(config.rowMap);
     }
 
     @Override
@@ -78,5 +95,125 @@ public class FlagFromTagDimension extends RegisteredLookupDimension {
 
     public String getFalseValue() {
         return falseValue;
+    }
+
+    @Override
+    public Collection<ApiFilter> optimizeFilters(Collection<ApiFilter> filters) {
+        return transformApiFilterSet(filters);
+    }
+
+    /**
+     * Transforms the {@link ApiFilter}s based on {@link FlagFromTagDimension}s into filters based on the filtering
+     * dimension backing the FlagFromTagDimension. Filters NOT based on a FlagFromTagDimension are
+     * maintained and not transformed.
+     *
+     * @param apiFilters The set of filters to check and transform if applicable.
+     * @return The transformed set of filters.
+     */
+    private Set<ApiFilter> transformApiFilterSet(Collection<ApiFilter> apiFilters) {
+        Set<ApiFilter> newFilters = new HashSet<>();
+        for (ApiFilter filter : apiFilters) {
+            ApiFilter newFilter = filter;
+            validateFlagFromTagFilter(newFilter);
+
+            FlagFromTagDimension dim = (FlagFromTagDimension) newFilter.getDimension();
+            newFilter = new ApiFilter(
+                    dim.getFilteringDimension(),
+                    dim.getFilteringDimension().getKey(),
+                    transformFilterOperation(
+                            dim,
+                            filter.getOperation(),
+                            filter.getValues().iterator().next()
+                    ),
+                    Collections.singleton(dim.getTagValue())
+            );
+            newFilters.add(newFilter);
+        }
+        return newFilters;
+    }
+
+
+    /**
+     * Validates the provided {@link ApiFilter}. The {@link ApiFilter} MUST be on a FlagFromTag dimension; otherwise
+     * it is ignored.
+     *
+     * @param filter The ApiFilter to validate
+     */
+    private void validateFlagFromTagFilter(ApiFilter filter) {
+        if (!(filter.getDimension() instanceof FlagFromTagDimension)) {
+            return;
+        }
+
+        FlagFromTagDimension dim = (FlagFromTagDimension) filter.getDimension();
+        Set<String> filterValues = filter.getValues();
+
+        // requested values should really only contain a single value. If it contains both true and false values we
+        // need to fail the nonsensical filter, as there is no way to transform that into a meaningful api filter.
+        Set<String> validFilterValues = Stream.of(dim.getTrueValue(), dim.getFalseValue()).collect(Collectors.toSet());
+        if (filterValues.size() != 1 || validFilterValues.stream().noneMatch(filterValues::contains)) {
+            throw new BadApiRequestException(
+                    String.format(
+                            "Filter on dimension %s formatted incorrectly. Flag dimensions must filter on " +
+                                    "exactly one of the following flag values: %s",
+                            filter.getDimension().getApiName(),
+                            String.join(", ", validFilterValues)
+                    ));
+        }
+
+        // The filter operation should be in either the positive or negative operation sets
+        if (
+                Stream.of(positiveOps, negativeOps)
+                        .flatMap(Set::stream)
+                        .noneMatch(op -> op.equals(filter.getOperation()))
+                ) {
+            throw new BadApiRequestException(
+                    String.format(
+                            "Dimension %s doesn't support the operation %s. Try using one of the " +
+                                    "following operations: %s",
+                            filter.getDimension().getApiName(),
+                            filter.getOperation(),
+                            String.join(
+                                    ", ",
+                                    Stream.of(
+                                            positiveOps,
+                                            negativeOps
+                                    ).flatMap(Set::stream).map(FilterOperation::getName).collect(Collectors.toSet())
+                            )
+                    )
+            );
+        }
+    }
+
+
+    /**
+     * Transforms the filter operation if required. The combination of filter operation and flag value needs to be
+     * converted into the equivalent filter operation on the tag value. For example, the filter/flag value combination:
+     *  notin[false_value]
+     *
+     *  must be converted to the combination:
+     *  in[tag_value]
+     *
+     *  as there is no equivalent to a negative tag value to match directly to the negative flag.
+     *
+     * @param dimension The flag from tag dimension
+     * @param op The original filter operation
+     * @param filterValue The flag value being filtered on
+     * @return the filter operation required for the new tag filter
+     */
+    private FilterOperation transformFilterOperation(
+            FlagFromTagDimension dimension,
+            FilterOperation op,
+            String filterValue
+    ) {
+        // If the filter value is the negative value, the truth of the operation must be inverted.
+        FilterOperation newOp = op;
+        if (filterValue.equalsIgnoreCase(dimension.getFalseValue())) {
+            if (positiveOps.contains(op)) {
+                newOp = negativeInvertedFilterOperation;
+            } else {
+                newOp = positiveInvertedFilterOperation;
+            }
+        }
+        return newOp;
     }
 }
