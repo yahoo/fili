@@ -9,75 +9,57 @@ import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfi
 import com.yahoo.bard.webservice.data.config.dimension.RegisteredLookupDimensionConfig
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.LookupExtractionFunction
+import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
 
 import spock.lang.Specification
 import spock.lang.Unroll
 
-//TODO refactor this to directly test construction in the config
 class FlagFromTagDimensionConfigSpec extends Specification {
 
     DimensionDictionary dimensionDictionary
 
-    String apiName
-    String filteringApiName
-    String groupingApiName
+    String trueValue, falseValue
 
     def setup() {
+        trueValue = "TRUE_VALUE"
+        falseValue = "FALSE_VALUE"
+
         dimensionDictionary = new DimensionDictionary()
         // filtering dimension
-        dimensionDictionary.add(Mock(Dimension) {getApiName() >> filteringApiName})
+        dimensionDictionary.add(Mock(Dimension) {getApiName() >> "filteringDimensionApiName"})
 
-        apiName = "flagFromTag"
-        filteringApiName = "filteringDimensionApiName"
-        groupingApiName = "groupingDimensionApiName"
     }
 
-    FlagFromTagDimensionConfig getConfig(String physicalName) {
+    FlagFromTagDimensionConfig getConfig(List<ExtractionFunction> baseExtractionFunctions) {
         FlagFromTagDimensionConfig.build(
-                {apiName},
-                physicalName,
+                {"flagFromTag"},
+                "physicalName",
                 "description",
                 "longName",
                 "category",
                 [DefaultDimensionField.ID] as LinkedHashSet,
                 [DefaultDimensionField.ID] as LinkedHashSet,
-                filteringApiName,
-                groupingApiName,
+                baseExtractionFunctions,
+                "filteringDimensionApiName",
                 "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-                dimensionDictionary
+                trueValue,
+                falseValue,
         )
     }
 
     @Unroll
     def "grouping dimension successfully constructed from RegisteredLookupDimension"() {
-        setup:
-        RegisteredLookupDimensionConfig rldConfig = new DefaultRegisteredLookupDimensionConfig(
-                {groupingApiName},
-                "rldPhysicalName",
-                "rldDescription",
-                "rldLongName",
-                "rldCategory",
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                Mock(KeyValueStore),
-                Mock(SearchProvider),
-                extractionFunctions
-        )
-        dimensionDictionary.add(new RegisteredLookupDimension(rldConfig))
-
         when:
-        Dimension fft = new FlagFromTagDimension(getConfig("rldPhysicalName"))
+        Dimension fft = new FlagFromTagDimension(getConfig(extractionFunctions), dimensionDictionary)
 
         then:
-        fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == extractionFunctions.size() + 2
+        fft.getRegisteredLookupExtractionFns().size() == extractionFunctions.size() + 2
         fft.getSearchProvider() instanceof MapSearchProvider
 
         where:
@@ -87,52 +69,21 @@ class FlagFromTagDimensionConfigSpec extends Specification {
         ]
     }
 
-    def "grouping dimension successfully constructed from KeyValueStore dimension"() {
-        setup:
-        KeyValueStore kvs = Mock()
-        DefaultKeyValueStoreDimensionConfig kvsConfig = new DefaultKeyValueStoreDimensionConfig(
-                {groupingApiName},
-                "kvsPhysicalName",
-                "kvsDescription",
-                "kvsLongName",
-                "kvsCategory",
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                kvs,
-                Mock(SearchProvider)
-        )
-        dimensionDictionary.add(new KeyValueStoreDimension((kvsConfig)))
-
+    def "Map store is created properly"() {
         when:
-        Dimension fft = new FlagFromTagDimension(getConfig("kvsPhysicalName"))
+        Dimension fft = new FlagFromTagDimension(getConfig([]), dimensionDictionary)
 
         then:
-        fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == 2
-        fft.groupingDimension.getKeyValueStore() == kvs
-        fft.getSearchProvider() instanceof MapSearchProvider
+        fft.getKeyValueStore().get(DimensionStoreKeyUtils.getRowKey(fft.getKey().getName(), trueValue)) == /{"id":"${trueValue}"}/
+        fft.getKeyValueStore().get(DimensionStoreKeyUtils.getRowKey(fft.getKey().getName(), falseValue)) == /{"id":"${falseValue}"}/
     }
 
-    def "grouping dimension successfully constructed from arbitrary dimension implementation"() {
-        setup:
-        Dimension testDim = Mock()
-        testDim.getApiName() >> groupingApiName
-        testDim.getDescription() >> "testDimDescription"
-        testDim.getLongName() >> "testDimLongName"
-        testDim.getCategory() >> "testDimCategory"
-        testDim.getDimensionFields() >> { [DefaultDimensionField.ID] as LinkedHashSet }
-        testDim.getDefaultDimensionFields() >> { [DefaultDimensionField.ID] as LinkedHashSet }
-        testDim.getSearchProvider() >> Mock(SearchProvider)
-
-        dimensionDictionary.add(testDim)
-
+    def "Search provider is created properly"() {
         when:
-        Dimension fft = new FlagFromTagDimension(getConfig("unused_physical_name"))
+        Dimension fft = new FlagFromTagDimension(getConfig([]), dimensionDictionary)
+        Set<String> expectedValues = [trueValue, falseValue] as Set
 
         then:
-        fft.groupingDimension instanceof RegisteredLookupDimension
-        fft.groupingDimension.registeredLookupExtractionFns.size() == 2
-        fft.groupingDimension.getKeyValueStore() != null
-        fft.getSearchProvider() instanceof MapSearchProvider
+        fft.getSearchProvider().findAllDimensionRows().stream().allMatch({ row -> expectedValues.remove(row.get(fft.getKey())) })
     }
 }

@@ -2,26 +2,24 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.dimension;
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.config.names.DimensionName;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
-import com.yahoo.bard.webservice.data.dimension.MapStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
-import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.MapSearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
-import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.TagExtractionFunctionFactory;
+import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +39,7 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
     public static final String DEFAULT_FALSE_VALUE = "false";
 
     // TODO in reality we only need a set of base extraction functions to extend and the name of the filtering dimension
-    private final Dimension filteringDimensionApiName;
-    private final RegisteredLookupDimension groupingBaseDimensionApiName;
+    private final String filteringDimensionApiName;
 
     private final String tagValue;
     private final String trueValue;
@@ -75,15 +72,13 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
             @NotNull SearchProvider searchProvider,
             Map<String, DimensionRow> rowMap,
             @NotNull List<ExtractionFunction> registeredLookupExtractionFns,
-            @NotNull Dimension filteringDimensionApiName,
-            @NotNull RegisteredLookupDimension groupingBaseDimensionApiName,
+            @NotNull String filteringDimensionApiName,
             String tagValue,
             String trueValue,
             String falseValue
     ) {
         super(apiName, physicalName, description, longName, category, fields, defaultDimensionFields, keyValueStore, searchProvider, registeredLookupExtractionFns);
         this.filteringDimensionApiName = filteringDimensionApiName;
-        this.groupingBaseDimensionApiName = groupingBaseDimensionApiName;
         this.tagValue = tagValue;
         this.trueValue = trueValue;
         this.falseValue = falseValue;
@@ -125,12 +120,8 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
 //        );
 //    }
 
-    public Dimension getFilteringDimension() {
+    public String getFilteringDimensionApiName() {
         return filteringDimensionApiName;
-    }
-
-    public RegisteredLookupDimension getGroupingDimension() {
-        return groupingBaseDimensionApiName;
     }
 
     public String getTagValue() {
@@ -150,6 +141,7 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
     }
 
     // TODO dependencies on already created dimensions can be refactored out
+    // TODO handle default values
     public static FlagFromTagDimensionConfig build(
             @NotNull DimensionName apiName,
             String physicalName,
@@ -158,12 +150,11 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
             String category,
             @NotNull LinkedHashSet<DimensionField> fields,
             @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
+            List<ExtractionFunction> baseExtractionFunctions,
             @NotNull String filteringDimensionApiName,
-            @NotNull String groupingBaseDimensionApiName,
             String tagValue,
             String trueValue,
-            String falseValue,
-            DimensionDictionary dimensionDictionary
+            String falseValue
     ) {
         // build search provider
         DimensionField keyField = fields.stream()
@@ -181,61 +172,40 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
                 .collect(Collectors.toMap(DimensionRow::getKeyValue, Function.identity()));
         SearchProvider searchProvider = new MapSearchProvider(rowMap);
 
+        // build kvs
+        Map<String, String> kvsTrueRow = new HashMap<>();
+        kvsTrueRow.put(keyField.getName(), trueValue);
+        Map<String, String> kvsFalseRow = new HashMap<>();
+        kvsFalseRow.put(keyField.getName(), falseValue);
+
         KeyValueStore kvs = MapStoreManager.getInstance(physicalName);
-        kvs.put(keyField.getName(), trueValue);
-        kvs.put(keyField.getName(), falseValue);
+        ObjectMapper mapper = new ObjectMappersSuite().getMapper();
 
-        Dimension filteringDimension = dimensionDictionary.findByApiName(filteringDimensionApiName);
-
-        Dimension baseGroupingDimension = dimensionDictionary.findByApiName(
-                groupingBaseDimensionApiName
-        );
-        DefaultRegisteredLookupDimensionConfig groupingDimensionConfig;
-
-        List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>();
-
-        // if present, pull off extraction functions into a list of extraction functions
-        if (baseGroupingDimension instanceof ExtractionFunctionDimension) {
-            groupingDimensionExtractionFunctions.addAll(
-                    ((ExtractionFunctionDimension) baseGroupingDimension).getExtractionFunction()
-                            .map(fn ->
-                                    fn instanceof CascadeExtractionFunction ?
-                                            ((CascadeExtractionFunction) fn).getExtractionFunctions() :
-                                            Collections.singletonList(fn)
-                            )
-                            .orElse(Collections.emptyList())
+        try {
+            kvs.put(
+                    DimensionStoreKeyUtils.getRowKey(keyField.getName(), trueValue),
+                    mapper.writeValueAsString(kvsTrueRow)
+            );
+            kvs.put(
+                    DimensionStoreKeyUtils.getRowKey(keyField.getName(), falseValue),
+                    mapper.writeValueAsString(kvsFalseRow)
+            );
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    String.format(
+                            "unable to serialize true and false values in json for dimension %s",
+                            apiName.asName()
+                    )
             );
         }
 
-        if (baseGroupingDimension instanceof KeyValueStoreDimension) {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    (KeyValueStoreDimension) baseGroupingDimension,
-                    physicalName
-            );
-        } else {
-            groupingDimensionConfig = new DefaultRegisteredLookupDimensionConfig(
-                    baseGroupingDimension::getApiName,
-                    physicalName,
-                    baseGroupingDimension.getDescription(),
-                    baseGroupingDimension.getLongName(),
-                    baseGroupingDimension.getCategory(),
-                    baseGroupingDimension.getDimensionFields(),
-                    baseGroupingDimension.getDefaultDimensionFields(),
-                    MapStoreManager.getInstance(baseGroupingDimension.getApiName()),
-                    baseGroupingDimension.getSearchProvider(),
-                    Collections.EMPTY_LIST
-            );
-        }
-
+        // extend the base extraction functions with the regex extraction
+        List<ExtractionFunction> groupingDimensionExtractionFunctions = new ArrayList<>(baseExtractionFunctions);
         groupingDimensionExtractionFunctions.addAll(
                 TagExtractionFunctionFactory.buildTagExtractionFunction(
                         tagValue,
                         trueValue,
                         falseValue)
-        );
-
-        RegisteredLookupDimension groupingDimension = new RegisteredLookupDimension(
-                groupingDimensionConfig.withAddedLookupFunctions(groupingDimensionExtractionFunctions)
         );
 
         return new FlagFromTagDimensionConfig(
@@ -250,8 +220,7 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
                 searchProvider,
                 rowMap,
                 groupingDimensionExtractionFunctions,
-                filteringDimension,
-                groupingDimension,
+                filteringDimensionApiName,
                 tagValue,
                 trueValue,
                 falseValue

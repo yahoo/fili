@@ -4,14 +4,17 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
+import com.yahoo.bard.webservice.web.ApiFilter;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.time.DateTime;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Dimension interface.
@@ -170,4 +173,16 @@ public interface Dimension {
      * @return  true if this dimension is aggregatable
      */
     boolean isAggregatable();
+
+    /**
+     * Optimizes a set of filters on this dimension by transforming them into different set of filters. A dimension
+     * is assumed to NOT be able to optimize its filters, so by default this method just returns the original set of
+     * filters.
+     *
+     * @param filters A set of filters on this Dimension.
+     * @return the optimized set of filters.
+     */
+    default Collection<ApiFilter> optimizeFilters(Collection<ApiFilter> filters) {
+        return filters;
+    }
 }

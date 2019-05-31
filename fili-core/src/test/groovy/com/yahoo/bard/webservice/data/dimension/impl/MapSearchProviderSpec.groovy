@@ -45,7 +45,7 @@ class MapSearchProviderSpec extends Specification {
         ] as LinkedHashMap
     }
 
-    def "search provider returns all exactly the dimension rows it is initialized with when "() {
+    def "search provider returns all exactly the dimension rows it is initialized with when queried"() {
         expect:
         sp.findAllDimensionRows() == expectedRows
 
