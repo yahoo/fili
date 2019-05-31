@@ -296,7 +296,16 @@ class QueryBuildingTestingResources {
         t4h1.setAvailability(new StrictAvailability(DataSourceName.of(t4h1.name), new TestDataSourceMetadataService(availabilityMap1)))
         t4d1.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap1)))
 
-        t5h = new StrictPhysicalTable(TableName.of("table5d"), utcHour, [d8, d9, d10, d11, d12, d13, d14, d15, m1].collect{toColumn(it)} as Set, [:], metadataService)
+        t5h = new StrictPhysicalTable(
+                TableName.of("table5d"),
+                utcHour,
+                [d8, d9, d10, d11, d12, d13, d14, d15, m1].collect{toColumn(it)} as Set,
+                [
+                        flagFromTagLookup: "shape",
+                        flagFromTagRegisteredLookup: "breed"
+                ],
+                metadataService
+        )
 
         t4h2.setAvailability(new StrictAvailability(DataSourceName.of(t4h2.name), new TestDataSourceMetadataService(availabilityMap2)))
         t4d2.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap2)))

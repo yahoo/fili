@@ -2,39 +2,23 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
-import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
-import com.yahoo.bard.webservice.data.config.dimension.DefaultRegisteredLookupDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
-import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.TagExtractionFunctionFactory;
-import com.yahoo.bard.webservice.druid.serializers.FlagFromTagDimensionSpec;
-
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Build a Flag dimension with a simple true and false filter corresponding to a multivalued 'tag' dimension.
  */
-@JsonSerialize(using = FlagFromTagDimensionSpec.class)
+//@JsonSerialize(using = FlagFromTagDimensionSpec.class)
 public class FlagFromTagDimension extends RegisteredLookupDimension {
 
     private final FlagFromTagDimensionConfig dimensionConfig;

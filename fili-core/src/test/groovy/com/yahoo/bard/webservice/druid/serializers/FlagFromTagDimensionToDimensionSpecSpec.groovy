@@ -31,7 +31,7 @@ import org.joda.time.Interval
 
 import spock.lang.Specification
 
-class FlagFromTagDimensionSpecSpec extends Specification {
+class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
 
     ObjectMapper objectMapper
     QueryBuildingTestingResources resources

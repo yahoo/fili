@@ -19,16 +19,25 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
+import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.FlagFromTagRequestMapperProvider
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
+import java.util.stream.Collectors
+
+/**
+ * TODO the setup can probably be moved into table test resources instead.
+ */
 class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
-    // Test classes to inject mappers into binder factory.
+    // We need to inject the FlagFromTagRequestMapperProvider into the set of data request mappers
     class TestResultMapperBinderFactory extends TestBinderFactory {
 
         TestResultMapperBinderFactory(
@@ -72,6 +81,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
     @Override
     def setup() {
+        // setup flag from tag dimension and its dependencies.
         Dimension filteringDimension = Mock()
         filteringDimension.getApiName() >> "filteringDimension"
         filteringDimension.getKey() >> DefaultDimensionField.ID
@@ -86,7 +96,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         dimensionStore.add(filteringDimension)
 
         FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
-                {"flagFromTag"},
+                { "flagFromTag" },
                 "breed", // grouping dimension physical name
                 "fftDescription",
                 "fftLongName",
@@ -104,14 +114,39 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         fft = new FlagFromTagDimension(fftConfig)
         dimensionStore.add(fft)
 
+        // Flag from tag dimension needs to be on the logical table and relevant physical tables
         LogicalTableDictionary logicalDictionary = jtb.configurationLoader.logicalTableDictionary
-        LogicalTable table = logicalDictionary.get(new TableIdentifier(TestLogicalTableName.PETS.asName(), DefaultTimeGrain.DAY))
+        LogicalTable table = logicalDictionary.get(
+                new TableIdentifier(TestLogicalTableName.PETS.asName(), DefaultTimeGrain.DAY)
+        )
         DimensionColumn fftColumn = new DimensionColumn(fft)
         DimensionColumn filterDimColumn = new DimensionColumn(filteringDimension)
+
         table.schema.columns.add(fftColumn)
-        table.schema.columns.add(filterDimColumn)
-        table.tableGroup.getPhysicalTables().each { it -> it.schema.columns.add(fftColumn)}
-        table.tableGroup.getPhysicalTables().each { it -> it.schema.columns.add(filterDimColumn)}
+
+        // generate a new schema per physical table including FFT and filtering dimension.
+        Set<PhysicalTable> newTables = table.tableGroup.getPhysicalTables().stream()
+                .map({
+                    it ->
+                        ZonedTimeGrain grain = it.getSchema().getTimeGrain()
+
+                        Set<Column> columns = new HashSet<>(it.getSchema().getColumns())
+                        columns.add(fftColumn)
+                        columns.add(filterDimColumn)
+
+                        Map<String, String> logicalToPhysicalMapping = new HashMap<>(it.getSchema().logicalToPhysicalColumnNames)
+                        logicalToPhysicalMapping.put("filteringDimension", "filteringDimension")
+                        logicalToPhysicalMapping.put("flagFromTag", "breed")
+
+                        PhysicalTable newTable = Spy(it)
+                        newTable.getSchema() >> new PhysicalTableSchema(grain, columns, logicalToPhysicalMapping)
+                        return newTable
+                })
+                .collect(Collectors.toSet())
+
+        // finally remove all the old tables and add all the spys.
+        table.tableGroup.tables.clear()
+        newTables.each { it -> table.tableGroup.tables.add(it)}
     }
 
     @Override
