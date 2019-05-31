@@ -1,6 +1,5 @@
-/*
- * Copyright 2019, Verizon Media Inc. All rights reserved.
- */
+// Copyright 2019, Verizon Media Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
