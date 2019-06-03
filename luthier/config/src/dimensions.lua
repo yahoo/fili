@@ -123,7 +123,7 @@ local keyValueStores = dimensionUtils.keyValueStores
 return {
     comment = {
         longName = "wiki comment",
-        desc = "Comment for the edit to the wiki page",
+        description = "Comment for the edit to the wiki page",
         fields = FIELDSETS.default,
         category = "General",
         searchProvider=searchProviders.memory,
@@ -131,7 +131,7 @@ return {
     },
     countryIsoCode = {
         longName = "wiki countryIsoCode",
-        desc = "Iso Code of the country to which the wiki page belongs",
+        description = "Iso Code of the country to which the wiki page belongs",
         fields = FIELDSETS.country,
         category = "General",
         searchProvider=searchProviders.memory,
@@ -139,189 +139,189 @@ return {
     },
     regionIsoCode = {
         longName = "wiki regionIsoCode",
-        desc = "Iso Code of the region to which the wiki page belongs",
+        description = "Iso Code of the region to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     page = {
         longName = "wiki page",
-        desc = "Page is a document that is suitable for World Wide Web and web browsers",
+        description = "Page is a document that is suitable for World Wide Web and web browsers",
         fields = FIELDSETS.page,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     user = {
         longName = "wiki user",
-        desc = "User is a person who generally use or own wiki services",
+        description = "User is a person who generally use or own wiki services",
         fields = { pk "ID", field("DESC", "AGE", "SEX") },
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     isUnpatrolled = {
         longName = "wiki isUnpatrolled",
-        desc = "Unpatrolled are class of pages that are not been patrolled",
+        description = "Unpatrolled are class of pages that are not been patrolled",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     isNew = {
         longName = "wiki isNew",
-        desc = "New Page is the first page that is created in wiki",
+        description = "New Page is the first page that is created in wiki",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     isRobot = {
         longName = "wiki isRobot",
-        desc = "Robot is an tool that carries out repetitive and mundane tasks",
+        description = "Robot is an tool that carries out repetitive and mundane tasks",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     isAnonymous = {
         longName = "wiki isAnonymous",
-        desc = "Anonymous are individual or entity whose identity is unknown",
+        description = "Anonymous are individual or entity whose identity is unknown",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     isMinor = {
         longName = "wiki isMinor",
-        desc = "Minor is a person who is legally considered a minor",
+        description = "Minor is a person who is legally considered a minor",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     namespace = {
         longName = "wiki namespace",
-        desc = "Namespace is a set of wiki pages that begins with a reserved word",
+        description = "Namespace is a set of wiki pages that begins with a reserved word",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     channel = {
         longName = "wiki channel",
-        desc = "Channel is a set of wiki pages on a certain channel",
+        description = "Channel is a set of wiki pages on a certain channel",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     countryName = {
         longName = "wiki countryName",
-        desc = "Name of the Country to which the wiki page belongs",
+        description = "Name of the Country to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     regionName = {
         longName = "wiki regionName",
-        desc = "Name of the Region to which the wiki page belongs",
+        description = "Name of the Region to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     metroCode = {
         longName = "wiki metroCode",
-        desc = "Metro Code to which the wiki page belongs",
+        description = "Metro Code to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     cityName = {
         longName = "wiki cityName",
-        desc = "Name of the City to which the wiki page belongs",
+        description = "Name of the City to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S2(NMHC)"] = {
         longName = "PT08.S2(NMHC)",
-        desc = "PT08.S2(NMHC)",
+        description = "PT08.S2(NMHC)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S4(NO2)"] = {
         longName = "PT08.S4(NO2)",
-        desc = "PT08.S4(NO2)",
+        description = "PT08.S4(NO2)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S4(NO2)"] = {
         longName = "NO2(GT)",
-        desc = "NO2(GT)",
+        description = "NO2(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["C6H6(GT)"] = {
         longName = "C6H6(GT)",
-        desc = "C6H6(GT)",
+        description = "C6H6(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S1(CO)"] = {
         longName = "PT08.S1(CO)",
-        desc = "PT08.S1(CO)",
+        description = "PT08.S1(CO)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["NOx(GT)"] = {
         longName = "NOx(GT)",
-        desc = "NOx(GT)",
+        description = "NOx(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     RH = {
         longName = "RH",
-        desc = "RH",
+        description = "RH",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     AH = {
         longName = "AH",
-        desc = "AH",
+        description = "AH",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["NMHC(GT)"] = {
         longName = "NMHC(GT)",
-        desc = "NMHC(GT)",
+        description = "NMHC(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     T = {
         longName = "T",
-        desc = "T",
+        description = "T",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S3(NOx)"] = {
         longName = "PT08.S3(NOx)",
-        desc = "PT08.S3(NOx)",
+        description = "PT08.S3(NOx)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["PT08.S5(O3)"] = {
         longName = "PT08.S5(O3)",
-        desc = "PT08.S5(O3)",
+        description = "PT08.S5(O3)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
     ["CO(GT)"] = {
         longName = "CO(GT)",
-        desc = "CO(GT)",
+        description = "CO(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory

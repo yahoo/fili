@@ -15,6 +15,10 @@
 target
 out
 
+# make sure the external config files are built 
+# on user's side each time, instead of using the ones from repo
+luthier/config/external
+
 # Ignore generated jars
 *-system-config-*.jar
 

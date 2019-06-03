@@ -55,7 +55,7 @@ function M.build_dimensions_config(dimensions)
         dim_copy.apiName = dim_copy.apiName or name
         dim_copy.longName = dim_copy.longName or name
         dim_copy.description = dim_copy.description or name
-        table.insert(configuration, dim_copy)
+        configuration[dim_copy.apiName] = dim_copy
     end
     return configuration
 end
