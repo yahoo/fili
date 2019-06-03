@@ -113,23 +113,23 @@ Each module has their own format, layed out below.
 `dimensions.lua` returns a table that maps dimension names to dimensions.
 
 A dimension is a table with following keys:
-    * apiName - A string. The name used by customers querying Fili to work with this dimension.
-        Optional. Defaults to the dimension's name.
-    * longName - A string. longer human friendly name for the dimension
-        Optional. Defaults to the dimension's name
-    * description -  A string. Brief documentation about the dimension
-        Optional. Defaults to the dimension's name
-    * fields - A list of tables describing the fields attached to the dimension. See
-        [Fields](#fields) below.
-    * category - A string. An arbitrary category to put the dimension in. This is not
-        used directly by Fili, but rather exists as a marker for UI's should
-        they desire to use it to organize dimensions.
-    * searchProvider - A table that configures a search provider. See
-        [SearchProvider](#search-provider) below.
-    * keyValueStore - A table that configures the key value store. See
-        [Key Value Store](#key-value-store) below.
-    * type - A string. The type of dimension to build. Optional. Defaults
-    to Fili's default (KeyValueStoreDimension) if not provided.
+* apiName - A string. The name used by customers querying Fili to work with this dimension.
+    Optional. Defaults to the dimension's name.
+* longName - A string. longer human friendly name for the dimension
+    Optional. Defaults to the dimension's name
+* description -  A string. Brief documentation about the dimension
+    Optional. Defaults to the dimension's name
+* fields - A list of tables describing the fields attached to the dimension. See
+    [Fields](#fields) below.
+* category - A string. An arbitrary category to put the dimension in. This is not
+    used directly by Fili, but rather exists as a marker for UI's should
+    they desire to use it to organize dimensions.
+* searchProvider - A table that configures a search provider. See
+    [SearchProvider](#search-provider) below.
+* keyValueStore - A table that configures the key value store. See
+    [Key Value Store](#key-value-store) below.
+* type - A string. The type of dimension to build. Optional. Defaults
+to Fili's default (KeyValueStoreDimension) if not provided.
 
 ### Fields
 
@@ -140,22 +140,22 @@ name is a human readable name of the country, desc is a brief description
 of the country, and ISO is the country' ISO code.
 
 A field is a table with at least one parameter:
-    1. name - The name of the field
+1. name - The name of the field
 Fields may also have the optional parameter:
-    1. tags - A list of tags that may provide additional information about
-        a field. For example, the "primaryKey" tag is used to mark a field
-        as the dimension's primary key.
+1. tags - A list of tags that may provide additional information about
+    a field. For example, the "primaryKey" tag is used to mark a field
+    as the dimension's primary key.
 
 To aid in configuration, we provide two utility functions for creating
 fields:
-    1. pk - Takes a name (string) and returns a primary key field. A primary key
-        is a field with two keys:
-            a. name - The name of the field
-            b. tags - A singleton list containing the value "primaryKey"
-    2. field - A function that takes a variable number of field names and
-        returns an equal number of fields. Each field is a table with
-        one key:
-            a. name - The name for the field.
+1. pk - Takes a name (string) and returns a primary key field. A primary key
+    is a field with two keys:
+        a. name - The name of the field
+        b. tags - A singleton list containing the value "primaryKey"
+2. field - A function that takes a variable number of field names and
+    returns an equal number of fields. Each field is a table with
+    one key:
+        a. name - The name for the field.
 
 For example, the following are equivalent:
 
@@ -186,38 +186,41 @@ value in Druid, but still perform human friendly searches in Fili (i.e.
 
 A search provider's configuration is a table with at least one key:
 
-    * type - The type of the search provider. This is used by Fili to find the
-        right [SearchProvider Factory](#search-provider-factory). The name
-        doesn't matter, except search provider types exist in a global
-        namespace, so care should be taken to make sure the names are unique.
+* type - The type of the search provider. This is used by Fili to find the
+    right [SearchProvider Factory](#search-provider-factory). The name
+    doesn't matter, except search provider types exist in a global
+    namespace, so care should be taken to make sure the names are unique.
 
 It may support any other keys that particular search provider requires to be built.
 
 Fili supports the following built in SearchProviders:
 
-    * fili-lucene - Uses
-        [Apache Lucene](http://lucene.apache.org/) to handle field resolution.
-        Additional keys:
-            * luceneIndexPath - A String. The path to the lucene index files
-            * maxResults - An integer. The maximum number of results allowed on a single
-                page of results.
-            * searchTimeout - An integer. The maximum number of milliseconds Lucene should
-                search before timing out. Defaults to the
-                `lucene_search_timeout_ms` configuration parameter.
+* fili-lucene - Uses
+    [Apache Lucene](http://lucene.apache.org/) to handle field resolution.
 
-    * fili-scan - Uses an in-memory data structure to handle field resolutions.
-        Not recommended for large dimensions.
-        Additional keys:
-            None
+    Additional keys:
+    * luceneIndexPath - A String. The path to the lucene index files
+    * maxResults - An integer. The maximum number of results allowed on a single
+        page of results.
+    * searchTimeout - An integer. The maximum number of milliseconds Lucene should
+        search before timing out. Defaults to the
+        `lucene_search_timeout_ms` configuration parameter.
 
-    * fili-noop - Does not do any field resolution at all. Useful for dimensions
-        that don't have any fields.
-        Additional keys:
-            * approximateCardinality - An integer. The rough size of the dimension.
-                This is used when Fili is deciding whether to send a
-                weight-check query before sending an actual query. If not
-                present, Fili will use the query_weight_limit configuration
-                parameter.
+* fili-scan - Uses an in-memory data structure to handle field resolutions.
+    Not recommended for large dimensions.
+
+    Additional keys:
+        None
+
+* fili-noop - Does not do any field resolution at all. Useful for dimensions
+    that don't have any fields.
+
+    Additional keys:
+    * approximateCardinality - An integer. The rough size of the dimension.
+        This is used when Fili is deciding whether to send a
+        weight-check query before sending an actual query. If not
+        present, Fili will use the query_weight_limit configuration
+        parameter.
 
 ### Key Value Store ###
 
@@ -228,10 +231,10 @@ by Druid with their fields.
 
 A Key Value Store's required configuration is the same as the search provider's:
 
-    * type - The type of the key value store. This is used by Fili to find the
-        right [KeyValueStoreFactory](#key-value-store-factory). These names
-        exist in their own global namespace, so care must be taken to make sure
-        all key value store names are unique.
+* type - The type of the key value store. This is used by Fili to find the
+    right [KeyValueStoreFactory](#key-value-store-factory). These names
+    exist in their own global namespace, so care must be taken to make sure
+    all key value store names are unique.
 
 It may have any other keys it needs to be configured.
 
@@ -240,18 +243,20 @@ define and use a custom key value store.
 
 Fili supports the following built in KeyValueStores:
 
-    * fili-map - Uses an in-memory data structure to handle point lookups. Not
-        recommended for large dimensions.
-        Additional keys:
-            None
+* fili-map - Uses an in-memory data structure to handle point lookups. Not
+    recommended for large dimensions.
+    
+    Additional keys:
+        None
 
-    * fili-reddis - Uses a Redis cluster to perform point lookups.
-        Additional keys:
-            redisNamespace - The reddis namespace to use
-            storeName - The reddis store to use
-            reddisConfiguration - A table with the following keys:
-                * host - The host running the Reddis service
-                * port - The port to contact the host through. Optional.
+* fili-reddis - Uses a Redis cluster to perform point lookups.
+
+    Additional keys:
+    * redisNamespace - The reddis namespace to use
+    * storeName - The reddis store to use
+    * reddisConfiguration - A table with the following keys:
+        * host - The host running the Reddis service
+        * port - The port to contact the host through. Optional.
 
 See [KeyValueStoreFactory](#key-value-store-factory) for details on how to
 define and use a custom key value store.
@@ -571,8 +576,8 @@ together dimensions and metrics.
 There are two types of tables: Physical and Logical. Therefore, the
 `tables.lua` module should contain two keys:
 
-    * `physical` - A table that maps physical table names to physical tables.
-    * `logical` - A table that maps logical table names to logical tables.
+* `physical` - A table that maps physical table names to physical tables.
+* `logical` - A table that maps logical table names to logical tables.
 
 ## Physical
 
@@ -581,22 +586,22 @@ time, there will be a one-to-one mapping between physical tables and tables in
 Druid, with the same schema. They are configured as Lua tables with the
 following keys:
 
-    * name - A string. The name of the physical table. Optional.
-        Defaults to the table's key in `M.physical`. This should be the same as
-        the name of the associated table in Druid.
-    * description - A string. Brief documentation about the table. Optional.
-        Defaults to `name`.
-    * metrics - A list of the names of the *Druid* metrics that live on
-        this table in Druid.
-    * dimensions - A list of dimensions in Druid. If a dimension name is of the
-        format `name1#nam2`, then `name1` is exposed to the rest of Fili as the name
-        of the dimension, while `name2` is used to refer to the dimension when
-        building the Druid query. This allows people to use the same physical dimension
-        name to refer to different druid names in the respective Druid tables.
-    * granularity - The granularity of the physical table, one of "hour", "day",
-        "week", or "month", or "all." The granularity is NOT case sensitive.
-    * type: The custom type of logical table to build (optional), defaults to Fili's
-    built in version if not provided.
+* name - A string. The name of the physical table. Optional.
+    Defaults to the table's key in `M.physical`. This should be the same as
+    the name of the associated table in Druid.
+* description - A string. Brief documentation about the table. Optional.
+    Defaults to `name`.
+* metrics - A list of the names of the *Druid* metrics that live on
+    this table in Druid.
+* dimensions - A list of dimensions in Druid. If a dimension name is of the
+    format `name1#nam2`, then `name1` is exposed to the rest of Fili as the name
+    of the dimension, while `name2` is used to refer to the dimension when
+    building the Druid query. This allows people to use the same physical dimension
+    name to refer to different druid names in the respective Druid tables.
+* granularity - The granularity of the physical table, one of "hour", "day",
+    "week", or "month", or "all." The granularity is NOT case sensitive.
+* type: The custom type of logical table to build (optional), defaults to Fili's
+built in version if not provided.
 
 TODO: I know we have multiple types of physical tables built into Fili. We should name
 them and list them here.
@@ -656,22 +661,22 @@ customers to trade memory in their Druid cluster for speed.
 
 Logical tables are configured as Lua tables with the following keys:
 
-    * name - A string. The name of the table. Optional.
-        Defaults to the table's key in `M.logical`.
-    * description - A string. Brief documentation about the table. Optional.
-        Defaults to `name`.
-    * physicaltables - A list of the names of the physical tables that this
-        logical table is backed by.
-    * metrics - A list of the names of the Fili metrics that should be attached
-        to this table. These must be a subset of the metrics configured in
-        `metrics.lua`.
-    * dimensions - A list of the names of the dimensions that should be
-        attached to this table. They must be a subset of the dimensions
-        configured in `dimensions.lua`.
-    * granularity - A list of the granularities that this table supports. One
-        or more of: `all`, `hour`, `day`, `week`, `month`, `year`.
-    * type: The custom type of logical table to build (optional). Defaults to "logicalTable"
-       Fili's built in implementation of LogicalTable. 
+* name - A string. The name of the table. Optional.
+    Defaults to the table's key in `M.logical`.
+* description - A string. Brief documentation about the table. Optional.
+    Defaults to `name`.
+* physicaltables - A list of the names of the physical tables that this
+    logical table is backed by.
+* metrics - A list of the names of the Fili metrics that should be attached
+    to this table. These must be a subset of the metrics configured in
+    `metrics.lua`.
+* dimensions - A list of the names of the dimensions that should be
+    attached to this table. They must be a subset of the dimensions
+    configured in `dimensions.lua`.
+* granularity - A list of the granularities that this table supports. One
+    or more of: `all`, `hour`, `day`, `week`, `month`, `year`.
+* type: The custom type of logical table to build (optional). Defaults to "logicalTable"
+    Fili's built in implementation of LogicalTable. 
 
 For example, let's define a logical table, `logical` that uses `physical1`
 and `physical2` defined [earlier](#physical):
