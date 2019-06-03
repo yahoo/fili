@@ -277,10 +277,11 @@ return {
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },
-    RH = {
+    RH = { -- entity
         longName = "RH",
         description = "RH",
         fields = FIELDSETS.default,
+        type = "TestDimensionFactory",  -- type
         searchProvider=searchProviders.memory,
         keyValueStore=searchProviders.memory
     },

@@ -33,4 +33,9 @@ os.execute("mkdir -p ../external/")
 parser.save("../external/DimensionConfig.json", dimensionConfig)
 parser.save("../external/MetricConfig.json", metricConfig)
 parser.save("../external/TableConfig.json", tableConfig)
+-- add to the test/resource
+parser.save("../../src/test/resource/DimensionConfig.json", dimensionConfig)
+-- and more
+parser.save("../external/MetricConfig.json", metricConfig)
+parser.save("../external/TableConfig.json", tableConfig)
 -- parser.save("../external/MakerConfig.json", require("makers"))
