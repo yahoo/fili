@@ -26,6 +26,10 @@ local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
 local metricConfig = metricsUtils.build_metric_config(metrics)
 local tableConfig = tableUtils.build_table_config(tables)
 
+-- make the directory ../external, which can be automated in 
+-- a script since creating a dir in Lua is awkard, in future.
+-- can be circumvented by using the LuaFileSystem module
+os.execute("mkdir -p ../external/")
 parser.save("../external/DimensionConfig.json", dimensionConfig)
 parser.save("../external/MetricConfig.json", metricConfig)
 parser.save("../external/TableConfig.json", tableConfig)
