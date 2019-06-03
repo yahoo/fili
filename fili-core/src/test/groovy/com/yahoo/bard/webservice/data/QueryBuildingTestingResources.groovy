@@ -47,6 +47,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
@@ -216,14 +217,17 @@ class QueryBuildingTestingResources {
                 "fftCategory",
                 fftFields,
                 fftFields,
+                d9.getExtractionFunction().map({ fn -> fn instanceof CascadeExtractionFunction ? ((CascadeExtractionFunction) fn).getExtractionFunctions() : [fn] as List}).orElse([] as List),
                 "dim1", // filtering
-                "shape", // grouping
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
-                dimensionDictionary
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
         )
-        d14 = new FlagFromTagDimension(lookupFftConfig)
+        d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
 
         FlagFromTagDimensionConfig registeredLookupFftConfig = FlagFromTagDimensionConfig.build(
                 {"flagFromTagRegisteredLookup"},
@@ -233,15 +237,18 @@ class QueryBuildingTestingResources {
                 "fftCategory",
                 fftFields,
                 fftFields,
+                d11.getRegisteredLookupExtractionFns(),
                 "dim1", // filtering
-                "breed", // grouping
                 "TAG_VALUE",
                 "TRUE_VALUE",
                 "FALSE_VALUE",
-                dimensionDictionary
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
+                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
+                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
         )
 
-        d15 = new FlagFromTagDimension(registeredLookupFftConfig)
+        d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
 
         dimensionDictionary.add(d14)
         dimensionDictionary.add(d15)

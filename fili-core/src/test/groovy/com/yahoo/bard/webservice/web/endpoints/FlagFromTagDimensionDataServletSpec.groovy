@@ -2,25 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
-import com.yahoo.bard.webservice.application.ApplicationState
-import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.application.TestBinderFactory
-import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
-import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.names.TestLogicalTableName
-import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
-import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
-import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
@@ -31,9 +22,6 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.bard.webservice.web.FlagFromTagRequestMapperProvider
-import com.yahoo.bard.webservice.web.RequestMapper
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import java.util.stream.Collectors
 
@@ -43,44 +31,6 @@ import java.util.stream.Collectors
 class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
     // We need to inject the FlagFromTagRequestMapperProvider into the set of data request mappers
-//    class TestResultMapperBinderFactory extends TestBinderFactory {
-//
-//        TestResultMapperBinderFactory(
-//                LinkedHashSet<DimensionConfig> dimensionConfig,
-//                MetricLoader metricLoader,
-//                TableLoader tableLoader,
-//                ApplicationState state
-//        ) {
-//            super(dimensionConfig, metricLoader, tableLoader, state)
-//        }
-//
-//        @Override
-//        Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
-//            Map<String, RequestMapper> mappers = [:] as Map
-//            mappers.put(
-//                    DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-//                    FlagFromTagRequestMapperProvider.Builder.simpleProvider().dataMapper(resourceDictionaries)
-//            )
-//            return mappers
-//        }
-//    }
-//
-//    class TestResultMapperBinder extends JerseyTestBinder {
-//
-//        TestResultMapperBinder(final Class<?>... resourceClasses) {
-//            super(resourceClasses)
-//        }
-//
-//        @Override
-//        TestBinderFactory buildBinderFactory(
-//                LinkedHashSet<DimensionConfig> dimensionConfiguration,
-//                MetricLoader metricLoader,
-//                TableLoader tableLoader,
-//                ApplicationState state
-//        ) {
-//            return new TestResultMapperBinderFactory(dimensionConfiguration, metricLoader, tableLoader, state)
-//        }
-//    }
 
     FlagFromTagDimension fft
 
@@ -91,6 +41,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         filteringDimension.getApiName() >> "filteringDimension"
         filteringDimension.getKey() >> DefaultDimensionField.ID
         filteringDimension.getDimensionFields() >> { [DefaultDimensionField.ID] as LinkedHashSet }
+        filteringDimension.isAggregatable() >> true
 
         SearchProvider filteringSP = new NoOpSearchProvider(100)
         filteringSP.setDimension(filteringDimension)
@@ -160,11 +111,6 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         newTables.each { it -> table.tableGroup.tables.add(it)}
     }
 
-//    @Override
-//    JerseyTestBinder buildTestBinder() {
-//        new TestResultMapperBinder(resourceClasses)
-//    }
-
     @Override
     Class<?>[] getResourceClasses() {
         [DataServlet.class]
@@ -183,8 +129,6 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 "filters": ["flagFromTag|id-in[FALSE_VALUE]"],
         ]
     }
-
-    // TODO change the expected responses to what we actually expect
 
     @Override
     String getExpectedApiResponse() {

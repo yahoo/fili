@@ -66,9 +66,11 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
 
         // before building anything, see if filters can be optimized.
         filterMap = filterMap.entrySet().stream()
+                .map(entry -> entry.getKey().optimizeFilters(entry.getValue()))
+                .filter(filters -> !filters.isEmpty())
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> new HashSet<>(entry.getKey().optimizeFilters(entry.getValue()))
+                        (Collection<ApiFilter> filters) -> filters.iterator().next().getDimension(),
+                        HashSet::new
                 ));
 
         List<Filter> dimensionFilters = new ArrayList<>(filterMap.size());
