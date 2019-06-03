@@ -18,6 +18,7 @@ out
 # make sure the external config files are built 
 # on user's side each time, instead of using the ones from repo
 luthier/config/external
+luthier/src/test/resource
 
 # Ignore generated jars
 *-system-config-*.jar
