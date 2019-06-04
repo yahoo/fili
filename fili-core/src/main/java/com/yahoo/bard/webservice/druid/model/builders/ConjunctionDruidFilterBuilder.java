@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A ConjunctionDruidFilterBuilder builds a Druid filter by taking the conjunction of filter clauses, one for
@@ -63,15 +65,6 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         if (filterMap.isEmpty()) {
             return null;
         }
-
-        // before building anything, see if filters can be optimized.
-        filterMap = filterMap.entrySet().stream()
-                .map(entry -> entry.getKey().optimizeFilters(entry.getValue()))
-                .filter(filters -> !filters.isEmpty())
-                .collect(Collectors.toMap(
-                        (Collection<ApiFilter> filters) -> filters.iterator().next().getDimension(),
-                        HashSet::new
-                ));
 
         List<Filter> dimensionFilters = new ArrayList<>(filterMap.size());
         for (Map.Entry<Dimension, Set<ApiFilter>> entry : filterMap.entrySet()) {

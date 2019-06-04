@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
+import com.yahoo.bard.webservice.data.FilterOptimizable;
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -21,7 +22,7 @@ import java.util.stream.Stream;
 /**
  * Build a Flag dimension with a simple true and false filter corresponding to a multivalued 'tag' dimension.
  */
-public class FlagFromTagDimension extends RegisteredLookupDimension {
+public class FlagFromTagDimension extends RegisteredLookupDimension implements FilterOptimizable {
 
     private final FlagFromTagDimensionConfig dimensionConfig;
     private final Map<String, DimensionRow> rowMap;

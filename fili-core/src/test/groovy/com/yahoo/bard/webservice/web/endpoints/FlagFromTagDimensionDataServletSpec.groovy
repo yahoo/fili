@@ -2,9 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints
 
+import com.yahoo.bard.webservice.application.ApplicationState
+import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.application.TestBinderFactory
+import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
+import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
+import com.yahoo.bard.webservice.data.config.metric.MetricLoader
 import com.yahoo.bard.webservice.data.config.names.TestLogicalTableName
+import com.yahoo.bard.webservice.data.config.table.TableLoader
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -22,6 +29,9 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.bard.webservice.web.FilterOptimizingRequestMapper
+import com.yahoo.bard.webservice.web.RequestMapper
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import java.util.stream.Collectors
 
@@ -30,7 +40,45 @@ import java.util.stream.Collectors
  */
 class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
-    // We need to inject the FlagFromTagRequestMapperProvider into the set of data request mappers
+//     We need to inject the FlagFromTagRequestMapperProvider into the set of data request mappers
+        class TestResultMapperBinderFactory extends TestBinderFactory {
+
+            TestResultMapperBinderFactory(
+                    LinkedHashSet<DimensionConfig> dimensionConfig,
+                    MetricLoader metricLoader,
+                    TableLoader tableLoader,
+                    ApplicationState state
+            ) {
+                super(dimensionConfig, metricLoader, tableLoader, state)
+            }
+
+            @Override
+            Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
+                Map<String, RequestMapper> mappers = [:] as Map
+                mappers.put(
+                        DataApiRequest.REQUEST_MAPPER_NAMESPACE,
+                        new FilterOptimizingRequestMapper(resourceDictionaries)
+                )
+                return mappers
+            }
+        }
+
+        class TestResultMapperBinder extends JerseyTestBinder {
+
+            TestResultMapperBinder(final Class<?>... resourceClasses) {
+                super(resourceClasses)
+            }
+
+            @Override
+            TestBinderFactory buildBinderFactory(
+                    LinkedHashSet<DimensionConfig> dimensionConfiguration,
+                    MetricLoader metricLoader,
+                    TableLoader tableLoader,
+                    ApplicationState state
+            ) {
+                return new TestResultMapperBinderFactory(dimensionConfiguration, metricLoader, tableLoader, state)
+            }
+        }
 
     FlagFromTagDimension fft
 
@@ -85,6 +133,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         DimensionColumn filterDimColumn = new DimensionColumn(filteringDimension)
 
         table.schema.columns.add(fftColumn)
+        table.schema.columns.add(filterDimColumn)
 
         // generate a new schema per physical table including FFT and filtering dimension.
         Set<PhysicalTable> newTables = table.tableGroup.getPhysicalTables().stream()
@@ -110,6 +159,11 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         table.tableGroup.tables.clear()
         newTables.each { it -> table.tableGroup.tables.add(it)}
     }
+
+        @Override
+        JerseyTestBinder buildTestBinder() {
+            new TestResultMapperBinder(resourceClasses)
+        }
 
     @Override
     Class<?>[] getResourceClasses() {
