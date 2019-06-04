@@ -51,7 +51,6 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      * will be used for grouping.
      *
      *
-     * @param flagDimensionConfig  The dimension configuration for
      */
     public FlagFromTagDimension(FlagFromTagDimensionConfig config, DimensionDictionary dimensionDictionary) {
         super(config);

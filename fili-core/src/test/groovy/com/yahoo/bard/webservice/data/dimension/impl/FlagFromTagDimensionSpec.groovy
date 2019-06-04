@@ -33,24 +33,16 @@ class FlagFromTagDimensionSpec extends Specification {
         dictionaries.dimensionDictionary.add(fftBaseDim)
         dictionaries.dimensionDictionary.add(otherDim)
 
-        FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
                 {"flagFromTag"},
                 "baseDimension",
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [],
-                "baseDimension", // grouping
-                "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
+                "baseDimension", // filtering
+                "TAG_VALUE"
         )
+        FlagFromTagDimensionConfig fftConfig = builder.trueValue("TRUE_VALUE").falseValue("FALSE_VALUE").build()
 
         fft = new FlagFromTagDimension(fftConfig, dictionaries.dimensionDictionary)
         dictionaries.dimensionDictionary.add(fft)

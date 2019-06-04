@@ -99,27 +99,18 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         DimensionDictionary dimensionStore = jtb.configurationLoader.dimensionDictionary
         dimensionStore.add(filteringDimension)
 
-        ExtractionFunction fn = ((LookupDimension) dimensionStore.findByApiName("breed")).getExtractionFunction().orElseThrow({new IllegalStateException("no extraction functions")})
-        List<ExtractionFunction> fns = fn instanceof CascadeExtractionFunction ? ((CascadeExtractionFunction) fn).getExtractionFunctions() : [fn]
-
-        FlagFromTagDimensionConfig fftConfig = FlagFromTagDimensionConfig.build(
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
                 { "flagFromTag" },
                 "breed", // grouping dimension physical name
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                fns,
                 "filteringDimension", // filtering
-                "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
+                "TAG_VALUE"
         )
+
+        ((LookupDimension) dimensionStore.findByApiName("breed")).getExtractionFunction().ifPresent({it -> builder.addExtractionFunction(it)})
+        FlagFromTagDimensionConfig fftConfig = builder.trueValue("TRUE_VALUE").falseValue("FALSE_VALUE").build()
 
         fft = new FlagFromTagDimension(fftConfig, dimensionStore)
         dimensionStore.add(fft)

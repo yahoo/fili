@@ -2,16 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl
 
-import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
-import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.DefaultRegisteredLookupDimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
-import com.yahoo.bard.webservice.data.config.dimension.RegisteredLookupDimensionConfig
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.dimension.DimensionRow
-import com.yahoo.bard.webservice.data.dimension.KeyValueStore
-import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.LookupExtractionFunction
@@ -37,20 +30,20 @@ class FlagFromTagDimensionConfigSpec extends Specification {
     }
 
     FlagFromTagDimensionConfig getConfig(List<ExtractionFunction> baseExtractionFunctions) {
-        FlagFromTagDimensionConfig.build(
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
                 {"flagFromTag"},
                 "physicalName",
                 "description",
                 "longName",
                 "category",
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                [DefaultDimensionField.ID] as LinkedHashSet,
-                baseExtractionFunctions,
                 "filteringDimensionApiName",
                 "TAG_VALUE",
-                trueValue,
-                falseValue,
         )
+        return builder
+                .extractionFunctions(baseExtractionFunctions)
+                .trueValue(trueValue)
+                .falseValue(falseValue)
+                .build()
     }
 
     @Unroll

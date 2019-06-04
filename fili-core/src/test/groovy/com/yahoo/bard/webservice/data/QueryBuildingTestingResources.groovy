@@ -207,47 +207,37 @@ class QueryBuildingTestingResources {
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
-        LinkedHashSet<DimensionField> fftFields = [DefaultDimensionField.ID] as LinkedHashSet
-
-        FlagFromTagDimensionConfig lookupFftConfig = FlagFromTagDimensionConfig.build(
+        // flag from tag dimensions
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
                 {"flagFromTagLookup"},
                 "shape", //grouping dim physical name
                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
-                fftFields,
-                fftFields,
-                d9.getExtractionFunction().map({ fn -> fn instanceof CascadeExtractionFunction ? ((CascadeExtractionFunction) fn).getExtractionFunctions() : [fn] as List}).orElse([] as List),
                 "dim1", // filtering
-                "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
+                "TAG_VALUE"
         )
+        d9.getExtractionFunction().ifPresent({it -> builder.addExtractionFunction(it)})
+        FlagFromTagDimensionConfig lookupFftConfig = builder
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
         d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
 
-        FlagFromTagDimensionConfig registeredLookupFftConfig = FlagFromTagDimensionConfig.build(
+        builder = new FlagFromTagDimensionConfig.Builder(
                 {"flagFromTagRegisteredLookup"},
                 "breed", // grouping dim physical name
-                "fftDescription",
+                 "fftDescription",
                 "fftLongName",
                 "fftCategory",
-                fftFields,
-                fftFields,
-                d11.getRegisteredLookupExtractionFns(),
                 "dim1", // filtering
-                "TAG_VALUE",
-                "TRUE_VALUE",
-                "FALSE_VALUE",
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_OPS,
-                FlagFromTagDimensionConfig.DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION,
-                FlagFromTagDimensionConfig.DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION,
+                "TAG_VALUE"
         )
-
+        FlagFromTagDimensionConfig registeredLookupFftConfig = builder
+                .extractionFunctions(d11.getRegisteredLookupExtractionFns())
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
         d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
 
         dimensionDictionary.add(d14)
