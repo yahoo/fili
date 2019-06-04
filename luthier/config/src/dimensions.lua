@@ -69,7 +69,8 @@ local field = dimensionUtils.field
 local FIELDSETS = {
     default = { pk "ID", field "DESC" },
     country = { pk "ID", field("DESC", "COUNTY", "STATE")},
-    page = { pk "ID", field "DESC" }
+    page = { pk "ID", field "DESC" },
+    test = { pk "TEST_PK", field ("TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3") }
 }
 
 -------------------------------------------------------------------------------
@@ -121,6 +122,15 @@ local searchProviders = dimensionUtils.searchProviders
 local keyValueStores = dimensionUtils.keyValueStores
 
 return {
+    testDimension = {
+        longName = "a longName for testing",
+        description = "a description for testing",
+        fields = FIELDSETS.test,
+        category = "a category for testing",
+        type = "TestDimensionFactory",  -- type
+        searchProvider=searchProviders.noop,
+        keyValueStore=searchProviders.noop
+    },
     comment = {
         longName = "wiki comment",
         description = "Comment for the edit to the wiki page",

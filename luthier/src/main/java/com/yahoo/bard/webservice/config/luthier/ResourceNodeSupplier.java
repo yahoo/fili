@@ -31,13 +31,13 @@ public class ResourceNodeSupplier implements Supplier<ObjectNode> {
 
     @Override
     public ObjectNode get() {
-        if (resourceName == null) {
+        if (resourceName != null) {
             try {
                 JsonNode node = new ObjectMapper().reader()
                         .readTree(this.getClass().getClassLoader().getResourceAsStream(resourceName));
                 if (!(node instanceof ObjectNode)) {
                     String message = String.format(NOT_AN_OBJECT, resourceName);
-                    throw new LuthierFactoryException(resourceName);
+                    throw new LuthierFactoryException(message);
                 }
                 objectNode = (ObjectNode) node;
             } catch (IOException e) {

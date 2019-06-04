@@ -94,7 +94,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
 
     @Override
     public PhysicalTableDictionary getPhysicalTableDictionary() {
-        return resourceDictionaries.getPhysicalTableDictionary();
+        return resourceDictionaries.getPhysicalDictionary();
     }
 
     @Override
