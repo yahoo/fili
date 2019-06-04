@@ -168,5 +168,4 @@ class RoleDimensionApiFilterRequestMapperSpec extends Specification {
                         [nonFilterDimension, dimensionField, notin, ["a", "c"] as List],
                 ] as LinkedHashSet
     }
-    
 }

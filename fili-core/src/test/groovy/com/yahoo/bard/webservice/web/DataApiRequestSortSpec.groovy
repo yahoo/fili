@@ -25,8 +25,6 @@ class DataApiRequestSortSpec extends Specification {
         jtb.tearDown()
     }
 
-
-
     def "If dateTime is not the first value in the sort list, then throw an error"() {
         setup:
         String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
@@ -129,5 +127,4 @@ class DataApiRequestSortSpec extends Specification {
         then:
         r.getStatus() == 200
     }
-
 }

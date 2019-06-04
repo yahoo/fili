@@ -46,5 +46,4 @@ abstract class ModuleSetupSpec extends Specification {
         where:
         moduleName << [getModuleName()]
     }
-
 }
