@@ -50,7 +50,8 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      * for grouping is that a comma delimited string dimension will be present for which a custom extraction function
      * will be used for grouping.
      *
-     *
+     * @param config The config for this dimension
+     * @param dimensionDictionary populated dimension dictionary which is used to resolve the filtering dimension
      */
     public FlagFromTagDimension(FlagFromTagDimensionConfig config, DimensionDictionary dimensionDictionary) {
         super(config);

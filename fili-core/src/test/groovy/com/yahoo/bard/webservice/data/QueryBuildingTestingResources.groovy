@@ -14,7 +14,6 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
-import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
@@ -47,7 +46,6 @@ import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column

@@ -21,8 +21,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary

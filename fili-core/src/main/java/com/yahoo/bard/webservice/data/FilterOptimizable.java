@@ -1,9 +1,15 @@
+// Copyright 2019 Verizon Media Group.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
 import com.yahoo.bard.webservice.web.ApiFilter;
 
 import java.util.Collection;
 
+/**
+ * Interface that indicates the implementing object can optimize a collection of {@link ApiFilter} by transforming them
+ * into a (possibly) different collection of {@link ApiFilter}.
+ */
 public interface FilterOptimizable {
 
     /**

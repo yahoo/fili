@@ -1,3 +1,5 @@
+// Copyright 2019 Verizon Media Group.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.FilterOptimizable;
@@ -15,12 +17,16 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
+/**
+ * Request mapper that checks if any of the Dimensions that are being filtered on can optimize their filters, and if
+ * so performs that optimization.
+ */
 public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest> {
+
     /**
      * Constructor.
      *
-
-     * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param resourceDictionaries The dictionaries to use for request mapping.
      */
     public FilterOptimizingRequestMapper(
             ResourceDictionaries resourceDictionaries

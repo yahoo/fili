@@ -4,17 +4,14 @@ package com.yahoo.bard.webservice.data.dimension;
 
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
-import com.yahoo.bard.webservice.web.ApiFilter;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.joda.time.DateTime;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Dimension interface.
