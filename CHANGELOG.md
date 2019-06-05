@@ -28,7 +28,7 @@ Current
 - [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
     * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
     implementation is immutable.
-    * Adds the `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
+    * Adds `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
     
 - [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
     * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
