@@ -141,7 +141,13 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      */
     private void validateFlagFromTagFilter(ApiFilter filter) {
         if (!(filter.getDimension() instanceof FlagFromTagDimension)) {
-            return;
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Tried to optimize non-FlagFromTag dimension %s using FlagFromTag dimension %s",
+                            filter.getDimension().getApiName(),
+                            getApiName()
+                    )
+            );
         }
 
         FlagFromTagDimension dim = (FlagFromTagDimension) filter.getDimension();

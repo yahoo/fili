@@ -86,6 +86,18 @@ class FlagFromTagDimensionSpec extends Specification {
         )
     }
 
+    def "trying to optimize non-fft dimension fails and throws an error"() {
+        setup:
+        Dimension dim = Mock()
+        ApiFilter filter = Mock() {getDimension() >> dim}
+
+        when:
+        fft.optimizeFilters([filter])
+
+        then:
+        thrown(IllegalArgumentException)
+    }
+
     def "filter operation is passed through when true value is filtered on and negated when false value is filtered on"() {
         expect:
         [

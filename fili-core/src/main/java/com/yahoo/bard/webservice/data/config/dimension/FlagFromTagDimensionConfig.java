@@ -223,8 +223,29 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
          */
         public Builder fields(
                 LinkedHashSet<DimensionField> fields,
-                LinkedHashSet<DefaultDimensionField> defaultShowFields
+                LinkedHashSet<DimensionField> defaultShowFields
         ) {
+            if (!defaultShowFields.stream().allMatch(fields::contains)) {
+                throw new IllegalArgumentException(
+                        String.format(
+                            "Attempted to configure FlagFromTag dimension with default show fields %s that are NOT " +
+                                    "a subset of the configured dimension fields %s",
+                                String.join(
+                                        ", ",
+                                        defaultShowFields.stream()
+                                                .map(DimensionField::getName)
+                                                .collect(Collectors.toList())
+                                ),
+                                String.join(
+                                        ", ",
+                                        fields.stream()
+                                                .map(DimensionField::getName)
+                                                .collect(Collectors.toList())
+                                )
+                        )
+                );
+            }
+
             this.fields = new LinkedHashSet<>(fields);
             this.defaultDimensionFields = new LinkedHashSet<>(defaultShowFields);
             return this;
@@ -299,7 +320,7 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
          */
         public Builder positiveOps(Collection<FilterOperation> positiveOps) {
             if (positiveOps.isEmpty()) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "attempted to configure FlagFromTag dimension with an empty set of positive filter operations"
                 );
             }
@@ -317,7 +338,7 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
          */
         public Builder negativeOps(Collection<FilterOperation> negativeOps) {
             if (negativeOps.isEmpty()) {
-                throw new IllegalStateException(
+                throw new IllegalArgumentException(
                         "attempted to configure FlagFromTag dimension with an empty set of negative filter operations"
                 );
             }
