@@ -7,13 +7,12 @@ import spock.lang.Specification
 class LuthierIndustrialParkTest extends Specification {
     LuthierIndustrialPark industrialPark
     void setup() {
-        ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
         Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
-        industrialPark = new LuthierIndustrialPark(resourceDictionaries, dimensionFactoriesMap)
+        ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
+        industrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries)
+                .withDimensionFactories(dimensionFactoriesMap)
+                .build()
 
-    }
-
-    void cleanup() {
     }
 
     def "An industrialPark instance is loaded up without error."() {

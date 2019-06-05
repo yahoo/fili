@@ -34,7 +34,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with.
      * @param dimensionFactories The map of factories for creating dimensions from external config
      */
-    public LuthierIndustrialPark(
+    protected LuthierIndustrialPark(
             ResourceDictionaries resourceDictionaries,
             Map<String, Factory<Dimension>> dimensionFactories
     ) {
@@ -102,7 +102,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         return resourceDictionaries;
     }
 
-    public class Builder {
+    public static class Builder {
     
         private Map<String, Factory<Dimension>> dimensionFactories;
         private final ResourceDictionaries resourceDictionaries;
@@ -110,6 +110,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
         }
+        // public Builder() {
+        //     resourceDictionaries = new ResourceDictionaries;
+        //     initializeDictionaries(resourceDictionaries);        -- this is not possible for now.
+        //     dimensionFactories = getDefaultDimensionFactories();
+        // }
 
         public Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
             return new LinkedHashMap<>();
