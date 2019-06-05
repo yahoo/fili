@@ -18,9 +18,7 @@ out
 # For all file that we don't want to keep a version control, we 
 # ignore them. If any *Config.json contains important information,
 # we do not add it to this list. 
-luthier/src/test/resources/DimensionConfig.json
-luthier/src/test/resources/MetricConfig.json
-luthier/src/test/resources/TableConfig.json
+# example: luthier/src/test/resources/example.json
 
 # Ignore generated jars
 *-system-config-*.jar
