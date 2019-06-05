@@ -82,25 +82,25 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
      * dimension needs to be inverted.
      */
     private FlagFromTagDimensionConfig(
-            @NotNull DimensionName apiName,
+            DimensionName apiName,
             String physicalName,
             String description,
             String longName,
             String category,
-            @NotNull LinkedHashSet<DimensionField> fields,
-            @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
-            @NotNull KeyValueStore keyValueStore,
-            @NotNull SearchProvider searchProvider,
+            LinkedHashSet<DimensionField> fields,
+            LinkedHashSet<DimensionField> defaultDimensionFields,
+            KeyValueStore keyValueStore,
+            SearchProvider searchProvider,
             Map<String, DimensionRow> rowMap,
-            @NotNull List<ExtractionFunction> registeredLookupExtractionFns,
-            @NotNull String filteringDimensionApiName,
+            List<ExtractionFunction> registeredLookupExtractionFns,
+            String filteringDimensionApiName,
             String tagValue,
             String trueValue,
             String falseValue,
             Set<FilterOperation> positiveOps,
             Set<FilterOperation> negativeOps,
-            @NotNull FilterOperation positiveInvertedFilterOperation,
-            @NotNull FilterOperation negativeInvertedFilterOperation
+            FilterOperation positiveInvertedFilterOperation,
+            FilterOperation negativeInvertedFilterOperation
     ) {
         super(
                 apiName,
@@ -142,11 +142,8 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
                 Collections::unmodifiableSet
         ));
 
-        public static final Set<FilterOperation> DEFAULT_NEGATIVE_OPS = Collections.unmodifiableSet(
-                Collections.singleton(
-                        DefaultFilterOperation.notin
-                )
-        );
+        public static final Set<FilterOperation> DEFAULT_NEGATIVE_OPS
+                = Collections.singleton(DefaultFilterOperation.notin);
 
         public static final FilterOperation DEFAULT_POSITIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.eq;
         public static final FilterOperation DEFAULT_NEGATIVE_INVERTED_FILTER_OPERATION = DefaultFilterOperation.notin;
