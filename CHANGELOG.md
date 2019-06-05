@@ -13,12 +13,17 @@ Current
 - [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
     * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
     based on the presence or absence of a tag value in an underlying multivalued dimension.
-    * This implementation is based on two underlying dimensions: a filtering dimension which can be efficiently 
-    filtered on using the default druid filter serialization, and a grouping dimension containing a comma separated
-    string of tag values, which is parsed to determined the presence of the desired tag value and converted to the 
+    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently 
+    filtered against using the default druid filter serialization, and a grouping dimension containing a comma separated
+    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the 
     appropriate truth value.
-    * The filtering behavior is supported through a `RequestMapper` provided by `FlagFromTagRequestMapperProvider`.
-    A request mapper from this provider must be used for ApiFilters to be transformed.
+    * The filtering behavior is supported through the new `FilterOptimizable` interface and associated request mapper.
+    
+- [Add FilterOptimizable interface](https://github.com/yahoo/fili/pull/913)
+    * Adds the `FilterOptimizable` interface, which indicates that the implementing object has the ability to optimize
+    a `Collection` of `ApiFilter` objects.
+    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their 
+    filters and performs the optimizations.
 
 - [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
     * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
