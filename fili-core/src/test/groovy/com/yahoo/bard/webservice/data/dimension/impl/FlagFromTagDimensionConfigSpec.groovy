@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfi
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
+import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.LookupExtractionFunction
@@ -211,5 +212,58 @@ class FlagFromTagDimensionConfigSpec extends Specification {
 
         then:
         fft.getSearchProvider().findAllDimensionRows().stream().allMatch({ row -> expectedValues.remove(row.get(fft.getKey())) })
+    }
+
+    def "Attempting to mutate underlying dimension fails"() {
+        setup:
+        FlagFromTagDimension dim = new FlagFromTagDimension(
+                new FlagFromTagDimensionConfig.Builder(
+                        {"flagFromTag"},
+                        "physicalName",
+                        "description",
+                        "longName",
+                        "category",
+                        "filteringDimensionApiName",
+                        "TAG_VALUE",
+                ).build(),
+                dimensionDictionary
+        )
+
+        when:
+        dim.addDimensionRow(Mock(DimensionRow))
+
+        then:
+        thrown(UnsupportedOperationException)
+
+        when:
+        dim.addAllDimensionRows([Mock(DimensionRow)] as Set)
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def "Equivalence works properly"(){
+        setup:
+        FlagFromTagDimensionConfig config = new FlagFromTagDimensionConfig.Builder(
+                {"flagFromTag"},
+                "physicalName",
+                "description",
+                "longName",
+                "category",
+                "filteringDimensionApiName",
+                "TAG_VALUE",
+        ).build()
+
+        Dimension nonFft = Mock()
+        FlagFromTagDimension fft1 = new FlagFromTagDimension(config, dimensionDictionary)
+        FlagFromTagDimension fft2 = new FlagFromTagDimension(config, dimensionDictionary)
+
+        expect:
+        fft1 != nonFft
+
+        and:
+        fft1 == fft1
+        fft1 == fft2
+
     }
 }
