@@ -9,6 +9,6 @@ class FactoryParkTest extends Specification {
     void cleanup() {
     }
 
-    def "BuildEntity"() {
+    def "A FactoryPark<Dimension> correctly builds a Dimension from JSON."() {
     }
 }

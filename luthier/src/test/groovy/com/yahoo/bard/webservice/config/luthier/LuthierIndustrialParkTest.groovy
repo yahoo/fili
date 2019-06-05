@@ -16,10 +16,10 @@ class LuthierIndustrialParkTest extends Specification {
     void cleanup() {
     }
 
-    def "Load"() {
+    def "An industrialPark instance is loaded up without error."() {
         when:
-        industrialPark.load()
+            industrialPark.load()
         then:
-        true
+            true
     }
 }
