@@ -7,6 +7,7 @@ the dimensions, metrics and tables configuration defined in the dimensions.lua,
 metrics.lua, and tables.lua files respectively, and generates JSON files that
 are then read by Fili at start up.
 ]]
+local testResources = "../../src/test/resources/"
 
 local parser = require("utils.jsonParser")
 local dimensionUtils = require("utils.dimensionUtils")
@@ -26,18 +27,13 @@ local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
 local metricConfig = metricsUtils.build_metric_config(metrics)
 local tableConfig = tableUtils.build_table_config(tables)
 
--- make the directory ../external, which can be automated in 
+-- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
 -- can be circumvented by using the LuaFileSystem module
-os.execute("mkdir -p ../external/")
-os.execute("mkdir -p ../../src/test/resource/")
-parser.save("../external/DimensionConfig.json", dimensionConfig)
-parser.save("../external/MetricConfig.json", metricConfig)
-parser.save("../external/TableConfig.json", tableConfig)
--- parser.save("../external/MakerConfig.json", require("makers"))
+os.execute("mkdir -p " .. testResources)
 
 -- add to the test/resource
-parser.save("../../src/test/resource/DimensionConfig.json", dimensionConfig)
-parser.save("../../src/test/resource/MetricConfig.json", metricConfig)
-parser.save("../../src/test/resource/TableConfig.json", tableConfig)
+parser.save(testResources .. "DimensionConfig.json", dimensionConfig)
+parser.save(testResources .. "MetricConfig.json", metricConfig)
+parser.save(testResources .. "TableConfig.json", tableConfig)
 -- parser.save("../../src/test/resource/MakerConfig.json", require("makers"))

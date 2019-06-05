@@ -15,10 +15,12 @@
 target
 out
 
-# make sure the external config files are built 
-# on user's side each time, instead of using the ones from repo
-luthier/config/external
-luthier/src/test/resource
+# For all file that we don't want to keep a version control, we 
+# ignore them. If any *Config.json contains important information,
+# we do not add it to this list. 
+luthier/src/test/resources/DimensionConfig.json
+luthier/src/test/resources/MetricConfig.json
+luthier/src/test/resources/TableConfig.json
 
 # Ignore generated jars
 *-system-config-*.jar
