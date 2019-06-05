@@ -110,11 +110,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
         }
-        // public Builder() {
-        //     resourceDictionaries = new ResourceDictionaries;
-        //     initializeDictionaries(resourceDictionaries);        -- this is not possible for now.
-        //     dimensionFactories = getDefaultDimensionFactories();
-        // }
+        public Builder() {
+            this(new ResourceDictionaries());
+        }
 
         public Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
             return new LinkedHashMap<>();

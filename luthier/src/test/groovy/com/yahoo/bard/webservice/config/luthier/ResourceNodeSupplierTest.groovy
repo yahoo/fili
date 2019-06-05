@@ -6,6 +6,7 @@ import spock.lang.Specification
 
 class ResourceNodeSupplierTest extends Specification {
     ResourceNodeSupplier testResourceNodeSupplier
+
     void setup() {
         testResourceNodeSupplier = new ResourceNodeSupplier("DimensionConfig.json")
     }
@@ -15,10 +16,10 @@ class ResourceNodeSupplierTest extends Specification {
             ResourceNodeSupplier defaultResourceNodeSupplier = new ResourceNodeSupplier(null)
         when:
             ObjectNode defaultNode = defaultResourceNodeSupplier.get()
-            ObjectNode dimensionNode = testResourceNodeSupplier.get()
+            ObjectNode dimensionsNode = testResourceNodeSupplier.get()
         then:
             defaultNode == null
-            dimensionNode != null
+            dimensionsNode != null
     }
 
     def "a LuthierFactoryException is thrown when .json is not formatted correctly"() {
@@ -30,7 +31,7 @@ class ResourceNodeSupplierTest extends Specification {
             thrown(LuthierFactoryException)
     }
 
-    def "Fields are loaded and content is correct"() {
+    def "All contents of a test dimension is correct"() {
         when:
             ObjectNode node = testResourceNodeSupplier.get().get("testDimension")
             String apiName = node.get("apiName").textValue()
@@ -53,5 +54,39 @@ class ResourceNodeSupplierTest extends Specification {
             description == "a description for testing"
             searchProvider == "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider"
             keyValueStore == "com.yahoo.bard.webservice.data.dimension.MapStore"
+    }
+
+    def "All dimensions contain necessary keys (apiName, type, field, etc.), regardless their values"() {
+        when:
+            ObjectNode dimensionsNode = testResourceNodeSupplier.get()
+        then:
+            dimensionsNode.every {
+                it.has("type")
+                it.has("keyValueStore")
+                it.has("longName")
+                it.has("apiName")
+                it.has("searchProvider")
+                it.has("description")
+                it.has("fields")
+                it.get("fields").every {
+                    it.has("name")
+                }
+                // guarantees that at least one
+                // {
+                //    "tags": [
+                //       "primaryKey"
+                //    ],
+                //    "name": ...
+                // }
+                // exists in the fields value
+                it.get("fields").any {
+                    it.has("tags")
+                    if (it.has("tags")) {
+                        it.get("tags").any {
+                            it.textValue() == "primaryKey"
+                        }
+                    }
+                }
+            }
     }
 }

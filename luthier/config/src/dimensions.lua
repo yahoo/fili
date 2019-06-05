@@ -127,7 +127,7 @@ return {
         description = "a description for testing",
         fields = FIELDSETS.test,
         category = "a category for testing",
-        type = "TestDimensionFactory",
+        type = "DefaultDimensionFactory",
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },
@@ -287,11 +287,10 @@ return {
         searchProvider=searchProviders.memory,
         keyValueStore=keyValueStores.memory
     },
-    RH = { -- entity
+    RH = {
         longName = "RH",
         description = "RH",
         fields = FIELDSETS.default,
-        type = "TestDimensionFactory",  -- type
         searchProvider=searchProviders.memory,
         keyValueStore=keyValueStores.memory
     },

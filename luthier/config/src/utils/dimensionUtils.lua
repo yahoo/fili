@@ -14,6 +14,7 @@ local M = {}
 
 local misc = require 'utils/misc'
 
+local default_type = "DefaultDimensionFactory"
 -------------------------------------------------------------------------------
 -- Fields
 -------------------------------------------------------------------------------
@@ -55,6 +56,7 @@ function M.build_dimensions_config(dimensions)
         dim_copy.apiName = dim_copy.apiName or name
         dim_copy.longName = dim_copy.longName or name
         dim_copy.description = dim_copy.description or name
+        dim_copy.type = dim_copy.type or default_type
         configuration[dim_copy.apiName] = dim_copy
     end
     return configuration
