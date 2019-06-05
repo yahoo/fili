@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +25,6 @@ import java.util.stream.Stream;
  */
 public class FlagFromTagDimension extends RegisteredLookupDimension implements FilterOptimizable {
 
-    private final FlagFromTagDimensionConfig dimensionConfig;
     private final Map<String, DimensionRow> rowMap;
 
     private final Dimension filteringDimension;
@@ -55,11 +55,10 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      */
     public FlagFromTagDimension(FlagFromTagDimensionConfig config, DimensionDictionary dimensionDictionary) {
         super(config);
-        this.dimensionConfig = config;
         this.filteringDimension = dimensionDictionary.findByApiName(config.filteringDimensionApiName);
-        this.tagValue = dimensionConfig.tagValue;
-        this.trueValue = dimensionConfig.trueValue;
-        this.falseValue = dimensionConfig.falseValue;
+        this.tagValue = config.tagValue;
+        this.trueValue = config.trueValue;
+        this.falseValue = config.falseValue;
         this.positiveOps = config.positiveOps;
         this.negativeOps = config.negativeOps;
         this.positiveInvertedFilterOperation = config.positiveInvertedFilterOperation;
@@ -216,5 +215,66 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
             }
         }
         return newOp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof FlagFromTagDimension)) {
+            return false;
+        }
+
+        FlagFromTagDimension that = (FlagFromTagDimension) o;
+
+        return super.equals(that) &&
+                Objects.equals(getFilteringDimension(), that.getFilteringDimension()) &&
+                Objects.equals(getTagValue(), that.getTagValue()) &&
+                Objects.equals(getTrueValue(), that.getTrueValue()) &&
+                Objects.equals(getFalseValue(), that.getFalseValue()) &&
+                Objects.equals(positiveOps, that.positiveOps) &&
+                Objects.equals(negativeOps, that.negativeOps) &&
+                Objects.equals(positiveInvertedFilterOperation, that.positiveInvertedFilterOperation) &&
+                Objects.equals(negativeInvertedFilterOperation, that.negativeInvertedFilterOperation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                super.hashCode(),
+                getTagValue(),
+                getTrueValue(),
+                getFalseValue(),
+                positiveOps,
+                negativeOps,
+                positiveInvertedFilterOperation,
+                negativeInvertedFilterOperation
+        );
+    }
+
+    /**
+     * Returns a string representation of this dimension.
+     * <p>
+     * The format of the string is "FlagFromTagDimension{apiName=XXX, extractionFunctions=YYY, tagValue=AAA,
+     * trueValue=BBB, falseValue=CCC}", where XXX is the Webservice API name of this dimension, YYY is the list of
+     * registered lookup extraction functions of this dimension, AAA is the druid indexed tag value this dimension is
+     * based on, and BBB & CCC are the true and false output values produced by the presence of the tag value in druid.
+     * Note that there is a single space separating the values after each comma. The API name, tag value, and truth
+     * values are surrounded by pairs of single quotes.
+     *
+     * @return the string representation of this dimension
+     */
+    @Override
+    public String toString() {
+        return String.format(
+                "FlagFromTagDimension{apiName='%s', extractionFunctions=%s, " +
+                        "tagValue='%s', trueValue='%s', falseValue='%s'}",
+                getApiName(),
+                getRegisteredLookupExtractionFns(),
+                getTagValue(),
+                getTrueValue(),
+                getFalseValue()
+        );
     }
 }
