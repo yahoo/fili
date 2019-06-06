@@ -14,7 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class DefaultDimensionFactory implements Factory<Dimension> {
+public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
 
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {

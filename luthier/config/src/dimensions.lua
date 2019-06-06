@@ -127,7 +127,7 @@ return {
         description = "a description for testing",
         fields = FIELDSETS.test,
         category = "a category for testing",
-        type = "DefaultDimensionFactory",
+        type = "KeyValueStoreDimensionFactory",
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },

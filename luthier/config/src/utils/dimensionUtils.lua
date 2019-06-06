@@ -14,7 +14,7 @@ local M = {}
 
 local misc = require 'utils/misc'
 
-local default_type = "DefaultDimensionFactory"
+local default_type = "KeyValueStoreDimensionFactory"
 -------------------------------------------------------------------------------
 -- Fields
 -------------------------------------------------------------------------------

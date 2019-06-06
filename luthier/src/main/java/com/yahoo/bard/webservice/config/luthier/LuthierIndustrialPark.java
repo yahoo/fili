@@ -106,10 +106,23 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     
         private Map<String, Factory<Dimension>> dimensionFactories;
         private final ResourceDictionaries resourceDictionaries;
+
+        /**
+         * Constructor.
+         *
+         * @param resourceDictionaries a class that contains resource dictionaries including
+         *                             PhysicalTableDictionary, DimensionDictionary, etc.
+         */
         public Builder(ResourceDictionaries resourceDictionaries) {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
         }
+
+        /**
+         * Constructor.
+         * <p>
+         * Default to use an empty resource dictionary.
+         */
         public Builder() {
             this(new ResourceDictionaries());
         }
