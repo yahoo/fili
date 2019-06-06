@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -57,7 +56,6 @@ public class DimensionSearchServlet extends EndpointServlet {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionSearchServlet.class);
 
     private final DimensionDictionary dimensionDictionary;
-    private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
     private final ResponseFormatResolver formatResolver;
     private final MetadataExceptionHandler exceptionHandler;
@@ -83,7 +81,6 @@ public class DimensionSearchServlet extends EndpointServlet {
     ) {
         super(objectMappers);
         this.dimensionDictionary = dimensionDictionary;
-        this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
         this.formatResolver = formatResolver;
         this.exceptionHandler = exceptionHandler;
@@ -116,7 +113,6 @@ public class DimensionSearchServlet extends EndpointServlet {
             @Context final UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
         DimensionsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);

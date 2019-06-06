@@ -37,7 +37,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
     private SimpleQueryParser queryParser;
 
     private boolean searchColumnExists;
-    private IndexSearcher lastIndexSearcher = null;
+    private IndexSearcher lastIndexSearcher;
 
     /**
      * Constructor.
@@ -147,14 +147,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
             int docCount = luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName);
             if (docCount > 0) {
                 return true;
-            } else if (docCount == 0) {
-                return false;
             } else {
-                /* docCount < 0 means the indexReader could not tell if the search column exists or not, possibly
-                   because the index was not created in a way that lets us access that information. Current behavior
-                   is to simply return false - that it does NOT support search functionality.
-                   TODO: what is the correct behavior in this case? Once determined simplify this code.
-                 */
                 return false;
             }
         } catch (IOException e) {
