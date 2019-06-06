@@ -4,8 +4,10 @@ package com.yahoo.bard.webservice.config.luthier;
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.dimension.*;
+import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -67,10 +69,32 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         return dimensionDictionary.findByApiName(dimensionName);
     }
 
-/*
-    SearchProvider getSearchProvider(String searchProviderName);
-    KeyValueStore getKeyValueStore(String keyValueStoreName);
-*/
+    /**
+     * Bare minimum that can work
+     */
+    int MAGIC_queryWeightLimit = 10000;
+    String MAGIC_luceneIndexPath = "path";
+    int MAGIC_maxResults = 10000;
+    public SearchProvider getSearchProvider(String searchProviderName) {
+        switch (searchProviderName) {
+            case "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider":
+                return new NoOpSearchProvider(MAGIC_queryWeightLimit);
+            case "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider":
+                return new LuceneSearchProvider(MAGIC_luceneIndexPath, MAGIC_maxResults);
+            default:
+                return new ScanSearchProvider();
+        }
+    }
+
+    public KeyValueStore getKeyValueStore(String keyValueStoreName) throws UnsupportedOperationException {
+        switch (keyValueStoreName) {
+            case "com.yahoo.bard.webservice.data.dimension.RedisStore":
+                throw new UnsupportedOperationException(keyValueStoreName);
+            default:
+                return new MapStore();
+        }
+    }
+
 
     @Override
     public void load() {

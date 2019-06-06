@@ -18,7 +18,7 @@ public interface Factory<T> {
      * @param configTable  the json tree describing this config entity
      * @param resourceFactories  the source for locating dependent objects
      *
-     * @return  A newly constructed config instance instance for the name and config provided
+     * @return  A newly constructed config instance for the name and config provided
      */
     T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
 }

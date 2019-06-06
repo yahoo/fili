@@ -1,13 +1,18 @@
 package com.yahoo.bard.webservice.config.luthier.factories;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
-import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.data.dimension.DimensionRow;
-import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.config.LuthierDimensionField;
+import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
+import com.yahoo.bard.webservice.data.dimension.*;
+import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
+import com.yahoo.bard.webservice.util.Utils;
 import org.joda.time.DateTime;
 
 import java.util.LinkedHashSet;
@@ -16,103 +21,44 @@ import java.util.Set;
 
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
 
+    /**
+     * Build a dimension instance.
+     *
+     * @param name  the config dictionary name (normally the apiName)
+     * @param configTable  the json tree describing this config entity
+     * @param resourceFactories  the source for locating dependent objects
+     *
+     * @return  A newly constructed config instance for the name and config provided
+     */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        return new Dimension() {
-            @Override
-            public void setLastUpdated(DateTime lastUpdated) {
+        String dimensionName = configTable.get("apiName").textValue();
+        assert( name == dimensionName );                                // redundancy in the JSON config file
+        String longName = configTable.get("longName").textValue();
+        String category = "UNKNOWN_CATEGORY";
+        String description = configTable.get("description").textValue();
+        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("description").textValue());
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable
+                                                                            .get("searchProvider").textValue() );
+        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
+        for(JsonNode node : configTable.get("fields")) {
+            dimensionFields.add( new LuthierDimensionField((node)) );
+        }
+        boolean isAggregatable = true;
+        LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;
 
-            }
+        Dimension dimension = new KeyValueStoreDimension(
+                dimensionName,
+                longName,
+                category,
+                description,
+                dimensionFields,
+                keyValueStore,
+                searchProvider,
+                defaultDimensionFields,
+                isAggregatable
+        );
 
-            @Override
-            public String getApiName() {
-                return name;
-            }
-
-            @Override
-            public String getDescription() {
-                return null;
-            }
-
-            @Override
-            public DateTime getLastUpdated() {
-                return null;
-            }
-
-            @Override
-            public LinkedHashSet<DimensionField> getDimensionFields() {
-                return null;
-            }
-
-            @Override
-            public LinkedHashSet<DimensionField> getDefaultDimensionFields() {
-                return null;
-            }
-
-            @Override
-            public DimensionField getFieldByName(String name) {
-                return null;
-            }
-
-            @Override
-            public SearchProvider getSearchProvider() {
-                return null;
-            }
-
-            @Override
-            public void addDimensionRow(DimensionRow dimensionRow) {
-
-            }
-
-            @Override
-            public void addAllDimensionRows(Set<DimensionRow> dimensionRows) {
-
-            }
-
-            @Override
-            public DimensionRow findDimensionRowByKeyValue(String value) {
-                return null;
-            }
-
-            @Override
-            public DimensionField getKey() {
-                return null;
-            }
-
-            @Override
-            public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
-                return null;
-            }
-
-            @Override
-            public DimensionRow createEmptyDimensionRow(String keyFieldValue) {
-                return null;
-            }
-
-            @Override
-            public String getCategory() {
-                return null;
-            }
-
-            @Override
-            public String getLongName() {
-                return null;
-            }
-
-            @Override
-            public StorageStrategy getStorageStrategy() {
-                return null;
-            }
-
-            @Override
-            public int getCardinality() {
-                return 0;
-            }
-
-            @Override
-            public boolean isAggregatable() {
-                return false;
-            }
-        };
+        return dimension;
     }
 }
