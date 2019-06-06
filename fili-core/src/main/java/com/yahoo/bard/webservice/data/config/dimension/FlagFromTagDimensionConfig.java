@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.MapSearchProvider;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
@@ -123,6 +124,11 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
         this.positiveInvertedFilterOperation = positiveInvertedFilterOperation;
         this.negativeInvertedFilterOperation = negativeInvertedFilterOperation;
         this.rowMap = Collections.unmodifiableMap(rowMap);
+    }
+
+    @Override
+    public Class getType() {
+        return FlagFromTagDimension.class;
     }
 
     /**
