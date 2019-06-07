@@ -36,7 +36,7 @@ function M.field(...)
     local args = {...}
     local fields = {}
     for _, name in pairs(args) do
-        table.insert(fields, {name=name, tags={}})
+        table.insert(fields, { name = name, tags = {} })
     end
     return table.unpack(fields)
 end
@@ -53,11 +53,10 @@ function M.build_dimensions_config(dimensions)
     local configuration = {}
     for name, dimension in pairs(dimensions) do
         local dim_copy = misc.shallow_copy(dimension)
-        dim_copy.apiName = dim_copy.apiName or name
         dim_copy.longName = dim_copy.longName or name
         dim_copy.description = dim_copy.description or name
         dim_copy.type = dim_copy.type or default_type
-        configuration[dim_copy.apiName] = dim_copy
+        configuration[name] = dim_copy
     end
     return configuration
 end

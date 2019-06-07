@@ -34,7 +34,6 @@ class ResourceNodeSupplierTest extends Specification {
     def "All contents of a test dimension is correct"() {
         when:
             ObjectNode node = testResourceNodeSupplier.get().get("testDimension")
-            String apiName = node.get("apiName").textValue()
             String longName = node.get("longName").textValue()
             ArrayNode fields = node.get("fields")
             String category = node.get("category").textValue()
@@ -42,7 +41,6 @@ class ResourceNodeSupplierTest extends Specification {
             String searchProvider = node.get("searchProvider").textValue()
             String keyValueStore = node.get("keyValueStore").textValue()
         then:
-            apiName == "testDimension"
             longName == "a longName for testing"
             fields.size() == 4
             fields.get(0).get("tags").get(0).textValue() == "primaryKey"
@@ -67,7 +65,6 @@ class ResourceNodeSupplierTest extends Specification {
                 it.has("type")
                 it.has("keyValueStore")
                 it.has("longName")
-                it.has("apiName")
                 it.has("searchProvider")
                 it.has("description")
                 it.has("fields")

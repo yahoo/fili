@@ -27,11 +27,10 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        String dimensionName = configTable.get("apiName").textValue();
-        assert( name.equals(dimensionName) );                                // redundancy in the JSON config file
+        String dimensionName = name;
         String longName = configTable.get("longName").textValue();
         String category = "UNKNOWN_CATEGORY";
-        String description = configTable.get("description").textValue();
+        String description = configTable.get("description").textValue();        // TODO: Magic values!
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("description").textValue());
         SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable
                                                                             .get("searchProvider").textValue() );
@@ -43,9 +42,9 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
             }
             dimensionFields.add( new LuthierDimensionField( EnumUtils.camelCase( node.get("name").textValue() ),
                                                     "Error: currently there is no description",
-                                                            tags) );
+                                                            tags) );            // TODO: Magic values!
         }
-        boolean isAggregatable = true;
+        boolean isAggregatable = true;                                          // TODO: Magic values!
         LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;
 
         Dimension dimension = new KeyValueStoreDimension(

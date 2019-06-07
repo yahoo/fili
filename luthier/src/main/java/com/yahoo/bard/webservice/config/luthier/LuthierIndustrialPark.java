@@ -72,6 +72,8 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     /**
      * Bare minimum that can work
      */
+
+    // TODO: Magic values!
     int MAGIC_queryWeightLimit = 10000;
     String MAGIC_luceneIndexPath = "path";
     int MAGIC_maxResults = 10000;
@@ -88,6 +90,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
 
     public KeyValueStore getKeyValueStore(String keyValueStoreName) throws UnsupportedOperationException {
         switch (keyValueStoreName) {
+            // TODO: Magic values!
             case "com.yahoo.bard.webservice.data.dimension.RedisStore":
                 throw new UnsupportedOperationException(keyValueStoreName);
             default:
