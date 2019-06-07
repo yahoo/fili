@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import spock.lang.Specification
 
-class LuthierIndustrialParkTest extends Specification {
+class LuthierIndustrialParkSpec extends Specification {
     LuthierIndustrialPark industrialPark
     void setup() {
         Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
