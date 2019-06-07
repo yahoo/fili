@@ -5,19 +5,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField;
-import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.*;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
-import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
-import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
-import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
-import com.yahoo.bard.webservice.util.Utils;
-import org.joda.time.DateTime;
+import com.yahoo.bard.webservice.util.EnumUtils;
 
 import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
 
@@ -33,7 +28,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         String dimensionName = configTable.get("apiName").textValue();
-        assert( name == dimensionName );                                // redundancy in the JSON config file
+        assert( name.equals(dimensionName) );                                // redundancy in the JSON config file
         String longName = configTable.get("longName").textValue();
         String category = "UNKNOWN_CATEGORY";
         String description = configTable.get("description").textValue();
@@ -42,7 +37,13 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                                                                             .get("searchProvider").textValue() );
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         for(JsonNode node : configTable.get("fields")) {
-            dimensionFields.add( new LuthierDimensionField((node)) );
+            List<String> tags = new ArrayList<>();
+            for (final JsonNode strNode : node.get("tags")) {
+                tags.add( strNode.textValue() );
+            }
+            dimensionFields.add( new LuthierDimensionField( EnumUtils.camelCase( node.get("name").textValue() ),
+                                                    "Error: currently there is no description",
+                                                            tags) );
         }
         boolean isAggregatable = true;
         LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;

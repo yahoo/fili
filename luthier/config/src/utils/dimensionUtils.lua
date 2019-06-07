@@ -36,7 +36,7 @@ function M.field(...)
     local args = {...}
     local fields = {}
     for _, name in pairs(args) do
-        table.insert(fields, {name=name})
+        table.insert(fields, {name=name, tags={}})
     end
     return table.unpack(fields)
 end

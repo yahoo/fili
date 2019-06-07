@@ -45,11 +45,14 @@ class ResourceNodeSupplierTest extends Specification {
             apiName == "testDimension"
             longName == "a longName for testing"
             fields.size() == 4
-            fields.get(0).get("name").textValue() == "TEST_PK"
             fields.get(0).get("tags").get(0).textValue() == "primaryKey"
-            fields.get(1).get("name").textValue() == "TEST_FIELD_1"
-            fields.get(2).get("name").textValue() == "TEST_FIELD_2"
-            fields.get(3).get("name").textValue() == "TEST_FIELD_3"
+            List expectedFieldNames = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
+            List expectedFieldTags = [ ["primarykey"], [], [], [] ]
+            for (int i = 0; i < fields.size(); i++) {
+                fields.get(i).get("name").textValue() == expectedFieldNames[i]
+                fields.get(i).get("tags").textValue() == expectedFieldTags[i]
+            }
+
             category == "a category for testing"
             description == "a description for testing"
             searchProvider == "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider"
@@ -70,22 +73,7 @@ class ResourceNodeSupplierTest extends Specification {
                 it.has("fields")
                 it.get("fields").every {
                     it.has("name")
-                }
-                // guarantees that at least one
-                // {
-                //    "tags": [
-                //       "primaryKey"
-                //    ],
-                //    "name": ...
-                // }
-                // exists in the fields value
-                it.get("fields").any {
                     it.has("tags")
-                    if (it.has("tags")) {
-                        it.get("tags").any {
-                            it.textValue() == "primaryKey"
-                        }
-                    }
                 }
             }
     }
