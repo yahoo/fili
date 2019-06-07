@@ -1,4 +1,4 @@
-// Copyright 2019, Verizon Media Inc.
+// Copyright 2019, Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
@@ -30,6 +30,10 @@ public class NormalizedLuceneSearchProviderManager {
     );
 
     private static final Map<String, NormalizedLuceneSearchProvider> LUCENE_SEARCH_PROVIDERS = new HashMap<>();
+    /**
+    * Private Constructor.
+    */
+    private NormalizedLuceneSearchProviderManager() { }
 
     /**
      * Get instance pointing to a search provider. This method makes sure that there just one instance of search

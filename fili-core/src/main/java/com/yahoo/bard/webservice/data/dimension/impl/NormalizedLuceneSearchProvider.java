@@ -1,4 +1,4 @@
-// Copyright 2019, Verizon Media Inc.
+// Copyright 2019, Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
@@ -145,11 +145,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         readLock();
         try {
             int docCount = luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName);
-            if (docCount > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return (docCount > 0);
         } catch (IOException e) {
             LOG.debug(
                     String.format(
