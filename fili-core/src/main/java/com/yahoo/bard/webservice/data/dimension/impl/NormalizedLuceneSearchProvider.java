@@ -60,6 +60,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         // override analyzer in LuceneSearchProvider
         Map<String, Analyzer> analyzerMap = new HashMap<>();
         analyzerMap.put(SEARCH_COLUMN_NAME, DIACRITIC_ANALYZER);
+
         analyzer = new PerFieldAnalyzerWrapper(STANDARD_LUCENE_ANALYZER, analyzerMap);
 
         this.queryParser = new SimpleQueryParser(analyzer, SEARCH_COLUMN_NAME);
@@ -108,6 +109,14 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
                     )
             );
         }
+    }
+
+    protected Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    protected void setAnalyzer(Analyzer analyzer) {
+        this.analyzer = analyzer;
     }
 
     @Override
@@ -160,8 +169,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         initializeIndexSearcher();
         readLock();
         try {
-            int docCount = luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName);
-            return (docCount > 0);
+            return luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName) > 0;
         } catch (IOException e) {
             LOG.debug(
                     String.format(
