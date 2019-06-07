@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 /**
  * Hold the list of logical table names.
  */
-public enum DimensionSearchLogicalTableName implements TableName {
+public enum TestDimensionSearchLogicalTableName implements TableName {
 
     TABLE;
 
@@ -16,7 +16,7 @@ public enum DimensionSearchLogicalTableName implements TableName {
     /**
      * Constructor.
      */
-    DimensionSearchLogicalTableName() {
+    TestDimensionSearchLogicalTableName() {
         this.camelName = EnumUtils.camelCase(name());
     }
 

@@ -48,7 +48,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Resource code for dimension resource endpoints.
+ * Resource code for dimension search resource endpoints.
+ *
+ * This is intended as an 'add on' to DimensionServlet and shares namespace with its endpoints.
+ * Search presumes that a lookahead or similar tokenized filter needs to be made against a dimension
+ * for filter building.
  */
 @Singleton
 @Path("dimensions/{dimensionName}/search")
@@ -184,7 +188,7 @@ public class DimensionSearchServlet extends EndpointServlet {
                     apiRequest.getDimension()
             );
             LOG.debug(msg, e);
-            return Response.status(Response.Status.NOT_FOUND).entity(msg).build();
+            return Response.status(Response.Status.METHOD_NOT_ALLOWED).entity(msg).build();
         } catch (Throwable t) {
             return exceptionHandler.handleThrowable(
                     t,
