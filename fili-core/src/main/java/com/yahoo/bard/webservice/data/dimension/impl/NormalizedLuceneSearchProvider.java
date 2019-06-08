@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 public class NormalizedLuceneSearchProvider extends LuceneSearchProvider implements SearchQuerySearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizedLuceneSearchProvider.class);
 
+    /**
+    * Name of the lucene index column that the search endpoint is using.
+    */
     public static final String SEARCH_COLUMN_NAME = "__search";
     public static final Analyzer DIACRITIC_ANALYZER = new DiacriticNormalizingAnalyzer();
 

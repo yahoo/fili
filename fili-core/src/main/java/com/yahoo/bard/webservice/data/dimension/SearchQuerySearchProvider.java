@@ -17,10 +17,8 @@ public interface SearchQuerySearchProvider extends SearchProvider {
      * @param searchQueryString  The search query to use
      * @param paginationParameters  The parameters that define a page (i.e. the number of rows per page,
      * and the page of results desired)
+     *
      * @return the paginated results of the search query
      */
-    Pagination<DimensionRow> findSearchRowsPaged(
-            String searchQueryString,
-            PaginationParameters paginationParameters
-    );
+    Pagination<DimensionRow> findSearchRowsPaged(String searchQueryString, PaginationParameters paginationParameters);
 }
