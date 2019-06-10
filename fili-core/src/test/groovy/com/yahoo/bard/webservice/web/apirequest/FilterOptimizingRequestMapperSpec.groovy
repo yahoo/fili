@@ -152,4 +152,48 @@ class FilterOptimizingRequestMapperSpec extends Specification {
             ] as Map<Dimension, Set<ApiFilter>>)
         )
     }
+
+    def "Filters that get optimized to a different dimension that is also getting filtered on do not get wiped out"() {
+        setup:
+        Dimension optimizable = Mock(FilterOptimizingDimension)
+        Dimension regular = Mock(Dimension)
+
+        ApiFilter baseOptimizableFilter = Mock() {getDimension() >> optimizable}
+        ApiFilter baseRegular = Mock() {getDimension() >> regular}
+        ApiFilter optimizedRegular = Mock() {getDimension() >> regular}
+
+        ApiFilters expectedApiFilters
+
+        DataApiRequest request = Mock(DataApiRequest) {getApiFilters() >> {expectedApiFilters} }
+
+        when: "first check order of regular then optimizable"
+        expectedApiFilters = new ApiFilters()
+        expectedApiFilters.put(regular, [baseRegular] as Set<ApiFilter>)
+        expectedApiFilters.put(optimizable, [baseOptimizableFilter] as Set<ApiFilter>)
+        mapper.apply(request, Mock(ContainerRequestContext))
+
+        then:
+        1 * optimizable.optimizeFilters(_) >> {[optimizedRegular] as Set}
+        1 * request.withFilters({
+            ApiFilters it ->
+                it == [
+                        (regular): [baseRegular, optimizedRegular] as Set<ApiFilter>
+                ] as ApiFilters
+        })
+
+        when: "next check or of optimizable then regular"
+        expectedApiFilters = new ApiFilters()
+        expectedApiFilters.put(optimizable, [baseOptimizableFilter] as Set<ApiFilter>)
+        expectedApiFilters.put(regular, [baseRegular] as Set<ApiFilter>)
+        mapper.apply(request, Mock(ContainerRequestContext))
+
+        then:
+        1 * optimizable.optimizeFilters(_) >> {[optimizedRegular] as Set}
+        1 * request.withFilters({
+            new ApiFilters([
+                    (optimizable): [baseOptimizableFilter],
+                    (regular): [baseRegular],
+            ] as LinkedHashMap<Dimension, Set<ApiFilter>>)
+        })
+    }
 }
