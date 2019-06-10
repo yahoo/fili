@@ -32,9 +32,7 @@ public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest>
      *
      * @param resourceDictionaries The dictionaries to use for request mapping.
      */
-    public FilterOptimizingRequestMapper(
-            ResourceDictionaries resourceDictionaries
-    ) {
+    public FilterOptimizingRequestMapper(ResourceDictionaries resourceDictionaries) {
         super(resourceDictionaries);
     }
 
