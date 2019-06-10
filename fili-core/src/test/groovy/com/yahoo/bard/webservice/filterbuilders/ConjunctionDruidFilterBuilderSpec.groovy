@@ -66,7 +66,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "buildFilters takes a conjunction of clauses, onex for each dimension in #dimensions"() {
+    def "buildFilters takes a conjunction of clauses, one for each dimension in #dimensions"() {
         when:
         Filter filter = filterBuilder.buildFilters(dimensions.collectEntries {
             it ->
