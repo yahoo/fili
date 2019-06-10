@@ -31,9 +31,12 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         String longName = configTable.get("longName").textValue();
         String category = "UNKNOWN_CATEGORY";
         String description = configTable.get("description").textValue();        // TODO: Magic values!
-        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("description").textValue());
-        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable
-                                                                            .get("searchProvider").textValue() );
+        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(
+                configTable.get("description").textValue()
+        );
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(
+                configTable.get("searchProvider").textValue()
+        );
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         for(JsonNode node : configTable.get("fields")) {
             List<String> tags = new ArrayList<>();

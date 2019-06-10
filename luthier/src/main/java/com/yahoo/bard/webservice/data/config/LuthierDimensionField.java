@@ -16,6 +16,10 @@ public class LuthierDimensionField implements DimensionField {
         this.tags = tags;
     }
 
+    public List<String> getTags() {
+        return tags;
+    }
+
     @Override
     public String getDescription() {
         return description;

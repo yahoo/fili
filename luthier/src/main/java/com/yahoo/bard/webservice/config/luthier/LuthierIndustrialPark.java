@@ -60,6 +60,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      *
      * @return the dimension instance corresponding to this name.
      */
+    // TODO: Should this really be a package protected method?
     Dimension getDimension(String dimensionName) {
         DimensionDictionary dimensionDictionary = resourceDictionaries.getDimensionDictionary();
         if (dimensionDictionary.findByApiName(dimensionName) == null) {

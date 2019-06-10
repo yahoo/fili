@@ -1,7 +1,9 @@
 package com.yahoo.bard.webservice.config.luthier
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
@@ -31,7 +33,16 @@ class ResourceNodeSupplierSpec extends Specification {
             thrown(LuthierFactoryException)
     }
 
+    def tagComp(List textNodeList, List strlist) {
+        for (int i = 0; i < textNodeList.size(); i++) {
+            assert textNodeList[i].textValue() == strlist[i]
+        }
+    }
+
     def "All contents of a test dimension is correct"() {
+        given:
+            ObjectMapper mapper = new ObjectMapper()
+
         when:
             ObjectNode node = testResourceNodeSupplier.get().get("testDimension")
             String longName = node.get("longName").textValue()
@@ -44,11 +55,11 @@ class ResourceNodeSupplierSpec extends Specification {
             longName == "a longName for testing"
             fields.size() == 4
             fields.get(0).get("tags").get(0).textValue() == "primaryKey"
-            List expectedFieldNames = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
-            List expectedFieldTags = [ ["primarykey"], [], [], [] ]
+            def expectedFieldNames = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
+            def expectedFieldTags = [ ["primaryKey"], [], [], [] ]
             for (int i = 0; i < fields.size(); i++) {
-                fields.get(i).get("name").textValue() == expectedFieldNames[i]
-                fields.get(i).get("tags").textValue() == expectedFieldTags[i]
+                assert fields.get(i).get("name").textValue() == expectedFieldNames[i]
+                tagComp(fields.get(i).get("tags").asList(), expectedFieldTags[i])
             }
 
             category == "a category for testing"
