@@ -68,5 +68,4 @@ public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest>
         }
         return request.withFilters(newFilters);
     }
-
 }
