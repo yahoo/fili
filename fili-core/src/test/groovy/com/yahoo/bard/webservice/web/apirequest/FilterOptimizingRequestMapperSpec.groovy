@@ -4,6 +4,8 @@ import com.yahoo.bard.webservice.data.FilterOptimizable
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.ChainingRequestMapper
+import com.yahoo.bard.webservice.web.DataApiRequestMapperUtils
 import com.yahoo.bard.webservice.web.FilterOptimizingRequestMapper
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.filters.ApiFilters
@@ -16,10 +18,11 @@ class FilterOptimizingRequestMapperSpec extends Specification {
 
     private static interface FilterOptimizingDimension extends Dimension, FilterOptimizable {}
 
-    RequestMapper<DataApiRequest> mapper
+    ChainingRequestMapper<DataApiRequest> mapper
 
     def setup() {
-        mapper = new FilterOptimizingRequestMapper(new ResourceDictionaries())
+        ResourceDictionaries dictionaries = new ResourceDictionaries()
+        mapper = new FilterOptimizingRequestMapper(dictionaries, DataApiRequestMapperUtils.identityMapper(dictionaries))
     }
 
     def "null and empty filters are output as empty filters"() {
@@ -27,7 +30,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         DataApiRequest request = Mock(DataApiRequest) {getApiFilters() >> filters}
 
         when:
-        DataApiRequest result = mapper.apply(request, Mock(ContainerRequestContext))
+        DataApiRequest result = mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         0 * request.withFilters()
@@ -53,7 +56,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         }
 
         when:
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then: "both dimensions optimize their filters"
         0 * dim1._
@@ -80,7 +83,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         ] as Map<Dimension, Set<ApiFilter>>)}
 
         when:
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * dim.optimizeFilters([inFilter]) >> expectedFilters
@@ -94,7 +97,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         DataApiRequest request = Mock(DataApiRequest) { getApiFilters() >> new ApiFilters([(dim): filters] as Map<Dimension, Set<ApiFilter>>)}
 
         when:
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * dim.optimizeFilters(filters) >> []
@@ -114,7 +117,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         ] as Map<Dimension, Set<ApiFilter>>)}
 
         when:
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * dim1.optimizeFilters(_) >> [dim1OutputFilter, dim2OutputFilter]
@@ -142,7 +145,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         }
 
         when:
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * dim1.optimizeFilters(_) >> [dim2OutputFilter]
@@ -170,7 +173,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         expectedApiFilters = new ApiFilters()
         expectedApiFilters.put(regular, [baseRegular] as Set<ApiFilter>)
         expectedApiFilters.put(optimizable, [baseOptimizableFilter] as Set<ApiFilter>)
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * optimizable.optimizeFilters(_) >> {[optimizedRegular] as Set}
@@ -185,7 +188,7 @@ class FilterOptimizingRequestMapperSpec extends Specification {
         expectedApiFilters = new ApiFilters()
         expectedApiFilters.put(optimizable, [baseOptimizableFilter] as Set<ApiFilter>)
         expectedApiFilters.put(regular, [baseRegular] as Set<ApiFilter>)
-        mapper.apply(request, Mock(ContainerRequestContext))
+        mapper.internalApply(request, Mock(ContainerRequestContext))
 
         then:
         1 * optimizable.optimizeFilters(_) >> {[optimizedRegular] as Set}

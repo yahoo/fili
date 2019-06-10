@@ -27,6 +27,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.bard.webservice.web.DataApiRequestMapperUtils
 import com.yahoo.bard.webservice.web.FilterOptimizingRequestMapper
 import com.yahoo.bard.webservice.web.RequestMapper
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
@@ -55,7 +56,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 Map<String, RequestMapper> mappers = [:] as Map
                 mappers.put(
                         DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new FilterOptimizingRequestMapper(resourceDictionaries)
+                        new FilterOptimizingRequestMapper(resourceDictionaries, DataApiRequestMapperUtils.identityMapper(resourceDictionaries))
                 )
                 return mappers
             }

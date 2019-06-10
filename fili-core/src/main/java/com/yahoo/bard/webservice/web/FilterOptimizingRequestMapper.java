@@ -22,7 +22,7 @@ import javax.ws.rs.container.ContainerRequestContext;
  * Request mapper that checks if any of the Dimensions that are being filtered on can optimize their filters, and if
  * so performs that optimization.
  */
-public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest> {
+public class FilterOptimizingRequestMapper extends ChainingRequestMapper<DataApiRequest> {
 
     private static BiFunction<Set<ApiFilter>, Set<ApiFilter>, Set<ApiFilter>> FILTER_MERGE =
             (filters1, filters2) -> Stream.of(filters1, filters2).flatMap(Set::stream).collect(Collectors.toSet());
@@ -31,13 +31,17 @@ public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest>
      * Constructor.
      *
      * @param resourceDictionaries The dictionaries to use for request mapping.
+     * @param next The next request mapper in the chain.
      */
-    public FilterOptimizingRequestMapper(ResourceDictionaries resourceDictionaries) {
-        super(resourceDictionaries);
+    public FilterOptimizingRequestMapper(
+            ResourceDictionaries resourceDictionaries,
+            RequestMapper<DataApiRequest> next
+    ) {
+        super(resourceDictionaries, next);
     }
 
     @Override
-    public DataApiRequest apply(DataApiRequest request, ContainerRequestContext context)
+    protected DataApiRequest internalApply(final DataApiRequest request, final ContainerRequestContext context)
             throws RequestValidationException {
         if (request.getApiFilters() == null || request.getApiFilters().isEmpty()) {
             return request;
@@ -45,7 +49,7 @@ public class FilterOptimizingRequestMapper extends RequestMapper<DataApiRequest>
 
         ApiFilters newFilters = new ApiFilters();
         for (Map.Entry<Dimension, Set<ApiFilter>> entry : request.getApiFilters().entrySet()) {
-            if (! (entry.getKey() instanceof FilterOptimizable)) {
+            if (!(entry.getKey() instanceof FilterOptimizable)) {
                 newFilters.merge(
                         entry.getKey(),
                         entry.getValue(),
