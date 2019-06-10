@@ -55,7 +55,7 @@ Current
     * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
-    * Create an extraction function to transform a comma list of values into a boolean dimension gvalue.
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
   
 - [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
     * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
@@ -91,7 +91,7 @@ Current
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
-    * New public getters on `PhysicalTableDefinition` for expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date 
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
