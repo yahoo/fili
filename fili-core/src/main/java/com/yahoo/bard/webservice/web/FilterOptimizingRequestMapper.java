@@ -41,7 +41,7 @@ public class FilterOptimizingRequestMapper extends ChainingRequestMapper<DataApi
     }
 
     @Override
-    protected DataApiRequest internalApply(final DataApiRequest request, final ContainerRequestContext context)
+    protected DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
         if (request.getApiFilters() == null || request.getApiFilters().isEmpty()) {
             return request;
