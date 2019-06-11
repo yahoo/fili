@@ -14,10 +14,7 @@ local M = {}
 
 local misc = require 'utils/misc'
 
-M.factoryTypes = {
-    keyValueStore = "KeyValueStoreDimensionFactory"
-}
-local default_type = M.factoryTypes.keyValueStore
+local default_type = "KeyValueStoreDimension"
 
 -------------------------------------------------------------------------------
 -- Fields

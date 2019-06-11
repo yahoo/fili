@@ -16,7 +16,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
     Dimension testDimension
     void setup() {
         Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
-        dimensionFactoriesMap.put("KeyValueStoreDimensionFactory", new KeyValueStoreDimensionFactory())
+        dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
 
         ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
         park = new LuthierIndustrialPark.Builder(resourceDictionaries)
@@ -25,8 +25,6 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
         park.load()
         testDimension = park.getDimension("testDimension")
     }
-
-    //TODO: .is check chaching
 
     def "The spec content of a specific test dimension matches with the JSON config file and defaults"() {
         when:

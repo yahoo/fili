@@ -65,8 +65,8 @@ dimensionUtils = require("utils.dimensionUtils")
 
 local pk = dimensionUtils.pk
 local field = dimensionUtils.field
--- keyValueStore is the default value that will be used if the user does not specify type
-local TYPES = dimensionUtils.factoryTypes
+local searchProviders = dimensionUtils.searchProviders
+local keyValueStores = dimensionUtils.keyValueStores
 
 local FIELDSETS = {
     default = { pk "ID", field "DESC" },
@@ -74,8 +74,6 @@ local FIELDSETS = {
     page = { pk "ID", field "DESC" },
     test = { pk "TEST_PK", field("TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3") }
 }
-
-
 
 -------------------------------------------------------------------------------
 -- Dimensions
@@ -94,6 +92,8 @@ local FIELDSETS = {
     * category - An arbitrary category to put the dimension in. This is not
         used directly by Fili, but rather exists as a marker for UI's should
         they desire to use it to organize dimensions.
+    * type - A string that indicates the kind of dimension, used in build-time.
+        Defaults to "keyValueStore"
     * searchProvider - The fully qualified Java class name of the SearchProvider
         to use. A SearchProvider is a service that searches for dimensions based
         on their dimension fields. For example, a SearchProvider can find all
@@ -122,16 +122,13 @@ local FIELDSETS = {
 ]]
 -------------------------------------------------------------------------------
 
-local searchProviders = dimensionUtils.searchProviders
-local keyValueStores = dimensionUtils.keyValueStores
-
 return {
     testDimension = {
         longName = "a longName for testing",
         description = "a description for testing",
         fields = FIELDSETS.test,
         category = "a category for testing",
-        type = TYPES.keyValueStore,
+        type = "KeyValueStoreDimension",
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },

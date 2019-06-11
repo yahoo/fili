@@ -10,7 +10,7 @@ class LuthierIndustrialParkSpec extends Specification {
     LuthierIndustrialPark industrialPark
     void setup() {
         Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
-        dimensionFactoriesMap.put("KeyValueStoreDimensionFactory", new KeyValueStoreDimensionFactory())
+        dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
 
         ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
         industrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries)

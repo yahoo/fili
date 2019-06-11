@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField;
-import com.yahoo.bard.webservice.data.dimension.*;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
+import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
@@ -30,7 +33,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         String dimensionName = name;
         String longName = configTable.get("longName").textValue();
         String category = "UNKNOWN_CATEGORY";
-        String description = configTable.get("description").textValue();        // TODO: Magic values!
+        String description = configTable.get("description").textValue();            // TODO: Magic values!
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(
                 configTable.get("description").textValue()
         );
@@ -43,12 +46,15 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
             for (final JsonNode strNode : node.get("tags")) {
                 tags.add( strNode.textValue() );
             }
-            dimensionFields.add( new LuthierDimensionField( EnumUtils.camelCase( node.get("name").textValue() ),
-                                                    "Error: currently there is no description",
-                                                            tags) );            // TODO: Magic values!
+            dimensionFields.add(
+                    new LuthierDimensionField(
+                            EnumUtils.camelCase( node.get("name").textValue() ),
+                            "Error: currently there is no description",             // TODO: Magic values!
+                            tags)
+            );
         }
-        boolean isAggregatable = true;                                          // TODO: Magic values!
-        LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;
+        boolean isAggregatable = true;                                              // TODO: Magic values!
+        LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;     // TODO: include this in Lua configs
 
         Dimension dimension = new KeyValueStoreDimension(
                 dimensionName,
