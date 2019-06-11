@@ -1,11 +1,9 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2019 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.security;
+package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 
 import java.util.function.BiFunction;
 
@@ -35,8 +33,7 @@ public class DataApiRequestMapperUtils {
 
     /**
      * Create a requestMapper that always throws a validation exception based on the request.
-     * This can be used to 'cap' a filter path such as a {@link RoleBasedRoutingRequestMapper} where the 'default'
-     * should only be hit exceptionally.
+     * This can be used to 'cap' a filter path where the 'default' should only be hit exceptionally.
      *
      * @param resourceDictionaries  The dictionaries used for mapping the request.
      * @param exceptionSource  A function to create a request validation exception.

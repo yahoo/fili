@@ -43,7 +43,7 @@ public class TableGroup {
             Set<Dimension> dimensions,
             ApiFilters apiFilters
     ) {
-        this.tables = tables;
+        this.tables = new LinkedHashSet<>(tables);
         this.apiMetricNames = apiMetricNames;
         this.dimensions = new LinkedHashSet<>(dimensions);
         this.apiFilters = apiFilters;

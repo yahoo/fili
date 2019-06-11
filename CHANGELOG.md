@@ -10,6 +10,26 @@ Current
 
 ### Added:
 
+- [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
+    * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
+    based on the presence or absence of a tag value in an underlying multivalued dimension.
+    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently 
+    filtered against using the default druid filter serialization, and a grouping dimension containing a comma separated
+    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the 
+    appropriate truth value.
+    * The filtering behavior is supported through the new `FilterOptimizable` interface and associated request mapper.
+    
+- [Add FilterOptimizable interface](https://github.com/yahoo/fili/pull/913)
+    * Adds the `FilterOptimizable` interface, which indicates that the implementing object has the ability to optimize
+    a `Collection` of `ApiFilter` objects.
+    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their 
+    filters and performs the optimizations.
+
+- [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
+    * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
+    implementation is immutable.
+    * Adds `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
+    
 - [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
     * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
     to set the expiration date for a key when it is being added to the cache.
@@ -71,7 +91,7 @@ Current
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
-    * New public getters on `PhysicalTableDefinition` for expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date 
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
