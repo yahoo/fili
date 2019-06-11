@@ -9,14 +9,14 @@ import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.SinglePagePagination
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.config.names.DimensionSearchLogicalTableName
+import com.yahoo.bard.webservice.data.config.names.TestDimensionSearchLogicalTableName
 import com.yahoo.bard.webservice.data.dimension.SearchQuerySearchProvider
 
 import org.joda.time.Interval
 
 import spock.lang.Specification
 
-import javax.ws.rs.NotFoundException
+import javax.ws.rs.NotAllowedException
 
 class DimensionSearchServletSpec extends Specification {
     JerseyTestBinder jtb
@@ -27,7 +27,7 @@ class DimensionSearchServletSpec extends Specification {
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(
                 jtb,
                 new Interval("2018-01-01/2018-02-01"),
-                [DimensionSearchLogicalTableName.TABLE.asName()] as Set
+                [TestDimensionSearchLogicalTableName.TABLE.asName()] as Set
         )
     }
 
@@ -77,6 +77,6 @@ class DimensionSearchServletSpec extends Specification {
         makeRequest("/dimensions/${dim.getApiName()}/search", ["query" : ["queryString"]] as Map)
 
         then:
-        thrown(NotFoundException)
+        thrown(NotAllowedException)
     }
 }

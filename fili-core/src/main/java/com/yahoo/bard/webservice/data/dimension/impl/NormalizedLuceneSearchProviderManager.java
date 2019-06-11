@@ -44,7 +44,7 @@ public final class NormalizedLuceneSearchProviderManager {
      * @return the lucene search provider
      */
     public static NormalizedLuceneSearchProvider getInstance(String providerName) {
-        synchronized (this) {
+        synchronized (NormalizedLuceneSearchProviderManager.class) {
             NormalizedLuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
 
             if (luceneProvider == null) {
@@ -65,7 +65,7 @@ public final class NormalizedLuceneSearchProviderManager {
      * @param providerName The name of the provider
      */
     public static void removeInstance(String providerName) {
-        synchronized(this) {
+        synchronized (NormalizedLuceneSearchProviderManager.class) {
             LUCENE_SEARCH_PROVIDERS.remove(providerName);
             Utils.deleteFiles(getProviderPath(providerName));
         }
