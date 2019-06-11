@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -70,7 +71,8 @@ class ClassScannerSpec extends Specification {
                 AbstractMap,
                 AbstractMap.SimpleEntry,
                 LinkedHashMap,
-                JobRow
+                JobRow,
+                FlagFromTagDimension
         ]
 
         for (Class cls : classScanner.classes) {
