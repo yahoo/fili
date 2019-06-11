@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DimensionRequest;
-import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.RequestMapper;
@@ -68,7 +67,6 @@ public class DimensionSearchServlet extends EndpointServlet {
      * Constructor.
      *
      * @param dimensionDictionary  All dimensions
-     * @param logicalTableDictionary  All logical tables
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
      * @param formatResolver  The formatResolver for determining correct response format
@@ -77,7 +75,6 @@ public class DimensionSearchServlet extends EndpointServlet {
     @Inject
     public DimensionSearchServlet(
             DimensionDictionary dimensionDictionary,
-            LogicalTableDictionary logicalTableDictionary,
             @Named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
             ResponseFormatResolver formatResolver,

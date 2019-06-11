@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Copy of LuceneSearchProviderManager that uses NormalizedLuceneSearchProvider instead.
  */
-public class NormalizedLuceneSearchProviderManager {
+public final class NormalizedLuceneSearchProviderManager {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final String LUCENE_INDEX_PATH = SYSTEM_CONFIG.getPackageVariableName("lucene_index_path");
@@ -43,18 +43,20 @@ public class NormalizedLuceneSearchProviderManager {
      *
      * @return the lucene search provider
      */
-    public static synchronized NormalizedLuceneSearchProvider getInstance(String providerName) {
-        NormalizedLuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
+    public static NormalizedLuceneSearchProvider getInstance(String providerName) {
+        synchronized (this) {
+            NormalizedLuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
 
-        if (luceneProvider == null) {
-            luceneProvider = new NormalizedLuceneSearchProvider(
-                    getProviderPath(providerName),
-                    PaginationParameters.EVERYTHING_IN_ONE_PAGE.getPerPage()
-            );
-            LUCENE_SEARCH_PROVIDERS.put(providerName, luceneProvider);
+            if (luceneProvider == null) {
+                luceneProvider = new NormalizedLuceneSearchProvider(
+                        getProviderPath(providerName),
+                        PaginationParameters.EVERYTHING_IN_ONE_PAGE.getPerPage()
+                );
+                LUCENE_SEARCH_PROVIDERS.put(providerName, luceneProvider);
+            }
+
+            return luceneProvider;
         }
-
-        return luceneProvider;
     }
 
     /**
@@ -62,9 +64,11 @@ public class NormalizedLuceneSearchProviderManager {
      *
      * @param providerName The name of the provider
      */
-    public static synchronized void removeInstance(String providerName) {
-        LUCENE_SEARCH_PROVIDERS.remove(providerName);
-        Utils.deleteFiles(getProviderPath(providerName));
+    public static void removeInstance(String providerName) {
+        synchronized(this) {
+            LUCENE_SEARCH_PROVIDERS.remove(providerName);
+            Utils.deleteFiles(getProviderPath(providerName));
+        }
     }
 
     /**
