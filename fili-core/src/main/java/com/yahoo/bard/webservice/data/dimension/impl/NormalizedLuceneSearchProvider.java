@@ -64,7 +64,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         Map<String, Analyzer> analyzerMap = new HashMap<>();
         analyzerMap.put(SEARCH_COLUMN_NAME, DIACRITIC_ANALYZER);
 
-        analyzer = new PerFieldAnalyzerWrapper(STANDARD_LUCENE_ANALYZER, analyzerMap);
+        setAnalyzer(new PerFieldAnalyzerWrapper(STANDARD_LUCENE_ANALYZER, analyzerMap));
 
         this.queryParser = new SimpleQueryParser(analyzer, SEARCH_COLUMN_NAME);
         this.queryParser.setDefaultOperator(BooleanClause.Occur.MUST);
@@ -126,7 +126,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
     public void setDimension(Dimension dimension) {
         super.setDimension(dimension);
 
-        analyzer = buildNewAnalyzerMapFromDimension(getDimension());
+        setAnalyzer(buildNewAnalyzerMapFromDimension(getDimension()));
         queryParser = new SimpleQueryParser(analyzer, SEARCH_COLUMN_NAME);
         queryParser.setDefaultOperator(BooleanClause.Occur.MUST);
     }
