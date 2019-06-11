@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,7 +48,11 @@ public final class TagExtractionFunctionFactory {
      *
      * @return A cascading extraction function that will allow yes/no filtering on a string list dimension value.
      */
-    public static ExtractionFunction buildTagExtractionFunction(String tagValue, String trueValue, String falseValue) {
+    public static List<ExtractionFunction> buildTagExtractionFunction(
+            String tagValue,
+            String trueValue,
+            String falseValue
+    ) {
         if ("".equals(tagValue)) {
             throw new IllegalArgumentException("Tag values should not be empty strings.");
         }
@@ -71,10 +76,8 @@ public final class TagExtractionFunctionFactory {
                 false
         );
 
-        return new CascadeExtractionFunction(
-                Stream.of(regularExpressionExtractionFunction, lookupExtractionFunction)
-                .collect(Collectors.toList())
-        );
+        return Stream.of(regularExpressionExtractionFunction, lookupExtractionFunction)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -86,7 +89,7 @@ public final class TagExtractionFunctionFactory {
      *
      * @return A cascading extraction function that will allow yes/no filtering on a string list dimension value.
      */
-    public static ExtractionFunction buildTagExtractionFunction(String tagValue) {
+    public static List<ExtractionFunction> buildTagExtractionFunction(String tagValue) {
         return buildTagExtractionFunction(tagValue, DEFAULT_TRUE, DEFAULT_FALSE);
     }
 }
