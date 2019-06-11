@@ -65,6 +65,8 @@ dimensionUtils = require("utils.dimensionUtils")
 
 local pk = dimensionUtils.pk
 local field = dimensionUtils.field
+-- keyValueStore is the default value that will be used if the user does not specify type
+local TYPES = dimensionUtils.factoryTypes
 
 local FIELDSETS = {
     default = { pk "ID", field "DESC" },
@@ -72,6 +74,8 @@ local FIELDSETS = {
     page = { pk "ID", field "DESC" },
     test = { pk "TEST_PK", field("TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3") }
 }
+
+
 
 -------------------------------------------------------------------------------
 -- Dimensions
@@ -127,7 +131,7 @@ return {
         description = "a description for testing",
         fields = FIELDSETS.test,
         category = "a category for testing",
-        type = "KeyValueStoreDimensionFactory",
+        type = TYPES.keyValueStore,
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },

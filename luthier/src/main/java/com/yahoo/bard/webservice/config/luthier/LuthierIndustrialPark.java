@@ -4,7 +4,11 @@ package com.yahoo.bard.webservice.config.luthier;
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.dimension.*;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
+import com.yahoo.bard.webservice.data.dimension.MapStore;
+import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
@@ -60,8 +64,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      *
      * @return the dimension instance corresponding to this name.
      */
-    // TODO: Should this really be a package protected method?
-    Dimension getDimension(String dimensionName) {
+    public Dimension getDimension(String dimensionName) {
         DimensionDictionary dimensionDictionary = resourceDictionaries.getDimensionDictionary();
         if (dimensionDictionary.findByApiName(dimensionName) == null) {
             Dimension dimension = dimensionFactoryPark.buildEntity(dimensionName, this);
