@@ -27,6 +27,14 @@ import java.util.stream.Collectors;
 
 /**
  * Lucene search provider that also supports text search queries.
+ *
+ * If the search indexes have been indexed with a field named "__search", this search provider
+ * will prepare and run queries against the search column, using a standard parser enhanced with
+ * a Diacritic normalizer (e.g. turning accented letters into unaccented english equivalents).
+ *
+ * The expected contract is that interesting fields from the main indexes will be tokenized,
+ * normalized and indexed on the '__search', so as to allow look ahead search use cases in clients.
+ *
  */
 public class NormalizedLuceneSearchProvider extends LuceneSearchProvider implements SearchQuerySearchProvider {
     private static final Logger LOG = LoggerFactory.getLogger(NormalizedLuceneSearchProvider.class);
@@ -55,6 +63,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         // override analyzer in LuceneSearchProvider
         Map<String, Analyzer> analyzerMap = new HashMap<>();
         analyzerMap.put(SEARCH_COLUMN_NAME, DIACRITIC_ANALYZER);
+
         analyzer = new PerFieldAnalyzerWrapper(STANDARD_LUCENE_ANALYZER, analyzerMap);
 
         this.queryParser = new SimpleQueryParser(analyzer, SEARCH_COLUMN_NAME);
@@ -77,14 +86,24 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
             PaginationParameters paginationParameters
     ) {
        initializeIndexSearcher();
-       if (lastIndexSearcher != luceneIndexSearcher) {
-            synchronized (this) {
-                if (lastIndexSearcher != luceneIndexSearcher) {
-                    lastIndexSearcher = luceneIndexSearcher;
-                    searchColumnExists = validateSearchColumn(SEARCH_COLUMN_NAME);
-                }
-            }
-        }
+       readLock();
+       try {
+           validateSearchColumn();
+
+           return getResultsPage(getSearchQuery(searchQueryString), paginationParameters);
+       } finally {
+           readUnlock();
+       }
+    }
+
+    /**
+     * If the search provider has changed, recheck that the search column is available and error if not.
+     */
+    private void validateSearchColumn() {
+         if (lastIndexSearcher != luceneIndexSearcher) {
+             lastIndexSearcher = luceneIndexSearcher;
+             searchColumnExists = validateSearchColumn(SEARCH_COLUMN_NAME);
+         }
         if (!searchColumnExists) {
             throw new UnsupportedOperationException(
                     String.format(
@@ -93,8 +112,14 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
                     )
             );
         }
+    }
 
-        return getResultsPage(getSearchQuery(searchQueryString), paginationParameters);
+    protected Analyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    protected void setAnalyzer(Analyzer analyzer) {
+        this.analyzer = analyzer;
     }
 
     @Override
@@ -147,8 +172,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
         initializeIndexSearcher();
         readLock();
         try {
-            int docCount = luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName);
-            return (docCount > 0);
+            return luceneIndexSearcher.getIndexReader().getDocCount(searchColumnName) > 0;
         } catch (IOException e) {
             LOG.debug(
                     String.format(
