@@ -552,6 +552,13 @@
             <artifactId>groovy-all</artifactId>
             <version>${version.groovy}</version>
         </dependency>
+
+        <!-- Lucene -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${version.lucene}</version>
+        </dependency>
     </dependencies>
 
     <build>
