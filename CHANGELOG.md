@@ -274,6 +274,9 @@ Current
 
 ### Fixed:
 
+- [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
+    * table api filters where not being used in query planning, moving the merge above query planning fixes this. 
+
 - [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
     * Unstuck lookback so that the window slides forward rather than stopping at static load time.
 

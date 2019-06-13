@@ -57,7 +57,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-public class DruidQueryBuilderSpec extends Specification {
+class DruidQueryBuilderSpec extends Specification {
 
     @Shared QueryBuildingTestingResources resources
     @Shared DefaultPhysicalTableResolver resolver
@@ -142,7 +142,12 @@ public class DruidQueryBuilderSpec extends Specification {
                 apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
         )
 
-        apiRequest.getApiFilters() >> apiFilters
+        apiRequest.getApiFilters() >> { apiFilters }
+        apiRequest.withFilters(_) >> {
+            ApiFilters newFilters ->
+                apiFilters = newFilters
+                apiRequest
+        }
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
         apiRequest.getTopN() >> OptionalInt.empty()

@@ -59,6 +59,8 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         apiRequest.getSorts() >> ([])
         apiRequest.getCount() >> OptionalInt.empty()
         apiRequest.getApiFilters() >> Collections.emptyMap()
+
+        apiRequest.withFilters(_) >> {apiRequest}
     }
 
     def "Given registered lookup dimension with no lookup serialize using dimension serializer"() {
