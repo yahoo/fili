@@ -142,7 +142,12 @@ class DruidQueryBuilderSpec extends Specification {
                 apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
         )
 
-        apiRequest.getApiFilters() >> apiFilters
+        apiRequest.getApiFilters() >> { apiFilters }
+        apiRequest.withFilters(_) >> {
+            ApiFilters newFilters ->
+                apiFilters = newFilters
+                apiRequest
+        }
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
         apiRequest.getTopN() >> OptionalInt.empty()
@@ -335,7 +340,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test top level buildQuery with group by druid query"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
 
         initDefault(apiRequest)
 
@@ -351,7 +355,6 @@ class DruidQueryBuilderSpec extends Specification {
         setup:
         apiRequest = Mock(DataApiRequest)
 
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.getTopN() >> OptionalInt.of(5)
         apiRequest.getSorts() >> ([new OrderByColumn(
                 new LogicalMetric(null, null, lmi1),
@@ -377,7 +380,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test top level buildQuery with multiple dimensions/single sort top N query"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> ([new OrderByColumn(
@@ -397,7 +399,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> ([
                 new OrderByColumn(
@@ -430,7 +431,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> ([
@@ -451,7 +451,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "A #tsDruid query is built when there #isIsNot a having clause"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.dimensions >> ([] as Set)
         apiRequest.logicalMetrics >> ([resources.m1] as Set)
         apiRequest.havings >> havingMap
@@ -476,7 +475,6 @@ class DruidQueryBuilderSpec extends Specification {
         setup:
         apiRequest = Mock(DataApiRequest)
 
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.dimensions >> { nDims > 1 ? ([resources.d1, resources.d2] as Set) : [resources.d1] as Set }
         apiRequest.topN >> OptionalInt.of(5)
         apiRequest.sorts >> {
@@ -516,7 +514,6 @@ class DruidQueryBuilderSpec extends Specification {
     def "TimeSeries maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, havingMap:#havingMap"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
 
         apiRequest.dimensions >> { nDims > 0 ? [resources.d1] as Set : [] as Set }
 
@@ -582,7 +579,6 @@ class DruidQueryBuilderSpec extends Specification {
 
         // create and prep api request
         apiRequest = Mock(DataApiRequest)
-        apiRequest.withFilters(_) >> {apiRequest}
         apiRequest.getTable() >> table
         initDefault(apiRequest)
 

@@ -131,19 +131,18 @@ public class DruidQueryBuilder {
         TableGroup group = logicalTable.getTableGroup();
 
         // combine the filters on the requested logical table with the api query filters
-        ApiFilters apiFilters = logicalTable.getFilters()
-                .map(f -> ApiFilters.union(f, request.getApiFilters()))
-                .orElse(request.getApiFilters());
-
-        DataApiRequest tableFilteredRequest = request.withFilters(apiFilters);
-//        DataApiRequest tableFilteredRequest = request;
+        DataApiRequest tableFilteredRequest = request.withFilters(
+                logicalTable.getFilters()
+                        .map(f -> ApiFilters.union(f, request.getApiFilters()))
+                        .orElse(request.getApiFilters())
+        );
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(tableFilteredRequest, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
 
-        Filter filter = druidFilterBuilder.buildFilters(apiFilters);
+        Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
         return druidTopNMetric != null ?
             buildTopNQuery(
