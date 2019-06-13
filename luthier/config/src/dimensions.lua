@@ -93,7 +93,7 @@ local FIELDSETS = {
         used directly by Fili, but rather exists as a marker for UI's should
         they desire to use it to organize dimensions.
     * type - A string that indicates the kind of dimension, used in build-time.
-        Defaults to "keyValueStore"
+        Defaults to "KeyValueStoreDimension"
     * searchProvider - The fully qualified Java class name of the SearchProvider
         to use. A SearchProvider is a service that searches for dimensions based
         on their dimension fields. For example, a SearchProvider can find all
