@@ -32,8 +32,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         String dimensionName = name;
         String longName = configTable.get("longName").textValue();
-        String category = "UNKNOWN_CATEGORY";
-        String description = configTable.get("description").textValue();            // TODO: Magic values!
+        String category = "UNKNOWN_CATEGORY";                               // TODO: Magic values!
+        String description = configTable.get("description").textValue();            
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(
                 configTable.get("description").textValue()
         );
@@ -46,12 +46,11 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
             for (final JsonNode strNode : node.get("tags")) {
                 tags.add( strNode.textValue() );
             }
-            dimensionFields.add(
-                    new LuthierDimensionField(
-                            EnumUtils.camelCase( node.get("name").textValue() ),
-                            "Error: currently there is no description",             // TODO: Magic values!
-                            tags)
-            );
+            dimensionFields.add(new LuthierDimensionField(
+                    EnumUtils.camelCase(node.get("name").textValue()),
+                    "Error: currently there is no description",             // TODO: Magic values!
+                    tags
+            ));
         }
         boolean isAggregatable = true;                                              // TODO: Magic values!
         LinkedHashSet<DimensionField> defaultDimensionFields = dimensionFields;     // TODO: include this in Lua configs
