@@ -3,7 +3,6 @@ package com.yahoo.bard.webservice.config.luthier
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
@@ -47,8 +46,10 @@ class ResourceNodeSupplierSpec extends Specification {
             ObjectNode node = testResourceNodeSupplier.get().get("testDimension")
             String longName = node.get("longName").textValue()
             ArrayNode fields = node.get("fields")
+            ArrayNode defaultFields = node.get("defaultFields")
             String category = node.get("category").textValue()
             String description = node.get("description").textValue()
+            Boolean isAggregatable = node.get("isAggregatable").booleanValue()
             String searchProvider = node.get("searchProvider").textValue()
             String keyValueStore = node.get("keyValueStore").textValue()
         then:
@@ -61,7 +62,11 @@ class ResourceNodeSupplierSpec extends Specification {
                 assert fields.get(i).get("name").textValue() == expectedFieldNames[i]
                 tagComp(fields.get(i).get("tags").asList(), expectedFieldTags[i])
             }
-
+            def expectedDefaultFieldNames = ["DEFAULT_PK", "DEFAULT_FIELD_1", "DEFAULT_FIELD_2", "DEFAULT_FIELD_3"]
+            for (int i = 0; i < fields.size(); i++) {
+                assert defaultFields.get(i).get("name").textValue() == expectedDefaultFieldNames[i]
+            }
+            !isAggregatable
             category == "a category for testing"
             description == "a description for testing"
             searchProvider == "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider"
@@ -75,6 +80,8 @@ class ResourceNodeSupplierSpec extends Specification {
             dimensionsNode.every {
                 it.has("type")
                 it.has("keyValueStore")
+                it.has("isAggregatable")
+                it.has("category")
                 it.has("longName")
                 it.has("searchProvider")
                 it.has("description")

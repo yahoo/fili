@@ -15,6 +15,7 @@ local M = {}
 local misc = require 'utils/misc'
 
 local default_type = "KeyValueStoreDimension"
+local default_category = "UNKNOWN_CATEGORY"
 
 -------------------------------------------------------------------------------
 -- Fields
@@ -57,6 +58,9 @@ function M.build_dimensions_config(dimensions)
         dim_copy.longName = dim_copy.longName or name
         dim_copy.description = dim_copy.description or name
         dim_copy.type = dim_copy.type or default_type
+        dim_copy.category = dim_copy.category or default_category
+        dim_copy.defaultFields = dim_copy.defaultFields or {}
+        if dim_copy.isAggregatable == nil then dim_copy.isAggregatable = true end  -- defaults isAggregatable to true
         configuration[name] = dim_copy
     end
     return configuration

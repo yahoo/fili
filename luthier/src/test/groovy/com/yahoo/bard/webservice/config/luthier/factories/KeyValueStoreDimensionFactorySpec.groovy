@@ -6,7 +6,6 @@ import com.yahoo.bard.webservice.data.config.LuthierDimensionField
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
-import com.yahoo.bard.webservice.data.dimension.MapStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
 import spock.lang.Specification
@@ -37,10 +36,10 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
             // basic String correctness
             testDimension.getApiName() == "testDimension"
             testDimension.getLongName() == "a longName for testing"
-            testDimension.getCategory() == "UNKNOWN_CATEGORY"
+            testDimension.getCategory() == "a category for testing"
             testDimension.getDescription() == "a description for testing"
             testDimension.getStorageStrategy().getApiName() == "loaded"
-            testDimension.isAggregatable() == true
+            testDimension.isAggregatable() == false
 
             // Fields content correctness
             List expectedCamelNames = ["testPk", "testField1", "testField2", "testField3"]

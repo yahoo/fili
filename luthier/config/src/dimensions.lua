@@ -129,6 +129,13 @@ return {
         fields = FIELDSETS.test,
         category = "a category for testing",
         type = "KeyValueStoreDimension",
+        isAggregatable = false,
+        defaultFields = {
+            { name = "DEFAULT_PK" },
+            { name = "DEFAULT_FIELD_1" },
+            { name = "DEFAULT_FIELD_2" },
+            { name = "DEFAULT_FIELD_3" }
+        },
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },
