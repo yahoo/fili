@@ -60,7 +60,9 @@ function M.build_dimensions_config(dimensions)
         dim_copy.type = dim_copy.type or default_type
         dim_copy.category = dim_copy.category or default_category
         dim_copy.defaultFields = dim_copy.defaultFields or {}
-        if dim_copy.isAggregatable == nil then dim_copy.isAggregatable = true end  -- defaults isAggregatable to true
+        if dim_copy.isAggregatable == nil then
+            dim_copy.isAggregatable = true      -- defaults isAggregatable to true
+        end
         configuration[name] = dim_copy
     end
     return configuration

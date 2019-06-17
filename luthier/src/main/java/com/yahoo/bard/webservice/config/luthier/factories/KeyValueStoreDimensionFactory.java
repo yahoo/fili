@@ -3,6 +3,7 @@ package com.yahoo.bard.webservice.config.luthier.factories;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
+import com.yahoo.bard.webservice.config.luthier.LuthierFactoryException;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -12,35 +13,56 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
-
+    public static final String DEFAULT_FIELD_NAME_ERROR = "Dimension defaultField name '%s' not in its fields";
 
     /**
-     * @param fieldsNode the JsonNode object that points to the content of "fields" key
-     *                   or "defaultFields" key
-     * @return constructed fields associated with a dimension. Contains camelName, description, and tags
+     * @param fieldsNode  the JsonNode object that points to the content of "fields" key
+     * @param defaultFieldsNode  the JsonNode object that contains a list of field nam
+     * @param dimensionFields  an empty LinkedHashSet of DimensionField, will be populated by this method
+     * @param defaultDimensionFields  an empty LinkedHashSet of DimensionField, will be populated by this method
      */
-    private LinkedHashSet<DimensionField> fieldsBuilder(JsonNode fieldsNode) {
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
-        for(JsonNode node : fieldsNode) {
+    private void fieldsBuilder(
+            JsonNode fieldsNode,
+            JsonNode defaultFieldsNode,
+            LinkedHashSet<DimensionField> dimensionFields,
+            LinkedHashSet<DimensionField> defaultDimensionFields
+    ) {
+        LinkedHashMap<String, DimensionField> dimensionMap = new LinkedHashMap<>();
+        // build the fields map
+        for (JsonNode node : fieldsNode) {
             List<String> tags = new ArrayList<>();
-            if (node.has("tags")) {
-                for (final JsonNode strNode : node.get("tags")) {
-                    tags.add( strNode.textValue() );
-                }
+            for (final JsonNode strNode : node.get("tags")) {
+                tags.add( strNode.textValue() );
             }
-            dimensionFields.add(new LuthierDimensionField(
-                    EnumUtils.camelCase(node.get("name").textValue()),
-                    "Error: currently there is no description",             // TODO: Magic values!
-                    tags
-            ));
+            String dimensionName = node.get("name").textValue();
+            dimensionMap.put(
+                    dimensionName,
+                    new LuthierDimensionField(
+                            EnumUtils.camelCase(dimensionName),
+                            dimensionName,
+                            tags
+                    )
+            );
         }
-        return dimensionFields;
+        dimensionFields.addAll(dimensionMap.values());
+        // build the defaultFields map
+        for (JsonNode node: defaultFieldsNode) {
+            String fieldName = node.textValue();
+            if (dimensionMap.get(fieldName) == null) {
+                String message = String.format(DEFAULT_FIELD_NAME_ERROR, fieldName);
+                throw new LuthierFactoryException(message);
+            }
+            defaultDimensionFields.add(
+                    dimensionMap.get(fieldName)
+            );
+        }
     }
 
     /**
@@ -54,26 +76,28 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        String dimensionName = name;
         String longName = configTable.get("longName").textValue();
         String category = configTable.get("category").textValue();
         String description = configTable.get("description").textValue();
-        LinkedHashSet<DimensionField> dimensionFields = fieldsBuilder(
-                configTable.get("fields")
-        );
+
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(
                 configTable.get("description").textValue()
         );
         SearchProvider searchProvider = resourceFactories.getSearchProvider(
                 configTable.get("searchProvider").textValue()
         );
-        LinkedHashSet<DimensionField> defaultDimensionFields= fieldsBuilder(
-                configTable.get("defaultFields")
+        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
+        LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
+        fieldsBuilder(
+                configTable.get("fields"),
+                configTable.get("defaultFields"),
+                dimensionFields,
+                defaultDimensionFields
         );
         boolean isAggregatable = configTable.get("isAggregatable").booleanValue();
 
-        Dimension dimension = new KeyValueStoreDimension(
-                dimensionName,
+        return new KeyValueStoreDimension(
+                name,
                 longName,
                 category,
                 description,
@@ -83,7 +107,5 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 defaultDimensionFields,
                 isAggregatable
         );
-
-        return dimension;
     }
 }

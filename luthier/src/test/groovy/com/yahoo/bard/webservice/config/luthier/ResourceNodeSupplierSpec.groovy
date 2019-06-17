@@ -56,15 +56,18 @@ class ResourceNodeSupplierSpec extends Specification {
             longName == "a longName for testing"
             fields.size() == 4
             fields.get(0).get("tags").get(0).textValue() == "primaryKey"
-            def expectedFieldNames = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
+            List expectedFieldNames = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
             def expectedFieldTags = [ ["primaryKey"], [], [], [] ]
             for (int i = 0; i < fields.size(); i++) {
                 assert fields.get(i).get("name").textValue() == expectedFieldNames[i]
                 tagComp(fields.get(i).get("tags").asList(), expectedFieldTags[i])
             }
-            def expectedDefaultFieldNames = ["DEFAULT_PK", "DEFAULT_FIELD_1", "DEFAULT_FIELD_2", "DEFAULT_FIELD_3"]
-            for (int i = 0; i < fields.size(); i++) {
-                assert defaultFields.get(i).get("name").textValue() == expectedDefaultFieldNames[i]
+            List expectedDefaultFieldNames = ["TEST_PK", "TEST_FIELD_1"]
+            List nonexpectedDefaultFieldNames = ["TEST_FIELD_2", "TEST_FIELD_3"]
+            for (int i = 0; i < defaultFields.size(); i++) {
+                String currentFieldName = defaultFields.get(i).textValue()
+                assert currentFieldName == expectedDefaultFieldNames[i]
+                assert !nonexpectedDefaultFieldNames.contains(currentFieldName)
             }
             !isAggregatable
             category == "a category for testing"

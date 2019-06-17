@@ -130,12 +130,7 @@ return {
         category = "a category for testing",
         type = "KeyValueStoreDimension",
         isAggregatable = false,
-        defaultFields = {
-            { name = "DEFAULT_PK" },
-            { name = "DEFAULT_FIELD_1" },
-            { name = "DEFAULT_FIELD_2" },
-            { name = "DEFAULT_FIELD_3" }
-        },
+        defaultFields = { "TEST_PK", "TEST_FIELD_1" },
         searchProvider=searchProviders.noop,
         keyValueStore=keyValueStores.memory
     },
