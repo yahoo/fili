@@ -127,6 +127,31 @@ class ResponseUtilsSpec extends Specification {
     }
 
     @Unroll
+    def "Filename #inputFilename with response format type csv #is truncated, where expected filename = #expected"() {
+        expect:
+        new ResponseUtils().removeDuplicateExtensions(containerRequestContext, "SOMETHING.csv", DefaultResponseFormatType.CSV) == "SOMETHING"
+
+        where:
+        inputFilename           | is        || expected
+        "SOMETHING.csv"         | "is"      || "SOMETHING"
+        "something.CsV"         | "is"      || "something"
+        "something.csv.csv.csv" | "is"      || "something"
+        ".csv.csv.csv"          | "is"      || "foo-bar_2017_2018"
+        "something"             | "is NOT"  || "something"
+        "SOMETHING.json"        | "is NOT"  || "SOMETHING.json"
+        ".json"                 | "is NOT"  || ".json"
+    }
+
+    def "Filenames that end with file extensions that match the response format's file extension have the file extension truncated"() {
+        setup:
+        String filename = "filename.json.json"
+        ResponseFormatType responseFormat = DefaultResponseFormatType.JSON
+
+        expect:
+        new ResponseUtils().getContentDispositionValue(containerRequestContext, filename, responseFormat) == "attachment; filename=filename.json"
+    }
+
+    @Unroll
     def "default filename is properly built from container request context"() {
         given:
         ResponseUtils responseUtils = new ResponseUtils()
