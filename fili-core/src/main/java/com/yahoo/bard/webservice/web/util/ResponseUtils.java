@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -32,11 +31,11 @@ public class ResponseUtils {
     public static final String MAX_NAME_LENGTH = SYSTEM_CONFIG.getPackageVariableName("download_file_max_name_length");
     public static final String CONTENT_DISPOSITION_HEADER_PREFIX = "attachment; filename=";
 
-    protected static Pattern SLASHES = Pattern.compile("[\\\\\\/]");
-    protected static Pattern COMMA = Pattern.compile(",");
+    protected static final Pattern SLASHES = Pattern.compile("[\\\\\\/]");
+    protected static final Pattern COMMA = Pattern.compile(",");
 
-    protected static String SINGLE_UNDERSCORE = "_";
-    protected static String DOUBLE_UNDERSCORE = "__";
+    protected static final String SINGLE_UNDERSCORE = "_";
+    protected static final String DOUBLE_UNDERSCORE = "__";
 
     public static final Collection<ResponseFormatType> DEFAULT_ALWAYS_DOWNLOAD_FORMATS =
             Collections.singleton(DefaultResponseFormatType.CSV);
@@ -128,7 +127,7 @@ public class ResponseUtils {
         if (
                 alwaysDownloadFormats.contains(responseFormatType) ||
                         downloadFilename != null && !downloadFilename.isEmpty()
-        ) {
+                ) {
             result.put(
                     HttpHeaders.CONTENT_DISPOSITION,
                     getContentDispositionValue(containerRequestContext, downloadFilename, responseFormatType)
@@ -227,7 +226,7 @@ public class ResponseUtils {
      * no maximum file length is configured and thus the filename will not be truncated.
      *
      * @param filename  the filename to maybe truncate
-     * @return  the filename truncated to the configured maximum length if necessary
+     * @return the filename truncated to the configured maximum length if necessary
      */
     protected String truncateFilename(String filename) {
         return maxFileLength > 0 && filename.length() > maxFileLength
@@ -253,15 +252,23 @@ public class ResponseUtils {
             String fileName,
             ResponseFormatType type
     ) {
-        while(fileName.toLowerCase(Locale.ENGLISH).endsWith(type.getFileExtension().toLowerCase(Locale.ENGLISH))) {
-            fileName = fileName.substring(0, fileName.length() - type.getFileExtension().length());
+        String truncatedFileName = fileName;
+        while (
+                truncatedFileName
+                        .toLowerCase(Locale.ENGLISH)
+                        .endsWith(type.getFileExtension().toLowerCase(Locale.ENGLISH))
+        ) {
+            truncatedFileName = truncatedFileName.substring(
+                    0,
+                    truncatedFileName.length() - type.getFileExtension().length()
+            );
         }
 
-        if (fileName.isEmpty()) {
+        if (truncatedFileName.isEmpty()) {
             return generateDefaultFileNameNoExtension(context);
         }
 
-        return fileName;
+        return truncatedFileName;
     }
 
     /**
