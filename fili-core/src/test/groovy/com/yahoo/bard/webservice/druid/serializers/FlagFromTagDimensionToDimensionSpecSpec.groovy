@@ -60,6 +60,8 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
         apiRequest.getSorts() >> ([])
         apiRequest.getCount() >> OptionalInt.empty()
         apiRequest.getApiFilters() >> []
+
+        apiRequest.withFilters(_) >> {apiRequest}
     }
 
     def "Flag from tag dimension based on lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {

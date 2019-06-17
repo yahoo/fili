@@ -130,47 +130,50 @@ public class DruidQueryBuilder {
         LogicalTable logicalTable = tableDictionary.get(TableIdentifier.create(request));
         TableGroup group = logicalTable.getTableGroup();
 
+        // combine the filters on the requested logical table with the api query filters
+        DataApiRequest tableFilteredRequest = request.withFilters(
+                logicalTable.getFilters()
+                        .map(f -> ApiFilters.union(f, request.getApiFilters()))
+                        .orElse(request.getApiFilters())
+        );
+
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
-        QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
+        QueryPlanningConstraint constraint = new QueryPlanningConstraint(tableFilteredRequest, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
-        // combine the filters on the requested logical table with the api query filters
-        ApiFilters apiFilters = logicalTable.getFilters()
-                .map(f -> ApiFilters.union(f, request.getApiFilters()))
-                .orElse(request.getApiFilters());
 
-        Filter filter = druidFilterBuilder.buildFilters(apiFilters);
+        Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
         return druidTopNMetric != null ?
             buildTopNQuery(
                     template,
                     table,
-                    request.getGranularity(),
-                    request.getTimeZone(),
-                    request.getDimensions(),
+                    tableFilteredRequest.getGranularity(),
+                    tableFilteredRequest.getTimeZone(),
+                    tableFilteredRequest.getDimensions(),
                     filter,
-                    request.getIntervals(),
+                    tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
-                    request.getTopN().getAsInt()
+                    tableFilteredRequest.getTopN().getAsInt()
             ) :
-             canOptimizeTimeSeries(request, template) ?
+             canOptimizeTimeSeries(tableFilteredRequest, template) ?
                 buildTimeSeriesQuery(
                         template,
                         table,
-                        request.getGranularity(),
-                        request.getTimeZone(),
+                        tableFilteredRequest.getGranularity(),
+                        tableFilteredRequest.getTimeZone(),
                         filter,
-                        request.getIntervals()
+                        tableFilteredRequest.getIntervals()
                 ) :
                 buildGroupByQuery(
                         template,
                         table,
-                        request.getGranularity(),
-                        request.getTimeZone(),
-                        request.getDimensions(),
+                        tableFilteredRequest.getGranularity(),
+                        tableFilteredRequest.getTimeZone(),
+                        tableFilteredRequest.getDimensions(),
                         filter,
-                        druidHavingBuilder.buildHavings(request.getHavings()),
-                        request.getIntervals(),
+                        druidHavingBuilder.buildHavings(tableFilteredRequest.getHavings()),
+                        tableFilteredRequest.getIntervals(),
                         druidOrderBy
                 );
     }
