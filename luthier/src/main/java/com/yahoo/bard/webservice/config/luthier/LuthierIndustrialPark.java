@@ -73,24 +73,38 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     }
 
     /**
-     * Bare minimum that can work
+     * Bare minimum that can work.
      */
 
     // TODO: Magic values!
-    int MAGIC_queryWeightLimit = 10000;
-    String MAGIC_luceneIndexPath = "path";
-    int MAGIC_maxResults = 10000;
+    private int magicQueryweightlimit = 10000;
+    private String magicLuceneindexpath = "path";
+    private int magicMaxresults = 10000;
+
+    /**
+     * Bare minimum.
+     *
+     * @param searchProviderName identifier of the searchProvider
+     * @return the searchProvider that is built from the identifier passed in
+     */
     public SearchProvider getSearchProvider(String searchProviderName) {
         switch (searchProviderName) {
             case "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider":
-                return new NoOpSearchProvider(MAGIC_queryWeightLimit);
+                return new NoOpSearchProvider(magicQueryweightlimit);
             case "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider":
-                return new LuceneSearchProvider(MAGIC_luceneIndexPath, MAGIC_maxResults);
+                return new LuceneSearchProvider(magicLuceneindexpath, magicMaxresults);
             default:
                 return new ScanSearchProvider();
         }
     }
 
+    /**
+     * Bare minimum.
+     *
+     * @param keyValueStoreName identifier of the keyValueStore
+     * @return the keyValueStore built according to the keyValueStore identifier
+     * @throws UnsupportedOperationException when passed in redisStore.
+     */
     public KeyValueStore getKeyValueStore(String keyValueStoreName) throws UnsupportedOperationException {
         switch (keyValueStoreName) {
             // TODO: Magic values!
@@ -132,9 +146,13 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         return resourceDictionaries;
     }
 
+    /**
+     * Builder object to construct a new LuthierIndustrialPark instance with.
+     */
     public static class Builder {
-    
+
         private Map<String, Factory<Dimension>> dimensionFactories;
+
         private final ResourceDictionaries resourceDictionaries;
 
         /**
@@ -161,18 +179,36 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             return new LinkedHashMap<>();
         }
 
+        /**
+         * specifies dimension factories when initializing a builder.
+         *
+         * @param factories a factory of a specific dimension
+         * @return the builder object
+         */
         public Builder withDimensionFactories(Map<String, Factory<Dimension>> factories) {
             this.dimensionFactories = factories;
             return this;
         }
 
+        /**
+         * specifies a dimension when initializing a builder.
+         *
+         * @param name the name of the factory
+         * @param factory factory to supply
+         * @return the builder object
+         */
         public Builder withDimensionFactory(String name, Factory<Dimension> factory) {
             dimensionFactories.put(name, factory);
             return this;
         }
 
+        /**
+         * build function to construct an instance of LuthierIndustrialPark.
+         *
+         * @return the LuthierIndustrialPark with the specified resourceDictionaries and dimensionFactories
+         */
         public LuthierIndustrialPark build() {
             return new LuthierIndustrialPark(resourceDictionaries, new LinkedHashMap<>(dimensionFactories));
         }
-    } 
+    }
 }

@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,48 +21,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * A factory that is used by default to support KeyValueStore Dimensions.
+ */
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
-    public static final String DEFAULT_FIELD_NAME_ERROR = "Dimension defaultField name '%s' not in its fields";
+    public static final String DEFAULT_FIELD_NAME_ERROR = "Dimension: '%s' defaultField name '%s' not in its fields";
 
     /**
+     * Helper function to build both fields and defaultFields.
+     *
      * @param fieldsNode  the JsonNode object that points to the content of "fields" key
      * @param defaultFieldsNode  the JsonNode object that contains a list of field nam
+     * @param dimensionName the name of the dimension passed by the caller, needed for error message
      * @param dimensionFields  an empty LinkedHashSet of DimensionField, will be populated by this method
      * @param defaultDimensionFields  an empty LinkedHashSet of DimensionField, will be populated by this method
      */
     private void fieldsBuilder(
             JsonNode fieldsNode,
             JsonNode defaultFieldsNode,
+            String dimensionName,
             LinkedHashSet<DimensionField> dimensionFields,
             LinkedHashSet<DimensionField> defaultDimensionFields
     ) {
-        LinkedHashMap<String, DimensionField> dimensionMap = new LinkedHashMap<>();
+        LinkedHashMap<String, DimensionField> fieldsMap = new LinkedHashMap<>();
         // build the fields map
         for (JsonNode node : fieldsNode) {
             List<String> tags = new ArrayList<>();
             for (final JsonNode strNode : node.get("tags")) {
-                tags.add( strNode.textValue() );
+                tags.add(strNode.textValue());
             }
-            String dimensionName = node.get("name").textValue();
-            dimensionMap.put(
-                    dimensionName,
+            String fieldName = node.get("name").textValue();
+            fieldsMap.put(
+                    fieldName,
                     new LuthierDimensionField(
-                            EnumUtils.camelCase(dimensionName),
-                            dimensionName,
+                            EnumUtils.camelCase(fieldName),
+                            fieldName,
                             tags
                     )
             );
         }
-        dimensionFields.addAll(dimensionMap.values());
+        dimensionFields.addAll(fieldsMap.values());
         // build the defaultFields map
         for (JsonNode node: defaultFieldsNode) {
             String fieldName = node.textValue();
-            if (dimensionMap.get(fieldName) == null) {
-                String message = String.format(DEFAULT_FIELD_NAME_ERROR, fieldName);
+            if (fieldsMap.get(fieldName) == null) {
+                String message = String.format(DEFAULT_FIELD_NAME_ERROR, dimensionName, fieldName);
                 throw new LuthierFactoryException(message);
             }
             defaultDimensionFields.add(
-                    dimensionMap.get(fieldName)
+                    fieldsMap.get(fieldName)
             );
         }
     }
@@ -91,6 +100,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         fieldsBuilder(
                 configTable.get("fields"),
                 configTable.get("defaultFields"),
+                name,
                 dimensionFields,
                 defaultDimensionFields
         );
