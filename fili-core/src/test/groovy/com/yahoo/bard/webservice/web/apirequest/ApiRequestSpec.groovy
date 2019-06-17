@@ -190,7 +190,7 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = "'[2015-02-15T00:00:00.000Z/2016-02-22T00:00:00.000Z]'"
         expectedMessage += " does not align with granularity 'week'."
         expectedMessage += " Week must start on a Monday and end on a Monday."
-        Granularity<?> granularity = new TestingDataApiRequestImpl().generateGranularity(
+        Granularity granularity = new TestingDataApiRequestImpl().generateGranularity(
                 "week",
                 new StandardGranularityParser()
         )

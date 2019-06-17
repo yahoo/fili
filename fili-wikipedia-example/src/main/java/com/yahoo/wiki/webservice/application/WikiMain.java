@@ -54,22 +54,23 @@ public class WikiMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
-        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
-        for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
-            String dimension = dimensionConfig.getApiName();
-            BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
-                    "/v1/cache/dimensions/" + dimension)
-                    .addHeader("Content-type", "application/json")
-                    .setBody(
-                            String.format("{\n \"name\":\"%s\",\n \"lastUpdated\":\"2016-01-01\"\n}", dimension)
-                    );
+        try (AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient()) {
+            for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
+                String dimension = dimensionConfig.getApiName();
+                BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
+                        "/v1/cache/dimensions/" + dimension)
+                        .addHeader("Content-type", "application/json")
+                        .setBody(
+                                String.format("{%n \"name\":\"%s\",%n \"lastUpdated\":\"2016-01-01\"%n}", dimension)
+                        );
 
-            ListenableFuture<Response> responseFuture = boundRequestBuilder.execute();
-            try {
-                Response response = responseFuture.get();
-                LOG.debug("Mark Dimension Cache Updated Response: ", response);
-            } catch (InterruptedException | ExecutionException e) {
-                LOG.warn("Failed while marking dimensions healthy", e);
+                ListenableFuture<Response> responseFuture = boundRequestBuilder.execute();
+                try {
+                    Response response = responseFuture.get();
+                    LOG.debug("Mark Dimension Cache Updated Response: {}", response);
+                } catch (InterruptedException | ExecutionException e) {
+                    LOG.warn("Failed while marking dimensions healthy", e);
+                }
             }
         }
     }

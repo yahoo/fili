@@ -156,8 +156,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         LinkedHashSet<Aggregation> outerAggregations = new LinkedHashSet<>();
         for (Aggregation agg : aggregations) {
             Pair<Optional<Aggregation>, Optional<Aggregation>> split = agg.nest();
-            split.getRight().map(innerAggregations::add);
-            split.getLeft().map(outerAggregations::add);
+            split.getRight().ifPresent(innerAggregations::add);
+            split.getLeft().ifPresent(outerAggregations::add);
         }
 
         // Create the inner query.
@@ -266,7 +266,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             // TODO: Need more clarity on what this is actually for
             if (thisOne.isSketch() && thatOne.isSketch() && thisOne.getFieldName().equals(thatOne.getFieldName())) {
                 SketchAggregation converted = FieldConverterSupplier
-                        .sketchConverter
+                        .getSketchConverter()
                         .asInnerSketch((SketchAggregation) thisOne);
                 resultAggregationsByName.remove(thisOne.getName());
                 resultAggregationsByName.put(converted.getName(), converted);

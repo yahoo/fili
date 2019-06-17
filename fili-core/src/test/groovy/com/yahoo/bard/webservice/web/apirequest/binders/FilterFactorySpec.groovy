@@ -42,7 +42,7 @@ class FilterFactorySpec extends Specification {
                 components.operation,
                 components.values
         )}
-        Map.Entry<Predicate<?>, Function<?>> foo = new AbstractMap.SimpleEntry(
+        Map.Entry<Predicate<?>, Function<?,?>> foo = new AbstractMap.SimpleEntry(
                 (java.util.function.Predicate) { foo
                     ->
                     true

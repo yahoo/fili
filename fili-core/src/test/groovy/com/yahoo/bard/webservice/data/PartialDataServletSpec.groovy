@@ -58,7 +58,7 @@ class PartialDataServletSpec extends Specification {
         PARTIAL_DATA.setOn(true)
 
         SystemConfigProvider.instance.setProperty(dateTimeFormatKey, "yyyy-MM-dd")
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = null
+        DateTimeFormatterFactory.datetimeOutputFormatter = null
     }
 
     def cleanup() {
@@ -66,7 +66,7 @@ class PartialDataServletSpec extends Specification {
         jtb.tearDown()
         PARTIAL_DATA.setOn(partial)
         SystemConfigProvider.instance.clearProperty(dateTimeFormatKey)
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = null
+        DateTimeFormatterFactory.datetimeOutputFormatter = null
 
     }
 

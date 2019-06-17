@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
         .ArithmeticPostAggregationFunction.DIVIDE;
-import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.sketchConverter;
+import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
@@ -146,7 +146,7 @@ public class AggregationAverageMaker extends MetricMaker {
      */
     private MetricField convertToSketchEstimateIfNeeded(MetricField originalSourceMetric) {
         return originalSourceMetric instanceof SketchAggregation ?
-                sketchConverter.asSketchEstimate((SketchAggregation) originalSourceMetric) :
+                getSketchConverter().asSketchEstimate((SketchAggregation) originalSourceMetric) :
                 originalSourceMetric;
     }
 
@@ -164,7 +164,7 @@ public class AggregationAverageMaker extends MetricMaker {
     @Deprecated
     private Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
         return originalAggregations.stream()
-                .map(agg -> agg.isSketch() ? sketchConverter.asInnerSketch((SketchAggregation) agg) : agg)
+                .map(agg -> agg.isSketch() ? getSketchConverter().asInnerSketch((SketchAggregation) agg) : agg)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

@@ -1533,7 +1533,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                     throw new BadApiRequestException(INCORRECT_METRIC_FILTER_FORMAT.format(apiMetricQuery));
                 }
                 //check for the duplicate occurrence of metrics in an API
-                FieldConverterSupplier.metricsFilterSetBuilder.validateDuplicateMetrics(metricsJsonArray);
+                FieldConverterSupplier.getMetricsFilterSetBuilder().validateDuplicateMetrics(metricsJsonArray);
                 for (int i = 0; i < metricsJsonArray.size(); i++) {
                     JsonNode jsonObject;
                     try {
@@ -1571,12 +1571,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                                 );
                             }
                             try {
-                                logicalMetric = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredLogicalMetric(
-                                        logicalMetric,
-                                        metricFilterObject,
-                                        dimensionDictionary,
-                                       table,
-                                        this
+                                logicalMetric = FieldConverterSupplier.getMetricsFilterSetBuilder()
+                                        .getFilteredLogicalMetric(
+                                            logicalMetric,
+                                            metricFilterObject,
+                                            dimensionDictionary,
+                                            table,
+                                            this
                                 );
                             } catch (FilterBuilderException filterBuilderException) {
                                 LOG.debug(filterBuilderException.getMessage());

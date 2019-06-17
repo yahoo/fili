@@ -153,7 +153,7 @@ class ConfigurationLoadTaskSpec extends Specification {
     @Unroll
     def "test logical table dictionary load"() {
         setup:
-        Granularity<TimeGrain> granularity = tableIdGrain
+        Granularity granularity = tableIdGrain
 
         expect:
         logicalTableDictionary.get(new TableIdentifier(tableIdName, granularity)).getName() == logicalTableName
