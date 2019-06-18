@@ -158,8 +158,8 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Constructor.
          *
-         * @param resourceDictionaries a class that contains resource dictionaries including
-         *                             PhysicalTableDictionary, DimensionDictionary, etc.
+         * @param resourceDictionaries  a class that contains resource dictionaries including
+         * PhysicalTableDictionary, DimensionDictionary, etc.
          */
         public Builder(ResourceDictionaries resourceDictionaries) {
             this.resourceDictionaries = resourceDictionaries;
@@ -180,9 +180,13 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * specifies dimension factories when initializing a builder.
+         * Registers named dimension factories with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of dimension used in the config
          *
-         * @param factories a factory of a specific dimension
+         * @param factories  A mapping from a dimension type identifier used in the config
+         * to a factory that builds Dimensions of that type
+         *
          * @return the builder object
          */
         public Builder withDimensionFactories(Map<String, Factory<Dimension>> factories) {
@@ -191,10 +195,14 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * specifies a dimension when initializing a builder.
+         * Registers a named dimension factory with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of dimension used in the config
          *
-         * @param name the name of the factory
-         * @param factory factory to supply
+         * @param name  The identifier used in the configuration to identify the type of
+         * dimension built by this factory
+         * @param factory  A factory that builds Dimensions of the type named by {@code name}
+         *
          * @return the builder object
          */
         public Builder withDimensionFactory(String name, Factory<Dimension> factory) {
@@ -203,9 +211,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * build function to construct an instance of LuthierIndustrialPark.
+         * Builds a LuthierIndustrialPark.
          *
-         * @return the LuthierIndustrialPark with the specified resourceDictionaries and dimensionFactories
+         * @return the LuthierIndustrialPark with the specified resourceDictionaries and factories
          */
         public LuthierIndustrialPark build() {
             return new LuthierIndustrialPark(resourceDictionaries, new LinkedHashMap<>(dimensionFactories));
