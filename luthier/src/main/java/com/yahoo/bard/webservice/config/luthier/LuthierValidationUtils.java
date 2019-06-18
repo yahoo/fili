@@ -26,7 +26,9 @@ public class LuthierValidationUtils {
             String fieldName
     ) {
         if (fieldValue == null) {
-            throw new LuthierFactoryException(String.format(MISSING_FIELD_ERROR, configEntityName, fieldName));
+            throw new LuthierFactoryException(
+                    String.format(MISSING_FIELD_ERROR, configEntityType, configEntityName, fieldName)
+            );
         }
     }
 

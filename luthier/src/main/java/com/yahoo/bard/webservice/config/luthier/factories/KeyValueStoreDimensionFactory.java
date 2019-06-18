@@ -31,14 +31,14 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     public static final String DEFAULT_FIELD_NAME_ERROR =
             "Dimension '%s': defaultField name '%s' not found in fields '%s'";
 
-    public static final String DIMENSTION = "Dimension";
+    public static final String DIMENSION = "Dimension";
 
     /**
      * Helper function to build both fields and defaultFields.
      *
      * @param fieldsNode  the JsonNode object that points to the content of "fields" key
      * @param defaultFieldsNode  the JsonNode object that contains the list of field names to be shown by default
-     * @param dimensionName the name of the dimension passed by the caller, needed for error messages
+     * @param dimensionName  the name of the dimension passed by the caller, needed for error messages
      * @param dimensionFields  an empty collection that will be populated with the dimension's fields
      * @param defaultDimensionFields an empty collection that will be populated by the dimension's default fields
      */
@@ -92,19 +92,19 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        LuthierValidationUtils.validateField(configTable.get("longName"), DIMENSTION, name, "longName");
+        LuthierValidationUtils.validateField(configTable.get("longName"), DIMENSION, name, "longName");
         String longName = configTable.get("longName").textValue();
 
-        LuthierValidationUtils.validateField(configTable.get("category"), DIMENSTION, name, "category");
+        LuthierValidationUtils.validateField(configTable.get("category"), DIMENSION, name, "category");
         String category = configTable.get("category").textValue();
 
-        LuthierValidationUtils.validateField(configTable.get("description"), DIMENSTION, name, "description");
+        LuthierValidationUtils.validateField(configTable.get("description"), DIMENSION, name, "description");
         String description = configTable.get("description").textValue();
 
-        LuthierValidationUtils.validateField(configTable.get("keyValueStore"), DIMENSTION, name, "keyValueStore");
+        LuthierValidationUtils.validateField(configTable.get("keyValueStore"), DIMENSION, name, "keyValueStore");
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("keyValueStore").textValue());
 
-        LuthierValidationUtils.validateField(configTable.get("searchProvider"), DIMENSTION, name, "searchProvider");
+        LuthierValidationUtils.validateField(configTable.get("searchProvider"), DIMENSION, name, "searchProvider");
         SearchProvider searchProvider = resourceFactories.getSearchProvider(
                 configTable.get("searchProvider").textValue()
         );
@@ -112,8 +112,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
 
-        LuthierValidationUtils.validateField(configTable.get("fields"), DIMENSTION, name, "fields");
-        LuthierValidationUtils.validateField(configTable.get("defaultFields"), DIMENSTION, name, "defaultFields");
+        LuthierValidationUtils.validateField(configTable.get("fields"), DIMENSION, name, "fields");
+        LuthierValidationUtils.validateField(configTable.get("defaultFields"), DIMENSION, name, "defaultFields");
         fieldsBuilder(
                 configTable.get("fields"),
                 configTable.get("defaultFields"),
@@ -122,7 +122,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 defaultDimensionFields
         );
 
-        LuthierValidationUtils.validateField(configTable.get("isAggregatable"), DIMENSTION, name, "isAggregatable");
+        LuthierValidationUtils.validateField(configTable.get("isAggregatable"), DIMENSION, name, "isAggregatable");
         boolean isAggregatable = configTable.get("isAggregatable").booleanValue();
 
         return new KeyValueStoreDimension(
