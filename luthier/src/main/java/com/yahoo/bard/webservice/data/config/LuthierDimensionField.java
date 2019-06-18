@@ -20,9 +20,9 @@ public class LuthierDimensionField implements DimensionField {
     /**
      * Constructor.
      *
-     * @param camelName camelCased name of a dimensionField.
-     * @param description description of that dimensionField.
-     * @param tags A list of Strings that represents the tags of that field
+     * @param camelName  camelCased name of a dimensionField.
+     * @param description  description of that dimensionField.
+     * @param tags  A list of Strings that represents the tags of that field
      */
     public LuthierDimensionField(String camelName, String description, List<String> tags) {
         this.camelName = camelName;
