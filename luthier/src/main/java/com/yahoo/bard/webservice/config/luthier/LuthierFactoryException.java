@@ -12,7 +12,7 @@ public class LuthierFactoryException extends RuntimeException {
      *
      * @param message  Error message text
      */
-    LuthierFactoryException(String message) {
+    public LuthierFactoryException(String message) {
         super(message);
     }
 
@@ -22,7 +22,7 @@ public class LuthierFactoryException extends RuntimeException {
      * @param message Error message text
      * @param cause  throwable triggering this exception.
      */
-    LuthierFactoryException(String message, Throwable cause) {
+    public LuthierFactoryException(String message, Throwable cause) {
         super(message, cause);
     }
 }

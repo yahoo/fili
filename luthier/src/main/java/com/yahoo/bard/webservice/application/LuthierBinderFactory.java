@@ -25,7 +25,8 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     protected ConfigurationLoader getConfigurationLoader() {
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries();
         initializeDictionaries(resourceDictionaries);
-        return new LuthierIndustrialPark(resourceDictionaries, getDimensionFactories());
+        return new LuthierIndustrialPark.Builder(resourceDictionaries)
+                .withDimensionFactories(getDimensionFactories()).build();
     }
 
     /**

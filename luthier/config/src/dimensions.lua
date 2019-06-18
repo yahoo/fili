@@ -65,11 +65,14 @@ dimensionUtils = require("utils.dimensionUtils")
 
 local pk = dimensionUtils.pk
 local field = dimensionUtils.field
+local searchProviders = dimensionUtils.searchProviders
+local keyValueStores = dimensionUtils.keyValueStores
 
 local FIELDSETS = {
     default = { pk "ID", field "DESC" },
-    country = { pk "ID", field("DESC", "COUNTY", "STATE")},
-    page = { pk "ID", field "DESC" }
+    country = { pk "ID", field("DESC", "COUNTY", "STATE") },
+    page = { pk "ID", field "DESC" },
+    test = { pk "TEST_PK", field("TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3") }
 }
 
 -------------------------------------------------------------------------------
@@ -89,6 +92,8 @@ local FIELDSETS = {
     * category - An arbitrary category to put the dimension in. This is not
         used directly by Fili, but rather exists as a marker for UI's should
         they desire to use it to organize dimensions.
+    * type - A string that indicates the kind of dimension, used in build-time.
+        Defaults to "KeyValueStoreDimension"
     * searchProvider - The fully qualified Java class name of the SearchProvider
         to use. A SearchProvider is a service that searches for dimensions based
         on their dimension fields. For example, a SearchProvider can find all
@@ -117,17 +122,25 @@ local FIELDSETS = {
 ]]
 -------------------------------------------------------------------------------
 
-local searchProviders = dimensionUtils.searchProviders
-local keyValueStores = dimensionUtils.keyValueStores
-
 return {
+    testDimension = {
+        longName = "a longName for testing",
+        description = "a description for testing",
+        fields = FIELDSETS.test,
+        category = "a category for testing",
+        type = "KeyValueStoreDimension",
+        isAggregatable = false,
+        defaultFields = { "TEST_PK", "TEST_FIELD_1" },
+        searchProvider=searchProviders.noop,
+        keyValueStore=keyValueStores.memory
+    },
     comment = {
         longName = "wiki comment",
         description = "Comment for the edit to the wiki page",
         fields = FIELDSETS.default,
         category = "General",
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     countryIsoCode = {
         longName = "wiki countryIsoCode",
@@ -135,195 +148,195 @@ return {
         fields = FIELDSETS.country,
         category = "General",
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     regionIsoCode = {
         longName = "wiki regionIsoCode",
         description = "Iso Code of the region to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     page = {
         longName = "wiki page",
         description = "Page is a document that is suitable for World Wide Web and web browsers",
         fields = FIELDSETS.page,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     user = {
         longName = "wiki user",
         description = "User is a person who generally use or own wiki services",
         fields = { pk "ID", field("DESC", "AGE", "SEX") },
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     isUnpatrolled = {
         longName = "wiki isUnpatrolled",
         description = "Unpatrolled are class of pages that are not been patrolled",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     isNew = {
         longName = "wiki isNew",
         description = "New Page is the first page that is created in wiki",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     isRobot = {
         longName = "wiki isRobot",
         description = "Robot is an tool that carries out repetitive and mundane tasks",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     isAnonymous = {
         longName = "wiki isAnonymous",
         description = "Anonymous are individual or entity whose identity is unknown",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     isMinor = {
         longName = "wiki isMinor",
         description = "Minor is a person who is legally considered a minor",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     namespace = {
         longName = "wiki namespace",
         description = "Namespace is a set of wiki pages that begins with a reserved word",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     channel = {
         longName = "wiki channel",
         description = "Channel is a set of wiki pages on a certain channel",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     countryName = {
         longName = "wiki countryName",
         description = "Name of the Country to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     regionName = {
         longName = "wiki regionName",
         description = "Name of the Region to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     metroCode = {
         longName = "wiki metroCode",
         description = "Metro Code to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     cityName = {
         longName = "wiki cityName",
         description = "Name of the City to which the wiki page belongs",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S2(NMHC)"] = {
         longName = "PT08.S2(NMHC)",
         description = "PT08.S2(NMHC)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S4(NO2)"] = {
         longName = "PT08.S4(NO2)",
         description = "PT08.S4(NO2)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S4(NO2)"] = {
         longName = "NO2(GT)",
         description = "NO2(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["C6H6(GT)"] = {
         longName = "C6H6(GT)",
         description = "C6H6(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S1(CO)"] = {
         longName = "PT08.S1(CO)",
         description = "PT08.S1(CO)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["NOx(GT)"] = {
         longName = "NOx(GT)",
         description = "NOx(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     RH = {
         longName = "RH",
         description = "RH",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     AH = {
         longName = "AH",
         description = "AH",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["NMHC(GT)"] = {
         longName = "NMHC(GT)",
         description = "NMHC(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     T = {
         longName = "T",
         description = "T",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S3(NOx)"] = {
         longName = "PT08.S3(NOx)",
         description = "PT08.S3(NOx)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["PT08.S5(O3)"] = {
         longName = "PT08.S5(O3)",
         description = "PT08.S5(O3)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     },
     ["CO(GT)"] = {
         longName = "CO(GT)",
         description = "CO(GT)",
         fields = FIELDSETS.default,
         searchProvider=searchProviders.memory,
-        keyValueStore=searchProviders.memory
+        keyValueStore=keyValueStores.memory
     }
 }
