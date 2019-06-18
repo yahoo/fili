@@ -127,10 +127,9 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
                 druidQueryToSqlConverter.getTimeConverter()
         );
 
-        try (Connection connection = calciteHelper.getConnection()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
+        try (Connection connection = calciteHelper.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+                ResultSet resultSet = preparedStatement.executeQuery()) {
             resultSetProcessor.process(resultSet);
 
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();

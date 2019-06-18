@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -169,9 +170,11 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
         }
 
         // Verify that this filter uses a correct number of filters
+        Optional<Integer> minArgs = op.getMinimumArguments();
+        Optional<Integer> maxArgs = op.getMaximumArguments();
         if (
-                (op.getMinimumArguments().isPresent() && op.getMinimumArguments().get() < values.size()) ||
-                (op.getMaximumArguments().isPresent() && op.getMaximumArguments().get() > values.size())
+                minArgs.isPresent() && minArgs.get() < values.size() ||
+                maxArgs.isPresent() && maxArgs.get() > values.size()
         ) {
             String error = ErrorMessageFormat.FILTER_WRONG_NUMBER_OF_VALUES.format(
                     op,

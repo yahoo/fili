@@ -252,7 +252,7 @@ public abstract class MetricMaker {
         // If the field is a sketch, wrap it in a sketch estimate, if it's an aggregation, create a post aggregation
         // Otherwise it is a number post aggregation already
         return field.isSketch() ?
-                FieldConverterSupplier.sketchConverter.asSketchEstimate(field) :
+                FieldConverterSupplier.getSketchConverter().asSketchEstimate(field) :
                 field instanceof Aggregation ?
                         new FieldAccessorPostAggregation(field) :
                         (PostAggregation) field;

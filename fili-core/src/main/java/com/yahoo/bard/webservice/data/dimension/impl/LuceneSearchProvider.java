@@ -98,7 +98,7 @@ public class LuceneSearchProvider implements SearchProvider {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
-    public static String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
+    public static final String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
 
     /**
      * The maximum number of results per page.

@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.cache.MemTupleDataCache.DataEntry
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -55,7 +56,7 @@ class MemTupleDataCacheSpec extends Specification {
     def "cache misses on error without invalidating"() {
         setup:  "Give the cache a client that will throw an error in the middle of hits"
         MemcachedClient client = Mock(MemcachedClient)
-        MemTupleDataCache.DataEntry<String> tuple = new MemTupleDataCache.DataEntry<String>(
+        DataEntry<String,String> tuple = new DataEntry<String,String>(
                 "key",
                 expectedCheckSum,
                 "value"

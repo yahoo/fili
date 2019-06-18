@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
  * Custom helper class to wrap Error Response object attributes in an Exception type. We need this class when argument
  * type is enforced as Exception.
  */
+@SuppressWarnings("serial")
 public class ResponseException extends Exception {
     private static final Logger LOG = LoggerFactory.getLogger(ResponseException.class);
 
@@ -24,7 +25,6 @@ public class ResponseException extends Exception {
     private final String reason;
     private final String description;
     private final DruidQuery<?> druidQuery;
-    private final Throwable cause;
 
     /**
      * Class constructor with all the parameters to prepare the error response, plus a writer to serialize the Druid
@@ -45,12 +45,11 @@ public class ResponseException extends Exception {
             Throwable cause,
             ObjectWriter objectWriter
     ) {
-        super(buildMessage(reason, description, statusCode, druidQuery, cause, objectWriter));
+        super(buildMessage(reason, description, statusCode, druidQuery, cause, objectWriter), cause);
         this.statusCode = statusCode;
         this.reason = reason;
         this.description = description;
         this.druidQuery = druidQuery;
-        this.cause = cause;
     }
 
     /**
@@ -133,9 +132,5 @@ public class ResponseException extends Exception {
 
     public DruidQuery<?> getDruidQuery() {
         return druidQuery;
-    }
-
-    public Throwable getCause() {
-        return cause;
     }
 }

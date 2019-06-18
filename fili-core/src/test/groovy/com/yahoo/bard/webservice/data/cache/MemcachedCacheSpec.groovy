@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
@@ -34,7 +35,7 @@ class MemcachedCacheSpec extends Specification {
         jtb = new JerseyTestBinder(false, DataServlet.class)
         if (System.getenv("BUILD_NUMBER") != null) {
             // Only use real memcached client if in the CI environment
-            jtb.dataCache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>())
+            jtb.dataCache = new HashDataCache<>(new MemDataCache<Pair<String, String>>())
         }
         jtb.start()
 
@@ -53,10 +54,10 @@ class MemcachedCacheSpec extends Specification {
     def "cache misses on error without invalidating"() {
         setup:  "Give the cache a client that will throw an error in the middle of hits"
         MemcachedClient client = Mock(MemcachedClient)
-        HashDataCache.Pair<String, String> pair = new HashDataCache.Pair<String, String>("key", "value");
+        Pair<String, String> pair = new Pair<String, String>("key", "value");
 
         client.get(_) >> pair >> { throw new RuntimeException() } >> pair
-        HashDataCache cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>(client))
+        HashDataCache cache = new HashDataCache<>(new MemDataCache<Pair<String, String>>(client))
 
         when: "get a healthy object"
         String cacheValue = cache.get("key")

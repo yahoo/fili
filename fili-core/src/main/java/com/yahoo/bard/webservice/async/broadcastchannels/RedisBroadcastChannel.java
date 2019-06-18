@@ -35,6 +35,9 @@ public class RedisBroadcastChannel<T> implements BroadcastChannel<T> {
             "preResponse_notification_channel"
     );
 
+    // Suppress volatile warning because reference CAN be changed in multiple threads and
+    // we care about the reference, not its internal state, which is handled separately in RTopic.
+    @SuppressWarnings("squid:S3077")
     private volatile RTopic<T> topic;
     private final Subject<T, T> notifications;
     private final int listenerId;
@@ -49,11 +52,11 @@ public class RedisBroadcastChannel<T> implements BroadcastChannel<T> {
         this.topic = redissonClient.getTopic(REDIS_CHANNEL);
         this.notifications = PublishSubject.create();
         this.topicReadWriteLock = new ReentrantReadWriteLock();
-        listenerId = topic.addListener((channel, msg) -> { notifications.onNext(msg); });
+        listenerId = topic.addListener((channel, msg) -> notifications.onNext(msg));
     }
 
     @Override
-    public void publish(T message) throws UnsupportedOperationException {
+    public void publish(T message) {
         topicReadWriteLock.readLock().lock();
         try {
             if (topic == null) {
