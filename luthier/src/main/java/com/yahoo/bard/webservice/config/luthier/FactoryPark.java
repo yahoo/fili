@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * A source for building config entities from ObjectNode configuration and a supply of factories.
  *
@@ -32,8 +34,9 @@ public class FactoryPark<T> {
      * @param configSource  The source for the entity configuration.
      * @param factoryMap  The source for the entity factory to be used to build.
      */
-    public FactoryPark(Supplier<ObjectNode> configSource, Map<String, Factory<T>> factoryMap) {
+    public FactoryPark(Supplier<ObjectNode> configSource, @NotNull Map<String, Factory<T>> factoryMap) {
         this.configSource = configSource;
+        assert factoryMap != null;
         this.factoryMap = factoryMap;
     }
 
@@ -57,8 +60,10 @@ public class FactoryPark<T> {
     T buildEntity(String entityName, LuthierIndustrialPark industrialPark) {
         LuthierValidationUtils.validateField(fetchConfig().get(entityName), ENTITY_TYPE, entityName, entityName);
         ObjectNode entityConfig = (ObjectNode) fetchConfig().get(entityName);
+
         LuthierValidationUtils.validateField(entityConfig.get(FACTORY_KEY), ENTITY_TYPE, entityName, FACTORY_KEY);
         String factoryName = entityConfig.get(FACTORY_KEY).textValue();
+
         if (! factoryMap.containsKey(factoryName)) {
             throw new LuthierFactoryException(
                     String.format(

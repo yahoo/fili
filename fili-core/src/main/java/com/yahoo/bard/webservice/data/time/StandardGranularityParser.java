@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 /**
  * StandardGranularityParser implements a time grain dictionary, as well as factory methods to dynamically build zoned
@@ -27,7 +28,8 @@ public class StandardGranularityParser implements GranularityParser {
      * @param dictionary  a dictionary containing names mapped to granularities
      */
     @Inject
-    public StandardGranularityParser(GranularityDictionary dictionary) {
+    public StandardGranularityParser(@NotNull GranularityDictionary dictionary) {
+        assert dictionary != null;
         namedGranularities = dictionary;
     }
 
