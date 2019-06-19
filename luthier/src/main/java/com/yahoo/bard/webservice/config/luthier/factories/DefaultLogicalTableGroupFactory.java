@@ -53,7 +53,7 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      */
     @Override
     public LogicalTableGroup build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        if (resourceFactories.getGranularityDictionary() == null) {
+        if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
         LogicalTableGroup logicalTableGroup = new LogicalTableGroup();

@@ -32,6 +32,29 @@ public class LuthierValidationUtils {
         }
     }
 
+
+    /**
+     * Validates that the given field actually exists. If it doesn't, throws a useful error message.
+     *
+     * @param fieldValue The value to check for existence
+     * @param configEntityType  The type of the config entity whose field we're validating
+     * @param configEntityName The name of the config entity we're currently building
+     * @param fieldName  The name of the field whose value we're validating
+     */
+    public static void validateField(
+            JsonNode fieldValue,
+            ConceptType configEntityType,
+            String configEntityName,
+            String fieldName
+    ) {
+        if (fieldValue == null) {
+            throw new LuthierFactoryException(
+                    String.format(MISSING_FIELD_ERROR, configEntityType.getConceptKey(), configEntityName, fieldName)
+            );
+        }
+    }
+
+
     /** Just a bunch of static functions. **/
     private LuthierValidationUtils() {
     }

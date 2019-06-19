@@ -30,6 +30,7 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
         searchProviderDictionary = defaultSearchProviderDictionary();
         keyValueStoreDictionary = defaultKeyValueStoreDictionary();
     }
+
     public Map<String, MetricMaker> getMetricMakerDictionary() {
         return metricMakerDictionary;
     }

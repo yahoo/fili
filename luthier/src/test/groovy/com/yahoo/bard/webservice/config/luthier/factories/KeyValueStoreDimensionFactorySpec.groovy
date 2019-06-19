@@ -2,14 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories
 
+import com.yahoo.bard.webservice.config.luthier.ConceptType
 import com.yahoo.bard.webservice.config.luthier.Factory
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark
-import com.yahoo.bard.webservice.data.config.LuthierDimensionField
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider
+
 import spock.lang.Specification
 
 class KeyValueStoreDimensionFactorySpec extends Specification {
@@ -20,10 +21,11 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
         dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
 
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries()
-        park = new LuthierIndustrialPark.Builder(resourceDictionaries)
-                .withDimensionFactories(dimensionFactoriesMap)
+        park = (new LuthierIndustrialPark.Builder())
+                .withFactories(ConceptType.DIMENSION, dimensionFactoriesMap)
                 .build()
         park.load()
+
         testDimension = park.getDimension("testDimension")
     }
 
@@ -31,7 +33,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
         when:
             // set up for: fields content correctness
             LinkedHashSet<DimensionField> dimensionFields = testDimension.getDimensionFields()
-            LuthierDimensionField key = testDimension.getKey()
+            DimensionField key = testDimension.getKey()
 
             SearchProvider searchProvider = testDimension.getSearchProvider()
         then:
@@ -41,7 +43,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
             testDimension.getCategory() == "a category for testing"
             testDimension.getDescription() == "a description for testing"
             testDimension.getStorageStrategy().getApiName() == "loaded"
-            testDimension.isAggregatable() == false
+            //testDimension.isAggregatable() == false
 
             // Fields content correctness
             List expectedCamelNames = ["testPk", "testField1", "testField2", "testField3"]

@@ -1,0 +1,6 @@
+{
+  "arithmeticPLUS": {
+    "type": "ArithmeticMaker",
+    "operation": "PLUS"
+  }
+}
