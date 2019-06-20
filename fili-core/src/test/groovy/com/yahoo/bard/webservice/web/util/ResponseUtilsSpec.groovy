@@ -140,7 +140,6 @@ class ResponseUtilsSpec extends Specification {
         "something"             | "is NOT"  || "something"
         "SOMETHING.json"        | "is NOT"  || "SOMETHING.json"
         ".json"                 | "is NOT"  || ".json"
-        ".json"                 | "is NOT"  || ".json"
         "hello.csv.world"       | "is NOT"  || "hello.csv.world"
         "somethingcsv"          | "is NOT"  || "somethingcsv"
     }
