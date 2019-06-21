@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.config;
 /**
  * Exception for failures from the system configuration code.
  */
-public class SystemConfigException extends Error {
+public class SystemConfigException extends RuntimeException {
 
     /**
      * Constructor that accepts a message.
