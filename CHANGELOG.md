@@ -274,6 +274,16 @@ Current
 
 ### Fixed:
 
+- [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
+    * Problem: Previously, if an unexpected behaviour happens in the Class build time in 
+    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build, 
+    where we suspect only Exceptions are logged.
+    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its 
+    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by 
+    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged. 
+    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead. 
+    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught. 
+
 - [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
     * table api filters where not being used in query planning, moving the merge above query planning fixes this. 
 
