@@ -134,6 +134,11 @@ Current
 
 ### Changed:
 
+- [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
+    * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
+    that file extension is removed.
+    * Some other small refactors where do on the `ResponseUtils` class
+
 - [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
     * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
 
