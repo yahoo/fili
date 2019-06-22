@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier
 
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -10,7 +12,7 @@ class ResourceNodeSupplierSpec extends Specification {
 
     void setup() {
         dimensionNodeSupplier = new ResourceNodeSupplier("DimensionConfig.json")
-        searchProviderNodeSupplier = new ResourceNodeSupplier("searchProviderConfig.json")
+        searchProviderNodeSupplier = new ResourceNodeSupplier("SearchProviderConfig.json")
     }
 
     def "default ResourceNodeSupplier only returns null when supplied null"() {
