@@ -63,17 +63,27 @@ function M.build_dimensions_config(dimensions)
         if dim_copy.isAggregatable == nil then
             dim_copy.isAggregatable = true      -- defaults isAggregatable to true
         end
+        dim_copy.domain = dim_copy.domain or name
         configuration[name] = dim_copy
     end
     return configuration
 end
 
-M.searchProviders = {
-    lucene =
-        "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider",
-    noop = "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider",
-    memory = "com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider"
-}
+function M.build_search_provider_config(dimensions, searchProviderTemplates)
+    local configuration = {}
+    for name, dimension in pairs(dimensions) do
+        local template = searchProviderTemplates[dimension.searchProvider]
+        local domain = dimension.domain or name
+        if configuration[domain] then
+            assert(configuration[domain] == template,
+                    "Found contradicting searchProvider config with the same domain name: "
+                    .. domain)
+        else
+            configuration[domain] = template
+        end
+    end
+    return configuration
+end
 
 M.keyValueStores = {
     memory = "com.yahoo.bard.webservice.data.dimension.MapStore",

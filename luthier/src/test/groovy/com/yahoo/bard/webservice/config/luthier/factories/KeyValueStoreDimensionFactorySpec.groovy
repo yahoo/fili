@@ -1,13 +1,15 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories
 
 import com.yahoo.bard.webservice.config.luthier.Factory
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField
-import com.yahoo.bard.webservice.data.config.ResourceDictionaries
+import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
-import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
+import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider
 import spock.lang.Specification
 
 class KeyValueStoreDimensionFactorySpec extends Specification {
@@ -17,7 +19,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
         Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
         dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
 
-        ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
+        LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries()
         park = new LuthierIndustrialPark.Builder(resourceDictionaries)
                 .withDimensionFactories(dimensionFactoriesMap)
                 .build()
@@ -56,7 +58,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
 
             // type correctness of searchProvider
             // we cannnot check keyValueStore directly
-            searchProvider.getClass() == NoOpSearchProvider
+            searchProvider.getClass() == LuceneSearchProvider
     }
 
     def "When new dimension's name match with the previous dimension, use a reference to the previous one"() {

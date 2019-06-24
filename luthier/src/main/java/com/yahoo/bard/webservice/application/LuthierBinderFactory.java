@@ -11,10 +11,12 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Extend the abstract binder factory to add external configuration.
@@ -25,17 +27,31 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     protected ConfigurationLoader getConfigurationLoader() {
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries();
         initializeDictionaries(resourceDictionaries);
-        return new LuthierIndustrialPark.Builder(resourceDictionaries)
-                .withDimensionFactories(getDimensionFactories()).build();
+        LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries);
+        getDimensionFactories().ifPresent(builder::withDimensionFactories);
+        getSearchProviderFactories().ifPresent(builder::withSearchProviderFactories);
+        return builder.build();
     }
 
     /**
      * Extension point to add default dimension factories.
+     * If it does not return Optional.empty, overwrites the factories specified in LuthierIndustrialPark.
      *
-     * @return  Initializing dimension factories.
+     * @return  Optional default Dimension factories.
      */
-    protected Map<String, Factory<Dimension>> getDimensionFactories() {
-        return Collections.EMPTY_MAP;
+    protected Optional<Map<String, Factory<Dimension>>> getDimensionFactories() {
+        return Optional.empty();
+    }
+
+
+    /**
+     * Extension point to add default searchProvider factories.
+     * If it does not return Optional.empty, overwrites the factories specified in LuthierIndustrialPark.
+     *
+     * @return  Optional default SearchProvider factories.
+     */
+    protected Optional<Map<String, Factory<SearchProvider>>> getSearchProviderFactories() {
+        return Optional.empty();
     }
 
     /**
@@ -54,6 +70,9 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
      */
     protected void initializeDictionaries(LuthierResourceDictionaries resourceDictionaries) {
         resourceDictionaries.getMetricMakerDictionary().putAll(LuthierResourceDictionaries.defaultMakerDictionary());
+        resourceDictionaries.getSearchProviderDictionary().putAll(
+                LuthierResourceDictionaries.defaultSearchProviderDictionary()
+        );
     }
 
     @Override

@@ -2,7 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier;
 
+import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.ScanSearchProviderFactory;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
+import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -18,7 +23,9 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -27,26 +34,27 @@ import java.util.function.Supplier;
  */
 public class LuthierIndustrialPark implements ConfigurationLoader {
 
-    private final ResourceDictionaries resourceDictionaries;
-
-    private final Map<String, Factory<Dimension>> dimensionFactories;
-
+    private final LuthierResourceDictionaries resourceDictionaries;
     private final FactoryPark<Dimension> dimensionFactoryPark;
+    private final FactoryPark<SearchProvider> searchProviderFactoryPark;
 
     /**
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with
      * @param dimensionFactories The map of factories for creating dimensions from external config
+     * @param searchProviderFactories The map of factories for creating dimensions from external config
      */
     protected LuthierIndustrialPark(
-            ResourceDictionaries resourceDictionaries,
-            Map<String, Factory<Dimension>> dimensionFactories
+            LuthierResourceDictionaries resourceDictionaries,
+            Map<String, Factory<Dimension>> dimensionFactories,
+            Map<String, Factory<SearchProvider>> searchProviderFactories
     ) {
         this.resourceDictionaries = resourceDictionaries;
-        this.dimensionFactories = dimensionFactories;
         Supplier<ObjectNode> dimensionConfig = new ResourceNodeSupplier("DimensionConfig.json");
+        Supplier<ObjectNode> searchProviderConfig = new ResourceNodeSupplier("SearchProviderConfig.json");
         dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
+        searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
     }
 
 /*
@@ -73,29 +81,18 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     }
 
     /**
-     * Bare minimum that can work.
-     */
-
-    // TODO: Magic values!
-    private int magicQueryweightlimit = 10000;
-    private String magicLuceneindexpath = "path";
-    private int magicMaxresults = 10000;
-
-    /**
-     * Bare minimum.
+     * Builds a SearchProvider for a specific domain.
      *
-     * @param searchProviderName identifier of the searchProvider
-     * @return the searchProvider that is built from the identifier passed in
+     * @param domain  a string that is associated with the type o
+     * @return  an instance of the SearchProvider that correspond to the domain
      */
-    public SearchProvider getSearchProvider(String searchProviderName) {
-        switch (searchProviderName) {
-            case "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider":
-                return new NoOpSearchProvider(magicQueryweightlimit);
-            case "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider":
-                return new LuceneSearchProvider(magicLuceneindexpath, magicMaxresults);
-            default:
-                return new ScanSearchProvider();
+    public SearchProvider getSearchProvider(String domain) {
+        Map<String, SearchProvider> searchProviderDictionary = resourceDictionaries.getSearchProviderDictionary();
+        if (! searchProviderDictionary.containsKey(domain)) {
+            SearchProvider searchProvider = searchProviderFactoryPark.buildEntity(domain, this);
+            searchProviderDictionary.put(domain, searchProvider);
         }
+        return searchProviderDictionary.get(domain);
     }
 
     /**
@@ -152,8 +149,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public static class Builder {
 
         private Map<String, Factory<Dimension>> dimensionFactories;
+        private Map<String, Factory<SearchProvider>> searchProviderFactories;
 
-        private final ResourceDictionaries resourceDictionaries;
+        private final LuthierResourceDictionaries resourceDictionaries;
 
         /**
          * Constructor.
@@ -161,9 +159,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          * @param resourceDictionaries  a class that contains resource dictionaries including
          * PhysicalTableDictionary, DimensionDictionary, etc.
          */
-        public Builder(ResourceDictionaries resourceDictionaries) {
+        public Builder(LuthierResourceDictionaries resourceDictionaries) {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
+            searchProviderFactories = getDefaultSearchProviderFactories();
         }
 
         /**
@@ -172,11 +171,52 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          * Default to use an empty resource dictionary.
          */
         public Builder() {
-            this(new ResourceDictionaries());
+            this(new LuthierResourceDictionaries());
         }
 
-        public Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
-            return new LinkedHashMap<>();
+
+        /**
+         * Default dimension factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of KeyValueStoreDimension to its factory
+         */
+        private Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
+            Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
+            dimensionFactoryMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory());
+            return dimensionFactoryMap;
+        }
+
+        /**
+         * Default searchProvider factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of aliases of luceneSearchProvider to its factory
+         */
+        private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
+            Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
+            // all known factories for searchProviders and their possible aliases
+            LuceneSearchProviderFactory luceneSearchProviderFactory = new LuceneSearchProviderFactory();
+            List<String> luceneAliases = Arrays.asList(
+                    "lucene",
+                    LuceneSearchProvider.class.getSimpleName(),
+                    LuceneSearchProvider.class.getCanonicalName()
+            );
+            NoOpSearchProviderFactory noOpSearchProviderFactory = new NoOpSearchProviderFactory();
+            List<String> noOpAliases = Arrays.asList(
+                    "noOp",
+                    NoOpSearchProvider.class.getSimpleName(),
+                    NoOpSearchProvider.class.getCanonicalName()
+            );
+            ScanSearchProviderFactory scanSearchProviderFactory = new ScanSearchProviderFactory();
+            List<String> scanAliases = Arrays.asList(
+                    "memory",
+                    "scan",
+                    ScanSearchProvider.class.getSimpleName(),
+                    ScanSearchProvider.class.getCanonicalName()
+            );
+            luceneAliases.forEach(alias -> searchProviderFactoryMap.put(alias, luceneSearchProviderFactory));
+            noOpAliases.forEach(alias -> searchProviderFactoryMap.put(alias, noOpSearchProviderFactory));
+            scanAliases.forEach(alias -> searchProviderFactoryMap.put(alias, scanSearchProviderFactory));
+            return searchProviderFactoryMap;
         }
 
         /**
@@ -211,12 +251,47 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
+         * Registers named searchProvider factories with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of searchProvider used in the config
+         *
+         * @param factories  A mapping from a searchProvider type identifier used in the config
+         * to a factory that builds SearchProvider of that type
+         *
+         * @return the builder object
+         */
+        public Builder withSearchProviderFactories(Map<String, Factory<SearchProvider>> factories) {
+            this.searchProviderFactories = factories;
+            return this;
+        }
+
+        /**
+         * Registers a named searchProvider factory with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of searchProvider used in the config
+         *
+         * @param name  The identifier used in the configuration to identify the type of
+         * searchProvider built by this factory
+         * @param factory  A factory that builds searchProvider of the type named by {@code name}
+         *
+         * @return the builder object
+         */
+        public Builder withSearchProviderFactory(String name, Factory<SearchProvider> factory) {
+            searchProviderFactories.put(name, factory);
+            return this;
+        }
+
+        /**
          * Builds a LuthierIndustrialPark.
          *
          * @return the LuthierIndustrialPark with the specified resourceDictionaries and factories
          */
         public LuthierIndustrialPark build() {
-            return new LuthierIndustrialPark(resourceDictionaries, new LinkedHashMap<>(dimensionFactories));
+            return new LuthierIndustrialPark(
+                    resourceDictionaries,
+                    new LinkedHashMap<>(dimensionFactories),
+                    new LinkedHashMap<>(searchProviderFactories)
+            );
         }
     }
 }

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Implementation of DimensionField interface that matches configuration specified in JSON object.
@@ -47,5 +48,24 @@ public class LuthierDimensionField implements DimensionField {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        LuthierDimensionField that = (LuthierDimensionField) o;
+        return camelName.equals(that.camelName) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(tags, that.tags);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(camelName, description, tags);
     }
 }

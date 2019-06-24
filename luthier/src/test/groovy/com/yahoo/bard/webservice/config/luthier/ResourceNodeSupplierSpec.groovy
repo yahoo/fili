@@ -1,15 +1,18 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
-    ResourceNodeSupplier testResourceNodeSupplier
+    ResourceNodeSupplier dimensionNodeSupplier
+    ResourceNodeSupplier searchProviderNodeSupplier
 
     void setup() {
-        testResourceNodeSupplier = new ResourceNodeSupplier("DimensionConfig.json")
+        dimensionNodeSupplier = new ResourceNodeSupplier("DimensionConfig.json")
+        searchProviderNodeSupplier = new ResourceNodeSupplier("SearchProviderConfig.json")
     }
 
     def "default ResourceNodeSupplier only returns null when supplied null"() {
@@ -17,7 +20,7 @@ class ResourceNodeSupplierSpec extends Specification {
             ResourceNodeSupplier defaultResourceNodeSupplier = new ResourceNodeSupplier(null)
         when:
             ObjectNode defaultNode = defaultResourceNodeSupplier.get()
-            ObjectNode dimensionsNode = testResourceNodeSupplier.get()
+            ObjectNode dimensionsNode = dimensionNodeSupplier.get()
         then:
             defaultNode == null
             dimensionsNode != null
@@ -32,6 +35,21 @@ class ResourceNodeSupplierSpec extends Specification {
             thrown(LuthierFactoryException)
     }
 
+    def "All content of a test domain in the searchProviderConfig.json is correct"() {
+        when:
+            ObjectNode node = searchProviderNodeSupplier.get().get("testDomain")
+            String type = node.get("type").textValue()
+            int maxResults = node.get("maxResults").intValue()
+            int searchTimeout = node.get("searchTimeout").intValue()
+            String indexPath = node.get("indexPath").textValue()
+
+        then:
+            type == "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider"
+            maxResults == 100000
+            searchTimeout == 600000
+            indexPath == "./target/tmp/lucene/"
+    }
+
     def tagComp(List textNodeList, List strlist) {
         for (int i = 0; i < textNodeList.size(); i++) {
             assert textNodeList[i].textValue() == strlist[i]
@@ -39,17 +57,15 @@ class ResourceNodeSupplierSpec extends Specification {
     }
 
     def "All contents of a test dimension is correct"() {
-        given:
-            ObjectMapper mapper = new ObjectMapper()
-
         when:
-            ObjectNode node = testResourceNodeSupplier.get().get("testDimension")
+            ObjectNode node = dimensionNodeSupplier.get().get("testDimension")
             String longName = node.get("longName").textValue()
             ArrayNode fields = node.get("fields")
             ArrayNode defaultFields = node.get("defaultFields")
             String category = node.get("category").textValue()
             String description = node.get("description").textValue()
             Boolean isAggregatable = node.get("isAggregatable").booleanValue()
+            String domain = node.get("domain").textValue()
             String searchProvider = node.get("searchProvider").textValue()
             String keyValueStore = node.get("keyValueStore").textValue()
         then:
@@ -72,13 +88,14 @@ class ResourceNodeSupplierSpec extends Specification {
             !isAggregatable
             category == "a category for testing"
             description == "a description for testing"
-            searchProvider == "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider"
+            domain == "testDomain"
+            searchProvider == "lucene"
             keyValueStore == "com.yahoo.bard.webservice.data.dimension.MapStore"
     }
 
     def "All dimensions contain necessary keys (apiName, type, field, etc.), regardless their values"() {
         when:
-            ObjectNode dimensionsNode = testResourceNodeSupplier.get()
+            ObjectNode dimensionsNode = dimensionNodeSupplier.get()
         then:
             dimensionsNode.every {
                 it.has("type")
@@ -86,6 +103,7 @@ class ResourceNodeSupplierSpec extends Specification {
                 it.has("isAggregatable")
                 it.has("category")
                 it.has("longName")
+                it.has("domain")
                 it.has("searchProvider")
                 it.has("description")
                 it.has("fields")

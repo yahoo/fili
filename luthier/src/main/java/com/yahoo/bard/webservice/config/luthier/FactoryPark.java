@@ -16,6 +16,8 @@ public class FactoryPark<T> {
 
     public static final String FACTORY_KEY = "type";
 
+    public static final String UNKNOWN_FACTORY_NAME = "factory name '%s' in config is not known to the Luthier module";
+
     // Use a supplier to support deferred loading
     private final Supplier<ObjectNode> configSource;
 
@@ -53,7 +55,7 @@ public class FactoryPark<T> {
         ObjectNode entityConfig = (ObjectNode) configSource.get().get(entityName);
         String factoryName = entityConfig.get(FACTORY_KEY).textValue();
         if (! factoryMap.containsKey(factoryName)) {
-            throw new IllegalArgumentException();
+            throw new LuthierFactoryException(String.format(UNKNOWN_FACTORY_NAME, factoryName));
         }
         return factoryMap.get(factoryName).build(entityName, entityConfig, industrialPark);
     }
