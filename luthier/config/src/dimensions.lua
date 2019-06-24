@@ -96,8 +96,10 @@ local FIELDSETS = {
         they desire to use it to organize dimensions.
     * type - A string that indicates the kind of dimension, used in build-time.
         Defaults to "KeyValueStoreDimension"
-    * searchProvider - The fully qualified Java class name of the SearchProvider
-        to use. A SearchProvider is a service that searches for dimensions based
+    * searchProvider - Refers to a template in searchProviderTemplates.lua
+        includes the fully qualified Java class name of the SearchProvider
+        and additional arguments to construct the SearchProvider.
+        A SearchProvider is a service that searches for dimensions based
         on their dimension fields. For example, a SearchProvider can find all
         countries that have the string "States" in their name.
     * keyValueStore - The fully qualified Java class name of the KeyValueStore
@@ -133,8 +135,9 @@ return {
         type = "KeyValueStoreDimension",
         isAggregatable = false,
         defaultFields = { "TEST_PK", "TEST_FIELD_1" },
-        searchProvider=searchProviders.noop,
-        keyValueStore=keyValueStores.memory
+        domain = "testDomain",
+        searchProvider = "lucene",
+        keyValueStore = keyValueStores.memory
     },
     comment = {
         longName = "wiki comment",

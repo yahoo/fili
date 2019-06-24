@@ -63,6 +63,7 @@ function M.build_dimensions_config(dimensions)
         if dim_copy.isAggregatable == nil then
             dim_copy.isAggregatable = true      -- defaults isAggregatable to true
         end
+        dim_copy.domain = dim_copy.domain or name
         configuration[name] = dim_copy
     end
     return configuration

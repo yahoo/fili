@@ -81,28 +81,16 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     }
 
     /**
-     * Bare minimum that can work.
-     */
-
-    // TODO: Magic values!
-    private int magicQueryweightlimit = 10000;
-    private String magicLuceneindexpath = "path";
-    private int magicMaxresults = 10000;
-
-    /**
-     * Bare minimum.
+     * Builds a SearchProvider for a specific domain.
      *
-     * @param searchProviderName identifier of the searchProvider
-     * @return the searchProvider that is built from the identifier passed in
+     * @param domain  a string that is associated with the type o
+     * @return  an instance of the SearchProvider that correspond to the domain
      */
-    public SearchProvider getSearchProvider(String searchProviderName) {
-        switch (searchProviderName) {
-            case "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider":
-                return new NoOpSearchProvider(magicQueryweightlimit);
-            case "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider":
-                return new LuceneSearchProvider(magicLuceneindexpath, magicMaxresults);
-            default:
-                return new ScanSearchProvider();
+    public SearchProvider getSearchProvider(String domain) {
+        Map<String, SearchProvider> searchProviderDictionary = resourceDictionaries.getSearchProviderDictionary();
+        if (! searchProviderDictionary.containsKey(domain)) {
+            SearchProvider searchProvider = searchProviderFactoryPark.buildEntity(domain, this);
+            searchProviderDictionary.put(domain, searchProvider);
         }
         return searchProviderDictionary.get(domain);
     }
@@ -186,17 +174,49 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this(new LuthierResourceDictionaries());
         }
 
+
         /**
-         * Constructor.
-         * <p>
-         * Default to use an empty resource dictionary.
+         * Default dimension factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of KeyValueStoreDimension to its factory
          */
-        public Builder() {
-            this(new ResourceDictionaries());
+        private Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
+            Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
+            dimensionFactoryMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory());
+            return dimensionFactoryMap;
         }
 
-        public Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
-            return new LinkedHashMap<>();
+        /**
+         * Default searchProvider factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of aliases of luceneSearchProvider to its factory
+         */
+        private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
+            Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
+            // all known factories for searchProviders and their possible aliases
+            LuceneSearchProviderFactory luceneSearchProviderFactory = new LuceneSearchProviderFactory();
+            List<String> luceneAliases = Arrays.asList(
+                    "lucene",
+                    LuceneSearchProvider.class.getSimpleName(),
+                    LuceneSearchProvider.class.getCanonicalName()
+            );
+            NoOpSearchProviderFactory noOpSearchProviderFactory = new NoOpSearchProviderFactory();
+            List<String> noOpAliases = Arrays.asList(
+                    "noOp",
+                    NoOpSearchProvider.class.getSimpleName(),
+                    NoOpSearchProvider.class.getCanonicalName()
+            );
+            ScanSearchProviderFactory scanSearchProviderFactory = new ScanSearchProviderFactory();
+            List<String> scanAliases = Arrays.asList(
+                    "memory",
+                    "scan",
+                    ScanSearchProvider.class.getSimpleName(),
+                    ScanSearchProvider.class.getCanonicalName()
+            );
+            luceneAliases.forEach(alias -> searchProviderFactoryMap.put(alias, luceneSearchProviderFactory));
+            noOpAliases.forEach(alias -> searchProviderFactoryMap.put(alias, noOpSearchProviderFactory));
+            scanAliases.forEach(alias -> searchProviderFactoryMap.put(alias, scanSearchProviderFactory));
+            return searchProviderFactoryMap;
         }
 
         /**

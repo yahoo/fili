@@ -2,7 +2,6 @@ package com.yahoo.bard.webservice.config.luthier
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
@@ -64,6 +63,7 @@ class ResourceNodeSupplierSpec extends Specification {
             String category = node.get("category").textValue()
             String description = node.get("description").textValue()
             Boolean isAggregatable = node.get("isAggregatable").booleanValue()
+            String domain = node.get("domain").textValue()
             String searchProvider = node.get("searchProvider").textValue()
             String keyValueStore = node.get("keyValueStore").textValue()
         then:
