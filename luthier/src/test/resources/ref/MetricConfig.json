@@ -1,0 +1,82 @@
+[
+  {
+    "description": "COM",
+    "druidMetric": "CO",
+    "dependencyMetricNames": [
+      "CO"
+    ],
+    "maker": "doubleSum",
+    "longName": "COM",
+    "apiName": "COM"
+  },
+  {
+    "description": "averageCOPerDay",
+    "dependencies": [
+      "COM"
+    ],
+    "dependencyMetricNames": [
+      "COM"
+    ],
+    "maker": "aggregateAveragebyDay",
+    "longName": "averageCOPerDay",
+    "apiName": "averageCOPerDay"
+  },
+  {
+    "description": "count",
+    "longName": "count",
+    "maker": "count",
+    "apiName": "count"
+  },
+  {
+    "description": "averageNO2PerDay",
+    "dependencies": [
+      "NO2M"
+    ],
+    "dependencyMetricNames": [
+      "NO2M"
+    ],
+    "maker": "aggregateAveragebyDay",
+    "longName": "averageNO2PerDay",
+    "apiName": "averageNO2PerDay"
+  },
+  {
+    "description": "deleted",
+    "druidMetric": "deleted",
+    "dependencyMetricNames": [
+      "deleted"
+    ],
+    "maker": "doubleSum",
+    "longName": "deleted",
+    "apiName": "deleted"
+  },
+  {
+    "description": "NO2M",
+    "druidMetric": "NO2",
+    "dependencyMetricNames": [
+      "NO2"
+    ],
+    "maker": "doubleSum",
+    "longName": "NO2M",
+    "apiName": "NO2M"
+  },
+  {
+    "description": "delta",
+    "druidMetric": "delta",
+    "dependencyMetricNames": [
+      "delta"
+    ],
+    "maker": "doubleSum",
+    "longName": "delta",
+    "apiName": "delta"
+  },
+  {
+    "description": "added",
+    "druidMetric": "added",
+    "dependencyMetricNames": [
+      "added"
+    ],
+    "maker": "doubleSum",
+    "longName": "added",
+    "apiName": "added"
+  }
+]
