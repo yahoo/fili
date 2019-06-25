@@ -19,6 +19,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,6 +38,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     private final LuthierResourceDictionaries resourceDictionaries;
     private final FactoryPark<Dimension> dimensionFactoryPark;
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
+    private final FactoryPark<PhysicalTable> physicalTableFactoryPark;
 
     /**
      * Constructor.
@@ -59,7 +61,6 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
 
 /*
     LogicalTable getLogicalTable(String tableName);
-    PhysicalTable getPhysicalTable(String tableName);
     LogicalMetric getLogicalMetric(String metricName);
     MetricMaker getMetricMaker(String makerName);
 */
@@ -112,6 +113,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
     }
 
+    public PhysicalTable getPhysicalTable(String tableName) {
+
+
+    }
 
     @Override
     public void load() {

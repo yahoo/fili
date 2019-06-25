@@ -1,1 +1,125 @@
-{"logical":[{"description":"air_quality","name":"air_quality","granularity":["ALL","HOUR","DAY"],"dimensions":["PT08.S2(NMHC)","PT08.S4(NO2)","PT08.S4(NO2)","C6H6(GT)","PT08.S1(CO)","NOx(GT)","RH","AH","NMHC(GT)","T","PT08.S3(NOx)","PT08.S5(O3)","CO(GT)"],"metrics":["averageCOPerDay","averageNO2PerDay"],"physicaltables":["air"]},{"description":"wikipedia","name":"wikipedia","granularity":["ALL","HOUR","DAY"],"dimensions":["comment","countryIsoCode","regionIsoCode","page","user","isUnpatrolled","isNew","isRobot","isAnonymous","isMinor","namespace","channel","countryName","regionName","metroCode","cityName"],"metrics":["count","added","delta","deleted"],"physicaltables":["wikiticker"]}],"physical":[{"description":"wikiticker","name":"wikiticker","granularity":"hour","metrics":["added","delta","deleted"],"dimensions":["comment","countryIsoCode","regionIsoCode","page","user","isUnpatrolled","isNew","isRobot","isAnonymous","isMinor","namespace","channel","countryName","regionName","metroCode","cityName"]},{"description":"air","name":"air","granularity":"hour","metrics":["CO","NO2"],"dimensions":["PT08.S2(NMHC)","PT08.S4(NO2)","PT08.S4(NO2)","C6H6(GT)","PT08.S1(CO)","NOx(GT)","RH","AH","NMHC(GT)","T","PT08.S3(NOx)","PT08.S5(O3)","CO(GT)"]}]}
+{
+  "logical": [
+    {
+      "description": "air_quality",
+      "name": "air_quality",
+      "granularity": [
+        "ALL",
+        "HOUR",
+        "DAY"
+      ],
+      "dimensions": [
+        "PT08.S2(NMHC)",
+        "PT08.S4(NO2)",
+        "PT08.S4(NO2)",
+        "C6H6(GT)",
+        "PT08.S1(CO)",
+        "NOx(GT)",
+        "RH",
+        "AH",
+        "NMHC(GT)",
+        "T",
+        "PT08.S3(NOx)",
+        "PT08.S5(O3)",
+        "CO(GT)"
+      ],
+      "metrics": [
+        "averageCOPerDay",
+        "averageNO2PerDay"
+      ],
+      "physicaltables": [
+        "air"
+      ]
+    },
+    {
+      "description": "wikipedia",
+      "name": "wikipedia",
+      "granularity": [
+        "ALL",
+        "HOUR",
+        "DAY"
+      ],
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ],
+      "metrics": [
+        "count",
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "physicaltables": [
+        "wikiticker"
+      ]
+    }
+  ],
+  "physical": [
+    {
+      "description": "wikiticker",
+      "name": "wikiticker",
+      "granularity": "hour",
+      "metrics": [
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
+      ]
+    },
+    {
+      "description": "air",
+      "name": "air",
+      "granularity": "hour",
+      "metrics": [
+        "CO",
+        "NO2"
+      ],
+      "dimensions": [
+        "PT08.S2(NMHC)",
+        "PT08.S4(NO2)",
+        "PT08.S4(NO2)",
+        "C6H6(GT)",
+        "PT08.S1(CO)",
+        "NOx(GT)",
+        "RH",
+        "AH",
+        "NMHC(GT)",
+        "T",
+        "PT08.S3(NOx)",
+        "PT08.S5(O3)",
+        "CO(GT)"
+      ]
+    }
+  ]
+}

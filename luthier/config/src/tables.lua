@@ -110,7 +110,7 @@ M.physical = {
         dimensions should be a subset of dimensions in its dependent physical
         tables.
     * granularity - A group of available granularities of this logical table, the
-       granularity can be "all", "hour", "day", "week", or "month."
+        granularity can be "all", "hour", "day", "week", or "month".
     * physicaltables - A list of the names of the physical tables that this
         logical table depends on
 
@@ -134,13 +134,13 @@ M.logical = {
     wikipedia = {
         metrics =  {"count", "added", "delta", "deleted"},
         dimensions = wikipedia_dimensions,
-        granularity = {"ALL", "HOUR", "DAY"},
+        granularity = {"all", "hour", "day"},
         physicaltables = {"wikiticker"}
     },
     air_quality = {
         metrics = {"averageCOPerDay", "averageNO2PerDay"},
         dimensions = air_quality_dimensions,
-        granularity = {"ALL", "HOUR", "DAY"},
+        granularity = {"all", "hour", "day"},
         physicaltables = {"air"}
     }
 }
