@@ -1,13 +1,6 @@
 {
-  "logical": [
+  "physical": [
     {
-      "description": "air_quality",
-      "name": "air_quality",
-      "granularity": [
-        "ALL",
-        "HOUR",
-        "DAY"
-      ],
       "dimensions": [
         "PT08.S2(NMHC)",
         "PT08.S4(NO2)",
@@ -24,21 +17,46 @@
         "CO(GT)"
       ],
       "metrics": [
-        "averageCOPerDay",
-        "averageNO2PerDay"
+        "CO",
+        "NO2"
       ],
-      "physicaltables": [
-        "air"
-      ]
+      "name": "air",
+      "description": "air",
+      "granularity": "hour",
+      "physicalTables": []
     },
     {
-      "description": "wikipedia",
-      "name": "wikipedia",
-      "granularity": [
-        "ALL",
-        "HOUR",
-        "DAY"
+      "dimensions": [
+        "comment",
+        "countryIsoCode",
+        "regionIsoCode",
+        "page",
+        "user",
+        "isUnpatrolled",
+        "isNew",
+        "isRobot",
+        "isAnonymous",
+        "isMinor",
+        "namespace",
+        "channel",
+        "countryName",
+        "regionName",
+        "metroCode",
+        "cityName"
       ],
+      "metrics": [
+        "added",
+        "delta",
+        "deleted"
+      ],
+      "name": "wikiticker",
+      "description": "wikiticker",
+      "granularity": "hour",
+      "physicalTables": []
+    }
+  ],
+  "logical": [
+    {
       "dimensions": [
         "comment",
         "countryIsoCode",
@@ -63,48 +81,18 @@
         "delta",
         "deleted"
       ],
-      "physicaltables": [
+      "name": "wikipedia",
+      "description": "wikipedia",
+      "physicalTables": [
         "wikiticker"
-      ]
-    }
-  ],
-  "physical": [
-    {
-      "description": "wikiticker",
-      "name": "wikiticker",
-      "granularity": "hour",
-      "metrics": [
-        "added",
-        "delta",
-        "deleted"
       ],
-      "dimensions": [
-        "comment",
-        "countryIsoCode",
-        "regionIsoCode",
-        "page",
-        "user",
-        "isUnpatrolled",
-        "isNew",
-        "isRobot",
-        "isAnonymous",
-        "isMinor",
-        "namespace",
-        "channel",
-        "countryName",
-        "regionName",
-        "metroCode",
-        "cityName"
+      "granularity": [
+        "all",
+        "hour",
+        "day"
       ]
     },
     {
-      "description": "air",
-      "name": "air",
-      "granularity": "hour",
-      "metrics": [
-        "CO",
-        "NO2"
-      ],
       "dimensions": [
         "PT08.S2(NMHC)",
         "PT08.S4(NO2)",
@@ -119,6 +107,20 @@
         "PT08.S3(NOx)",
         "PT08.S5(O3)",
         "CO(GT)"
+      ],
+      "metrics": [
+        "averageCOPerDay",
+        "averageNO2PerDay"
+      ],
+      "name": "air_quality",
+      "description": "air_quality",
+      "physicalTables": [
+        "air"
+      ],
+      "granularity": [
+        "all",
+        "hour",
+        "day"
       ]
     }
   ]

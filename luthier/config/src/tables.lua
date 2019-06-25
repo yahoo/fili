@@ -36,6 +36,8 @@ local M = {}
         if the Druid table is at the hourly grain. Naturally, you'll get weird
         results if you configure a physical table for a more precise granularity
         than is supported by the backing dataset.
+    * physicalTables - A list of the names of the physical tables that this
+        logical table depends on
 ]]
 -------------------------------------------------------------------------------
 
@@ -111,7 +113,7 @@ M.physical = {
         tables.
     * granularity - A group of available granularities of this logical table, the
         granularity can be "all", "hour", "day", "week", or "month".
-    * physicaltables - A list of the names of the physical tables that this
+    * physicalTables - A list of the names of the physical tables that this
         logical table depends on
 
     Logical tables serve two purposes:
@@ -135,13 +137,13 @@ M.logical = {
         metrics =  {"count", "added", "delta", "deleted"},
         dimensions = wikipedia_dimensions,
         granularity = {"all", "hour", "day"},
-        physicaltables = {"wikiticker"}
+        physicalTables = {"wikiticker"}
     },
     air_quality = {
         metrics = {"averageCOPerDay", "averageNO2PerDay"},
         dimensions = air_quality_dimensions,
         granularity = {"all", "hour", "day"},
-        physicaltables = {"air"}
+        physicalTables = {"air"}
     }
 }
 

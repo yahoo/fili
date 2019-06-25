@@ -29,6 +29,7 @@ function M.build_table_config(tables)
         local copy = misc.shallow_copy(physical_table)
         copy.name = copy.name or name
         copy.description = copy.description or name
+        copy.physicalTables = copy.physicalTables or {}
         table.insert(configuration.physical, copy)
     end
 
@@ -36,6 +37,7 @@ function M.build_table_config(tables)
         local copy = misc.shallow_copy(logical_table)
         copy.name = copy.name or name
         copy.description = copy.description or name
+        copy.physicalTables = copy.physicalTables or {}
         table.insert(configuration.logical, copy)
     end
     return configuration
