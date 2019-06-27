@@ -30,6 +30,16 @@ function M.build_table_config(tables)
         copy.name = copy.name or name
         copy.description = copy.description or name
         copy.physicalTables = copy.physicalTables or {}
+        local intermediate_map = copy.logicalToPhysicalColumnNames or {}
+        -- rebuilds the logicalToPhysicalColumnNames map with nicer format
+        copy.logicalToPhysicalColumnNames = {}
+        for logical_name, physical_name in pairs(intermediate_map) do
+            local name_pair = {
+                logicalName = logical_name,
+                physicalName = physical_name
+            }
+            table.insert(copy.logicalToPhysicalColumnNames, name_pair)
+        end
         table.insert(configuration.physical, copy)
     end
 

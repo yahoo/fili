@@ -42,6 +42,7 @@ local M = {}
 -------------------------------------------------------------------------------
 
 local wikipedia_dimensions = {
+    "testDimension",
     "comment",
     "countryIsoCode",
     "regionIsoCode",
@@ -84,7 +85,10 @@ M.physical = {
             "deleted"
         },
         dimensions = wikipedia_dimensions,
-        granularity = "hour"
+        granularity = "hour",
+        logicalToPhysicalColumnNames = {
+            testDimension = "testDimensionPhysicalName"
+        }
     },
     air = {
         metrics = {
