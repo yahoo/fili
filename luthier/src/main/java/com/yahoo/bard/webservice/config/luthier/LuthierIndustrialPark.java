@@ -5,7 +5,9 @@ package com.yahoo.bard.webservice.config.luthier;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.PermissivePhysicalTableFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.ScanSearchProviderFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.StrictPhysicalTableFactory;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
@@ -18,8 +20,9 @@ import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,25 +41,32 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     private final LuthierResourceDictionaries resourceDictionaries;
     private final FactoryPark<Dimension> dimensionFactoryPark;
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
-    private final FactoryPark<PhysicalTable> physicalTableFactoryPark;
+    private final FactoryPark<ConfigPhysicalTable> physicalTableFactoryPark;
+    private final DataSourceMetadataService metadataService;
 
     /**
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with
-     * @param dimensionFactories The map of factories for creating dimensions from external config
-     * @param searchProviderFactories The map of factories for creating dimensions from external config
+     * @param dimensionFactories  The map of factories for creating dimensions from external config
+     * @param searchProviderFactories  The map of factories for creating from external config
+     * @param physicalTableFactories  The map of factories for creating physicalTables from external config
      */
     protected LuthierIndustrialPark(
             LuthierResourceDictionaries resourceDictionaries,
             Map<String, Factory<Dimension>> dimensionFactories,
-            Map<String, Factory<SearchProvider>> searchProviderFactories
+            Map<String, Factory<SearchProvider>> searchProviderFactories,
+            Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories
     ) {
         this.resourceDictionaries = resourceDictionaries;
         Supplier<ObjectNode> dimensionConfig = new ResourceNodeSupplier("DimensionConfig.json");
         Supplier<ObjectNode> searchProviderConfig = new ResourceNodeSupplier("SearchProviderConfig.json");
-        dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
-        searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
+        Supplier<ObjectNode> physicalTableConfig = new ResourceNodeSupplier("PhysicalTableConfig.json");
+        Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
+        this.dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
+        this.searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
+        this.physicalTableFactoryPark = new FactoryPark<>(physicalTableConfig, physicalTableFactories);
+        this.metadataService = new DataSourceMetadataService();
     }
 
 /*
@@ -82,9 +92,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     }
 
     /**
-     * Builds a SearchProvider for a specific domain.
+     * Retrieve or build a SearchProvider for a specific domain.
      *
      * @param domain  a string that is associated with the type o
+     *
      * @return  an instance of the SearchProvider that correspond to the domain
      */
     public SearchProvider getSearchProvider(String domain) {
@@ -99,7 +110,8 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     /**
      * Bare minimum.
      *
-     * @param keyValueStoreName identifier of the keyValueStore
+     * @param keyValueStoreName  identifier of the keyValueStore
+     *
      * @return the keyValueStore built according to the keyValueStore identifier
      * @throws UnsupportedOperationException when passed in redisStore.
      */
@@ -113,14 +125,30 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
     }
 
-    public PhysicalTable getPhysicalTable(String tableName) {
+    /**
+     * Retrieve or build a PhysicalTable.
+     *
+     * @param tableName the name for the PhysicalTable to be retrieved or built.
+     *
+     * @return the dimension instance corresponding to this name.
+     */
+    public ConfigPhysicalTable getPhysicalTable(String tableName) {
+        PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
+        if (! physicalTableDictionary.containsKey(tableName)) {
+            ConfigPhysicalTable physicalTable = physicalTableFactoryPark.buildEntity(tableName, this);
+            physicalTableDictionary.put(tableName, physicalTable);
+        }
+        return physicalTableDictionary.get(tableName);
+    }
 
-
+    public DataSourceMetadataService getMetadataService() {
+        return metadataService;
     }
 
     @Override
     public void load() {
         dimensionFactoryPark.fetchConfig().fieldNames().forEachRemaining(this::getDimension);
+        physicalTableFactoryPark.fetchConfig().fieldNames().forEachRemaining(this::getPhysicalTable);
     }
 
     @Override
@@ -155,6 +183,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
 
         private Map<String, Factory<Dimension>> dimensionFactories;
         private Map<String, Factory<SearchProvider>> searchProviderFactories;
+        private Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories;
 
         private final LuthierResourceDictionaries resourceDictionaries;
 
@@ -168,6 +197,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
             searchProviderFactories = getDefaultSearchProviderFactories();
+            physicalTableFactories = getDefaultPhysicalTableFactories();
         }
 
         /**
@@ -194,7 +224,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default searchProvider factories that currently lives in the code base.
          *
-         * @return  a LinkedHashMap of aliases of luceneSearchProvider to its factory
+         * @return  a LinkedHashMap of aliases of search provider type name to its factory
          */
         private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
             Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
@@ -222,6 +252,22 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             noOpAliases.forEach(alias -> searchProviderFactoryMap.put(alias, noOpSearchProviderFactory));
             scanAliases.forEach(alias -> searchProviderFactoryMap.put(alias, scanSearchProviderFactory));
             return searchProviderFactoryMap;
+        }
+
+        /**
+         * Default physicalTable factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of physicalTable type name to its factory
+         */
+        private Map<String, Factory<ConfigPhysicalTable>> getDefaultPhysicalTableFactories() {
+            Map<String, Factory<ConfigPhysicalTable>> physicalTableFactoryMap = new LinkedHashMap<>();
+            StrictPhysicalTableFactory strictFactory = new StrictPhysicalTableFactory();
+            PermissivePhysicalTableFactory permissiveFactory = new PermissivePhysicalTableFactory();
+            physicalTableFactoryMap.put("strictPhysicalTable", strictFactory);
+            physicalTableFactoryMap.put("strict", strictFactory);
+            physicalTableFactoryMap.put("permissivePhysicalTable", permissiveFactory);
+            physicalTableFactoryMap.put("permissive", permissiveFactory);
+            return physicalTableFactoryMap;
         }
 
         /**
@@ -287,6 +333,21 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
+         * Registers named PhysicalTable factories with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of physicalTable used in the config
+         *
+         * @param factories  A mapping from a PhysicalTable type identifier used in the config
+         * to a factory that builds PhysicalTable of that type
+         *
+         * @return the builder object
+         */
+        public Builder withPhysicalTableFactories(Map<String, Factory<ConfigPhysicalTable>> factories) {
+            this.physicalTableFactories = factories;
+            return this;
+        }
+
+        /**
          * Builds a LuthierIndustrialPark.
          *
          * @return the LuthierIndustrialPark with the specified resourceDictionaries and factories
@@ -295,7 +356,8 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             return new LuthierIndustrialPark(
                     resourceDictionaries,
                     new LinkedHashMap<>(dimensionFactories),
-                    new LinkedHashMap<>(searchProviderFactories)
+                    new LinkedHashMap<>(searchProviderFactories),
+                    new LinkedHashMap<>(physicalTableFactories)
             );
         }
     }

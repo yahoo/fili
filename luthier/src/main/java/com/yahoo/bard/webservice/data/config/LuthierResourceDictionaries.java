@@ -19,7 +19,7 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
 
     private final Map<String, SearchProvider> searchProviderDictionary;
 
-    private final Map<String, PhysicalTable> physicalTableDictionary;
+    // private final Map<String, PhysicalTable> physicalTableDictionary;
 
     /**
      * Constructor.
@@ -28,7 +28,7 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
         super();
         metricMakerDictionary = new LinkedHashMap<>();
         searchProviderDictionary = new LinkedHashMap<>();
-        physicalTableDictionary = new LinkedHashMap<>();
+        // physicalTableDictionary = new LinkedHashMap<>();
     }
     public Map<String, MetricMaker> getMetricMakerDictionary() {
         return metricMakerDictionary;
@@ -36,9 +36,9 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
     public Map<String, SearchProvider> getSearchProviderDictionary() {
         return searchProviderDictionary;
     }
-    public Map<String, PhysicalTable> getPhysicalTableDictionary() {
-        return physicalTableDictionary;
-    }
+    // public Map<String, PhysicalTable> getPhysicalTableDictionary() {
+    //     return physicalTableDictionary;
+    // }
 
     /**
      * Supply the default searchProvider dictionaries available in the entire application.

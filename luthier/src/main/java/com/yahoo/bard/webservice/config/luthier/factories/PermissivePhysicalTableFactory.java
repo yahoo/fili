@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.config.luthier.factories;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
@@ -22,7 +22,7 @@ public class PermissivePhysicalTableFactory extends SingleDataSourcePhysicalTabl
      * @return  A newly constructed config instance for the name and config provided
      */
     @Override
-    public PhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public ConfigPhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         super.prepare(name, configTable, resourceFactories);
         return new PermissivePhysicalTable(
                 this.tableName,

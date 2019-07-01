@@ -13,9 +13,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
  * A factory that is used by default to support KeyValueStore Dimensions.
  */
 public class ScanSearchProviderFactory implements Factory<SearchProvider> {
-
-    public static final String SEARCH_PROVIDER = "SearchProvider";
-
     /**
      * Build a SearchProvider instance.
      *

@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.config.luthier.factories;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 
 /**
@@ -22,7 +22,7 @@ public class StrictPhysicalTableFactory extends SingleDataSourcePhysicalTableFac
      * @return  A newly constructed config instance for the name and config provided
      */
     @Override
-    public PhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public ConfigPhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         super.prepare(name, configTable, resourceFactories);
         return new StrictPhysicalTable(
                 this.tableName,

@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
  */
 public class LuceneSearchProviderFactory implements Factory<SearchProvider> {
 
-    public static final String SEARCH_PROVIDER = "SearchProvider";
+    private static final String SEARCH_PROVIDER = "SearchProvider";
 
     /**
      * Build a SearchProvider instance.
