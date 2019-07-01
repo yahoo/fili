@@ -5,6 +5,9 @@ package com.yahoo.bard.webservice.data.config;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
+/**
+ * Used to instantiate a TableName object for Luthier Configuration.
+ */
 public class LuthierTableName implements TableName {
     private String camelName;
 

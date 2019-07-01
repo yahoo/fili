@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.data.config;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
