@@ -18,7 +18,6 @@ local M = {}
     Physical tables are defined in table M.physical that map physical table's
     name (should be the same as the dataset names defined in druid's config
     file) to a dictionary of physical table configuration:
-
     * name - The name of the physical table
         Defaults to the configuration's table key
     * description - Brief documentation about the physical table.
@@ -79,6 +78,8 @@ local air_quality_dimensions = {
 
 M.physical = {
     wikiticker = {
+        dateTimeZone = "UTC",
+        type = "strict",
         metrics = {
             "added",
             "delta",
@@ -91,6 +92,7 @@ M.physical = {
         }
     },
     air = {
+        dateTimeZone = "UTC",
         metrics = {
             "CO",
             "NO2"

@@ -20,16 +20,16 @@ local misc = require 'utils./misc'
 -- @return The table for storing table configs and ready be parsed into json
 function M.build_table_config(tables)
 
-    local configuration = {
-        physical = {},
-        logical = {}
-    }
+    local physical = {}
+    local logical = {}
 
     for name, physical_table in pairs(tables.physical) do
         local copy = misc.shallow_copy(physical_table)
-        copy.name = copy.name or name
+        -- hywical table name pull up
+        copy.type = copy.type or "strict"
         copy.description = copy.description or name
         copy.physicalTables = copy.physicalTables or {}
+        copy.dateTimeZone = copy.dateTimeZone or "UTC"
         local intermediate_map = copy.logicalToPhysicalColumnNames or {}
         -- rebuilds the logicalToPhysicalColumnNames map with nicer format
         copy.logicalToPhysicalColumnNames = {}
@@ -40,17 +40,16 @@ function M.build_table_config(tables)
             }
             table.insert(copy.logicalToPhysicalColumnNames, name_pair)
         end
-        table.insert(configuration.physical, copy)
+        physical[copy.name or name] = copy
     end
 
     for name, logical_table in pairs(tables.logical) do
         local copy = misc.shallow_copy(logical_table)
-        copy.name = copy.name or name
         copy.description = copy.description or name
         copy.physicalTables = copy.physicalTables or {}
-        table.insert(configuration.logical, copy)
+        logical[copy.name or name] = copy
     end
-    return configuration
+    return physical, logical
 end
 
 return M

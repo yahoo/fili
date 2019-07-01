@@ -1,0 +1,66 @@
+{
+  "wikiticker": {
+    "dateTimeZone": "UTC",
+    "logicalToPhysicalColumnNames": [
+      {
+        "physicalName": "testDimensionPhysicalName",
+        "logicalName": "testDimension"
+      }
+    ],
+    "physicalTables": [],
+    "type": "strict",
+    "granularity": "hour",
+    "description": "wikiticker",
+    "metrics": [
+      "added",
+      "delta",
+      "deleted"
+    ],
+    "dimensions": [
+      "testDimension",
+      "comment",
+      "countryIsoCode",
+      "regionIsoCode",
+      "page",
+      "user",
+      "isUnpatrolled",
+      "isNew",
+      "isRobot",
+      "isAnonymous",
+      "isMinor",
+      "namespace",
+      "channel",
+      "countryName",
+      "regionName",
+      "metroCode",
+      "cityName"
+    ]
+  },
+  "air": {
+    "dateTimeZone": "UTC",
+    "metrics": [
+      "CO",
+      "NO2"
+    ],
+    "logicalToPhysicalColumnNames": [],
+    "physicalTables": [],
+    "granularity": "hour",
+    "description": "air",
+    "type": "strict",
+    "dimensions": [
+      "PT08.S2(NMHC)",
+      "PT08.S4(NO2)",
+      "PT08.S4(NO2)",
+      "C6H6(GT)",
+      "PT08.S1(CO)",
+      "NOx(GT)",
+      "RH",
+      "AH",
+      "NMHC(GT)",
+      "T",
+      "PT08.S3(NOx)",
+      "PT08.S5(O3)",
+      "CO(GT)"
+    ]
+  }
+}

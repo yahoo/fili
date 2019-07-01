@@ -28,7 +28,7 @@ local tables = require("tables")
 local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
 local searchProviderConfig = dimensionUtils.build_search_provider_config(dimensions, searchProviderTemplates)
 local metricConfig = metricsUtils.build_metric_config(metrics)
-local tableConfig = tableUtils.build_table_config(tables)
+local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
 
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
@@ -39,5 +39,6 @@ os.execute("mkdir -p " .. testResources)
 parser.save(testResources .. "DimensionConfig.json", dimensionConfig)
 parser.save(testResources .. "SearchProviderConfig.json", searchProviderConfig)
 parser.save(testResources .. "MetricConfig.json", metricConfig)
-parser.save(testResources .. "TableConfig.json", tableConfig)
+parser.save(testResources .. "PhysicalTableConfig.json", physicalTableConfig)
+parser.save(testResources .. "LogicalTableConfig.json", logicalTableConfig)
 -- parser.save("../../src/test/resource/MakerConfig.json", require("makers"))
