@@ -23,13 +23,13 @@ public class StrictPhysicalTableFactory extends SingleDataSourcePhysicalTableFac
      */
     @Override
     public ConfigPhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        super.prepare(name, configTable, resourceFactories);
+        SingleDataSourceParams params = buildParams(name, configTable, resourceFactories);
         return new StrictPhysicalTable(
-                this.tableName,
-                this.timeGrain,
-                this.columns,
-                this.logicalToPhysicalColumnNames,
-                this.metadataService
+                params.tableName,
+                params.timeGrain,
+                params.columns,
+                params.logicalToPhysicalColumnNames,
+                params.metadataService
         );
     }
 }

@@ -16,8 +16,11 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.SingleDataSourcePhysicalTable;
+
 import org.joda.time.DateTimeZone;
 
+import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -32,29 +35,30 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
     //         "Base physical table '%s': defaultField name '%s' not found in fields '%s'";
     private static final String PHYSICAL_TABLE = "single data source physical table";
 
-    protected TableName tableName;
-    protected ZonedTimeGrain timeGrain;
-    protected Set<Column> columns;
-    protected Map<String, String> logicalToPhysicalColumnNames;
-    protected DataSourceMetadataService metadataService;
+    public static class SingleDataSourceParams {
+        TableName tableName;
+        ZonedTimeGrain timeGrain;
+        Set<Column> columns;
+        Map<String, String> logicalToPhysicalColumnNames;
+        DataSourceMetadataService metadataService;
+    }
 
-    /**
-     * Parse the config file to prepare the subclasses for building the Physical Tables.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable the json tree describing this config entity
-     * @param resourceFactories  the source for locating dependent objects
-     */
-    void prepare(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        this.tableName = new LuthierTableName(name);
+
+    protected SingleDataSourceParams buildParams(
+            String name,
+            ObjectNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
+        SingleDataSourceParams params = new SingleDataSourceParams();
+        params.tableName = new LuthierTableName(name);
         // TODO: Time grain not tested yet
         LuthierValidationUtils.validateField(configTable.get("granularity"), PHYSICAL_TABLE, name, "granularity");
         LuthierValidationUtils.validateField(configTable.get("dateTimeZone"), PHYSICAL_TABLE, name, "dateTimeZone");
-        this.timeGrain = DefaultTimeGrain.valueOf(
+        params.timeGrain = DefaultTimeGrain.valueOf(
                 configTable.get("granularity").textValue().toUpperCase(Locale.US)
         ).buildZonedTimeGrain(DateTimeZone.forID(configTable.get("dateTimeZone").textValue()));
         // TODO: columns not tested yet
-        this.columns = new LinkedHashSet<>();
+        params.columns = new LinkedHashSet<>();
         LuthierValidationUtils.validateField(
                 configTable.get("dimensions"),
                 PHYSICAL_TABLE,
@@ -63,15 +67,15 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         );
         JsonNode dimensionsNode = configTable.get("dimensions");
         dimensionsNode.forEach(
-                node -> columns.add(new DimensionColumn(resourceFactories.getDimension(node.textValue())))
+                node -> params.columns.add(new DimensionColumn(resourceFactories.getDimension(node.textValue())))
         );
         // TODO: think about using LogicalMetricColumn
         JsonNode metricsNode = configTable.get("metrics");
         metricsNode.forEach(
-                node -> columns.add(new MetricColumn(node.textValue()))
+                node -> params.columns.add(new MetricColumn(node.textValue()))
         );
         // TODO: logicalToPhysicalColumnNames not tested yet
-        this.logicalToPhysicalColumnNames = new LinkedHashMap<>();
+        params.logicalToPhysicalColumnNames = new LinkedHashMap<>();
         LuthierValidationUtils.validateField(
                 configTable.get("logicalToPhysicalColumnNames"),
                 PHYSICAL_TABLE,
@@ -80,11 +84,13 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         );
         JsonNode columnNameMapNode = configTable.get("logicalToPhysicalColumnNames");
         columnNameMapNode.forEach(
-                node -> logicalToPhysicalColumnNames.put(
+                node -> params.logicalToPhysicalColumnNames.put(
                         node.get("logicalName").textValue(),
                         node.get("physicalName").textValue()
                 )
         );
-        this.metadataService = resourceFactories.getMetadataService();
+        params.metadataService = resourceFactories.getMetadataService();
+        return params;
     }
+
 }
