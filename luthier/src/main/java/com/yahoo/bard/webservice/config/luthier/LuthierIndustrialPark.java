@@ -62,7 +62,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         Supplier<ObjectNode> dimensionConfig = new ResourceNodeSupplier("DimensionConfig.json");
         Supplier<ObjectNode> searchProviderConfig = new ResourceNodeSupplier("SearchProviderConfig.json");
         Supplier<ObjectNode> physicalTableConfig = new ResourceNodeSupplier("PhysicalTableConfig.json");
-        Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
+        // Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
         this.dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
         this.searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
         this.physicalTableFactoryPark = new FactoryPark<>(physicalTableConfig, physicalTableFactories);

@@ -4,18 +4,20 @@ package com.yahoo.bard.webservice.config.luthier.factories
 
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.table.PhysicalTable
 import spock.lang.Specification
 
 class StrictPhysicalTableFactorSpec extends Specification {
     LuthierIndustrialPark park
     PhysicalTable wikitickerTable
+    PhysicalTable airTable
     Map<String, PhysicalTable> tableDictionary
+    Dimension expectedTestDimension
     void setup() {
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries()
         park = new LuthierIndustrialPark.Builder(resourceDictionaries).build()
         park.load()
-        wikitickerTable = park.getPhysicalTable("wikiticker")
         tableDictionary = park.getPhysicalTableDictionary()
     }
 
@@ -25,5 +27,17 @@ class StrictPhysicalTableFactorSpec extends Specification {
             tableDictionary.containsKey("wikiticker")
             tableDictionary.containsKey("air")
             ! tableDictionary.containsKey("NON_EXISTENT_TABLE")
+    }
+
+    def "check that a specific dimension is loaded into the correct table"() {
+        when:
+            wikitickerTable = park.getPhysicalTable("wikiticker")
+            airTable = park.getPhysicalTable("air")
+            expectedTestDimension = park.getDimension("testDimension")
+        then:
+            wikitickerTable.getDimensions().contains(expectedTestDimension)
+            ! airTable.getDimensions().contains(expectedTestDimension)
+            wikitickerTable.getPhysicalColumnName("testDimension") == "testDimensionPhysicalName"
+            wikitickerTable.getPhysicalColumnName("testDimension") != "wrongPhysicalName"
     }
 }

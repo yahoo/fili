@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
  * Used to instantiate a TableName object for Luthier Configuration.
  */
 public class LuthierTableName implements TableName {
-    private String camelName;
+    private final String camelName;
 
     /**
      * Constructor.
