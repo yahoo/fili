@@ -30,12 +30,17 @@ Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fi
 - Note that if your setup is different you can adjust it by changing the default parameters below
 
     ```bash
+    # cd fili
+    # mvn install
     mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 \
     -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1 \
-    -Dbard__druid_broker=http://localhost:8082/druid/v2 \
+    -Dbard__druid_broker=http://localhost:8082/druid/v2
     ```
 
 From another window, run a test query against the default druid data.
+
+_(Make sure the ports in the following commands matches the `-Dbard__fili_port` argument
+if you customized it in the previous step)_
 
 ## Example Queries
 
