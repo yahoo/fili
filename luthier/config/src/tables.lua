@@ -18,11 +18,31 @@ local M = {}
     Physical tables are defined in table M.physical that map physical table's
     name (should be the same as the dataset names defined in druid's config
     file) to a dictionary of physical table configuration:
-
-    * name - The name of the physical table
-        Defaults to the configuration's table key
+    * The table is keyed on the name of the physical table
     * description - Brief documentation about the physical table.
         Defaults to the configuration's table key
+    * type - [Mandatory] The nature of this physical table, used to build the table internally.
+        Currently supports
+            * strict - strict single data source physical table:
+                A physical table backed up by one druid table. When querying a strict table with
+                partial data turned on, the data is considered "complete" if and only if there
+                is no missing data in any of the queried columns. 
+            * permissive - permissive single data source physical table:
+                A physical table backed up by one druid table. When querying a permissive table 
+                with partial data turned on, the data is considered "complete" if at least one
+                of the queried columns has no missing data.
+    * dateTimeZone - A case sensitive name according to joda's dateTimeZone to indicate the
+        which zone this physical table belongs in. See further:
+        https://www.joda.org/joda-time/timezones.html
+        Defaults to "UTC"
+    * granularity - the case-insensitive name for the physical table's granularity.
+        Including:
+            * year
+            * month
+            * day
+            * hour
+            * all
+        Defaults to "day"
     * metrics - A list of names of metrics for this physical table, the name of
         a metric should be the same as is defined in druid's config file.
     * dimensions - A list of names of  dimensions for this physical table, the
@@ -36,10 +56,20 @@ local M = {}
         if the Druid table is at the hourly grain. Naturally, you'll get weird
         results if you configure a physical table for a more precise granularity
         than is supported by the backing dataset.
+    * logicalToPhysicalColumnNames - used internally to supply a translation
+        for Druid look up. In the example:
+            * logiName = physiName
+        logiName should refer to a name in this table's dimensions field;
+        while physiName is the name used in Druid.
+        Note: for more information how this config is prepared, please see
+        the documentation in utils/tableUtils.lua
+    * physicalTables - A list of the names of the physical tables that this
+        logical table depends on
 ]]
 -------------------------------------------------------------------------------
 
 local wikipedia_dimensions = {
+    "testDimension",
     "comment",
     "countryIsoCode",
     "regionIsoCode",
@@ -76,15 +106,21 @@ local air_quality_dimensions = {
 
 M.physical = {
     wikiticker = {
+        dateTimeZone = "UTC",
+        type = "strict",
         metrics = {
             "added",
             "delta",
             "deleted"
         },
         dimensions = wikipedia_dimensions,
-        granularity = "hour"
+        granularity = "hour",
+        logicalToPhysicalColumnNames = {
+            testDimension = "testDimensionPhysicalName"
+        }
     },
     air = {
+        dateTimeZone = "UTC",
         metrics = {
             "CO",
             "NO2"
@@ -110,8 +146,8 @@ M.physical = {
         dimensions should be a subset of dimensions in its dependent physical
         tables.
     * granularity - A group of available granularities of this logical table, the
-       granularity can be "all", "hour", "day", "week", or "month."
-    * physicaltables - A list of the names of the physical tables that this
+        granularity can be "all", "hour", "day", "week", or "month".
+    * physicalTables - A list of the names of the physical tables that this
         logical table depends on
 
     Logical tables serve two purposes:
@@ -134,14 +170,14 @@ M.logical = {
     wikipedia = {
         metrics =  {"count", "added", "delta", "deleted"},
         dimensions = wikipedia_dimensions,
-        granularity = {"ALL", "HOUR", "DAY"},
-        physicaltables = {"wikiticker"}
+        granularity = {"all", "hour", "day"},
+        physicalTables = {"wikiticker"}
     },
     air_quality = {
         metrics = {"averageCOPerDay", "averageNO2PerDay"},
         dimensions = air_quality_dimensions,
-        granularity = {"ALL", "HOUR", "DAY"},
-        physicaltables = {"air"}
+        granularity = {"all", "hour", "day"},
+        physicalTables = {"air"}
     }
 }
 
