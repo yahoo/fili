@@ -14,12 +14,14 @@ import java.util.function.Supplier;
  */
 public class FactoryPark<T> {
 
-    public static final String FACTORY_KEY = "type";
+    static final String ENTITY_TYPE = "factory park";
 
-    public static final String UNKNOWN_FACTORY_NAME = "factory name '%s' in config is not known to the Luthier module";
+    private static final String FACTORY_KEY = "type";
+
+    private static final String UNKNOWN_FACTORY_NAME = "factory name '%s' in config is not known to the Luthier module";
 
     // Use a supplier to support deferred loading
-    private final Supplier<ObjectNode> configSource;
+    protected final Supplier<ObjectNode> configSource;
 
     private final Map<String, Factory<T>> factoryMap;
 
@@ -37,14 +39,14 @@ public class FactoryPark<T> {
     /**
      * Force the resolution of the underlying config and return it.
      *
-     * @return  The ObjectNode describing the config for related entitities.
+     * @return  The ObjectNode describing the config for related entities.
      */
     public ObjectNode fetchConfig() {
         return configSource.get();
     }
 
     /**
-     * Fetch the appropriate factory and constuct an instance using the configSource and the factory dictionary.
+     * Fetch the appropriate factory and construct an instance using the configSource and the factory dictionary.
      *
      * @param entityName  The name of the entity in the configSource
      * @param industrialPark  The dependency system for dependant entities.
@@ -52,7 +54,9 @@ public class FactoryPark<T> {
      * @return  An instance of T corresponding to this name.
      */
     T buildEntity(String entityName, LuthierIndustrialPark industrialPark) {
-        ObjectNode entityConfig = (ObjectNode) configSource.get().get(entityName);
+        LuthierValidationUtils.validateField(fetchConfig().get(entityName), ENTITY_TYPE, entityName, entityName);
+        ObjectNode entityConfig = (ObjectNode) fetchConfig().get(entityName);
+        LuthierValidationUtils.validateField(entityConfig.get(FACTORY_KEY), ENTITY_TYPE, entityName, FACTORY_KEY);
         String factoryName = entityConfig.get(FACTORY_KEY).textValue();
         if (! factoryMap.containsKey(factoryName)) {
             throw new LuthierFactoryException(String.format(UNKNOWN_FACTORY_NAME, factoryName));
