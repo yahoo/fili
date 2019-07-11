@@ -2,20 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A factory that is used by default to support KeyValueStore Dimensions.
  */
 public class ScanSearchProviderFactory implements Factory<SearchProvider> {
-
-    public static final String SEARCH_PROVIDER = "SearchProvider";
-
     /**
      * Build a SearchProvider instance.
      *
