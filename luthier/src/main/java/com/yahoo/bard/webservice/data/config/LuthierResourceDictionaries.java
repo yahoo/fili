@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 
 import java.util.HashMap;
@@ -18,19 +19,25 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
 
     private final Map<String, SearchProvider> searchProviderDictionary;
 
+    private final Map<String, KeyValueStore> keyValueStoreDictionary;
+
     /**
      * Constructor.
      */
     public LuthierResourceDictionaries() {
         super();
-        metricMakerDictionary = new LinkedHashMap<>();
-        searchProviderDictionary = new LinkedHashMap<>();
+        metricMakerDictionary = defaultMakerDictionary();
+        searchProviderDictionary = defaultSearchProviderDictionary();
+        keyValueStoreDictionary = defaultKeyValueStoreDictionary();
     }
     public Map<String, MetricMaker> getMetricMakerDictionary() {
         return metricMakerDictionary;
     }
     public Map<String, SearchProvider> getSearchProviderDictionary() {
         return searchProviderDictionary;
+    }
+    public Map<String, KeyValueStore> getKeyValueStoreDictionary() {
+        return keyValueStoreDictionary;
     }
 
     /**
@@ -39,7 +46,16 @@ public class LuthierResourceDictionaries extends ResourceDictionaries {
      * @return  A map of named SearchProviders
      */
     public static Map<String, SearchProvider> defaultSearchProviderDictionary() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
+    }
+
+    /**
+     * Supply the default keyValueStore dictionaries available in the entire application.
+     *
+     * @return  A map of named KeyValueStores
+     */
+    public static Map<String, KeyValueStore> defaultKeyValueStoreDictionary() {
+        return new LinkedHashMap<>();
     }
 
     /**

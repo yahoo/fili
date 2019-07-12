@@ -90,7 +90,7 @@ class ResourceNodeSupplierSpec extends Specification {
             description == "a description for testing"
             domain == "testDomain"
             searchProvider == "lucene"
-            keyValueStore == "com.yahoo.bard.webservice.data.dimension.MapStore"
+            keyValueStore == "memory"
     }
 
     def "All dimensions contain necessary keys (apiName, type, field, etc.), regardless their values"() {

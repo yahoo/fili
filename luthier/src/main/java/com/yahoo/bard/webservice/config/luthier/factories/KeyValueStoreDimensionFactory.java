@@ -96,10 +96,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         String longName = configTable.get("longName").textValue();
         String category = configTable.get("category").textValue();
         String description = configTable.get("description").textValue();
-        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("keyValueStore").textValue());
-        SearchProvider searchProvider = resourceFactories.getSearchProvider(
-                configTable.get("domain").textValue()
-        );
+        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("domain").textValue());
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get("domain").textValue());
         boolean isAggregatable = configTable.get("isAggregatable").booleanValue();
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
