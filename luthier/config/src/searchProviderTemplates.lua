@@ -1,4 +1,4 @@
--- Copyright 2018 Yahoo Inc.
+-- Copyright 2019 Oath Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
 --- A module that provide config about each domain of search provider, will be used by the dimensions.lua
@@ -9,6 +9,10 @@
 
 local M = {}
 
+-- If you used the default name resolution in LuthierIndustrialPark,
+-- using this FULLY_QUALIFIED_NAME is not necessary.
+-- (You can very well use any alias we provided or the custom ones you added)
+-- This is just to provide an insight about which class you will actually invoke.
 local FULLY_QUALIFIED_NAME = {
     lucene =
         "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider",

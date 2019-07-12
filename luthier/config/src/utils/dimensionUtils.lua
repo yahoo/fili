@@ -69,6 +69,22 @@ function M.build_dimensions_config(dimensions)
     return configuration
 end
 
+function M.build_key_value_store_config(dimensions, keyValueStoreTemplates)
+    local configuration = {}
+    for name, dimension in pairs(dimensions) do
+        local template = keyValueStoreTemplates[dimension.keyValueStore]
+        local domain = dimension.domain or name
+        if configuration[domain] then
+            assert(configuration[domain] == template,
+                    "Found contradicting keyValueStore config with the same domain name: "
+                            .. domain)
+        else
+            configuration[domain] = template
+        end
+    end
+    return configuration
+end
+
 function M.build_search_provider_config(dimensions, searchProviderTemplates)
     local configuration = {}
     for name, dimension in pairs(dimensions) do
@@ -84,10 +100,5 @@ function M.build_search_provider_config(dimensions, searchProviderTemplates)
     end
     return configuration
 end
-
-M.keyValueStores = {
-    memory = "com.yahoo.bard.webservice.data.dimension.MapStore",
-    redis = "com.yahoo.bard.webservice.data.dimension.RedisStore"
-}
 
 return M
