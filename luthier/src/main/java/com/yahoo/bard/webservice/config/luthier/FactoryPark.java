@@ -14,14 +14,14 @@ import java.util.function.Supplier;
  */
 public class FactoryPark<T> {
 
-    static final String ENTITY_TYPE = "factory park";
+    private static final String ENTITY_TYPE = "factory park";
 
     private static final String FACTORY_KEY = "type";
 
     private static final String UNKNOWN_FACTORY_NAME = "factory name '%s' in config is not known to the Luthier module";
 
     // Use a supplier to support deferred loading
-    protected final Supplier<ObjectNode> configSource;
+    private final Supplier<ObjectNode> configSource;
 
     private final Map<String, Factory<T>> factoryMap;
 
