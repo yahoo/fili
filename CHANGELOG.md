@@ -717,6 +717,7 @@ Added by @mpardesh in https://github.com/yahoo/fili/pull/518
 `ui_druid_broke` and `non_ui_druid_broker` are not used separately anymore. Instead, a single `druid_broker` replaces the two. For backwards compatibility, Fili checks if `druid_broker` is set. If not, Fili uses `non_ui_druid_broker` and then `ui_druid_broker`
 
 Added by @mpardesh in https://github.com/yahoo/fili/pull/489
+Amended by @gab-umich in https://github.com/yahoo/fili/pull/933
 
 Credits
 ---------

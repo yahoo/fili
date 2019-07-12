@@ -48,7 +48,7 @@ class ErrorDataServletSpec extends Specification {
 
     private static final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("non_ui_druid_broker")
+    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("druid_broker")
 
     @Shared boolean topNStatus
     static String saveDruidURL
