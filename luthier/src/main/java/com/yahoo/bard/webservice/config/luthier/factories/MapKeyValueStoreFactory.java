@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStore;
 
 /**
- * A factory that is used by default to support KeyValueStore Dimensions.
+ * A factory that is used by default to support KeyValueStore.
  */
 public class MapKeyValueStoreFactory implements Factory<KeyValueStore> {
 
