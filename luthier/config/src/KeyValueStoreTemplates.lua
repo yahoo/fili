@@ -1,11 +1,9 @@
 -- Copyright 2019 Oath Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
---- A module that provide config about each domain of keyValueStore, will be used by the dimensions.lua
---
--- For custom keyValueStore template, specify the search provider type in TYPE with fully qualified class name
--- when needed.
--- The corresponding arguments should go into the M map
+--- Provides keyValueStore configuration. A key value store is a structure for performing point lookups of dimension rows,
+-- while search providers provide more of an "index" of dimension rows. KeyValueStores need to be able to perform their
+-- lookups very fast, because they are used to annotate (potentially very large) Druid results.
 
 local M = {}
 
