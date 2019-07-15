@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 
 import java.util.Collections;
@@ -30,6 +31,7 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
         LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries);
         getDimensionFactories().ifPresent(builder::withDimensionFactories);
         getSearchProviderFactories().ifPresent(builder::withSearchProviderFactories);
+        getKeyValueStoreFactories().ifPresent(builder::withKeyValueStoreFactories);
         return builder.build();
     }
 
@@ -55,6 +57,14 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     }
 
     /**
+     * Temp stuff.
+     * @return  Optional.empty()
+     */
+    protected Optional<Map<String, Factory<KeyValueStore>>> getKeyValueStoreFactories() {
+        return Optional.empty();
+    }
+
+    /**
      * Extension point to add default maker factories.
      *
      * @return  Initializing dimension factories.
@@ -72,6 +82,9 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
         resourceDictionaries.getMetricMakerDictionary().putAll(LuthierResourceDictionaries.defaultMakerDictionary());
         resourceDictionaries.getSearchProviderDictionary().putAll(
                 LuthierResourceDictionaries.defaultSearchProviderDictionary()
+        );
+        resourceDictionaries.getKeyValueStoreDictionary().putAll(
+                LuthierResourceDictionaries.defaultKeyValueStoreDictionary()
         );
     }
 

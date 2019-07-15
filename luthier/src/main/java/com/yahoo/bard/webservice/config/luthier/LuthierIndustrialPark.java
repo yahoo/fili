@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.config.luthier;
 
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.PermissivePhysicalTableFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.ScanSearchProviderFactory;
@@ -14,7 +15,6 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
-import com.yahoo.bard.webservice.data.dimension.MapStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
@@ -43,6 +43,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     private final FactoryPark<Dimension> dimensionFactoryPark;
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
     private final FactoryPark<ConfigPhysicalTable> physicalTableFactoryPark;
+    private final FactoryPark<KeyValueStore> keyValueStoreFactoryPark;
     private final DataSourceMetadataService metadataService;
 
     /**
@@ -50,21 +51,25 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      *
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with
      * @param dimensionFactories  The map of factories for creating dimensions from external config
-     * @param searchProviderFactories  The map of factories for creating from external config
+     * @param keyValueStoreFactories  The map of factories for creating keyValueStores from external config
+     * @param searchProviderFactories  The map of factories for creating searchProviders from external config
      * @param physicalTableFactories  The map of factories for creating physicalTables from external config
      */
     protected LuthierIndustrialPark(
             LuthierResourceDictionaries resourceDictionaries,
             Map<String, Factory<Dimension>> dimensionFactories,
+            Map<String, Factory<KeyValueStore>> keyValueStoreFactories,
             Map<String, Factory<SearchProvider>> searchProviderFactories,
             Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories
     ) {
         this.resourceDictionaries = resourceDictionaries;
         Supplier<ObjectNode> dimensionConfig = new ResourceNodeSupplier("DimensionConfig.json");
+        Supplier<ObjectNode> keyValueStoreConfig = new ResourceNodeSupplier("KeyValueStoreConfig.json");
         Supplier<ObjectNode> searchProviderConfig = new ResourceNodeSupplier("SearchProviderConfig.json");
         Supplier<ObjectNode> physicalTableConfig = new ResourceNodeSupplier("PhysicalTableConfig.json");
         // Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
         this.dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
+        this.keyValueStoreFactoryPark = new FactoryPark<>(keyValueStoreConfig, keyValueStoreFactories);
         this.searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
         this.physicalTableFactoryPark = new FactoryPark<>(physicalTableConfig, physicalTableFactories);
         this.metadataService = new DataSourceMetadataService();
@@ -113,19 +118,18 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     /**
      * Bare minimum.
      *
-     * @param keyValueStoreName  identifier of the keyValueStore
+     * @param domain identifier of the keyValueStore
      *
      * @return the keyValueStore built according to the keyValueStore identifier
      * @throws UnsupportedOperationException when passed in redisStore.
      */
-    public KeyValueStore getKeyValueStore(String keyValueStoreName) throws UnsupportedOperationException {
-        switch (keyValueStoreName) {
-            // TODO: Magic values!
-            case "com.yahoo.bard.webservice.data.dimension.RedisStore":
-                throw new UnsupportedOperationException(keyValueStoreName);
-            default:
-                return new MapStore();
+    public KeyValueStore getKeyValueStore(String domain) throws UnsupportedOperationException {
+        Map<String, KeyValueStore> keyValueStoreDictionary = resourceDictionaries.getKeyValueStoreDictionary();
+        if (! keyValueStoreDictionary.containsKey(domain)) {
+            KeyValueStore keyValueStore = keyValueStoreFactoryPark.buildEntity(domain, this);
+            keyValueStoreDictionary.put(domain, keyValueStore);
         }
+        return keyValueStoreDictionary.get(domain);
     }
 
     /**
@@ -198,6 +202,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
 
         private Map<String, Factory<Dimension>> dimensionFactories;
         private Map<String, Factory<SearchProvider>> searchProviderFactories;
+        private Map<String, Factory<KeyValueStore>> keyValueStoreFactories;
         private Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories;
 
         private final LuthierResourceDictionaries resourceDictionaries;
@@ -211,6 +216,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         public Builder(LuthierResourceDictionaries resourceDictionaries) {
             this.resourceDictionaries = resourceDictionaries;
             dimensionFactories = getDefaultDimensionFactories();
+            keyValueStoreFactories = getDefaultKeyValueStoreFactories();
             searchProviderFactories = getDefaultSearchProviderFactories();
             physicalTableFactories = getDefaultPhysicalTableFactories();
         }
@@ -234,6 +240,22 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
             dimensionFactoryMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory());
             return dimensionFactoryMap;
+        }
+
+        /**
+         * Default keyValueStore factories that currently lives in the code base.
+         *
+         * @return  a LinkedHashMap of KeyValueStore to its factory
+         */
+        private Map<String, Factory<KeyValueStore>> getDefaultKeyValueStoreFactories() {
+            Map<String, Factory<KeyValueStore>> keyValueStoreFactoryMap = new LinkedHashMap<>();
+            MapKeyValueStoreFactory mapStoreFactory = new MapKeyValueStoreFactory();
+            keyValueStoreFactoryMap.put("memory", mapStoreFactory);
+            keyValueStoreFactoryMap.put("map", mapStoreFactory);
+            keyValueStoreFactoryMap.put("mapStore", mapStoreFactory);
+            keyValueStoreFactoryMap.put("com.yahoo.bard.webservice.data.dimension.MapStore", mapStoreFactory);
+            // TODO: add in Redis Store later
+            return keyValueStoreFactoryMap;
         }
 
         /**
@@ -332,6 +354,21 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
+         * Registers named KeyValueStore factories with the Industrial Park Builder.
+         * <p>
+         * There should be one factory per type of keyValueStore used in the config
+         *
+         * @param factories  A mapping from a keyValueStore type identifier used in the config
+         * to a factory that builds keyValueStore of that type
+         *
+         * @return the builder object
+         */
+        public Builder withKeyValueStoreFactories(Map<String, Factory<KeyValueStore>> factories) {
+            this.keyValueStoreFactories = factories;
+            return this;
+        }
+
+        /**
          * Registers a named searchProvider factory with the Industrial Park Builder.
          * <p>
          * There should be one factory per type of searchProvider used in the config
@@ -371,6 +408,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             return new LuthierIndustrialPark(
                     resourceDictionaries,
                     new LinkedHashMap<>(dimensionFactories),
+                    new LinkedHashMap<>(keyValueStoreFactories),
                     new LinkedHashMap<>(searchProviderFactories),
                     new LinkedHashMap<>(physicalTableFactories)
             );

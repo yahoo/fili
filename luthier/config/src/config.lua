@@ -18,6 +18,8 @@ local tableUtils = require("utils.tableUtils")
 local dimensions = require("dimensions")
 -- searchProviderTemplate returns preconfigured templates keyed on name.
 local searchProviderTemplates = require("searchProviderTemplates")
+-- keyValueStoreTemplates returns preconfigured templates keyed on name.
+local keyValueStoreTemplates = require("keyValueStoreTemplates")
 -- metrics returns metric configuration keyed on name.
 local metrics = require("metrics")
 -- tables returns a table containing two keys:
@@ -27,6 +29,7 @@ local tables = require("tables")
 
 local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
 local searchProviderConfig = dimensionUtils.build_search_provider_config(dimensions, searchProviderTemplates)
+local keyValueStoreConfig = dimensionUtils.build_key_value_store_config(dimensions, keyValueStoreTemplates)
 local metricConfig = metricsUtils.build_metric_config(metrics)
 local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
 
@@ -37,6 +40,7 @@ os.execute("mkdir -p " .. testResources)
 
 -- add to the test/resource
 parser.save(testResources .. "DimensionConfig.json", dimensionConfig)
+parser.save(testResources .. "KeyValueStoreConfig.json", keyValueStoreConfig)
 parser.save(testResources .. "SearchProviderConfig.json", searchProviderConfig)
 parser.save(testResources .. "MetricConfig.json", metricConfig)
 parser.save(testResources .. "PhysicalTableConfig.json", physicalTableConfig)
