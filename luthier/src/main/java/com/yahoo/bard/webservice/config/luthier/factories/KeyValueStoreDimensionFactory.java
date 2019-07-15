@@ -26,6 +26,25 @@ import java.util.stream.Collectors;
 
 /**
  * A factory that is used by default to support KeyValueStore Dimensions.
+ *
+ * A KeyValueStoreDimensionFactory expects the following fields in its configuration:
+ *
+ * Required Fields: 
+ * <ol>
+ *  <li> {@code longName} - Text. Longer, human friendly name for the dimension.
+ *  <li> {@code category} - Text. Category of the dimension for human/external tool consumption.
+ *  <li> {@code description} - Text. Long-winded description of the dimension for human consumption.
+ *  <li> {@code keyValueStore} - Text. Name of the KeyValueStore instance used by this dimension. 
+ *  <li> {@code searchProvider} - Text. Name of the SearchProvider instance used by this dimension.
+ *  <li> {@code fields} - List<ObjectNode>. DimensionField configuration for dimension's fields.
+ *      Required Fields:
+ *      <ol>
+ *       <li> {@code name} - Text. Name of the field. Should be unique for this Dimension.
+ *       <li> {@code tags} - List<Text>. Tags attached to this field for external tool consumption.
+ *      </ol>
+ *  <li> {@code defaultFields} - List<Text>. Field names shown in results by default. Must be defined in {@code fields}.
+ *  <li> {@code isAggregatable} - Boolean. Whether or not this dimension can be aggregated.
+ * </ol>
  */
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     public static final String DEFAULT_FIELD_NAME_ERROR =
