@@ -136,19 +136,51 @@ M.physical = {
     Logical tables are defined in table M.logical. They map logical table
     names to their configuration:
 
-    * name - The name of the table
+    * The table is keyed on the name of the logical table
+    * type - The nature of this logical table, used to build the table internally.
+        Currently supports:
+            * default - A simple set of rules just enough to describe a logical table correctly.
+                if 'default' is selected, the following fields will be used in the config:
+                    * metrics
+                    * dimensions
+                    * granularities
+                    * physicalTables
+                    * dateTimeZone
+                    * category
+                    * longName
+                    * retention
+                    * description
+                the following fields will be ignored:
+                    * apiFilters
+        Defaults to 'default'.
+    * category - the category in which the logical table belongs.
+        Defaults to 'GENERAL'
+    * longName - a longer name for descriptive uses.
         Defaults to the configuration's key
     * description - Brief documentation about the logical table.
         Defaults to the configuration's key
-    * metrics - A set of API metrics' name for this logical table, these 
-        should be a subset of the metrics configured in metrics.lua.
+    * metrics - A set of API metrics' name for this logical table, these
+        should be a subset of the metrics configured in metrics.lua;
+        Defaults to an empty lua table.
     * dimensions - A set of dimensions for this logical table, the set of
         dimensions should be a subset of dimensions in its dependent physical
         tables.
-    * granularity - A group of available granularities of this logical table, the
+        Defaults to an empty lua table.
+    * dateTimeZone - A case sensitive name according to joda's dateTimeZone to indicate
+        which time zone the table's underlying data source is collected in. See further:
+        https://www.joda.org/joda-time/timezones.html
+        Defaults to "UTC"
+    * retention - a String metadata meant to tell external customers the retention policy
+        for the underlying druid table(s). Not used internally by Fili.
+        String is in the ISO 8601 Duration format, i.e. PnYnMnDTnHnMnS
+        e.g. "P1Y2M10DT2H30M" which means 1 year 2 months 10 days and 2 hours 30 minutes.
+        Defaults to "P1Y" which means 1 year
+    * granularities - A group of available granularities of this logical table, the
         granularity can be "all", "hour", "day", "week", or "month".
+        Defaults to an empty lua table.
     * physicalTables - A list of the names of the physical tables that this
         logical table depends on
+        Defaults to an empty lua table.
 
     Logical tables serve two purposes:
         1. They provide a logical grouping of metrics and dimensions for people
@@ -168,15 +200,30 @@ M.physical = {
 
 M.logical = {
     wikipedia = {
+        type = "default",
+        category = "wikipedia category",
+        longName = "wikipedia logical table",
+        description = "wikipedia description",
+        retention = "P2Y",
         metrics =  {"count", "added", "delta", "deleted"},
         dimensions = wikipedia_dimensions,
-        granularity = {"all", "hour", "day"},
-        physicalTables = {"wikiticker"}
+        granularities = {
+            "all",
+            "hour",
+            "day"
+        },
+        physicalTables = {"wikiticker"},
+        dateTimeZone = "UTC"
     },
     air_quality = {
+        type = "default",
         metrics = {"averageCOPerDay", "averageNO2PerDay"},
         dimensions = air_quality_dimensions,
-        granularity = {"all", "hour", "day"},
+        granularities = {
+            "all",
+            "hour",
+            "day"
+        },
         physicalTables = {"air"}
     }
 }

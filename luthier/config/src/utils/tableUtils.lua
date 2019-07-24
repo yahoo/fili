@@ -39,7 +39,7 @@ local misc = require 'utils./misc'
 -- object to stay as an ArrayNode. If we instead naively translate this, then it
 -- will be an ObjectNode, i.e. { "logiName": "physiName" }, when it is non-empty,
 -- but an ArrayNode, i.e. [], when it is empty.
-local physical_table_build = function(name, physical_table)
+local function physical_table_build(name, physical_table)
     local copy = misc.shallow_copy(physical_table)
     copy.type = copy.type or "strict"
     copy.description = copy.description or name
@@ -59,14 +59,26 @@ local physical_table_build = function(name, physical_table)
     return copy
 end
 
+local function logical_table_build(name, logical_table)
+    local copy = misc.shallow_copy(logical_table)
+    copy.type = copy.type or "default"
+    copy.category = copy.category or "GENERAL"
+    copy.retention = copy.retention or "P1Y"
+    copy.longName = copy.longName or name
+    copy.description = copy.description or name
+    copy.physicalTables = copy.physicalTables or {}
+    copy.granularities = copy.granularities
+    copy.dateTimeZone = copy.dateTimeZone or "UTC"
+    return copy
+end
+
 --- Add physical table configs and logical table configs into a configuration.
 --
 -- @param tables A table containing two keys:
 --  physical - A table of physical table configuration, keyed on name
 --  logical - A table of logical table configuration, keyed on name
--- @return The table for storing table configs and ready be parsed into json
+-- @return The physical table and logical table for storing table configs and ready be parsed into json
 function M.build_table_config(tables)
-
     local physical = {}
     local logical = {}
 
@@ -75,10 +87,7 @@ function M.build_table_config(tables)
     end
 
     for name, logical_table in pairs(tables.logical) do
-        local copy = misc.shallow_copy(logical_table)
-        copy.description = copy.description or name
-        copy.physicalTables = copy.physicalTables or {}
-        logical[copy.name or name] = copy
+        logical[name] = logical_table_build(name, logical_table)
     end
     return physical, logical
 end
