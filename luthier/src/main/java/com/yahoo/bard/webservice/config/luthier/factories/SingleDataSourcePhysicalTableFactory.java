@@ -3,30 +3,37 @@
 package com.yahoo.bard.webservice.config.luthier.factories;
 
 import com.yahoo.bard.webservice.config.luthier.Factory;
+import com.yahoo.bard.webservice.config.luthier.LuthierFactoryException;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.data.config.LuthierTableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import com.yahoo.bard.webservice.util.GranularityParseException;
 import org.joda.time.DateTimeZone;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
  */
-abstract class SingleDataSourcePhysicalTableFactory implements Factory<ConfigPhysicalTable> {
+public abstract class SingleDataSourcePhysicalTableFactory implements Factory<ConfigPhysicalTable> {
     private static final String ENTITY_TYPE = "single data source physical table";
-
+    private static final String GRANULARITY_DICTIONARY_MISSING = "granularityDictionary missing from the " +
+            "LuthierIndustrialPark. Will not build " + ENTITY_TYPE + ": %s.";
+    private static final String GRANULARITY_PARSING_ERROR =
+            "granularity: %s does not exist in the granularityDictionary, when parsing %s";
+    private static final String GRANULARITY_TYPE_ERROR =
+            "%s '%s' expects a ZonedTimeGrain, but found another kind of Granularity. Did you use an AllGranularity?";
     /**
      * Build the parameter for the subclass of SingleDataSourceParams to use.
      *
@@ -41,13 +48,33 @@ abstract class SingleDataSourcePhysicalTableFactory implements Factory<ConfigPhy
             ObjectNode configTable,
             LuthierIndustrialPark resourceFactories
     ) {
+        if (resourceFactories.getGranularityDictionary() == null) {
+            throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
+        }
         validateFields(name, configTable);
 
         LuthierPhysicalTableParams params = new LuthierPhysicalTableParams();
         params.tableName = new LuthierTableName(name);
-        params.timeGrain = DefaultTimeGrain
-                .valueOf(configTable.get("granularity").textValue().toUpperCase(Locale.US))
-                .buildZonedTimeGrain(DateTimeZone.forID(configTable.get("dateTimeZone").textValue()));
+
+        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get("dateTimeZone").textValue());
+        try {
+            Granularity granularity = resourceFactories.getGranularityParser().parseGranularity(
+                    configTable.get("granularity").textValue(),
+                    dateTimeZone
+            );
+            if (!(granularity instanceof ZonedTimeGrain)) {
+                throw new LuthierFactoryException(
+                        String.format(GRANULARITY_TYPE_ERROR, ENTITY_TYPE, name)
+                );
+            }
+            params.timeGrain = (ZonedTimeGrain) granularity;
+        } catch (GranularityParseException e) {
+            throw new LuthierFactoryException(
+                    String.format(GRANULARITY_PARSING_ERROR, name, ENTITY_TYPE),
+                    e
+            );
+        }
+
         params.columns = new LinkedHashSet<>();
 
         JsonNode dimensionsNode = configTable.get("dimensions");

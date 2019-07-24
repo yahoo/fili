@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -26,12 +27,14 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
 
     @Override
     protected ConfigurationLoader getConfigurationLoader() {
+        GranularityDictionary granularityDictionary = getGranularityDictionary();
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries();
         initializeDictionaries(resourceDictionaries);
         LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries);
         getDimensionFactories().ifPresent(builder::withDimensionFactories);
         getSearchProviderFactories().ifPresent(builder::withSearchProviderFactories);
         getKeyValueStoreFactories().ifPresent(builder::withKeyValueStoreFactories);
+        builder.setGranularityDictionary(granularityDictionary);
         return builder.build();
     }
 
@@ -44,7 +47,6 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     protected Optional<Map<String, Factory<Dimension>>> getDimensionFactories() {
         return Optional.empty();
     }
-
 
     /**
      * Extension point to add default searchProvider factories.

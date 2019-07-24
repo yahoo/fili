@@ -16,6 +16,7 @@ public class ResourceNodeSupplier implements Supplier<ObjectNode> {
 
     public static final String NOT_AN_OBJECT = "%s is not formatted as a JSON Object";
     public static final String LOAD_FAILURE = "Can't load resource: %s";
+
     private final String resourceName;
 
     ObjectNode objectNode;
@@ -27,6 +28,10 @@ public class ResourceNodeSupplier implements Supplier<ObjectNode> {
      */
     public ResourceNodeSupplier(String resourceName) {
         this.resourceName = resourceName;
+    }
+
+    public String getResourceName() {
+        return resourceName;
     }
 
     @Override
