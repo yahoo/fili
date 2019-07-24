@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.config.luthier
 
 
-import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -11,24 +10,17 @@ import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider
 import spock.lang.Specification
 
 class LuthierIndustrialParkSpec extends Specification {
-    LuthierIndustrialPark industrialPark
     LuthierIndustrialPark defaultIndustrialPark
     LuthierResourceDictionaries resourceDictionaries
     void setup() {
         resourceDictionaries = new LuthierResourceDictionaries()
+        defaultIndustrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries).build()
+        defaultIndustrialPark.load()
     }
 
     def "An industrialPark instance built with a custom dimensionFactories map contains a particular testDimension."() {
-        given:
-            Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
-            dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
-            industrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries)
-                .withDimensionFactories(dimensionFactoriesMap)
-                .build()
         when:
-            industrialPark.load()
-            Dimension testDimension = industrialPark.getDimension("testDimension")
-            testDimension.getFieldByName("nonExistentField")
+            Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
         then:
             testDimension != null
             testDimension.getApiName() == "testDimension"
@@ -37,14 +29,28 @@ class LuthierIndustrialParkSpec extends Specification {
                     "TEST_PK",
                     ["primaryKey"]
             )
+    }
+
+    def "IllegalArgumentException is thrown correctly when try to get a non-existent field from an existing dimension"() {
+        when:
+            Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
+            testDimension.getFieldByName("nonExistentField")
+        then:
             thrown(IllegalArgumentException)
     }
 
-    def "A Lucene SearchProvider is correctly constructed through a test Dimension from the default Industrial Park"() {
-        given:
-            defaultIndustrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries).build()
+    def "LuthierFactoryException is thrown when we build logicalTableGroup, if the GranularityDictionary is null"() {
         when:
-            defaultIndustrialPark.load()
+            LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries)
+                    .withGranularityDictionary(null)
+            LuthierIndustrialPark parkWithoutGrain = builder.build()
+            parkWithoutGrain.load()
+        then:
+            thrown(LuthierFactoryException)
+    }
+
+    def "A Lucene SearchProvider is correctly constructed through a test Dimension from the default Industrial Park"() {
+        when:
             Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
             LuceneSearchProvider luceneSearchProvider = testDimension.getSearchProvider()
         then:
@@ -55,10 +61,7 @@ class LuthierIndustrialParkSpec extends Specification {
     }
 
     def "When a dimension name gets fetched the second time, it refers to the same object as the first one"() {
-        given:
-            defaultIndustrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries).build()
         when:
-            defaultIndustrialPark.load()
             Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
             Dimension secondTestDimension = defaultIndustrialPark.getDimension("testDimension")
             Dimension differentTestDimension = defaultIndustrialPark.getDimension("comment")

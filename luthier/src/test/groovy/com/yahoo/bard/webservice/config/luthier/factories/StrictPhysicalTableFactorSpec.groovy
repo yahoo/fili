@@ -23,7 +23,12 @@ class StrictPhysicalTableFactorSpec extends Specification {
     }
 
     def "physical table dictionary contains correct keys"() {
-        expect:
+        when:
+            park.getPhysicalTable("air")
+            for (physicalTableName in park.physicalTableFactoryPark.fetchConfig().fieldNames()) {
+                park.getPhysicalTable(physicalTableName)
+            }
+        then:
             tableDictionary.size() == 2
             tableDictionary.containsKey("wikiticker")
             tableDictionary.containsKey("air")
