@@ -18,10 +18,11 @@ public class FactoryPark<T> {
 
     private static final String FACTORY_KEY = "type";
 
-    private static final String UNKNOWN_FACTORY_NAME = "factory name '%s' in config is not known to the Luthier module";
+    private static final String UNKNOWN_FACTORY_NAME = "when configuring entity '%s' in '%s', " +
+            "factory name '%s' in config is not known to the Luthier module";
 
     // Use a supplier to support deferred loading
-    private final Supplier<ObjectNode> configSource;
+    protected final Supplier<ObjectNode> configSource;
 
     private final Map<String, Factory<T>> factoryMap;
 
@@ -59,7 +60,14 @@ public class FactoryPark<T> {
         LuthierValidationUtils.validateField(entityConfig.get(FACTORY_KEY), ENTITY_TYPE, entityName, FACTORY_KEY);
         String factoryName = entityConfig.get(FACTORY_KEY).textValue();
         if (! factoryMap.containsKey(factoryName)) {
-            throw new LuthierFactoryException(String.format(UNKNOWN_FACTORY_NAME, factoryName));
+            throw new LuthierFactoryException(
+                    String.format(
+                            UNKNOWN_FACTORY_NAME,
+                            entityName,
+                            ((ResourceNodeSupplier) configSource).getResourceName(),
+                            factoryName
+                    )
+            );
         }
         return factoryMap.get(factoryName).build(entityName, entityConfig, industrialPark);
     }

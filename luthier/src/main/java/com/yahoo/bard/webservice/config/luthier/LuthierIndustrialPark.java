@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier;
 
+import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
@@ -10,6 +11,7 @@ import com.yahoo.bard.webservice.config.luthier.factories.PermissivePhysicalTabl
 import com.yahoo.bard.webservice.config.luthier.factories.ScanSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.StrictPhysicalTableFactory;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
+import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -21,12 +23,18 @@ import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.GranularityDictionary;
+import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -40,43 +48,53 @@ import java.util.function.Supplier;
 public class LuthierIndustrialPark implements ConfigurationLoader {
 
     private final LuthierResourceDictionaries resourceDictionaries;
+    private final GranularityDictionary granularityDictionary;
     private final FactoryPark<Dimension> dimensionFactoryPark;
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
     private final FactoryPark<ConfigPhysicalTable> physicalTableFactoryPark;
     private final FactoryPark<KeyValueStore> keyValueStoreFactoryPark;
+    private final FactoryPark<LogicalTableGroup> logicalTableGroupFactoryPark;
+    // all physical tables should query this metadataService to get their availability
     private final DataSourceMetadataService metadataService;
+    private final GranularityParser granularityParser;
 
     /**
      * Constructor.
      *
      * @param resourceDictionaries  The dictionaries to initialize the industrial park with
+     * @param granularityDictionary  The named map of granularities to configure tables
      * @param dimensionFactories  The map of factories for creating dimensions from external config
      * @param keyValueStoreFactories  The map of factories for creating keyValueStores from external config
      * @param searchProviderFactories  The map of factories for creating searchProviders from external config
      * @param physicalTableFactories  The map of factories for creating physicalTables from external config
+     * @param logicalTableGroupFactories  The map of factories for creating logicalTables from external config
      */
     protected LuthierIndustrialPark(
             LuthierResourceDictionaries resourceDictionaries,
+            GranularityDictionary granularityDictionary,
             Map<String, Factory<Dimension>> dimensionFactories,
             Map<String, Factory<KeyValueStore>> keyValueStoreFactories,
             Map<String, Factory<SearchProvider>> searchProviderFactories,
-            Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories
+            Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories,
+            Map<String, Factory<LogicalTableGroup>> logicalTableGroupFactories
     ) {
         this.resourceDictionaries = resourceDictionaries;
+        this.granularityDictionary = granularityDictionary;
+        this.granularityParser = new StandardGranularityParser(granularityDictionary);
         Supplier<ObjectNode> dimensionConfig = new ResourceNodeSupplier("DimensionConfig.json");
         Supplier<ObjectNode> keyValueStoreConfig = new ResourceNodeSupplier("KeyValueStoreConfig.json");
         Supplier<ObjectNode> searchProviderConfig = new ResourceNodeSupplier("SearchProviderConfig.json");
         Supplier<ObjectNode> physicalTableConfig = new ResourceNodeSupplier("PhysicalTableConfig.json");
-        // Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
+        Supplier<ObjectNode> logicalTableConfig = new ResourceNodeSupplier("LogicalTableConfig.json");
         this.dimensionFactoryPark = new FactoryPark<>(dimensionConfig, dimensionFactories);
         this.keyValueStoreFactoryPark = new FactoryPark<>(keyValueStoreConfig, keyValueStoreFactories);
         this.searchProviderFactoryPark = new FactoryPark<>(searchProviderConfig, searchProviderFactories);
         this.physicalTableFactoryPark = new FactoryPark<>(physicalTableConfig, physicalTableFactories);
+        this.logicalTableGroupFactoryPark = new FactoryPark<>(logicalTableConfig, logicalTableGroupFactories);
         this.metadataService = new DataSourceMetadataService();
     }
 
 /*
-    LogicalTable getLogicalTable(String tableName);
     LogicalMetric getLogicalMetric(String metricName);
     MetricMaker getMetricMaker(String makerName);
 */
@@ -152,6 +170,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         return metadataService;
     }
 
+
+    public GranularityParser getGranularityParser() {
+        return granularityParser;
+    }
+
     /**
      * Retrieve or build a metric.
      *
@@ -159,15 +182,41 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      *
      * @return the LogicalMetric instance corresponding to this metricName.
      */
-    // TODO: to be finished in the metric PR.
     public LogicalMetric getMetric(String metricName) {
+        // TODO: to be finished in the metric PR.
         return null;
+    }
+
+    /**
+     * Retrieve or build a LogicalTable.
+     *
+     * @param tableId the identifier for table name and granularity to be retrieved or built
+     *
+     * @return the logicalTable instance corresponding to this TableIdentifier.
+     */
+    public LogicalTable getLogicalTable(TableIdentifier tableId) {
+        LogicalTableDictionary logicalTableDictionary = resourceDictionaries.getLogicalDictionary();
+        if (! logicalTableDictionary.containsKey(tableId)) {
+            LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(tableId.getKey(), this);
+            logicalTableDictionary.putAll(logicalTableGroup);
+        }
+        return logicalTableDictionary.get(tableId);
+    }
+
+    /**
+     * Private setters to put a group of LogicalTable's.
+     *
+     * @param tableKey named tableKey according to the definition in the json Config
+     */
+    private void putLogicalTableByGroup(String tableKey) {
+        LogicalTableDictionary logicalTableDictionary = resourceDictionaries.getLogicalDictionary();
+        LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(tableKey, this);
+        logicalTableDictionary.putAll(logicalTableGroup);
     }
 
     @Override
     public void load() {
-        dimensionFactoryPark.fetchConfig().fieldNames().forEachRemaining(this::getDimension);
-        physicalTableFactoryPark.fetchConfig().fieldNames().forEachRemaining(this::getPhysicalTable);
+        logicalTableGroupFactoryPark.fetchConfig().fieldNames().forEachRemaining(this::putLogicalTableByGroup);
     }
 
     @Override
@@ -195,6 +244,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         return resourceDictionaries;
     }
 
+    public GranularityDictionary getGranularityDictionary() {
+        return granularityDictionary;
+    }
+
     /**
      * Builder object to construct a new LuthierIndustrialPark instance with.
      */
@@ -204,7 +257,8 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         private Map<String, Factory<SearchProvider>> searchProviderFactories;
         private Map<String, Factory<KeyValueStore>> keyValueStoreFactories;
         private Map<String, Factory<ConfigPhysicalTable>> physicalTableFactories;
-
+        private Map<String, Factory<LogicalTableGroup>> logicalTableGroupFactories;
+        private GranularityDictionary granularityDictionary;
         private final LuthierResourceDictionaries resourceDictionaries;
 
         /**
@@ -214,25 +268,31 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          * PhysicalTableDictionary, DimensionDictionary, etc.
          */
         public Builder(LuthierResourceDictionaries resourceDictionaries) {
-            this.resourceDictionaries = resourceDictionaries;
-            dimensionFactories = getDefaultDimensionFactories();
-            keyValueStoreFactories = getDefaultKeyValueStoreFactories();
-            searchProviderFactories = getDefaultSearchProviderFactories();
-            physicalTableFactories = getDefaultPhysicalTableFactories();
+            this(
+                    resourceDictionaries,
+                    StandardGranularityParser.getDefaultGrainMap()
+            );
         }
 
         /**
          * Constructor.
-         * <p>
-         * Default to use an empty resource dictionary.
+         *
+         * @param resourceDictionaries  a class that contains resource dictionaries including
+         * PhysicalTableDictionary, DimensionDictionary, etc.
+         * @param granularityDictionary  a named map of all supported granularities
          */
-        public Builder() {
-            this(new LuthierResourceDictionaries());
+        public Builder(LuthierResourceDictionaries resourceDictionaries, GranularityDictionary granularityDictionary) {
+            this.resourceDictionaries = resourceDictionaries;
+            this.granularityDictionary = granularityDictionary;
+            dimensionFactories = getDefaultDimensionFactories();
+            keyValueStoreFactories = getDefaultKeyValueStoreFactories();
+            searchProviderFactories = getDefaultSearchProviderFactories();
+            physicalTableFactories = getDefaultPhysicalTableFactories();
+            logicalTableGroupFactories = getDefaultLogicalTableGroupFactories();
         }
 
-
         /**
-         * Default dimension factories that currently lives in the code base.
+         * Default dimension factories that are defined in fili-core.
          *
          * @return  a LinkedHashMap of KeyValueStoreDimension to its factory
          */
@@ -243,7 +303,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * Default keyValueStore factories that currently lives in the code base.
+         * Default keyValueStore factories that are defined in fili-core.
          *
          * @return  a LinkedHashMap of KeyValueStore to its factory
          */
@@ -259,7 +319,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * Default searchProvider factories that currently lives in the code base.
+         * Default searchProvider factories that are defined in fili-core.
          *
          * @return  a LinkedHashMap of aliases of search provider type name to its factory
          */
@@ -292,7 +352,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * Default physicalTable factories that currently lives in the code base.
+         * Default PhysicalTable factories that are defined in fili-core.
          *
          * @return  a LinkedHashMap of physicalTable type name to its factory
          */
@@ -305,6 +365,23 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             physicalTableFactoryMap.put("permissivePhysicalTable", permissiveFactory);
             physicalTableFactoryMap.put("permissive", permissiveFactory);
             return physicalTableFactoryMap;
+        }
+
+        /**
+         * Default LogicalTable factories that are defined in fili-core.
+         *
+         * @return  a LinkedHashMap of logical Table type name to its factory
+         */
+        private Map<String, Factory<LogicalTableGroup>> getDefaultLogicalTableGroupFactories() {
+            Map<String, Factory<LogicalTableGroup>> logicalTableFactoryMap = new LinkedHashMap<>();
+            DefaultLogicalTableGroupFactory defaultFactory = new DefaultLogicalTableGroupFactory();
+            logicalTableFactoryMap.put("default", defaultFactory);
+            logicalTableFactoryMap.put("DefaultLogicalTableGroup", defaultFactory);
+            return logicalTableFactoryMap;
+        }
+
+        public GranularityDictionary getGranularityDictionary() {
+            return granularityDictionary;
         }
 
         /**
@@ -400,6 +477,34 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
+         * Register one named Granularity into the GranularityDictionary.
+         *
+         * @param name  the identifier of the new granularity as a String
+         * @param granularity  the new added granularity
+         */
+        public void addGranularity(String name, Granularity granularity) {
+            this.granularityDictionary.put(name, granularity);
+        }
+
+        public void setGranularityDictionary(GranularityDictionary granularityDictionary) {
+            this.granularityDictionary = granularityDictionary;
+        }
+
+        /**
+         * Registers named custom GranularityDictionary if new granularity type needs to be supported.
+         * <p>
+         * Will replace the original GranularityDictionary
+         *
+         * @param granularityDictionary  maps granularity name (String) to granularity instance
+         *
+         * @return the builder object
+         */
+        public Builder withGranularityDictionary(GranularityDictionary granularityDictionary) {
+            this.granularityDictionary = granularityDictionary;
+            return this;
+        }
+
+        /**
          * Builds a LuthierIndustrialPark.
          *
          * @return the LuthierIndustrialPark with the specified resourceDictionaries and factories
@@ -407,10 +512,12 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         public LuthierIndustrialPark build() {
             return new LuthierIndustrialPark(
                     resourceDictionaries,
+                    granularityDictionary,
                     new LinkedHashMap<>(dimensionFactories),
                     new LinkedHashMap<>(keyValueStoreFactories),
                     new LinkedHashMap<>(searchProviderFactories),
-                    new LinkedHashMap<>(physicalTableFactories)
+                    new LinkedHashMap<>(physicalTableFactories),
+                    new LinkedHashMap<>(logicalTableGroupFactories)
             );
         }
     }
