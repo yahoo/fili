@@ -158,7 +158,7 @@ M.physical = {
     * longName - a longer name for descriptive uses.
         Defaults to the configuration's key
     * description - Brief documentation about the logical table.
-        Defaults to the configuration's key
+        Defaults to the configuration's longName
     * metrics - A set of API metrics' name for this logical table, these
         should be a subset of the metrics configured in metrics.lua;
         Defaults to an empty lua table.

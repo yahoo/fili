@@ -57,21 +57,8 @@ local physical_table_build = function(name, physical_table)
     return phys_config
 end
 
-local logical_table_build = function(name, logical_table)
-    return logical_table_defaulting(name, logical_table)
-end
-
 local function logical_table_build(name, logical_table)
-    local copy = misc.shallow_copy(logical_table)
-    copy.type = copy.type or "default"
-    copy.category = copy.category or "GENERAL"
-    copy.retention = copy.retention or "P1Y"
-    copy.longName = copy.longName or name
-    copy.description = copy.description or name
-    copy.physicalTables = copy.physicalTables or {}
-    copy.granularities = copy.granularities
-    copy.dateTimeZone = copy.dateTimeZone or "UTC"
-    return copy
+    return logical_table_defaulting(name, logical_table)
 end
 
 --- Add physical table configs and logical table configs into a configuration.

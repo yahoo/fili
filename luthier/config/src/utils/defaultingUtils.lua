@@ -23,6 +23,8 @@ M.DEFAULT_PHYSICAL_GRANULARITY = "day"
 M.DEFAULT_PHYSICAL_COLUMN_NAME_MAP = {}
 -- Logical Tables
 M.DEFAULT_LOGICAL_TYPE = "default"
+M.DEFAULT_LOGICAL_CATEGORY = "GENERAL"
+M.DEFAULT_LOGICAL_RETENTION = "P1Y"
 M.DEFAULT_LOGICAL_DEPENDENT_TABLE = {}
 M.DEFAULT_LOGICAL_DATE_TIME_ZONE = "UTC"
 --- Defaulting methods:
@@ -58,6 +60,10 @@ function M.logical_table_defaulting(logical_table_name, logical_table)
     local logi_config = misc.shallow_copy(logical_table)
     logi_config.description = logi_config.description or logical_table_name
     logi_config.type = logi_config.type or M.DEFAULT_LOGICAL_TYPE
+    logi_config.category = logi_config.category or M.DEFAULT_LOGICAL_CATEGORY
+    logi_config.retention = logi_config.retention or M.DEFAULT_LOGICAL_RETENTION
+    logi_config.longName = logi_config.longName or logical_table_name
+    logi_config.description = logi_config.description or logi_config.longName  -- this line must follow the previous one
     logi_config.physicalTables = logi_config.physicalTables or M.DEFAULT_LOGICAL_DEPENDENT_TABLE
     logi_config.dateTimeZone = logi_config.dateTimeZone or M.DEFAULT_LOGICAL_DATE_TIME_ZONE
     return logi_config
