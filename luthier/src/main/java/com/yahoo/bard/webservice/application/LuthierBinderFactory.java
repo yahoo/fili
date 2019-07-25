@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
+import com.yahoo.bard.webservice.config.luthier.ConceptType;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
@@ -14,8 +15,8 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -30,11 +31,14 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
         GranularityDictionary granularityDictionary = getGranularityDictionary();
         LuthierResourceDictionaries resourceDictionaries = new LuthierResourceDictionaries();
         initializeDictionaries(resourceDictionaries);
+
         LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries);
-        getDimensionFactories().ifPresent(builder::withDimensionFactories);
-        getSearchProviderFactories().ifPresent(builder::withSearchProviderFactories);
-        getKeyValueStoreFactories().ifPresent(builder::withKeyValueStoreFactories);
-        builder.setGranularityDictionary(granularityDictionary);
+        builder.withGranularityDictionary(granularityDictionary);
+        getDimensionFactories().ifPresent(it -> builder.withFactories(ConceptType.DIMENSION, it));
+        getSearchProviderFactories().ifPresent(it -> builder.withFactories(ConceptType.SEARCH_PROVIDER, it));
+        getKeyValueStoreFactories().ifPresent(it -> builder.withFactories(ConceptType.KEY_VALUE_STORE, it));
+        getMetricMakerFactories().ifPresent(it -> builder.withFactories(ConceptType.METRIC_MAKER, it));
+        getPhysicalTableFactories().ifPresent(it -> builder.withFactories(ConceptType.PHYSICAL_TABLE, it));
         return builder.build();
     }
 
@@ -50,6 +54,7 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
 
     /**
      * Extension point to add default searchProvider factories.
+     *
      * If it does not return Optional.empty, overwrites the factories specified in LuthierIndustrialPark.
      *
      * @return  Optional default SearchProvider factories.
@@ -59,8 +64,11 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
     }
 
     /**
-     * Temp stuff.
-     * @return  Optional.empty()
+     * Extension point to add default KeyValueStore factories.
+     *
+     * If it does not return Optional.empty, overwrites the factories specified in LuthierIndustrialPark.
+     *
+     * @return  Optional default SearchProvider factories.
      */
     protected Optional<Map<String, Factory<KeyValueStore>>> getKeyValueStoreFactories() {
         return Optional.empty();
@@ -71,8 +79,17 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
      *
      * @return  Initializing dimension factories.
      */
-    protected Map<String, Factory<MetricMaker>> getMakerFactories() {
-        return Collections.EMPTY_MAP;
+    protected Optional<Map<String, Factory<MetricMaker>>> getMetricMakerFactories() {
+        return Optional.empty();
+    }
+
+    /**
+     * Extension point to add default physical table factories.
+     *
+     * @return  Initializing dimension factories.
+     */
+    protected Optional<Map<String, Factory<ConfigPhysicalTable>>> getPhysicalTableFactories() {
+        return Optional.empty();
     }
 
     /**

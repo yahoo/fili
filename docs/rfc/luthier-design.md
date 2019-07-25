@@ -489,13 +489,10 @@ MetricMaker:
 
 ```lua
 M.arithmeticPLUS = {
-    name = "ArithmeticMaker",
-    ["function"] = "PLUS",
+    type = "ArithmeticMaker",
+    operation = "PLUS",
 }
 ```
-
-The `function` key on `complexMakers.arithmeticPLUS` needs to be wrapped
-in square brackets and quotes because `function` is a Lua keyword.
 
 Unlike search providers, makers don't vary based on the metric they're attached
 to. Therefore, customers do not need to be building makers over and over again.

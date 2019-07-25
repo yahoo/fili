@@ -48,7 +48,7 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
             ObjectNode configTable,
             LuthierIndustrialPark resourceFactories
     ) {
-        if (resourceFactories.getGranularityDictionary() == null) {
+        if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
         validateFields(name, configTable);

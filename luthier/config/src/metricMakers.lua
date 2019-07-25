@@ -35,13 +35,13 @@ local M = {}
 -- the LongSumMaker, which computes the long sum of a metric in Druid.
 M.count = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker"
-},
+}
 M.constant = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
-},
+}
 M.longSum = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
-},
+}
 M.doubleSum = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
 }

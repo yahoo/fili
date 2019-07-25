@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier
 
-
+import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory
 import com.yahoo.bard.webservice.data.config.LuthierDimensionField
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -19,6 +19,12 @@ class LuthierIndustrialParkSpec extends Specification {
     }
 
     def "An industrialPark instance built with a custom dimensionFactories map contains a particular testDimension."() {
+        given:
+            Map<String, Factory<Dimension>> dimensionFactoriesMap = new HashMap<>()
+            dimensionFactoriesMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory())
+            LuthierIndustrialPark industrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries)
+                .withFactories(ConceptType.DIMENSION, dimensionFactoriesMap)
+                .build()
         when:
             Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
         then:
@@ -37,16 +43,6 @@ class LuthierIndustrialParkSpec extends Specification {
             testDimension.getFieldByName("nonExistentField")
         then:
             thrown(IllegalArgumentException)
-    }
-
-    def "LuthierFactoryException is thrown when we build logicalTableGroup, if the GranularityDictionary is null"() {
-        when:
-            LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries)
-                    .withGranularityDictionary(null)
-            LuthierIndustrialPark parkWithoutGrain = builder.build()
-            parkWithoutGrain.load()
-        then:
-            thrown(LuthierFactoryException)
     }
 
     def "A Lucene SearchProvider is correctly constructed through a test Dimension from the default Industrial Park"() {

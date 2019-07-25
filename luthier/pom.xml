@@ -10,6 +10,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>luthier</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Fili: Luthier Config Libraries</name>
+    <description>
+        Luthier provides a complete external configuration system.
+    </description>
 
     <licenses>
         <license>
