@@ -12,10 +12,8 @@
 
 local M = {}
 
-local misc = require 'utils/misc'
-
-local default_type = "KeyValueStoreDimension"
-local default_category = "UNKNOWN_CATEGORY"
+local defaults = require 'utils/defaultingUtils'
+local dimension_defaulting = defaults.dimension_defaulting
 
 -------------------------------------------------------------------------------
 -- Fields
@@ -35,7 +33,7 @@ end
 -- @return a variable number of fields without tags, where each field's name is
 -- one of the passed in names
 function M.field(...)
-    local args = {...}
+    local args = { ... }
     local fields = {}
     for _, name in pairs(args) do
         table.insert(fields, { name = name, tags = {} })
@@ -48,23 +46,14 @@ end
 -------------------------------------------------------------------------------
 
 --- Parse a group of config dimensions and add them into a table.
+--- the defaulting strategy in defaultingUtils is used for fields that is missing.
 --
 -- @param dimensions  A group of dimensions
 -- @return dimension config, ready for parsing into json
 function M.build_dimensions_config(dimensions)
     local configuration = {}
-    for name, dimension in pairs(dimensions) do
-        local dim_copy = misc.shallow_copy(dimension)
-        dim_copy.longName = dim_copy.longName or name
-        dim_copy.description = dim_copy.description or name
-        dim_copy.type = dim_copy.type or default_type
-        dim_copy.category = dim_copy.category or default_category
-        dim_copy.defaultFields = dim_copy.defaultFields or {}
-        if dim_copy.isAggregatable == nil then
-            dim_copy.isAggregatable = true      -- defaults isAggregatable to true
-        end
-        dim_copy.domain = dim_copy.domain or name
-        configuration[name] = dim_copy
+    for dimension_name, dimension in pairs(dimensions) do
+        configuration[dimension_name] = dimension_defaulting(dimension_name, dimension)
     end
     return configuration
 end
@@ -93,7 +82,7 @@ function M.build_search_provider_config(dimensions, searchProviderTemplates)
         if configuration[domain] then
             assert(configuration[domain] == template,
                     "Found contradicting searchProvider config with the same domain name: "
-                    .. domain)
+                            .. domain)
         else
             configuration[domain] = template
         end
