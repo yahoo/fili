@@ -13,6 +13,7 @@ local parser = require("utils.jsonParser")
 local dimensionUtils = require("utils.dimensionUtils")
 local metricsUtils = require("utils.metricUtils")
 local tableUtils = require("utils.tableUtils")
+local metricMakerUtils = require("utils.metricMakerUtils")
 
 -- dimensions returns dimension configuration keyed on name.
 local dimensions = require("dimensions")
@@ -22,6 +23,7 @@ local searchProviderTemplates = require("searchProviderTemplates")
 local keyValueStoreTemplates = require("keyValueStoreTemplates")
 -- metrics returns metric configuration keyed on name.
 local metrics = require("metrics")
+local metricMakers = require("metricMakers")
 -- tables returns a table containing two keys:
 --  physical - A table of physical table configuration keyed on name
 --  logical - A table of logical table configuration keyed on name
@@ -31,6 +33,7 @@ local dimensionConfig = dimensionUtils.build_dimensions_config(dimensions)
 local searchProviderConfig = dimensionUtils.build_search_provider_config(dimensions, searchProviderTemplates)
 local keyValueStoreConfig = dimensionUtils.build_key_value_store_config(dimensions, keyValueStoreTemplates)
 local metricConfig = metricsUtils.build_metric_config(metrics)
+local metricMakerConfig = metricMakerUtils.build_metric_maker_config(metricMakers)
 local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
 
 -- make the directory that is used for the test, which can be automated in
@@ -45,4 +48,4 @@ parser.save(testResources .. "SearchProviderConfig.json", searchProviderConfig)
 parser.save(testResources .. "MetricConfig.json", metricConfig)
 parser.save(testResources .. "PhysicalTableConfig.json", physicalTableConfig)
 parser.save(testResources .. "LogicalTableConfig.json", logicalTableConfig)
--- parser.save("../../src/test/resource/MakerConfig.json", require("makers"))
+parser.save(testResources .. "MetricMakerConfig.json", metricMakerConfig)

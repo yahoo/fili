@@ -43,7 +43,6 @@ So the metric "difference" is the (rather silly) formula:
 (LongSum("metric1") + LongSum("metric2")) - LongSum("metric1")
 --]]
 
-local M = {}
 -------------------------------------------------------------------------------
 -- Metrics
 --[[
