@@ -32,7 +32,7 @@ M.DEFAULT_LOGICAL_DATE_TIME_ZONE = "UTC"
 function M.dimension_defaulting(dimension_name, dimension)
     local dim_config = misc.shallow_copy(dimension)
     dim_config.longName = dim_config.longName or dimension_name
-    dim_config.description = dim_config.description or dimension_name
+    dim_config.description = dim_config.description or dim_config.longName
     dim_config.domain = dim_config.domain or dimension_name
     dim_config.type = dim_config.type or M.DEFAULT_DIMENSION_TYPE
     dim_config.category = dim_config.category or M.DEFAULT_DIMENSION_CATEGORY
