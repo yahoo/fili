@@ -32,7 +32,7 @@ public class DefaultDruidHavingBuilder implements DruidHavingBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDruidHavingBuilder.class);
     private static final int HAVING_RANGE_PARAM_LENGTH = 2;
 
-    public static DefaultDruidHavingBuilder INSTANCE = new DefaultDruidHavingBuilder();
+    public static final DefaultDruidHavingBuilder INSTANCE = new DefaultDruidHavingBuilder();
 
     /**
      * Build a having model that ANDs together having queries for each of the metrics.

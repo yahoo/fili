@@ -7,10 +7,13 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -24,21 +27,29 @@ import javax.ws.rs.core.UriInfo;
 public class ResponseUtils {
 
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    public static final String MAX_NAME_LENGTH = SYSTEM_CONFIG.getPackageVariableName("download_file_max_name_length");
 
+    public static final String MAX_NAME_LENGTH = SYSTEM_CONFIG.getPackageVariableName("download_file_max_name_length");
     public static final String CONTENT_DISPOSITION_HEADER_PREFIX = "attachment; filename=";
+
+    protected static final Pattern SLASHES = Pattern.compile("[\\\\\\/]");
+    protected static final Pattern COMMA = Pattern.compile(",");
+
+    protected static final String SINGLE_UNDERSCORE = "_";
+    protected static final String DOUBLE_UNDERSCORE = "__";
+
+    public static final Collection<ResponseFormatType> DEFAULT_ALWAYS_DOWNLOAD_FORMATS =
+            Collections.singleton(DefaultResponseFormatType.CSV);
 
     protected int maxFileLength = SYSTEM_CONFIG.getIntProperty(MAX_NAME_LENGTH, 0);
 
-    protected Set<ResponseFormatType> alwaysDownloadFormats;
+    protected final Collection<ResponseFormatType> alwaysDownloadFormats;
 
     /**
      * Constructor. By default the CSV format is a format that is always returned as an attachment instead of rendered
      * in the browser.
      */
     public ResponseUtils() {
-        this.alwaysDownloadFormats = new HashSet<>();
-        this.alwaysDownloadFormats.add(DefaultResponseFormatType.CSV);
+        this(DEFAULT_ALWAYS_DOWNLOAD_FORMATS);
     }
 
     /**
@@ -46,36 +57,10 @@ public class ResponseUtils {
      *
      * @param alwaysDownloadFormats the set of formats
      */
-    public ResponseUtils(Set<ResponseFormatType> alwaysDownloadFormats) {
-        this.alwaysDownloadFormats = alwaysDownloadFormats;
-    }
-
-    /**
-     * Adds a response format to the list of always download formats.
-     *
-     * @param responseFormatType the format to be marked as always download
-     */
-    public void addAlwaysDownloadFormatType(ResponseFormatType responseFormatType) {
-        alwaysDownloadFormats.add(responseFormatType);
-    }
-
-    /**
-     * Removes a format type from the always download format types.
-     *
-     * @param responseFormatType the format type to be removed
-     * @return true if the format type was in the set and removed, false if it was not in the set
-     */
-    public boolean removeAlwaysDownloadFormatType(ResponseFormatType responseFormatType) {
-        return alwaysDownloadFormats.remove(responseFormatType);
-    }
-
-    /**
-     * Overrides the existing set of always download format types.
-     *
-     * @param alwaysDownloadFormats the new set of always download formats to replacing the existing set.
-     */
-    public void overrideAlwaysDownloadFormats(Set<ResponseFormatType> alwaysDownloadFormats) {
-        this.alwaysDownloadFormats = alwaysDownloadFormats;
+    public ResponseUtils(Collection<ResponseFormatType> alwaysDownloadFormats) {
+        this.alwaysDownloadFormats = Collections.unmodifiableCollection(
+                new HashSet<>(alwaysDownloadFormats)
+        );
     }
 
     /**
@@ -142,7 +127,7 @@ public class ResponseUtils {
         if (
                 alwaysDownloadFormats.contains(responseFormatType) ||
                         downloadFilename != null && !downloadFilename.isEmpty()
-        ) {
+                ) {
             result.put(
                     HttpHeaders.CONTENT_DISPOSITION,
                     getContentDispositionValue(containerRequestContext, downloadFilename, responseFormatType)
@@ -200,7 +185,8 @@ public class ResponseUtils {
             downloadFilename = generateDefaultFileNameNoExtension(containerRequestContext);
         }
         downloadFilename = replaceReservedCharacters(downloadFilename);
-        String filepath = truncateFilename(downloadFilename);
+        String filepath = removeDuplicateExtensions(containerRequestContext, downloadFilename, responseFormatType);
+        filepath = truncateFilename(filepath);
         String extension = responseFormatType.getFileExtension();
         return CONTENT_DISPOSITION_HEADER_PREFIX + filepath + extension;
 
@@ -240,12 +226,49 @@ public class ResponseUtils {
      * no maximum file length is configured and thus the filename will not be truncated.
      *
      * @param filename  the filename to maybe truncate
-     * @return  the filename truncated to the configured maximum length if necessary
+     * @return the filename truncated to the configured maximum length if necessary
      */
     protected String truncateFilename(String filename) {
         return maxFileLength > 0 && filename.length() > maxFileLength
                 ? filename.substring(0, maxFileLength)
                 : filename;
+    }
+
+    /**
+     * If the user provided filename ends with a file extension (or multiple file extensions) that match the file
+     * extension of provided by {@link ResponseFormatType#getFileExtension()}, those file extensions are truncated.
+     *
+     * The comparison is case insensitive, so .CSV will match .csv.
+     *
+     * If the filename is empty once the extensions are truncated the default filename is generated and returned.
+     *
+     * @param context  The request context. Used to build the default filename if necessary.
+     * @param fileName  The requested filename.
+     * @param type  The response type.
+     * @return the truncated filename
+     */
+    protected String removeDuplicateExtensions(
+            ContainerRequestContext context,
+            String fileName,
+            ResponseFormatType type
+    ) {
+        String truncatedFileName = fileName;
+        while (
+                truncatedFileName
+                        .toLowerCase(Locale.ENGLISH)
+                        .endsWith(type.getFileExtension().toLowerCase(Locale.ENGLISH))
+        ) {
+            truncatedFileName = truncatedFileName.substring(
+                    0,
+                    truncatedFileName.length() - type.getFileExtension().length()
+            );
+        }
+
+        if (truncatedFileName.isEmpty()) {
+            return generateDefaultFileNameNoExtension(context);
+        }
+
+        return truncatedFileName;
     }
 
     /**
@@ -258,6 +281,7 @@ public class ResponseUtils {
      * @return the input with reserved characters replaced with underscores
      */
     protected String replaceReservedCharacters(String str) {
-        return str.replaceAll("[\\\\/]", "_").replaceAll(",", "__");
+        str = SLASHES.matcher(str).replaceAll(SINGLE_UNDERSCORE);
+        return COMMA.matcher(str).replaceAll(DOUBLE_UNDERSCORE);
     }
 }

@@ -269,10 +269,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
                 //Initialize the field converter
-                FieldConverterSupplier.sketchConverter = initializeSketchConverter();
+                FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
                 //Initialize the metrics filter helper
-                FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
+                FieldConverterSupplier.setMetricsFilterSetBuilder(initializeMetricsFilterSetBuilder());
 
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);

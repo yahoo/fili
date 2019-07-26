@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -31,7 +33,6 @@ class FilterFactorySpec extends Specification {
         }
     }
 
-
     def "Build through proxy"() {
         given:
         FilterFactory.FilterFactoryFunction factoryFunction = { FilterFactory.FilterComponents components ->
@@ -41,7 +42,7 @@ class FilterFactorySpec extends Specification {
                 components.operation,
                 components.values
         )}
-        Map.Entry<Predicate<?>, Function<?>> foo = new AbstractMap.SimpleEntry(
+        Map.Entry<Predicate<?>, Function<?,?>> foo = new AbstractMap.SimpleEntry(
                 (java.util.function.Predicate) { foo
                     ->
                     true

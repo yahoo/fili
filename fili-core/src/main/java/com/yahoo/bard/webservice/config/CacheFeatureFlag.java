@@ -72,6 +72,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
     }
 
     @Override
+    @SuppressWarnings("squid:S3066") // Suppress sonar warning about mutable fields in enums that doesn't apply here
     public void setOn(Boolean newValue) {
         LOG.warn("setOn(Boolean) method does not apply in CacheFeatureFlag");
         on = null;

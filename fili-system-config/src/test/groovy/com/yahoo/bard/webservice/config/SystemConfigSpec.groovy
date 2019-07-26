@@ -97,6 +97,15 @@ abstract class SystemConfigSpec extends Specification {
     }
 
     @Unroll
+    def "The SystemConfigException is extending RuntimeException"() {
+        when: "We read a property that doesn't exist"
+        systemConfig."get${propertyType}Property"(MISSING_PROPERTY_KEY)
+
+        then: "A RuntimeException is thrown"
+        thrown(RuntimeException)
+    }
+
+    @Unroll
     def "Reading a #propertyType property with a default gives the property value"() {
         expect: "We read a property that doesn't exist with a default, we get the default"
         value == systemConfig."get${propertyType}Property"(property, defaultValue)

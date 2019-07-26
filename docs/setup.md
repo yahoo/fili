@@ -77,16 +77,12 @@ Next, several configuration files and scripts need to be tweaked:
     you wish to use an in-memory map)
         - (Optional: MDBM) `bard__mdbm_location = dir/to/mdbm` - Note that Fili assumes this directory contains a
         `dimensionCache` folder.
-    - `bard__non_ui_broker = http://url/to/druid/broker`
-    - `bard__ui_broker = http://url/to/druid/broker`
+    - `bard__druid_broker = http://url/to/druid/broker`
     - `bard__druid_coord = http://url/to/druid/coordinator`
+    - `bard__fili_port = [a free port below 65535]`
     
 * [pom.xml][pomXml] -  Find the `fili.version` tag, and update that to point to the desired version of Fili, rather
    than a snapshot. 
-
-Note that both `bard__non_ui_broker` and `bard__ui_broker` are set to the same broker URL. These parameters are 
-artifacts of the project Fili was spun out of. Eventually, these two settings will be generalized into something useful
-for other projects. For now, you can safely treat them as if they were the same.
 
 Build and Deploy the WAR
 ------------------------

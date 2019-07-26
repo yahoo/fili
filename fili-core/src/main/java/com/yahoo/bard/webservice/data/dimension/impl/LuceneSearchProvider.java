@@ -98,7 +98,7 @@ public class LuceneSearchProvider implements SearchProvider {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
-    public static String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
+    public static final String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
 
     /**
      * The maximum number of results per page.
@@ -814,9 +814,8 @@ public class LuceneSearchProvider implements SearchProvider {
                 if (hits.length == 0) {
                     if (requestedPageNumber == 1) {
                         return new SinglePagePagination<>(Collections.emptyList(), paginationParameters, 0);
-                    } else {
-                        throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                     }
+                    throw new PageNotFoundException(requestedPageNumber, perPage, 0);
                 }
                 for (int currentPage = 1; currentPage < requestedPageNumber; currentPage++) {
                     ScoreDoc lastEntry = hits[hits.length - 1];

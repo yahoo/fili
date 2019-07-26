@@ -427,6 +427,10 @@ public class KeyValueStoreDimension implements Dimension {
         return searchProvider;
     }
 
+    public KeyValueStore getKeyValueStore() {
+        return keyValueStore;
+    }
+
     @Override
     public void addDimensionRow(DimensionRow dimensionRow) {
         addAllDimensionRows(Collections.singleton(dimensionRow));
@@ -489,14 +493,13 @@ public class KeyValueStoreDimension implements Dimension {
                     this
             );
             throw new IllegalArgumentException(error);
-        } else {
-            Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
-            for (DimensionField dimensionField : getDimensionFields()) {
-                dimensionFieldValueMap.put(dimensionField, "");
-            }
-            dimensionFieldValueMap.put(getKey(), keyFieldValue);
-            return new DimensionRow(key, dimensionFieldValueMap);
         }
+        Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
+        for (DimensionField dimensionField : getDimensionFields()) {
+            dimensionFieldValueMap.put(dimensionField, "");
+        }
+        dimensionFieldValueMap.put(getKey(), keyFieldValue);
+        return new DimensionRow(key, dimensionFieldValueMap);
     }
 
     @Override

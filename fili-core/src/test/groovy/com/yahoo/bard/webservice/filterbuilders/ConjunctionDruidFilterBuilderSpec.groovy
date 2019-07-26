@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.apache.commons.lang3.tuple.Pair
 
@@ -67,7 +68,13 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     @Unroll
     def "buildFilters takes a conjunction of clauses, one for each dimension in #dimensions"() {
         when:
-        Filter filter = filterBuilder.buildFilters(dimensions.collectEntries { [(it): [Mock(ApiFilter)] as Set] })
+        Filter filter = filterBuilder.buildFilters(dimensions.collectEntries {
+            it ->
+                Dimension dim = (Dimension) it
+                [
+                        (dim): [Mock(ApiFilter) {getDimension() >> dim}] as Set
+                ]
+        })
 
         then:
         filter.type == (dimensions.size() == 1 ? SELECTOR : AND)

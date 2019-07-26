@@ -124,7 +124,7 @@ class TablesServletSpec extends Specification {
                                                         "cardinality": 0,
                                                         "storageStrategy":"loaded",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/$it"
-                                                    }""" 
+                                                    }"""
                                                 }
                                                 .join(',')
                                             }
@@ -138,7 +138,7 @@ class TablesServletSpec extends Specification {
                                                         "longName": "$it",
                                                         "type": "number",
                                                         "uri": "http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/$it"
-                                                    }""" 
+                                                    }"""
                                                 }
                                                 .join(',')
                                             }

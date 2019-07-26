@@ -76,5 +76,4 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
                 aggregation.getName()
         );
     }
-
 }

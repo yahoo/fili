@@ -65,6 +65,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     }
 
     @Override
+    @SuppressWarnings("squid:S3066") // Suppress sonar warning about mutable fields in enums that doesn't apply here
     public void setOn(Boolean newValue) {
         SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), newValue.toString());
         on = newValue;

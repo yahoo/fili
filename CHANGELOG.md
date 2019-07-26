@@ -10,6 +10,37 @@ Current
 
 ### Added:
 
+- [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
+    * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
+    based on the presence or absence of a tag value in an underlying multivalued dimension.
+    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently 
+    filtered against using the default druid filter serialization, and a grouping dimension containing a comma separated
+    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the 
+    appropriate truth value.
+    * The filtering behavior is supported through the new `FilterOptimizable` interface and associated request mapper.
+    
+- [Add FilterOptimizable interface](https://github.com/yahoo/fili/pull/913)
+    * Adds the `FilterOptimizable` interface, which indicates that the implementing object has the ability to optimize
+    a `Collection` of `ApiFilter` objects.
+    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their 
+    filters and performs the optimizations.
+
+- [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
+    * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
+    implementation is immutable.
+    * Adds `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
+    
+- [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
+    * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
+    to set the expiration date for a key when it is being added to the cache.
+    * The default implementation delegates to `boolean set(String key, T value)` (so throwing away the
+    expiration), so this won't affect any customers who have their own `DataCache`.
+    * The memcache-backed implementation implements the new `set`, and the old `set` delegates to it,
+    passing in the configured `EXPIRATION` constant. 
+
+- [Add config parameter to control lookback on druid dimension loader](https://github.com/yahoo/fili/issues/908)
+    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading. 
+
 - [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
     * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
     by restricting access to only a subset of the data present on the logical table.
@@ -60,7 +91,7 @@ Current
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
-    * New public getters on `PhysicalTableDefinition` for expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date 
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
@@ -102,6 +133,14 @@ Current
     * Changed default retention for `LogicalTable` to null rather that P1Y
 
 ### Changed:
+
+- [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
+    * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
+    that file extension is removed.
+    * Some other small refactors where do on the `ResponseUtils` class
+
+- [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
+    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
 
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
@@ -239,6 +278,22 @@ Current
 - [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
 
 ### Fixed:
+
+- [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
+    * Problem: Previously, if an unexpected behaviour happens in the Class build time in 
+    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build, 
+    where we suspect only Exceptions are logged.
+    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its 
+    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by 
+    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged. 
+    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead. 
+    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught. 
+
+- [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
+    * table api filters where not being used in query planning, moving the merge above query planning fixes this. 
+
+- [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
+    * Unstuck lookback so that the window slides forward rather than stopping at static load time.
 
 - [Reverted addition of Verizon Media Group to copyright]()
 
@@ -662,6 +717,7 @@ Added by @mpardesh in https://github.com/yahoo/fili/pull/518
 `ui_druid_broke` and `non_ui_druid_broker` are not used separately anymore. Instead, a single `druid_broker` replaces the two. For backwards compatibility, Fili checks if `druid_broker` is set. If not, Fili uses `non_ui_druid_broker` and then `ui_druid_broker`
 
 Added by @mpardesh in https://github.com/yahoo/fili/pull/489
+Amended by @gab-umich in https://github.com/yahoo/fili/pull/933
 
 Credits
 ---------

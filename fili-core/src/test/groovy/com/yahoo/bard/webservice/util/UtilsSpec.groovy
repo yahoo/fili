@@ -6,6 +6,7 @@ import spock.lang.Specification
 
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.stream.Stream
 
 class UtilsSpec extends Specification {
 
@@ -76,5 +77,10 @@ class UtilsSpec extends Specification {
         ! new File(subDir).exists()
         ! new File(subFile).exists()
         ! new File(TEMP_DIR).exists()
+    }
+
+    def "Reduce operation returns the minimum of a stream in values"() {
+        expect:
+        Stream.of(1, 2, 3).reduce() { a, b -> Utils.getMinValue(a, b) }.get() == 1
     }
 }

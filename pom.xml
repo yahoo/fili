@@ -7,7 +7,7 @@
     <artifactId>fili-parent-pom</artifactId>
     <version>0.11-SNAPSHOT</version>
     <packaging>pom</packaging>
-    
+
     <name>Fili: parent pom</name>
     <description>Shared dependencies for the Fili libraries</description>
     <url>http://fili.io/</url>
@@ -53,7 +53,7 @@
             <url>https://github.com/yahoo</url>
         </developer>
     </developers>
-    
+
     <mailingLists>
         <mailingList>
             <name>fili-users</name>
@@ -106,7 +106,8 @@
 
         <version.spring>[5.1.2,)</version.spring>
         <version.groovy>2.4.15</version.groovy>
-        <version.jackson>2.9.8</version.jackson>
+        <version.jackson>2.9.9</version.jackson>
+        <version.jackson-databind>2.9.9.1</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
         <version.guava>21.0</version.guava>
@@ -145,7 +146,7 @@
         <maven-checkstyle-plugin-version>3.0.0</maven-checkstyle-plugin-version>
         <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
-        
+
         <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
     </properties>
 
@@ -377,7 +378,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${version.jackson}</version>
+                <version>${version.jackson-databind}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.module</groupId>
@@ -552,6 +553,13 @@
             <artifactId>groovy-all</artifactId>
             <version>${version.groovy}</version>
         </dependency>
+
+        <!-- Lucene -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${version.lucene}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -586,7 +594,7 @@
                         <suppressionsLocation>${checkstyle.suppressions.location}</suppressionsLocation>
                         <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                         <configLocation>${checkstyle.config.location}</configLocation>
-                        <includes>**\/*.java</includes>
+                        <includes>**\/*.java,**\/*.groovy</includes>
                         <resourceIncludes>**/*.properties,**/*.sample</resourceIncludes>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <consoleOutput>true</consoleOutput>
@@ -744,7 +752,7 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -788,20 +796,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
                     <execution>
@@ -839,7 +833,19 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>checkstyle</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -855,7 +861,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
@@ -963,7 +969,7 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
         <profile>
             <id>coverage.build</id>

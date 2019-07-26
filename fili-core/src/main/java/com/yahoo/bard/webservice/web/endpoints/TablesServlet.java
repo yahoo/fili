@@ -594,6 +594,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         return resourceDictionaries;
     }
 
+    @Override
     public GranularityParser getGranularityParser() {
         return granularityParser;
     }
@@ -636,6 +637,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         return requestMapper;
     }
 
+    @Override
     public LogicalTableDictionary getLogicalTableDictionary() {
         return resourceDictionaries.getLogicalDictionary();
     }

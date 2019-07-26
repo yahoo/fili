@@ -91,7 +91,7 @@ public class FilteredAggregation extends Aggregation {
     }
 
     private Set<Dimension> getFilterDimensions() {
-        return FieldConverterSupplier.metricsFilterSetBuilder.gatherFilterDimensions(filter);
+        return FieldConverterSupplier.getMetricsFilterSetBuilder().gatherFilterDimensions(filter);
     }
 
     @JsonIgnore

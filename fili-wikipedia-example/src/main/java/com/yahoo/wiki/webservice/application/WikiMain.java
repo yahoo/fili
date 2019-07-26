@@ -4,6 +4,8 @@ package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 
@@ -37,6 +39,8 @@ import javax.servlet.DispatcherType;
  */
 public class WikiMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 
     /**
      * Makes the dimensions passthrough.
@@ -54,22 +58,23 @@ public class WikiMain {
      * @throws IOException If something goes terribly wrong when building the JSON or sending it
      */
     private static void markDimensionCacheHealthy(int port) throws IOException {
-        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient();
-        for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
-            String dimension = dimensionConfig.getApiName();
-            BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
-                    "/v1/cache/dimensions/" + dimension)
-                    .addHeader("Content-type", "application/json")
-                    .setBody(
-                            String.format("{\n \"name\":\"%s\",\n \"lastUpdated\":\"2016-01-01\"\n}", dimension)
-                    );
+        try (AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient()) {
+            for (DimensionConfig dimensionConfig : new WikiDimensions().getAllDimensionConfigurations()) {
+                String dimension = dimensionConfig.getApiName();
+                BoundRequestBuilder boundRequestBuilder = asyncHttpClient.preparePost("http://localhost:" + port +
+                        "/v1/cache/dimensions/" + dimension)
+                        .addHeader("Content-type", "application/json")
+                        .setBody(
+                                String.format("{%n \"name\":\"%s\",%n \"lastUpdated\":\"2016-01-01\"%n}", dimension)
+                        );
 
-            ListenableFuture<Response> responseFuture = boundRequestBuilder.execute();
-            try {
-                Response response = responseFuture.get();
-                LOG.debug("Mark Dimension Cache Updated Response: ", response);
-            } catch (InterruptedException | ExecutionException e) {
-                LOG.warn("Failed while marking dimensions healthy", e);
+                ListenableFuture<Response> responseFuture = boundRequestBuilder.execute();
+                try {
+                    Response response = responseFuture.get();
+                    LOG.debug("Mark Dimension Cache Updated Response: {}", response);
+                } catch (InterruptedException | ExecutionException e) {
+                    LOG.warn("Failed while marking dimensions healthy", e);
+                }
             }
         }
     }
@@ -81,7 +86,7 @@ public class WikiMain {
      * @throws Exception if the server fails to start or crashes
      */
     public static void main(String[] args) throws Exception {
-        int port = 9998;
+        int port = SYSTEM_CONFIG.getIntProperty(FILI_PORT);
 
         Server server = new Server(port);
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);

@@ -59,6 +59,8 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
         apiRequest.getSorts() >> ([])
         apiRequest.getCount() >> OptionalInt.empty()
         apiRequest.getApiFilters() >> Collections.emptyMap()
+
+        apiRequest.withFilters(_) >> {apiRequest}
     }
 
     def "Given lookup dimension with no namespace serialize using dimension serializer"() {
@@ -99,4 +101,3 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
         serializedQuery.contains('"dimensions":["shape"]')
     }
 }
-
