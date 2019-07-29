@@ -2,8 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier;
 
+import com.yahoo.bard.webservice.config.luthier.factories.ArithmeticMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.LongSumMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
@@ -312,7 +314,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.granularityDictionary = granularityDictionary;
 
             conceptFactoryMap = new HashMap<>();
-            conceptFactoryMap.put(ConceptType.METRIC_MAKER, new HashMap<>());
+            conceptFactoryMap.put(ConceptType.METRIC_MAKER, getDefaultMetricMakerFactories());
             conceptFactoryMap.put(ConceptType.DIMENSION, getDefaultDimensionFactories());
             conceptFactoryMap.put(ConceptType.SEARCH_PROVIDER, getDefaultSearchProviderFactories());
             conceptFactoryMap.put(ConceptType.PHYSICAL_TABLE, getDefaultPhysicalTableFactories());
@@ -407,6 +409,25 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             logicalTableFactoryMap.put("default", defaultFactory);
             logicalTableFactoryMap.put("DefaultLogicalTableGroup", defaultFactory);
             return logicalTableFactoryMap;
+        }
+
+        private Map<String, Factory<MetricMaker>> getDefaultMetricMakerFactories() {
+            Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
+            ArithmeticMakerFactory arithmeticMakerFactory = new ArithmeticMakerFactory();
+            LongSumMakerFactory longSumMakerFactory = new LongSumMakerFactory();
+            /* short aliases */
+            metricMakerFactoryMap.put("arithmetic", arithmeticMakerFactory);
+            metricMakerFactoryMap.put("longSum", longSumMakerFactory);
+            /* fully qualified class names */
+            metricMakerFactoryMap.put(
+                    "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
+                    arithmeticMakerFactory
+            );
+            metricMakerFactoryMap.put(
+                    "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker",
+                    longSumMakerFactory
+            );
+            return metricMakerFactoryMap;
         }
 
         public GranularityDictionary getGranularityDictionary() {
