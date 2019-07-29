@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories
 
+import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker
 
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.MINUS
@@ -14,7 +15,6 @@ import com.yahoo.bard.webservice.config.luthier.Factory
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ArithmeticMakerFactorySpec extends Specification {
+class MakerFactoriesSpec extends Specification {
 
     LuthierIndustrialPark luthierIndustrialPark = new LuthierIndustrialPark.Builder().build()
 
@@ -91,11 +91,23 @@ class ArithmeticMakerFactorySpec extends Specification {
 
     def "building longSum metricMaker correctly through a LIP"() {
         setup: "Build LIP, and then extract the metricMaker"
-            LuthierIndustrialPark park = new LuthierIndustrialPark.Builder().build()
-            LongSumMaker longSumMaker = park.getMetricMaker("longSum")
+            MetricMaker longSumMaker = luthierIndustrialPark.getMetricMaker("longSum")
         expect:
             // a pretty "dumb" check that guarantees that there is no exception in build
             // also guarantees that the factoryMap aliases contain "longSum"
             longSumMaker instanceof LongSumMaker
+    }
+
+    def "building daily average metricMaker correctly through a LIP"() {
+        setup: "Build LIP, and then extract the metricMaker"
+            MetricMaker dailyAvgMaker = luthierIndustrialPark.getMetricMaker("aggregateAverageDAY")
+        expect:
+            // a pretty "dumb" check that guarantees that there is no exception in build
+            // also guarantees that the factoryMap aliases contain "longSum"
+            dailyAvgMaker instanceof AggregationAverageMaker
+        when:
+            dailyAvgMaker = (AggregationAverageMaker) dailyAvgMaker
+        then:
+            dailyAvgMaker.innerGrain == luthierIndustrialPark.getGranularityParser().parseGranularity("day")
     }
 }

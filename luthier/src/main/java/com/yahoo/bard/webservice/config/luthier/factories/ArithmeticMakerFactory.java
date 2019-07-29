@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class ArithmeticMakerFactory implements Factory<MetricMaker> {
 
-    public static final String FUNCTION = "function";
+    protected static final String FUNCTION = "function";
 
     @Override
     public ArithmeticMaker build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {

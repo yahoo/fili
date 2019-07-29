@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier;
 
+import com.yahoo.bard.webservice.config.luthier.factories.AggregationAverageMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.ArithmeticMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
@@ -16,6 +17,7 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
+import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -411,13 +413,21 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             return logicalTableFactoryMap;
         }
 
+        /**
+         * Default LogicalTable factories that are defined in fili-core.
+         *
+         * @return  a LinkedHashMap of MetricMaker name to its factory
+         */
         private Map<String, Factory<MetricMaker>> getDefaultMetricMakerFactories() {
             Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
             ArithmeticMakerFactory arithmeticMakerFactory = new ArithmeticMakerFactory();
             LongSumMakerFactory longSumMakerFactory = new LongSumMakerFactory();
+            AggregationAverageMakerFactory aggregationAvgMakerFactory = new AggregationAverageMakerFactory();
             /* short aliases */
             metricMakerFactoryMap.put("arithmetic", arithmeticMakerFactory);
             metricMakerFactoryMap.put("longSum", longSumMakerFactory);
+            metricMakerFactoryMap.put("avg", aggregationAvgMakerFactory);
+            metricMakerFactoryMap.put("average", aggregationAvgMakerFactory);
             /* fully qualified class names */
             metricMakerFactoryMap.put(
                     "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
@@ -427,11 +437,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
                     "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker",
                     longSumMakerFactory
             );
+            metricMakerFactoryMap.put(
+                    "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
+                    aggregationAvgMakerFactory
+            );
             return metricMakerFactoryMap;
-        }
-
-        public GranularityDictionary getGranularityDictionary() {
-            return granularityDictionary;
         }
 
         /**
