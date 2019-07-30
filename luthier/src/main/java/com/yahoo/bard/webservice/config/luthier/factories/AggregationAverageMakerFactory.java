@@ -13,6 +13,9 @@ import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 
+/**
+ * Factory that supports LongSumMetricMaker.
+ */
 public class AggregationAverageMakerFactory implements Factory<MetricMaker> {
     private static final String AGGREGATION_AVG_MAKER = "AggregationAverageMaker";
     private static final String INNER_GRAIN = "innerGrain";
@@ -24,7 +27,8 @@ public class AggregationAverageMakerFactory implements Factory<MetricMaker> {
         LuthierValidationUtils.validateField(configTable.get(INNER_GRAIN), ConceptType.METRIC_MAKER, name, INNER_GRAIN);
         String grainName = configTable.get(INNER_GRAIN).textValue();
         try {
-            ZonelessTimeGrain grain = (ZonelessTimeGrain) resourceFactories.getGranularityParser().parseGranularity(grainName);
+            ZonelessTimeGrain grain = (ZonelessTimeGrain) resourceFactories.getGranularityParser()
+                    .parseGranularity(grainName);
             return new AggregationAverageMaker(resourceFactories.getMetricDictionary(), grain);
         } catch (GranularityParseException | ClassCastException e) {
             throw new LuthierFactoryException(String.format(GRAIN_NAME_NOT_EXPECTED, grainName, name), e);

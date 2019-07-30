@@ -1,1 +1,78 @@
-{"averageCOPerDay":{"dependencies":["COM"],"dependencyMetricNames":["COM"],"description":"averageCOPerDay","maker":"aggregateAveragebyDay","longName":"averageCOPerDay"},"deleted":{"description":"deleted","dependencyMetricNames":["deleted"],"druidMetric":"deleted","longName":"deleted","maker":"doubleSum"},"count":{"description":"count","longName":"count","maker":"count"},"added":{"description":"added","dependencyMetricNames":["added"],"druidMetric":"added","longName":"added","maker":"doubleSum"},"longSumCOM":{"dependencies":"COM","dependencyMetricNames":"COM","description":"longSumCOM","maker":"longSum","longName":"longSumCOM"},"COM":{"description":"COM","dependencyMetricNames":["CO"],"druidMetric":"CO","longName":"COM","maker":"doubleSum"},"delta":{"description":"delta","dependencyMetricNames":["delta"],"druidMetric":"delta","longName":"delta","maker":"doubleSum"},"NO2M":{"description":"NO2M","dependencyMetricNames":["NO2"],"druidMetric":"NO2","longName":"NO2M","maker":"doubleSum"},"averageNO2PerDay":{"dependencies":["NO2M"],"dependencyMetricNames":["NO2M"],"description":"averageNO2PerDay","maker":"aggregateAveragebyDay","longName":"averageNO2PerDay"}}
+{
+  "delta": {
+    "druidMetric": "delta",
+    "dataType": "number",
+    "description": "delta",
+    "category": "GENERAL",
+    "longName": "delta",
+    "maker": "doubleSum"
+  },
+  "averageNO2PerDay": {
+    "dataType": "number",
+    "longName": "averageNO2PerDay",
+    "description": "averageNO2PerDay",
+    "category": "GENERAL",
+    "maker": "aggregateAveragebyDay",
+    "dependencies": [
+      "NO2M"
+    ]
+  },
+  "added": {
+    "druidMetric": "added",
+    "dataType": "number",
+    "description": "added",
+    "category": "GENERAL",
+    "longName": "added",
+    "maker": "doubleSum"
+  },
+  "NO2M": {
+    "druidMetric": "NO2",
+    "dataType": "number",
+    "description": "NO2M",
+    "category": "GENERAL",
+    "longName": "NO2M",
+    "maker": "doubleSum"
+  },
+  "longSumCO": {
+    "druidMetric": "CO",
+    "type": "aggregation",
+    "dataType": "number",
+    "description": "longSumCO",
+    "category": "GENERAL",
+    "longName": "longSumCO",
+    "maker": "longSum"
+  },
+  "count": {
+    "dataType": "number",
+    "description": "count",
+    "category": "GENERAL",
+    "longName": "count",
+    "maker": "count"
+  },
+  "averageCOPerDay": {
+    "dataType": "number",
+    "longName": "averageCOPerDay",
+    "description": "averageCOPerDay",
+    "category": "GENERAL",
+    "maker": "aggregateAveragebyDay",
+    "dependencies": [
+      "COM"
+    ]
+  },
+  "deleted": {
+    "druidMetric": "deleted",
+    "dataType": "number",
+    "description": "deleted",
+    "category": "GENERAL",
+    "longName": "deleted",
+    "maker": "doubleSum"
+  },
+  "COM": {
+    "druidMetric": "CO",
+    "dataType": "number",
+    "description": "COM",
+    "category": "GENERAL",
+    "longName": "COM",
+    "maker": "doubleSum"
+  }
+}

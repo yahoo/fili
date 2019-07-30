@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * A factory that is used by default to support KeyValueStore Dimensions.
+ * A factory that is used to support Lucene Search Provider.
  */
 public class LuceneSearchProviderFactory implements Factory<SearchProvider> {
 

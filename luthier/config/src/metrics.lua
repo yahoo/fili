@@ -62,9 +62,10 @@ So the metric "difference" is the (rather silly) formula:
 -------------------------------------------------------------------------------
 
 return {
-    longSumCOM = {
+    longSumCO = {
+        type = "aggregation",
         maker = "longSum",
-        dependencies = "COM"
+        druidMetric = "CO"
     },
     count = {
         maker = "count"

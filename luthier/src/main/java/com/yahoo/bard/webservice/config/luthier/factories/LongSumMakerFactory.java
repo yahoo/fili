@@ -8,6 +8,9 @@ import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 
+/**
+ * Factory that supports LongSumMetricMaker.
+ */
 public class LongSumMakerFactory implements Factory<MetricMaker> {
     @Override
     public MetricMaker build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {

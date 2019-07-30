@@ -48,10 +48,10 @@ import java.util.stream.Collectors;
  * </ol>
  */
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
-    public static final String DEFAULT_FIELD_NAME_ERROR =
+    private static final String DEFAULT_FIELD_NAME_ERROR =
             "Dimension '%s': defaultField name '%s' not found in fields '%s'";
 
-    public static final String ENTITY_TYPE = "Dimension";
+    private static final String ENTITY_TYPE = "Dimension";
 
     /**
      * Helper function to build both fields and defaultFields.

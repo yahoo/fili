@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.config.luthier.factories.ArithmeticMakerFactory
 import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LongSumMakerFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.AggregationMetricFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
@@ -17,7 +18,6 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -63,6 +63,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
     private final FactoryPark<KeyValueStore> keyValueStoreFactoryPark;
 
+    private final FactoryPark<LogicalMetric> metricFactoryPark;
     private final FactoryPark<MetricMaker> metricMakerFactoryPark;
 
     private final FactoryPark<ConfigPhysicalTable> physicalTableFactoryPark;
@@ -89,7 +90,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         this.keyValueStoreFactoryPark = buildFactoryPark(ConceptType.KEY_VALUE_STORE, conceptFactoryMap);
         this.dimensionFactoryPark = buildFactoryPark(ConceptType.DIMENSION, conceptFactoryMap);
 
+        this.metricFactoryPark =  buildFactoryPark(ConceptType.METRIC, conceptFactoryMap);
         this.metricMakerFactoryPark =  buildFactoryPark(ConceptType.METRIC_MAKER, conceptFactoryMap);
+
         this.physicalTableFactoryPark = buildFactoryPark(ConceptType.PHYSICAL_TABLE, conceptFactoryMap);
         this.logicalTableGroupFactoryPark = buildFactoryPark(ConceptType.LOGICAL_TABLE_GROUP, conceptFactoryMap);
 
@@ -131,22 +134,6 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             dimensionDictionary.add(dimension);
         }
         return dimensionDictionary.findByApiName(dimensionName);
-    }
-
-    /**
-     * Retrieve or build a Metric Maker.
-     *
-     * @param metricMakerName the name for the dimension to be provided.
-     *
-     * @return the dimension instance corresponding to this name.
-     */
-    public MetricMaker getMetricMaker(String metricMakerName) {
-        Map<String, MetricMaker> metricMakerDictionary = resourceDictionaries.getMetricMakerDictionary();
-        if (metricMakerDictionary.get(metricMakerName) == null) {
-            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(metricMakerName, this);
-            metricMakerDictionary.put(metricMakerName, metricMaker);
-        }
-        return metricMakerDictionary.get(metricMakerName);
     }
 
     /**
@@ -216,8 +203,28 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      * @return the LogicalMetric instance corresponding to this metricName.
      */
     public LogicalMetric getMetric(String metricName) {
-        // TODO: to be finished in the metric PR.
-        return null;
+        Map<String, LogicalMetric> metricDictionary = resourceDictionaries.getMetricDictionary();
+        if (metricDictionary.get(metricName) == null) {
+            LogicalMetric metric = metricFactoryPark.buildEntity(metricName, this);
+            metricDictionary.put(metricName, metric);
+        }
+        return metricDictionary.get(metricName);
+    }
+
+    /**
+     * Retrieve or build a Metric Maker.
+     *
+     * @param metricMakerName the name for the dimension to be provided.
+     *
+     * @return the dimension instance corresponding to this name.
+     */
+    public MetricMaker getMetricMaker(String metricMakerName) {
+        Map<String, MetricMaker> metricMakerDictionary = resourceDictionaries.getMetricMakerDictionary();
+        if (metricMakerDictionary.get(metricMakerName) == null) {
+            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(metricMakerName, this);
+            metricMakerDictionary.put(metricMakerName, metricMaker);
+        }
+        return metricMakerDictionary.get(metricMakerName);
     }
 
     /**
@@ -316,9 +323,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.granularityDictionary = granularityDictionary;
 
             conceptFactoryMap = new HashMap<>();
-            conceptFactoryMap.put(ConceptType.METRIC_MAKER, getDefaultMetricMakerFactories());
             conceptFactoryMap.put(ConceptType.DIMENSION, getDefaultDimensionFactories());
             conceptFactoryMap.put(ConceptType.SEARCH_PROVIDER, getDefaultSearchProviderFactories());
+            conceptFactoryMap.put(ConceptType.METRIC_MAKER, getDefaultMetricMakerFactories());
+            conceptFactoryMap.put(ConceptType.METRIC, getDefaultMetricFactories());
             conceptFactoryMap.put(ConceptType.PHYSICAL_TABLE, getDefaultPhysicalTableFactories());
             conceptFactoryMap.put(ConceptType.KEY_VALUE_STORE, getDefaultKeyValueStoreFactories());
             conceptFactoryMap.put(ConceptType.LOGICAL_TABLE_GROUP, getDefaultLogicalTableGroupFactories());
@@ -411,6 +419,19 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             logicalTableFactoryMap.put("default", defaultFactory);
             logicalTableFactoryMap.put("DefaultLogicalTableGroup", defaultFactory);
             return logicalTableFactoryMap;
+        }
+
+        /**
+         * Default LogicalTable factories that are defined in fili-core.
+         *
+         * @return  a LinkedHashMap of MetricMaker name to its factory
+         */
+        private Map<String, Factory<LogicalMetric>> getDefaultMetricFactories() {
+            Map<String, Factory<LogicalMetric>> metricFactoryMap = new LinkedHashMap<>();
+            AggregationMetricFactory aggregationMetricFactory = new AggregationMetricFactory();
+            /* short aliases */
+            metricFactoryMap.put("aggregation", aggregationMetricFactory);
+            return metricFactoryMap;
         }
 
         /**
