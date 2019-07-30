@@ -14,6 +14,7 @@ local snapshotHistoryFilePath = referenceResources .. ".snapshotsHistory.json"
 local parser = require("utils.jsonParser")
 local dimensionUtils = require("utils.dimensionUtils")
 local metricsUtils = require("utils.metricUtils")
+local metricMakerUtils = require("utils.metricMakerUtils")
 local tableUtils = require("utils.tableUtils")
 
 -- dimensions returns dimension configuration keyed on name.
@@ -24,6 +25,7 @@ local searchProviderTemplates = require("searchProviderTemplates")
 local keyValueStoreTemplates = require("keyValueStoreTemplates")
 -- metrics returns metric configuration keyed on name.
 local metrics = require("metrics")
+local metricMakers = require("metricMakers")
 -- tables returns a table containing two keys:
 --  physical - A table of physical table configuration keyed on name
 --  logical - A table of logical table configuration keyed on name
@@ -34,6 +36,7 @@ local searchProviderConfig = dimensionUtils.build_search_provider_config(dimensi
 local keyValueStoreConfig = dimensionUtils.build_key_value_store_config(dimensions, keyValueStoreTemplates)
 local metricConfig = metricsUtils.build_metric_config(metrics)
 local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
+local metricMakerConfig = metricMakerUtils.build_metric_maker_config(metricMakers)
 
 --- gives the user the option to accept the change and make new snapshot
 local function confirm_or_exit()
@@ -41,8 +44,8 @@ local function confirm_or_exit()
     print("Otherwise press n to abort, the json files in the resources directory won't be changed.")
     local user_input = ""
     while user_input ~= "n" and user_input ~= "y" do
+        print("try with n/y")
         user_input = io.read("*l")
-        print("retry with n/y")
     end
     if user_input == "n" then
         os.exit(-1)
@@ -95,7 +98,7 @@ end
 local function verify_tables(reference_table, new_table, table_name)
     if type(reference_table) ~= 'table' or type(new_table) ~= 'table' then
         print("check your " .. resourcesDir .. table_name .. " and " ..
-                referenceResources .. table_name ".\nAt least one of them is not a proper lua table.")
+                referenceResources .. table_name .. ".\nAt least one of them is not a proper lua table.")
         confirm_or_exit()
     end
     local isMatching, failMessage = deepCompareTable(reference_table, new_table)
@@ -149,10 +152,10 @@ local tableNames = {
     ["DimensionConfig.json"] = dimensionConfig,
     ["KeyValueStoreConfig.json"] = keyValueStoreConfig,
     ["SearchProviderConfig.json"] = searchProviderConfig,
-    -- ["MetricConfig.json"] = metricConfig,
+    ["MetricConfig.json"] = metricConfig,
     ["PhysicalTableConfig.json"] = physicalTableConfig,
     ["LogicalTableConfig.json"] = logicalTableConfig,
-    -- "MakerConfig.json"
+    ["MetricMakerConfig.json"] = metricMakerConfig
 }
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.

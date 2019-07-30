@@ -8,6 +8,9 @@ local misc = require 'utils/misc'
 
 local M = {}
 
+local defaults = require 'utils/defaultingUtils'
+local metric_defaulting = defaults.metric_defaulting
+
 -------------------------------------------------------------------------------
 -- Build Config
 -------------------------------------------------------------------------------
@@ -21,15 +24,8 @@ local M = {}
 -- @return A list of metrics
 function M.build_metric_config(metrics)
     local configuration = {}
-    for name, metric in pairs(metrics) do
-        local copy = misc.shallow_copy(metric)
-        copy.apiName = copy.apiName or name
-        copy.longName = copy.longName or name
-        copy.description = copy.description or name
-        copy.dependencyMetricNames = copy.druidMetric 
-            and {copy.druidMetric} 
-            or copy.dependencies
-        table.insert(configuration, copy)
+    for metric_name, metric in pairs(metrics) do
+        configuration[metric_name] = metric_defaulting(metric_name, metric)
     end
     return configuration 
 end

@@ -62,6 +62,10 @@ So the metric "difference" is the (rather silly) formula:
 -------------------------------------------------------------------------------
 
 return {
+    longSumCOM = {
+        maker = "longSum",
+        dependencies = "COM"
+    },
     count = {
         maker = "count"
     },
