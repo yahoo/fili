@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.config.luthier;
 import com.yahoo.bard.webservice.config.luthier.factories.AggregationAverageMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.ArithmeticMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.DoubleSumMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LongSumMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.AggregationMetricFactory;
@@ -443,15 +444,18 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
             ArithmeticMakerFactory arithmeticMakerFactory = new ArithmeticMakerFactory();
             LongSumMakerFactory longSumMakerFactory = new LongSumMakerFactory();
+            DoubleSumMakerFactory doubleSumMakerFactory = new DoubleSumMakerFactory();
             AggregationAverageMakerFactory aggregationAvgMakerFactory = new AggregationAverageMakerFactory();
             /* short aliases */
             metricMakerFactoryMap.put("arithmetic", arithmeticMakerFactory);
             metricMakerFactoryMap.put("longSum", longSumMakerFactory);
+            metricMakerFactoryMap.put("doubleSum", doubleSumMakerFactory);
             metricMakerFactoryMap.put("avg", aggregationAvgMakerFactory);
             metricMakerFactoryMap.put("average", aggregationAvgMakerFactory);
             /* class names */
             metricMakerFactoryMap.put("ArithmeticMaker", arithmeticMakerFactory);
             metricMakerFactoryMap.put("LongSumMaker", longSumMakerFactory);
+            metricMakerFactoryMap.put("DoubleSumMaker", doubleSumMakerFactory);
             metricMakerFactoryMap.put("AggregationAverageMaker", aggregationAvgMakerFactory);
             /* fully qualified class names */
             metricMakerFactoryMap.put(
@@ -461,6 +465,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             metricMakerFactoryMap.put(
                     "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker",
                     longSumMakerFactory
+            );
+            metricMakerFactoryMap.put(
+                    "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker",
+                    doubleSumMakerFactory
             );
             metricMakerFactoryMap.put(
                     "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",

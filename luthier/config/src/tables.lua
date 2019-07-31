@@ -109,9 +109,9 @@ M.physical = {
         dateTimeZone = "UTC",
         type = "strict",
         metrics = {
-            --"added",
-            --"delta",
-            --"deleted"
+            "added",
+            "delta",
+            "deleted"
         },
         dimensions = wikipedia_dimensions,
         granularity = "hour",
@@ -122,8 +122,8 @@ M.physical = {
     air = {
         dateTimeZone = "UTC",
         metrics = {
-            --"CO",
-            --"NO2"
+            "CO",
+            "NO2"
         },
         dimensions = air_quality_dimensions,
         granularity = "hour"
