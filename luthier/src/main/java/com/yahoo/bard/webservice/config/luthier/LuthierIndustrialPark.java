@@ -526,6 +526,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             return this;
         }
 
+        public GranularityDictionary getGranularityDictionary() {
+            return granularityDictionary;
+        }
+
         /**
          * Register one named Granularity into the GranularityDictionary.
          *

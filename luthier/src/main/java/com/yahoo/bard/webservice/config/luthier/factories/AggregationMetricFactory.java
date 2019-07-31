@@ -22,13 +22,20 @@ public class AggregationMetricFactory implements Factory<LogicalMetric> {
     public LogicalMetric build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         validateFields(name, configTable);
         MetricMaker maker = resourceFactories.getMetricMaker(configTable.get("maker").textValue());
-        LogicalMetricInfo metricInfo = new LogicalMetricInfo(
-                name,
-                configTable.get("longName").textValue(),
-                configTable.get("category").textValue(),
-                configTable.get("description").textValue(),
-                configTable.get("dataType").textValue()
-        );
+        LogicalMetricInfo metricInfo = configTable.get("dataType") == null ?
+                new LogicalMetricInfo(
+                        name,
+                        configTable.get("longName").textValue(),
+                        configTable.get("category").textValue(),
+                        configTable.get("description").textValue()
+                )
+                : new LogicalMetricInfo(
+                        name,
+                        configTable.get("longName").textValue(),
+                        configTable.get("category").textValue(),
+                        configTable.get("description").textValue(),
+                        configTable.get("dataType").textValue()
+                );
         return maker.make(metricInfo, Collections.singletonList(configTable.get("druidMetric").textValue()));
     }
     /**
@@ -42,7 +49,6 @@ public class AggregationMetricFactory implements Factory<LogicalMetric> {
         LuthierValidationUtils.validateField(configTable.get("longName"), ENTITY_TYPE, name, "longName");
         LuthierValidationUtils.validateField(configTable.get("category"), ENTITY_TYPE, name, "category");
         LuthierValidationUtils.validateField(configTable.get("description"), ENTITY_TYPE, name, "description");
-        LuthierValidationUtils.validateField(configTable.get("dataType"), ENTITY_TYPE, name, "dataType");
         LuthierValidationUtils.validateField(configTable.get("druidMetric"), ENTITY_TYPE, name, "druidMetric");
     }
 }
