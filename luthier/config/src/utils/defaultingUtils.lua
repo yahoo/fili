@@ -29,7 +29,6 @@ M.DEFAULT_LOGICAL_DEPENDENT_TABLE = {}
 M.DEFAULT_LOGICAL_DATE_TIME_ZONE = "UTC"
 -- Metrics
 M.DEFAULT_METRIC_CATEGORY = "GENERAL"
-M.DEFAULT_METRIC_DATA_TYPE = "number"
 --- Defaulting methods:
 -- Dimensions
 function M.dimension_defaulting(dimension_name, dimension)
@@ -77,7 +76,6 @@ function M.metric_defaulting(metric_name, metric)
     metric_config.longName = metric_config.longName or metric_name
     metric_config.description = metric_config.description or metric_config.longName   -- this line must follow the previous one
     metric_config.category = metric_config.category or M.DEFAULT_METRIC_CATEGORY
-    metric_config.dataType = metric_config.dataType or M.DEFAULT_METRIC_DATA_TYPE
     --- the following unification is no longer necessary in my (Gabriel's) opinion.
     --- the discrepancy can be handled by two types of Factories: Aggregation and PostAggregation
     --metric_config.dependencyMetricNames = metric_config.druidMetric and {metric_config.druidMetric}

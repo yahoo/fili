@@ -31,7 +31,7 @@ class MakerFactoriesSpec extends Specification {
 {
   "arithmeticPLUS": {
     "type": "ArithmeticMaker",
-    "function": "PLUS"
+    "operation": "PLUS"
   }
 }
 """
@@ -40,7 +40,7 @@ class MakerFactoriesSpec extends Specification {
 {
   "arithmeticPLUS": {
     "type": "ArithmeticMaker",
-    "function": "MINUS"
+    "operation": "MINUS"
   }
 }
 """
@@ -49,7 +49,7 @@ class MakerFactoriesSpec extends Specification {
 {
   "arithmeticPLUS": {
     "type": "ArithmeticMaker",
-    "function": "MULTIPLY"
+    "operation": "MULTIPLY"
   }
 }
 """
@@ -58,7 +58,7 @@ class MakerFactoriesSpec extends Specification {
 {
   "arithmeticPLUS": {
     "type": "ArithmeticMaker",
-    "function": "DIVIDE"
+    "operation": "DIVIDE"
   }
 }
 """

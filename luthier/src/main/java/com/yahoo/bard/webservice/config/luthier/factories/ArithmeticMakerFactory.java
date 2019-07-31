@@ -21,14 +21,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class ArithmeticMakerFactory implements Factory<MetricMaker> {
 
-    protected static final String FUNCTION = "function";
+    protected static final String OPERATION = "operation";
 
     @Override
     public ArithmeticMaker build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
 
-        LuthierValidationUtils.validateField(configTable.get(FUNCTION), ConceptType.METRIC_MAKER, name, FUNCTION);
+        LuthierValidationUtils.validateField(configTable.get(OPERATION), ConceptType.METRIC_MAKER, name, OPERATION);
 
-        String opName = configTable.get(FUNCTION).textValue();
+        String opName = configTable.get(OPERATION).textValue();
         ArithmeticPostAggregationFunction operation = ArithmeticPostAggregationFunction.valueOf(opName);
 
         return new ArithmeticMaker(resourceFactories.getMetricDictionary(), operation);

@@ -45,6 +45,15 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     private static final String ENTITY_TYPE = "default logical table group";
     private static final String GRANULARITY_DICTIONARY_MISSING = "granularityDictionary missing from the " +
             "LuthierIndustrialPark. Will not build " + ENTITY_TYPE + ": %s.";
+    private static final String CATEGORY = "category";
+    private static final String LONG_NAME = "longName";
+    private static final String GRANULARITIES = "granularities";
+    private static final String RETENTION = "retention";
+    private static final String DESCRIPTION = "description";
+    private static final String DATE_TIME_ZONE = "dateTimeZone";
+    private static final String DIMENSIONS = "dimensions";
+    private static final String PHYSICAL_TABLES = "physicalTables";
+    private static final String METRICS = "metrics";
 
     /**
      * Build a group of LogicalTable, it has one LogicalTable per granularity.
@@ -57,30 +66,30 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      */
     @Override
     public LogicalTableGroup build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get("dateTimeZone").textValue());
-
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
         validateFields(name, configTable);
-        String category = configTable.get("category").textValue();
-        String longName = configTable.get("longName").textValue();
-        ReadablePeriod retention = Period.parse(configTable.get("retention").textValue());
-        String description = configTable.get("description").textValue();
+        String category = configTable.get(CATEGORY).textValue();
+        String longName = configTable.get(LONG_NAME).textValue();
+        ReadablePeriod retention = Period.parse(configTable.get(RETENTION).textValue());
+        String description = configTable.get(DESCRIPTION).textValue();
 
         MetricDictionary metricDictionary = resourceFactories.getMetricDictionary();
         LinkedHashSet<Dimension> dimensions = new LinkedHashSet<>();
         LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
-        configTable.get("dimensions").forEach(
+        configTable.get(DIMENSIONS).forEach(
                 node -> dimensions.add(resourceFactories.getDimension(node.textValue()))
         );
-        configTable.get("physicalTables").forEach(
+        configTable.get(PHYSICAL_TABLES).forEach(
                 node -> physicalTables.add(resourceFactories.getPhysicalTable(node.textValue()))
         );
 
+        /* build granularities List */
         List<Granularity> granularities;
         GranularityParser parser = resourceFactories.getGranularityParser();
-        granularities = StreamSupport.stream(configTable.get("granularities").spliterator(), false)
+        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
+        granularities = StreamSupport.stream(configTable.get(GRANULARITIES).spliterator(), false)
                 .map(JsonNode::textValue)
                 .map(grainName -> {
                     try {
@@ -91,26 +100,14 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
                 })
                 .collect(Collectors.toList());
 
-        // configTable.get("granularities").forEach(
-        //          node -> {
-        //             Granularity granularity;
-        //             try {
-        //                 granularity = resourceFactories.getGranularityParser()
-        //                         .parseGranularity(node.textValue(), dateTimeZone);
-        //             } catch (GranularityParseException e) {
-        //                 throw new LuthierFactoryException(
-        //                         String.format(GRANULARITY_PARSING_ERROR, node.textValue()),
-        //                         e
-        //                 );
-        //             }
-        //             granularities.add(granularity);
-        //         }
-        // );
-        LinkedHashSet<ApiMetricName> metricNames = StreamSupport.stream(configTable.get("metrics").spliterator(), false)
+        /* build a set of ApiMetricName */
+        LinkedHashSet<ApiMetricName> metricNames = StreamSupport.stream(configTable.get(METRICS).spliterator(), false)
                 .map(JsonNode::textValue)
                 .map(metricName -> new LuthierApiMetricName(metricName, granularities))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         TableGroup tableGroup = new TableGroup(physicalTables, metricNames, dimensions);
+
+        /* return a LogicalTableGroup that contains a LogicalTable for each granularity */
         return granularities.stream()
                 .collect(Collectors.toMap(
                         granularity -> new TableIdentifier(name, granularity),
@@ -136,14 +133,14 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
      */
     private void validateFields(String name, ObjectNode configTable) {
-        LuthierValidationUtils.validateField(configTable.get("category"), ENTITY_TYPE, name, "category");
-        LuthierValidationUtils.validateField(configTable.get("longName"), ENTITY_TYPE, name, "longName");
-        LuthierValidationUtils.validateField(configTable.get("granularities"), ENTITY_TYPE, name, "granularities");
-        LuthierValidationUtils.validateField(configTable.get("retention"), ENTITY_TYPE, name, "retention");
-        LuthierValidationUtils.validateField(configTable.get("description"), ENTITY_TYPE, name, "description");
-        LuthierValidationUtils.validateField(configTable.get("dateTimeZone"), ENTITY_TYPE, name, "dateTimeZone");
-        LuthierValidationUtils.validateField(configTable.get("dimensions"), ENTITY_TYPE, name, "dimensions");
-        LuthierValidationUtils.validateField(configTable.get("physicalTables"), ENTITY_TYPE, name, "physicalTables");
-        LuthierValidationUtils.validateField(configTable.get("metrics"), ENTITY_TYPE, name, "metrics");
+        LuthierValidationUtils.validateField(configTable.get(CATEGORY), ENTITY_TYPE, name, CATEGORY);
+        LuthierValidationUtils.validateField(configTable.get(LONG_NAME), ENTITY_TYPE, name, LONG_NAME);
+        LuthierValidationUtils.validateField(configTable.get(GRANULARITIES), ENTITY_TYPE, name, GRANULARITIES);
+        LuthierValidationUtils.validateField(configTable.get(RETENTION), ENTITY_TYPE, name, RETENTION);
+        LuthierValidationUtils.validateField(configTable.get(DESCRIPTION), ENTITY_TYPE, name, DESCRIPTION);
+        LuthierValidationUtils.validateField(configTable.get(DATE_TIME_ZONE), ENTITY_TYPE, name, DATE_TIME_ZONE);
+        LuthierValidationUtils.validateField(configTable.get(DIMENSIONS), ENTITY_TYPE, name, DIMENSIONS);
+        LuthierValidationUtils.validateField(configTable.get(PHYSICAL_TABLES), ENTITY_TYPE, name, PHYSICAL_TABLES);
+        LuthierValidationUtils.validateField(configTable.get(METRICS), ENTITY_TYPE, name, METRICS);
     }
 }

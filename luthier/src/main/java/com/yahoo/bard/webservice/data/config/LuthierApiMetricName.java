@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.function.Predicate;
 
 
+/**
+ * For Luthier Configuration.
+ * Supplies an always_true predicate for Granularity when we want the metricName to be valid for any granularity
+ */
 public class LuthierApiMetricName implements ApiMetricName {
     private final String apiName;
     private final Predicate<Granularity> granularityPredicate;
