@@ -60,10 +60,10 @@ So the metric "difference" is the (rather silly) formula:
             on directly, if any, only applies for nested metrics
 --]]
 -------------------------------------------------------------------------------
+local M = {}
 
-return {
+local aggregation_metrics = {
     longSumCO = {
-        type = "aggregation",
         maker = "longSum",
         druidMetric = "CO"
     },
@@ -89,9 +89,11 @@ return {
     NO2M = {
         maker = "doubleSum",
         druidMetric = "NO2"
-    },
+    }
+}
+
+local post_aggregation_metrics = {
     averageCOPerDay = {
-        type = "postAggregation",
         maker = "aggregateAveragebyDay",
         dependencies = {"COM"}
     },
@@ -100,3 +102,15 @@ return {
         dependencies = {"NO2M"}
     }
 }
+
+for metric_name, metric_content in pairs(aggregation_metrics) do
+    metric_content.type = "aggregation"
+    M[metric_name] = metric_content
+end
+
+for metric_name, metric_content in pairs(post_aggregation_metrics) do
+    metric_content.type = "postAggregation"
+    M[metric_name] = metric_content
+end
+
+return M
