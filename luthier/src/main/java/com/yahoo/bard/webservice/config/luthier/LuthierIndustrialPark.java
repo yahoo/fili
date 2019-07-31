@@ -335,7 +335,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default dimension factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of KeyValueStoreDimension to its factory
+         * @return a Map of KeyValueStoreDimension to its factory
          */
         private Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
             Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
@@ -346,7 +346,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default keyValueStore factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of KeyValueStore to its factory
+         * @return  a Map of KeyValueStore to its factory
          */
         private Map<String, Factory<KeyValueStore>> getDefaultKeyValueStoreFactories() {
             Map<String, Factory<KeyValueStore>> keyValueStoreFactoryMap = new LinkedHashMap<>();
@@ -362,7 +362,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default searchProvider factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of aliases of search provider type name to its factory
+         * @return a Map of aliases of search provider type name to its factory
          */
         private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
             Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
@@ -395,7 +395,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default PhysicalTable factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of physicalTable type name to its factory
+         * @return a Map of physicalTable type name to its factory
          */
         private Map<String, Factory<ConfigPhysicalTable>> getDefaultPhysicalTableFactories() {
             Map<String, Factory<ConfigPhysicalTable>> physicalTableFactoryMap = new LinkedHashMap<>();
@@ -409,9 +409,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
-         * Default LogicalTable factories that are defined in fili-core.
+         * Default LogicalTableGroup factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of logical Table type name to its factory
+         * @return  a Map of LogicalTableGroup type name to its factory
          */
         private Map<String, Factory<LogicalTableGroup>> getDefaultLogicalTableGroupFactories() {
             Map<String, Factory<LogicalTableGroup>> logicalTableFactoryMap = new LinkedHashMap<>();
@@ -424,7 +424,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default LogicalTable factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of MetricMaker name to its factory
+         * @return  a Map of MetricMaker name to its factory
          */
         private Map<String, Factory<LogicalMetric>> getDefaultMetricFactories() {
             Map<String, Factory<LogicalMetric>> metricFactoryMap = new LinkedHashMap<>();
@@ -437,7 +437,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         /**
          * Default LogicalTable factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of MetricMaker name to its factory
+         * @return  a Map of MetricMaker name to its factory
          */
         private Map<String, Factory<MetricMaker>> getDefaultMetricMakerFactories() {
             Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
@@ -449,6 +449,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             metricMakerFactoryMap.put("longSum", longSumMakerFactory);
             metricMakerFactoryMap.put("avg", aggregationAvgMakerFactory);
             metricMakerFactoryMap.put("average", aggregationAvgMakerFactory);
+            /* class names */
+            metricMakerFactoryMap.put("ArithmeticMaker", arithmeticMakerFactory);
+            metricMakerFactoryMap.put("LongSumMaker", longSumMakerFactory);
+            metricMakerFactoryMap.put("AggregationAverageMaker", aggregationAvgMakerFactory);
             /* fully qualified class names */
             metricMakerFactoryMap.put(
                     "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
