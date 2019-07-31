@@ -2,16 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierFactoryException;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
+import com.yahoo.bard.webservice.data.config.LuthierApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
@@ -22,6 +25,9 @@ import org.joda.time.Period;
 import org.joda.time.ReadablePeriod;
 
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 /**
  * A factory that is used by default to support LogicalTableGroup.
@@ -37,8 +43,6 @@ import java.util.LinkedHashSet;
  */
 public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGroup> {
     private static final String ENTITY_TYPE = "default logical table group";
-    private static final String GRANULARITY_PARSING_ERROR =
-            "granularity: %s does not exist in the granularityDictionary";
     private static final String GRANULARITY_DICTIONARY_MISSING = "granularityDictionary missing from the " +
             "LuthierIndustrialPark. Will not build " + ENTITY_TYPE + ": %s.";
 
@@ -53,10 +57,11 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      */
     @Override
     public LogicalTableGroup build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get("dateTimeZone").textValue());
+
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
-        LogicalTableGroup logicalTableGroup = new LogicalTableGroup();
         validateFields(name, configTable);
         String category = configTable.get("category").textValue();
         String longName = configTable.get("longName").textValue();
@@ -66,51 +71,62 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         MetricDictionary metricDictionary = resourceFactories.getMetricDictionary();
         LinkedHashSet<Dimension> dimensions = new LinkedHashSet<>();
         LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
-        LinkedHashSet<ApiMetricName> apiMetricNames = new LinkedHashSet<>();
         configTable.get("dimensions").forEach(
                 node -> dimensions.add(resourceFactories.getDimension(node.textValue()))
         );
         configTable.get("physicalTables").forEach(
                 node -> physicalTables.add(resourceFactories.getPhysicalTable(node.textValue()))
         );
-        configTable.get("metrics").forEach(
-                node -> {
-                    /* go to the LIP to retrieve the metric */
-                    /* Must be done after having actual metric builders! */
-                    // apiMetricNames.add(new FiliApiMetricName(node.textValue(), granularity));
-                    // metricDictionary.add();
-                }
-        );
-        TableGroup tableGroup = new TableGroup(physicalTables, apiMetricNames, dimensions);
 
-        configTable.get("granularities").forEach(
-                 node -> {
-                    DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get("dateTimeZone").textValue());
-                    Granularity granularity;
+        List<Granularity> granularities;
+        GranularityParser parser = resourceFactories.getGranularityParser();
+        granularities = StreamSupport.stream(configTable.get("granularities").spliterator(), false)
+                .map(JsonNode::textValue)
+                .map(grainName -> {
                     try {
-                        granularity = resourceFactories.getGranularityParser()
-                                .parseGranularity(node.textValue(), dateTimeZone);
+                        return parser.parseGranularity(grainName, dateTimeZone);
                     } catch (GranularityParseException e) {
-                        throw new LuthierFactoryException(
-                                String.format(GRANULARITY_PARSING_ERROR, node.textValue()),
-                                e
-                        );
+                        throw new LuthierFactoryException(e.getMessage(), e);
                     }
-                    LogicalTable logicalTable = new LogicalTable(
-                            name,
-                            category,
-                            longName,
-                            granularity,
-                            retention,
-                            description,
-                            tableGroup,
-                            metricDictionary
-                    );
-                    logicalTableGroup.put(new TableIdentifier(logicalTable), logicalTable);
-                }
-        );
+                })
+                .collect(Collectors.toList());
 
-        return logicalTableGroup;
+        // configTable.get("granularities").forEach(
+        //          node -> {
+        //             Granularity granularity;
+        //             try {
+        //                 granularity = resourceFactories.getGranularityParser()
+        //                         .parseGranularity(node.textValue(), dateTimeZone);
+        //             } catch (GranularityParseException e) {
+        //                 throw new LuthierFactoryException(
+        //                         String.format(GRANULARITY_PARSING_ERROR, node.textValue()),
+        //                         e
+        //                 );
+        //             }
+        //             granularities.add(granularity);
+        //         }
+        // );
+        LinkedHashSet<ApiMetricName> metricNames = StreamSupport.stream(configTable.get("metrics").spliterator(), false)
+                .map(JsonNode::textValue)
+                .map(metricName -> new LuthierApiMetricName(metricName, granularities))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        TableGroup tableGroup = new TableGroup(physicalTables, metricNames, dimensions);
+        return granularities.stream()
+                .collect(Collectors.toMap(
+                        granularity -> new TableIdentifier(name, granularity),
+                        granularity -> new LogicalTable(
+                                name,
+                                category,
+                                longName,
+                                granularity,
+                                retention,
+                                description,
+                                tableGroup,
+                                metricDictionary
+                        ),
+                        (a, b) -> b,
+                        LogicalTableGroup::new
+                ));
     }
 
     /**

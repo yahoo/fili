@@ -21,7 +21,7 @@ class AggregationMetricFactorySpec extends Specification {
             logicalMetric.longName == "longSumCO"
             logicalMetric.name == "longSumCO"
             logicalMetric.description == "longSumCO"
-            logicalMetric.category == "General"
+            logicalMetric.category == "GENERAL"
             logicalMetric.type == "number"
     }
 }

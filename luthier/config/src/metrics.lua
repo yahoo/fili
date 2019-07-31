@@ -91,6 +91,7 @@ return {
         druidMetric = "NO2"
     },
     averageCOPerDay = {
+        type = "postAggregation",
         maker = "aggregateAveragebyDay",
         dependencies = {"COM"}
     },

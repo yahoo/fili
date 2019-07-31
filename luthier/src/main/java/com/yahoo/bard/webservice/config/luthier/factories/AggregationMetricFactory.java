@@ -10,17 +10,18 @@ import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
+import java.util.Collections;
+
 /**
  * A Factory that supports all aggregation metrics, including but not limited to: longSum, doubleMax, longMin, etc.
  */
 public class AggregationMetricFactory implements Factory<LogicalMetric> {
-    private static final String ENTITY_TYPE = "LongSumMetric";
+    private static final String ENTITY_TYPE = "AggregationMetric";
 
     @Override
     public LogicalMetric build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         validateFields(name, configTable);
         MetricMaker maker = resourceFactories.getMetricMaker(configTable.get("maker").textValue());
-        // this will be used when we have the maker's make(LogicalMetricInfo, String) method implemented
         LogicalMetricInfo metricInfo = new LogicalMetricInfo(
                 name,
                 configTable.get("longName").textValue(),
@@ -28,7 +29,7 @@ public class AggregationMetricFactory implements Factory<LogicalMetric> {
                 configTable.get("description").textValue(),
                 configTable.get("dataType").textValue()
         );
-        return maker.make(name, configTable.get("druidMetric").textValue());
+        return maker.make(metricInfo, Collections.singletonList(configTable.get("druidMetric").textValue()));
     }
     /**
      * Helper function to validate only the fields needed in the parameter build.
