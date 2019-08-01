@@ -20,8 +20,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import org.joda.time.DateTimeZone;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
@@ -34,6 +36,12 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
             "granularity: %s does not exist in the granularityDictionary, when parsing %s";
     private static final String GRANULARITY_TYPE_ERROR =
             "%s '%s' expects a ZonedTimeGrain, but found another kind of Granularity. Did you use an AllGranularity?";
+    private static final String GRANULARITY = "granularity";
+    private static final String DATE_TIME_ZONE = "dateTimeZone";
+    private static final String DIMENSIONS = "dimensions";
+    private static final String LOGICAL_TO_PHYSICAL_COLUMN_NAMES = "logicalToPhysicalColumnNames";
+    private static final String METRICS = "metrics";
+
     /**
      * Build the parameter for the subclass of SingleDataSourceParams to use.
      *
@@ -51,15 +59,19 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
-        validateFields(name, configTable);
+        validateFields(
+                name,
+                configTable,
+                Arrays.asList(GRANULARITY, DATE_TIME_ZONE, DIMENSIONS, LOGICAL_TO_PHYSICAL_COLUMN_NAMES, METRICS)
+        );
 
         LuthierPhysicalTableParams params = new LuthierPhysicalTableParams();
         params.tableName = new LuthierTableName(name);
 
-        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get("dateTimeZone").textValue());
+        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
         try {
             Granularity granularity = resourceFactories.getGranularityParser().parseGranularity(
-                    configTable.get("granularity").textValue(),
+                    configTable.get(GRANULARITY).textValue(),
                     dateTimeZone
             );
             if (!(granularity instanceof ZonedTimeGrain)) {
@@ -77,12 +89,12 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
 
         params.columns = new LinkedHashSet<>();
 
-        JsonNode dimensionsNode = configTable.get("dimensions");
+        JsonNode dimensionsNode = configTable.get(DIMENSIONS);
         dimensionsNode.forEach(
                 node -> params.columns.add(new DimensionColumn(resourceFactories.getDimension(node.textValue())))
         );
 
-        JsonNode metricsNode = configTable.get("metrics");
+        JsonNode metricsNode = configTable.get(METRICS);
         metricsNode.forEach(
                 node -> {
                     String metricName = node.textValue();
@@ -92,7 +104,7 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         );
 
         params.logicalToPhysicalColumnNames = new LinkedHashMap<>();
-        configTable.get("logicalToPhysicalColumnNames").forEach(
+        configTable.get(LOGICAL_TO_PHYSICAL_COLUMN_NAMES).forEach(
                 node -> params.logicalToPhysicalColumnNames.put(
                         node.get("logicalName").textValue(),
                         node.get("physicalName").textValue()
@@ -105,18 +117,18 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
     /**
      * Helper function to validate only the fields needed in the parameter build.
      *
-     * @param name  name of the LuthierTable as a String
+     * @param name  the config dictionary name (normally the apiName)
      * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param fieldNames  the list of field names we want to validate existence in this configTable
      */
-    protected void validateFields(String name, ObjectNode configTable) {
-        LuthierValidationUtils.validateField(configTable.get("granularity"), ENTITY_TYPE, name, "granularity");
-        LuthierValidationUtils.validateField(configTable.get("dateTimeZone"), ENTITY_TYPE, name, "dateTimeZone");
-        LuthierValidationUtils.validateField(configTable.get("dimensions"), ENTITY_TYPE, name, "dimensions");
-        LuthierValidationUtils.validateField(
-                configTable.get("logicalToPhysicalColumnNames"),
-                ENTITY_TYPE,
-                name,
-                "logicalToPhysicalColumnNames"
+    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
+        fieldNames.forEach(
+                fieldName -> LuthierValidationUtils.validateField(
+                        configTable.get(fieldName),
+                        ENTITY_TYPE,
+                        name,
+                        fieldName
+                )
         );
     }
 }

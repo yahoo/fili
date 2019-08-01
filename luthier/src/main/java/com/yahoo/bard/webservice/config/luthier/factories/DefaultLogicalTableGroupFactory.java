@@ -24,6 +24,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.ReadablePeriod;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,7 +70,22 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
-        validateFields(name, configTable);
+        validateFields(
+                name,
+                configTable,
+                Arrays.asList(
+                        CATEGORY,
+                        LONG_NAME,
+                        GRANULARITIES,
+                        RETENTION,
+                        DESCRIPTION,
+                        DATE_TIME_ZONE,
+                        DIMENSIONS,
+                        PHYSICAL_TABLES,
+                        METRICS
+                )
+        );
+
         String category = configTable.get(CATEGORY).textValue();
         String longName = configTable.get(LONG_NAME).textValue();
         ReadablePeriod retention = Period.parse(configTable.get(RETENTION).textValue());
@@ -128,20 +144,20 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     }
 
     /**
-     * makes sure the necessary fields exist in the json config.
+     * Helper function to validate only the fields needed in the parameter build.
      *
      * @param name  the config dictionary name (normally the apiName)
      * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param fieldNames  the list of field names we want to validate existence in this configTable
      */
-    private void validateFields(String name, ObjectNode configTable) {
-        LuthierValidationUtils.validateField(configTable.get(CATEGORY), ENTITY_TYPE, name, CATEGORY);
-        LuthierValidationUtils.validateField(configTable.get(LONG_NAME), ENTITY_TYPE, name, LONG_NAME);
-        LuthierValidationUtils.validateField(configTable.get(GRANULARITIES), ENTITY_TYPE, name, GRANULARITIES);
-        LuthierValidationUtils.validateField(configTable.get(RETENTION), ENTITY_TYPE, name, RETENTION);
-        LuthierValidationUtils.validateField(configTable.get(DESCRIPTION), ENTITY_TYPE, name, DESCRIPTION);
-        LuthierValidationUtils.validateField(configTable.get(DATE_TIME_ZONE), ENTITY_TYPE, name, DATE_TIME_ZONE);
-        LuthierValidationUtils.validateField(configTable.get(DIMENSIONS), ENTITY_TYPE, name, DIMENSIONS);
-        LuthierValidationUtils.validateField(configTable.get(PHYSICAL_TABLES), ENTITY_TYPE, name, PHYSICAL_TABLES);
-        LuthierValidationUtils.validateField(configTable.get(METRICS), ENTITY_TYPE, name, METRICS);
+    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
+        fieldNames.forEach(
+                fieldName -> LuthierValidationUtils.validateField(
+                        configTable.get(fieldName),
+                        ENTITY_TYPE,
+                        name,
+                        fieldName
+                )
+        );
     }
 }

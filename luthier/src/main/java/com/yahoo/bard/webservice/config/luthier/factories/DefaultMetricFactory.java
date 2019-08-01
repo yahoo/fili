@@ -71,7 +71,8 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
                         configTable.get(fieldName),
                         ENTITY_TYPE,
                         name,
-                        fieldName)
+                        fieldName
+                )
         );
     }
 }
