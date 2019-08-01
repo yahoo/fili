@@ -32,10 +32,11 @@ class DefaultLogicalTableGroupFactorySpec extends Specification {
         park.load()
     }
 
-    def "A specific LogicalTable exists in the loaded Table Dictionary, and contains correct info"() {
+    def "The wikipedia LogicalTable exists in the loaded Table Dictionary, and contains correct info"() {
         when:
             wikipediaDayTable = park.getLogicalTable(new TableIdentifier("wikipedia", day))
             wikiticker = park.getPhysicalTable("wikiticker")
+            List<String> expectedMetricNames = Arrays.asList("count", "added", "delta", "deleted")
         then:
             wikipediaDayTable.getLongName() == "wikipedia logical table"
             wikipediaDayTable.getCategory() == "wikipedia category"
@@ -44,7 +45,8 @@ class DefaultLogicalTableGroupFactorySpec extends Specification {
             wikipediaDayTable.getDimensions() == wikiticker.getDimensions()
             wikipediaDayTable.getGranularity() == expectedGrain
             wikipediaDayTable.getDimensions() == wikiticker.getDimensions()
-            wikipediaDayTable.getLogicalMetrics().empty         // To be finished when LogicalMetrics are implemented
+            wikipediaDayTable.getLogicalMetrics().size() == 4
+            wikipediaDayTable.getLogicalMetrics().forEach({ metric -> expectedMetricNames.contains(metric.name) })
             // transitively test on physicalTable content correctness
             wikipediaDayTable.tableGroup.physicalTables.contains(wikiticker)
     }

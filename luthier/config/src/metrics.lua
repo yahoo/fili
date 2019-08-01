@@ -62,7 +62,7 @@ So the metric "difference" is the (rather silly) formula:
 -------------------------------------------------------------------------------
 local M = {}
 
-local aggregation_metrics = {
+local metrics = {
     longSumCO = {
         maker = "longSum",
         druidMetric = "CO"
@@ -89,10 +89,7 @@ local aggregation_metrics = {
     NO2M = {
         maker = "doubleSum",
         druidMetric = "NO2"
-    }
-}
-
-local post_aggregation_metrics = {
+    },
     averageCOPerDay = {
         maker = "aggregateAveragebyDay",
         dependencies = {"COM"}
@@ -103,13 +100,8 @@ local post_aggregation_metrics = {
     }
 }
 
-for metric_name, metric_content in pairs(aggregation_metrics) do
-    metric_content.type = "aggregation"
-    M[metric_name] = metric_content
-end
-
-for metric_name, metric_content in pairs(post_aggregation_metrics) do
-    metric_content.type = "postAggregation"
+for metric_name, metric_content in pairs(metrics) do
+    metric_content.type = "default"
     M[metric_name] = metric_content
 end
 

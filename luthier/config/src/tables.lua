@@ -122,8 +122,8 @@ M.physical = {
     air = {
         dateTimeZone = "UTC",
         metrics = {
-            "CO",
-            "NO2"
+            "COM",
+            "NO2M"
         },
         dimensions = air_quality_dimensions,
         granularity = "hour"
@@ -206,7 +206,8 @@ M.logical = {
         description = "wikipedia description",
         retention = "P2Y",
         metrics =  {
-            -- "count", "added", "delta", "deleted"
+            "count",
+            "added", "delta", "deleted"
         },
         dimensions = wikipedia_dimensions,
         granularities = {

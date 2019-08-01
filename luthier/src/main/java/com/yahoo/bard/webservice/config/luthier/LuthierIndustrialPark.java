@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGro
 import com.yahoo.bard.webservice.config.luthier.factories.DoubleSumMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LongSumMakerFactory;
-import com.yahoo.bard.webservice.config.luthier.factories.AggregationMetricFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.DefaultMetricFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
@@ -430,9 +430,14 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          */
         private Map<String, Factory<LogicalMetric>> getDefaultMetricFactories() {
             Map<String, Factory<LogicalMetric>> metricFactoryMap = new LinkedHashMap<>();
-            AggregationMetricFactory aggregationMetricFactory = new AggregationMetricFactory();
+            DefaultMetricFactory defaultMetricFactory = new DefaultMetricFactory();
             /* short aliases */
-            metricFactoryMap.put("aggregation", aggregationMetricFactory);
+            metricFactoryMap.put("default", defaultMetricFactory);
+            /* class names */
+            metricFactoryMap.put("LogicalMetric", defaultMetricFactory);
+            /* fully qualified class names */
+
+            metricFactoryMap.put("com.yahoo.bard.webservice.data.metric.LogicalMetric", defaultMetricFactory);
             return metricFactoryMap;
         }
 

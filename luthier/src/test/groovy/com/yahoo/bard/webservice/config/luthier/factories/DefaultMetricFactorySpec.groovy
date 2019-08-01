@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import spock.lang.Specification
 
-class AggregationMetricFactorySpec extends Specification {
+class DefaultMetricFactorySpec extends Specification {
     LuthierIndustrialPark park = new LuthierIndustrialPark.Builder().build()
     LogicalMetric logicalMetric
 

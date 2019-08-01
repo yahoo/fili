@@ -86,7 +86,7 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         metricsNode.forEach(
                 node -> {
                     String metricName = node.textValue();
-                    // resourceFactories.getMetric(metricName);
+                    resourceFactories.getMetric(metricName);
                     params.columns.add(new MetricColumn(metricName));
                 }
         );

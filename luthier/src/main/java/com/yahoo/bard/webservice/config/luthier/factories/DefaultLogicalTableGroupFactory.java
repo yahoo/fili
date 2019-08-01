@@ -103,6 +103,7 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         /* build a set of ApiMetricName */
         LinkedHashSet<ApiMetricName> metricNames = StreamSupport.stream(configTable.get(METRICS).spliterator(), false)
                 .map(JsonNode::textValue)
+                .peek(resourceFactories::getMetric)
                 .map(metricName -> new LuthierApiMetricName(metricName, granularities))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         TableGroup tableGroup = new TableGroup(physicalTables, metricNames, dimensions);
