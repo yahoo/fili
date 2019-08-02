@@ -13,11 +13,11 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.util.GranularityParseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import com.yahoo.bard.webservice.util.GranularityParseException;
 import org.joda.time.DateTimeZone;
 
 import java.util.Arrays;

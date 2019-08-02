@@ -20,11 +20,18 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
+import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
+import com.yahoo.bard.webservice.data.dimension.MapStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
@@ -38,13 +45,14 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -216,7 +224,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     /**
      * Retrieve or build a Metric Maker.
      *
-     * @param metricMakerName the name for the dimension to be provided.
+     * @param metricMakerName the name for the metric maker to be provided.
      *
      * @return the dimension instance corresponding to this name.
      */
@@ -335,14 +343,36 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         }
 
         /**
+         * Add the canonical name, simple name, and any specified aliases of a Factory to the factory map.
+         *
+         * @param factoryMap  the factory map we will populate
+         * @param factory  the factory to be associated
+         * @param conceptClass  the specific class we use to extract canonical class name and simple class name from
+         * @param aliases  the list of custom alias we want to add to the factory map
+         * @param <T>  Factory generic type
+         */
+        private <T> void addAliasesToFactory(
+                Map<String, Factory<T>> factoryMap,
+                Factory<T> factory,
+                Class<? extends T> conceptClass,
+                String ... aliases
+        ) {
+            String canonicalName = conceptClass.getCanonicalName();
+            String simpleName = conceptClass.getSimpleName();
+            Arrays.stream(aliases).forEach(s -> factoryMap.put(s, factory));
+            factoryMap.put(canonicalName, factory);
+            factoryMap.put(simpleName, factory);
+        }
+
+        /**
          * Default dimension factories that are defined in fili-core.
          *
          * @return a Map of KeyValueStoreDimension to its factory
          */
         private Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
-            Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
-            dimensionFactoryMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory());
-            return dimensionFactoryMap;
+            Map<String, Factory<Dimension>> factoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(factoryMap, new KeyValueStoreDimensionFactory(), KeyValueStoreDimension.class);
+            return factoryMap;
         }
 
         /**
@@ -351,14 +381,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          * @return  a Map of KeyValueStore to its factory
          */
         private Map<String, Factory<KeyValueStore>> getDefaultKeyValueStoreFactories() {
-            Map<String, Factory<KeyValueStore>> keyValueStoreFactoryMap = new LinkedHashMap<>();
-            MapKeyValueStoreFactory mapStoreFactory = new MapKeyValueStoreFactory();
-            keyValueStoreFactoryMap.put("memory", mapStoreFactory);
-            keyValueStoreFactoryMap.put("map", mapStoreFactory);
-            keyValueStoreFactoryMap.put("mapStore", mapStoreFactory);
-            keyValueStoreFactoryMap.put("com.yahoo.bard.webservice.data.dimension.MapStore", mapStoreFactory);
+            Map<String, Factory<KeyValueStore>> factoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(factoryMap, new MapKeyValueStoreFactory(), MapStore.class, "memory", "map");
             // TODO: add in Redis Store later
-            return keyValueStoreFactoryMap;
+            return factoryMap;
         }
 
         /**
@@ -367,31 +393,16 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          * @return a Map of aliases of search provider type name to its factory
          */
         private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
-            Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
+            Map<String, Factory<SearchProvider>> factoryMap = new LinkedHashMap<>();
             // all known factories for searchProviders and their possible aliases
-            LuceneSearchProviderFactory luceneSearchProviderFactory = new LuceneSearchProviderFactory();
-            List<String> luceneAliases = Arrays.asList(
-                    "lucene",
-                    LuceneSearchProvider.class.getSimpleName(),
-                    LuceneSearchProvider.class.getCanonicalName()
-            );
-            NoOpSearchProviderFactory noOpSearchProviderFactory = new NoOpSearchProviderFactory();
-            List<String> noOpAliases = Arrays.asList(
-                    "noOp",
-                    NoOpSearchProvider.class.getSimpleName(),
-                    NoOpSearchProvider.class.getCanonicalName()
-            );
-            ScanSearchProviderFactory scanSearchProviderFactory = new ScanSearchProviderFactory();
-            List<String> scanAliases = Arrays.asList(
-                    "memory",
-                    "scan",
-                    ScanSearchProvider.class.getSimpleName(),
-                    ScanSearchProvider.class.getCanonicalName()
-            );
-            luceneAliases.forEach(alias -> searchProviderFactoryMap.put(alias, luceneSearchProviderFactory));
-            noOpAliases.forEach(alias -> searchProviderFactoryMap.put(alias, noOpSearchProviderFactory));
-            scanAliases.forEach(alias -> searchProviderFactoryMap.put(alias, scanSearchProviderFactory));
-            return searchProviderFactoryMap;
+            LuceneSearchProviderFactory luceneFactory = new LuceneSearchProviderFactory();
+            NoOpSearchProviderFactory noOpFactory = new NoOpSearchProviderFactory();
+            ScanSearchProviderFactory scanFactory = new ScanSearchProviderFactory();
+
+            addAliasesToFactory(factoryMap, luceneFactory, LuceneSearchProvider.class, "lucene");
+            addAliasesToFactory(factoryMap, noOpFactory, NoOpSearchProvider.class, "noOp");
+            addAliasesToFactory(factoryMap, scanFactory, ScanSearchProvider.class, "memory", "scan");
+            return factoryMap;
         }
 
         /**
@@ -401,12 +412,18 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          */
         private Map<String, Factory<ConfigPhysicalTable>> getDefaultPhysicalTableFactories() {
             Map<String, Factory<ConfigPhysicalTable>> physicalTableFactoryMap = new LinkedHashMap<>();
-            StrictPhysicalTableFactory strictFactory = new StrictPhysicalTableFactory();
-            PermissivePhysicalTableFactory permissiveFactory = new PermissivePhysicalTableFactory();
-            physicalTableFactoryMap.put("strictPhysicalTable", strictFactory);
-            physicalTableFactoryMap.put("strict", strictFactory);
-            physicalTableFactoryMap.put("permissivePhysicalTable", permissiveFactory);
-            physicalTableFactoryMap.put("permissive", permissiveFactory);
+            addAliasesToFactory(
+                    physicalTableFactoryMap,
+                    new StrictPhysicalTableFactory(),
+                    StrictPhysicalTable.class,
+                    "strict"
+            );
+            addAliasesToFactory(
+                    physicalTableFactoryMap,
+                    new PermissivePhysicalTableFactory(),
+                    PermissivePhysicalTable.class,
+                    "permissive"
+            );
             return physicalTableFactoryMap;
         }
 
@@ -417,9 +434,12 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          */
         private Map<String, Factory<LogicalTableGroup>> getDefaultLogicalTableGroupFactories() {
             Map<String, Factory<LogicalTableGroup>> logicalTableFactoryMap = new LinkedHashMap<>();
-            DefaultLogicalTableGroupFactory defaultFactory = new DefaultLogicalTableGroupFactory();
-            logicalTableFactoryMap.put("default", defaultFactory);
-            logicalTableFactoryMap.put("DefaultLogicalTableGroup", defaultFactory);
+            addAliasesToFactory(
+                    logicalTableFactoryMap,
+                    new DefaultLogicalTableGroupFactory(),
+                    LogicalTableGroup.class,
+                    "default"
+            );
             return logicalTableFactoryMap;
         }
 
@@ -430,14 +450,12 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          */
         private Map<String, Factory<LogicalMetric>> getDefaultMetricFactories() {
             Map<String, Factory<LogicalMetric>> metricFactoryMap = new LinkedHashMap<>();
-            DefaultMetricFactory defaultMetricFactory = new DefaultMetricFactory();
-            /* short aliases */
-            metricFactoryMap.put("default", defaultMetricFactory);
-            /* class names */
-            metricFactoryMap.put("LogicalMetric", defaultMetricFactory);
-            /* fully qualified class names */
-
-            metricFactoryMap.put("com.yahoo.bard.webservice.data.metric.LogicalMetric", defaultMetricFactory);
+            addAliasesToFactory(
+                    metricFactoryMap,
+                    new DefaultMetricFactory(),
+                    LogicalMetric.class,
+                    "default"
+            );
             return metricFactoryMap;
         }
 
@@ -448,45 +466,38 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
          */
         private Map<String, Factory<MetricMaker>> getDefaultMetricMakerFactories() {
             Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
-            ArithmeticMakerFactory arithmeticMakerFactory = new ArithmeticMakerFactory();
-            LongSumMakerFactory longSumMakerFactory = new LongSumMakerFactory();
-            DoubleSumMakerFactory doubleSumMakerFactory = new DoubleSumMakerFactory();
-            AggregationAverageMakerFactory aggregationAvgMakerFactory = new AggregationAverageMakerFactory();
-            CountMakerFactory countMakerFactory = new CountMakerFactory();
-            /* short aliases */
-            metricMakerFactoryMap.put("arithmetic", arithmeticMakerFactory);
-            metricMakerFactoryMap.put("longSum", longSumMakerFactory);
-            metricMakerFactoryMap.put("doubleSum", doubleSumMakerFactory);
-            metricMakerFactoryMap.put("avg", aggregationAvgMakerFactory);
-            metricMakerFactoryMap.put("average", aggregationAvgMakerFactory);
-            metricMakerFactoryMap.put("aggregateAverage", aggregationAvgMakerFactory);
-            metricMakerFactoryMap.put("count", countMakerFactory);
-            /* class names */
-            metricMakerFactoryMap.put("ArithmeticMaker", arithmeticMakerFactory);
-            metricMakerFactoryMap.put("LongSumMaker", longSumMakerFactory);
-            metricMakerFactoryMap.put("DoubleSumMaker", doubleSumMakerFactory);
-            metricMakerFactoryMap.put("AggregationAverageMaker", aggregationAvgMakerFactory);
-            metricMakerFactoryMap.put("CountMakerFactory", countMakerFactory);
-            /* fully qualified class names */
-            metricMakerFactoryMap.put(
-                    "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
-                    arithmeticMakerFactory
+
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new ArithmeticMakerFactory(),
+                    ArithmeticMaker.class,
+                    "arithmetic"
             );
-            metricMakerFactoryMap.put(
-                    "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker",
-                    longSumMakerFactory
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new LongSumMakerFactory(),
+                    LongSumMaker.class,
+                    "longSum"
             );
-            metricMakerFactoryMap.put(
-                    "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker",
-                    doubleSumMakerFactory
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleSumMakerFactory(),
+                    DoubleSumMaker.class,
+                    "doubleSum"
             );
-            metricMakerFactoryMap.put(
-                    "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
-                    aggregationAvgMakerFactory
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new AggregationAverageMakerFactory(),
+                    AggregationAverageMaker.class,
+                    "avg",
+                    "average",
+                    "aggregateAverage"
             );
-            metricMakerFactoryMap.put(
-                    "com.yahoo.bard.webservice.data.config.metric.makers.CountMaker",
-                    countMakerFactory
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new CountMakerFactory(),
+                    CountMaker.class,
+                    "count"
             );
 
             return metricMakerFactoryMap;

@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.Factory;
 import com.yahoo.bard.webservice.config.luthier.LuthierFactoryException;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
@@ -20,6 +18,10 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.GranularityParseException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.ReadablePeriod;
@@ -90,38 +92,12 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         String longName = configTable.get(LONG_NAME).textValue();
         ReadablePeriod retention = Period.parse(configTable.get(RETENTION).textValue());
         String description = configTable.get(DESCRIPTION).textValue();
-
         MetricDictionary metricDictionary = resourceFactories.getMetricDictionary();
-        LinkedHashSet<Dimension> dimensions = new LinkedHashSet<>();
-        LinkedHashSet<PhysicalTable> physicalTables = new LinkedHashSet<>();
-        configTable.get(DIMENSIONS).forEach(
-                node -> dimensions.add(resourceFactories.getDimension(node.textValue()))
-        );
-        configTable.get(PHYSICAL_TABLES).forEach(
-                node -> physicalTables.add(resourceFactories.getPhysicalTable(node.textValue()))
-        );
 
-        /* build granularities List */
-        List<Granularity> granularities;
-        GranularityParser parser = resourceFactories.getGranularityParser();
-        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
-        granularities = StreamSupport.stream(configTable.get(GRANULARITIES).spliterator(), false)
-                .map(JsonNode::textValue)
-                .map(grainName -> {
-                    try {
-                        return parser.parseGranularity(grainName, dateTimeZone);
-                    } catch (GranularityParseException e) {
-                        throw new LuthierFactoryException(e.getMessage(), e);
-                    }
-                })
-                .collect(Collectors.toList());
-
-        /* build a set of ApiMetricName */
-        LinkedHashSet<ApiMetricName> metricNames = StreamSupport.stream(configTable.get(METRICS).spliterator(), false)
-                .map(JsonNode::textValue)
-                .peek(resourceFactories::getMetric)
-                .map(metricName -> new LuthierApiMetricName(metricName, granularities))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        LinkedHashSet<Dimension> dimensions = getDimensions(configTable, resourceFactories);
+        LinkedHashSet<PhysicalTable> physicalTables = getPhysicalTables(configTable, resourceFactories);
+        List<Granularity> granularities = getGranularities(configTable, resourceFactories);
+        LinkedHashSet<ApiMetricName> metricNames = getMetricNames(configTable, resourceFactories, granularities);
         TableGroup tableGroup = new TableGroup(physicalTables, metricNames, dimensions);
 
         /* return a LogicalTableGroup that contains a LogicalTable for each granularity */
@@ -141,6 +117,59 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
                         (a, b) -> b,
                         LogicalTableGroup::new
                 ));
+    }
+
+    private LinkedHashSet<Dimension> getDimensions(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+        return StreamSupport.stream(configTable.get(DIMENSIONS).spliterator(), false)
+                .map(JsonNode::textValue)
+                .map(resourceFactories::getDimension)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private LinkedHashSet<PhysicalTable> getPhysicalTables(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+        return StreamSupport.stream(
+                configTable.get(PHYSICAL_TABLES).spliterator(),
+                false
+        )
+                .map(JsonNode::textValue)
+                .map(resourceFactories::getPhysicalTable)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Build a set of metric names.
+     *
+     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param resourceFactories  the source for locating dependent objects
+     * @param granularities  list of granularities the metric supports
+     *
+     * @return set of ApiMetricName built according to the configTable
+     */
+    private LinkedHashSet<ApiMetricName> getMetricNames(
+            ObjectNode configTable,
+            LuthierIndustrialPark resourceFactories,
+            List<Granularity> granularities
+    ) {
+        return StreamSupport.stream(configTable.get(METRICS).spliterator(), false)
+                .map(JsonNode::textValue)
+                .peek(resourceFactories::getMetric)
+                .map(metricName -> new LuthierApiMetricName(metricName, granularities))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private List<Granularity> getGranularities(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+        GranularityParser parser = resourceFactories.getGranularityParser();
+        DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
+        return StreamSupport.stream(configTable.get(GRANULARITIES).spliterator(), false)
+                .map(JsonNode::textValue)
+                .map(grainName -> {
+                    try {
+                        return parser.parseGranularity(grainName, dateTimeZone);
+                    } catch (GranularityParseException e) {
+                        throw new LuthierFactoryException(e.getMessage(), e);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     /**
