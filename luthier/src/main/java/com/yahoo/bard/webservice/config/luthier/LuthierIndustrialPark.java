@@ -459,6 +459,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             metricMakerFactoryMap.put("doubleSum", doubleSumMakerFactory);
             metricMakerFactoryMap.put("avg", aggregationAvgMakerFactory);
             metricMakerFactoryMap.put("average", aggregationAvgMakerFactory);
+            metricMakerFactoryMap.put("aggregateAverage", aggregationAvgMakerFactory);
             metricMakerFactoryMap.put("count", countMakerFactory);
             /* class names */
             metricMakerFactoryMap.put("ArithmeticMaker", arithmeticMakerFactory);

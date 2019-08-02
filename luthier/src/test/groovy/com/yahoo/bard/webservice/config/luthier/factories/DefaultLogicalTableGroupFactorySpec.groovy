@@ -18,12 +18,9 @@ import spock.lang.Specification
 class DefaultLogicalTableGroupFactorySpec extends Specification {
     LuthierBinderFactory binderFactory
     LuthierIndustrialPark park
-    LogicalTable wikipediaDayTable
-    PhysicalTable wikiticker
     ZonelessTimeGrain day = DefaultTimeGrain.DAY
     ZonelessTimeGrain hour = DefaultTimeGrain.HOUR
     AllGranularity all = AllGranularity.INSTANCE
-    ZonedTimeGrain expectedGrain = day.buildZonedTimeGrain(DateTimeZone.UTC)
     Map tableDictionary
     void setup() {
         binderFactory = new LuthierBinderFactory()              // must go through the binder factory to correctly
@@ -32,10 +29,11 @@ class DefaultLogicalTableGroupFactorySpec extends Specification {
         park.load()
     }
 
-    def "The wikipedia LogicalTable exists in the loaded Table Dictionary, and contains correct info"() {
+    def "The wikipedia (day) LogicalTable exists in the loaded Table Dictionary, and contains correct info"() {
         when:
-            wikipediaDayTable = park.getLogicalTable(new TableIdentifier("wikipedia", day))
-            wikiticker = park.getPhysicalTable("wikiticker")
+            LogicalTable wikipediaDayTable = park.getLogicalTable(new TableIdentifier("wikipedia", day))
+            ZonedTimeGrain expectedZonedDayGrain = day.buildZonedTimeGrain(DateTimeZone.UTC)
+            PhysicalTable wikiticker = park.getPhysicalTable("wikiticker")
             List<String> expectedMetricNames = Arrays.asList("count", "added", "delta", "deleted")
         then:
             wikipediaDayTable.getLongName() == "wikipedia logical table"
@@ -43,14 +41,31 @@ class DefaultLogicalTableGroupFactorySpec extends Specification {
             wikipediaDayTable.getDescription() == "wikipedia description"
             wikipediaDayTable.getRetention() == Period.parse("P2Y")
             wikipediaDayTable.getDimensions() == wikiticker.getDimensions()
-            wikipediaDayTable.getGranularity() == expectedGrain
-            wikipediaDayTable.getDimensions() == wikiticker.getDimensions()
+            wikipediaDayTable.getGranularity() == expectedZonedDayGrain
             wikipediaDayTable.getLogicalMetrics().size() == 4
             wikipediaDayTable.getLogicalMetrics().forEach({ metric -> expectedMetricNames.contains(metric.name) })
             // transitively test on physicalTable content correctness
             wikipediaDayTable.tableGroup.physicalTables.contains(wikiticker)
     }
 
+    def "The air_quality (hour) LogicalTable exists in the loaded Table Dictionary, and contains correct info"() {
+        when:
+            LogicalTable airQualityHourTable = park.getLogicalTable(new TableIdentifier("air_quality", hour))
+            ZonedTimeGrain expectedZonedHourGrain = hour.buildZonedTimeGrain(DateTimeZone.UTC)
+            PhysicalTable air = park.getPhysicalTable("air")
+            List<String> expectedMetricNames = Arrays.asList("averageCOPerDay", "averageNO2PerDay")
+        then:
+            airQualityHourTable.getLongName() == "air_quality"
+            airQualityHourTable.getCategory() == "GENERAL"
+            airQualityHourTable.getDescription() == "air_quality"
+            airQualityHourTable.getRetention() == Period.parse("P1Y")
+            airQualityHourTable.getDimensions() == air.getDimensions()
+            airQualityHourTable.getGranularity() == expectedZonedHourGrain
+            airQualityHourTable.getLogicalMetrics().size() == 2
+            airQualityHourTable.getLogicalMetrics().forEach({ metric -> expectedMetricNames.contains(metric.name) })
+            // transitively test on physicalTable content correctness
+            airQualityHourTable.tableGroup.physicalTables.contains(air)
+    }
     def "The logicalTableDictionary contains the correct set of TableIdentifier keys"() {
         when:
             tableDictionary = park.getLogicalTableDictionary()

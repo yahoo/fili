@@ -91,11 +91,11 @@ local metrics = {
         druidMetric = "NO2"
     },
     averageCOPerDay = {
-        maker = "aggregateAveragebyDay",
+        maker = "aggregateAverageDAY",
         dependencies = {"COM"}
     },
     averageNO2PerDay = {
-        maker = "aggregateAveragebyDay",
+        maker = "aggregateAverageDAY",
         dependencies = {"NO2M"}
     }
 }

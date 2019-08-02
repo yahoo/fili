@@ -206,8 +206,7 @@ M.logical = {
         description = "wikipedia description",
         retention = "P2Y",
         metrics =  {
-            "count",
-            "added", "delta", "deleted"
+            "count", "added", "delta", "deleted"
         },
         dimensions = wikipedia_dimensions,
         granularities = {
@@ -221,7 +220,7 @@ M.logical = {
     air_quality = {
         type = "default",
         metrics = {
-            -- "averageCOPerDay", "averageNO2PerDay"
+            "averageCOPerDay", "averageNO2PerDay"
         },
         dimensions = air_quality_dimensions,
         granularities = {
