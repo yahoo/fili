@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -122,20 +121,19 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        validateFields(
-                name,
+        LuthierValidationUtils.validateFields(
                 configTable,
-                Arrays.asList(
-                        LONG_NAME,
-                        CATEGORY,
-                        DESCRIPTION,
-                        KEY_VALUE_STORE,
-                        SEARCH_PROVIDER,
-                        FIELDS,
-                        DEFAULT_FIELDS,
-                        IS_AGGREGATABLE,
-                        DOMAIN
-                )
+                ENTITY_TYPE,
+                name,
+                LONG_NAME,
+                CATEGORY,
+                DESCRIPTION,
+                KEY_VALUE_STORE,
+                SEARCH_PROVIDER,
+                FIELDS,
+                DEFAULT_FIELDS,
+                IS_AGGREGATABLE,
+                DOMAIN
         );
 
         String longName = configTable.get(LONG_NAME).textValue();
@@ -165,24 +163,6 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 searchProvider,
                 defaultDimensionFields,
                 isAggregatable
-        );
-    }
-
-    /**
-     * Helper function to validate only the fields needed in the parameter build.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
-     * @param fieldNames  the list of field names we want to validate existence in this configTable
-     */
-    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
-        fieldNames.forEach(
-                fieldName -> LuthierValidationUtils.validateField(
-                        configTable.get(fieldName),
-                        ENTITY_TYPE,
-                        name,
-                        fieldName
-                )
         );
     }
 }

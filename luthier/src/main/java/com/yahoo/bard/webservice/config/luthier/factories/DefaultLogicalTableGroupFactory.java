@@ -26,7 +26,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.ReadablePeriod;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,20 +71,19 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
-        validateFields(
-                name,
+        LuthierValidationUtils.validateFields(
                 configTable,
-                Arrays.asList(
-                        CATEGORY,
-                        LONG_NAME,
-                        GRANULARITIES,
-                        RETENTION,
-                        DESCRIPTION,
-                        DATE_TIME_ZONE,
-                        DIMENSIONS,
-                        PHYSICAL_TABLES,
-                        METRICS
-                )
+                ENTITY_TYPE,
+                name,
+                CATEGORY,
+                LONG_NAME,
+                GRANULARITIES,
+                RETENTION,
+                DESCRIPTION,
+                DATE_TIME_ZONE,
+                DIMENSIONS,
+                PHYSICAL_TABLES,
+                METRICS
         );
 
         String category = configTable.get(CATEGORY).textValue();
@@ -94,10 +92,10 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
         String description = configTable.get(DESCRIPTION).textValue();
         MetricDictionary metricDictionary = resourceFactories.getMetricDictionary();
 
-        LinkedHashSet<Dimension> dimensions = getDimensions(configTable, resourceFactories);
-        LinkedHashSet<PhysicalTable> physicalTables = getPhysicalTables(configTable, resourceFactories);
-        List<Granularity> granularities = getGranularities(configTable, resourceFactories);
-        LinkedHashSet<ApiMetricName> metricNames = getMetricNames(configTable, resourceFactories, granularities);
+        LinkedHashSet<Dimension> dimensions = buildDimensions(configTable, resourceFactories);
+        LinkedHashSet<PhysicalTable> physicalTables = buildPhysicalTables(configTable, resourceFactories);
+        List<Granularity> granularities = buildGranularities(configTable, resourceFactories);
+        LinkedHashSet<ApiMetricName> metricNames = buildMetricNames(configTable, resourceFactories, granularities);
         TableGroup tableGroup = new TableGroup(physicalTables, metricNames, dimensions);
 
         /* return a LogicalTableGroup that contains a LogicalTable for each granularity */
@@ -119,14 +117,30 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
                 ));
     }
 
-    private LinkedHashSet<Dimension> getDimensions(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    /**
+     * Build a set of Dimensions.
+     *
+     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param resourceFactories  the source for locating dependent objects
+     *
+     * @return set of Dimensions built according to the configTable
+     */
+    private LinkedHashSet<Dimension> buildDimensions(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         return StreamSupport.stream(configTable.get(DIMENSIONS).spliterator(), false)
                 .map(JsonNode::textValue)
                 .map(resourceFactories::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private LinkedHashSet<PhysicalTable> getPhysicalTables(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    /**
+     * Build a set of PhysicalTables.
+     *
+     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param resourceFactories  the source for locating dependent objects
+     *
+     * @return set of PhysicalTables built according to the configTable
+     */
+    private LinkedHashSet<PhysicalTable> buildPhysicalTables(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         return StreamSupport.stream(
                 configTable.get(PHYSICAL_TABLES).spliterator(),
                 false
@@ -145,7 +159,7 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      *
      * @return set of ApiMetricName built according to the configTable
      */
-    private LinkedHashSet<ApiMetricName> getMetricNames(
+    private LinkedHashSet<ApiMetricName> buildMetricNames(
             ObjectNode configTable,
             LuthierIndustrialPark resourceFactories,
             List<Granularity> granularities
@@ -157,7 +171,15 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private List<Granularity> getGranularities(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    /**
+     * Build a set of Granularities.
+     *
+     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param resourceFactories  the source for locating dependent objects
+     *
+     * @return set of Granularities built according to the configTable
+     */
+    private List<Granularity> buildGranularities(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
         GranularityParser parser = resourceFactories.getGranularityParser();
         DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
         return StreamSupport.stream(configTable.get(GRANULARITIES).spliterator(), false)
@@ -170,23 +192,5 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
                     }
                 })
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Helper function to validate only the fields needed in the parameter build.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
-     * @param fieldNames  the list of field names we want to validate existence in this configTable
-     */
-    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
-        fieldNames.forEach(
-                fieldName -> LuthierValidationUtils.validateField(
-                        configTable.get(fieldName),
-                        ENTITY_TYPE,
-                        name,
-                        fieldName
-                )
-        );
     }
 }

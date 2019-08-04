@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -31,10 +30,11 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
 
     @Override
     public LogicalMetric build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        validateFields(
-                name,
+        LuthierValidationUtils.validateFields(
                 configTable,
-                Arrays.asList(MAKER, LONG_NAME, CATEGORY, DESCRIPTION, DEPENDENCY_METRIC_NAMES)
+                ENTITY_TYPE,
+                name,
+                MAKER, LONG_NAME, CATEGORY, DESCRIPTION, DEPENDENCY_METRIC_NAMES
         );
         MetricMaker maker = resourceFactories.getMetricMaker(configTable.get(MAKER).textValue());
         LogicalMetricInfo metricInfo = configTable.get(DATA_TYPE) == null ?
@@ -58,22 +58,5 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
                 .map(JsonNode::textValue)
                 .collect(Collectors.toList());
         return maker.make(metricInfo, dependencyMetricNames);
-    }
-    /**
-     * Helper function to validate only the fields needed in the parameter build.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
-     * @param fieldNames  the list of field names we want to validate existence in this configTable
-     */
-    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
-        fieldNames.forEach(
-                fieldName -> LuthierValidationUtils.validateField(
-                        configTable.get(fieldName),
-                        ENTITY_TYPE,
-                        name,
-                        fieldName
-                )
-        );
     }
 }

@@ -20,10 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.joda.time.DateTimeZone;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
@@ -59,10 +57,11 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
-        validateFields(
-                name,
+        LuthierValidationUtils.validateFields(
                 configTable,
-                Arrays.asList(GRANULARITY, DATE_TIME_ZONE, DIMENSIONS, LOGICAL_TO_PHYSICAL_COLUMN_NAMES, METRICS)
+                ENTITY_TYPE,
+                name,
+                GRANULARITY, DATE_TIME_ZONE, DIMENSIONS, LOGICAL_TO_PHYSICAL_COLUMN_NAMES, METRICS
         );
 
         LuthierPhysicalTableParams params = new LuthierPhysicalTableParams();
@@ -112,23 +111,5 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
         );
         params.metadataService = resourceFactories.getMetadataService();
         return params;
-    }
-
-    /**
-     * Helper function to validate only the fields needed in the parameter build.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
-     * @param fieldNames  the list of field names we want to validate existence in this configTable
-     */
-    private void validateFields(String name, ObjectNode configTable, List<String> fieldNames) {
-        fieldNames.forEach(
-                fieldName -> LuthierValidationUtils.validateField(
-                        configTable.get(fieldName),
-                        ENTITY_TYPE,
-                        name,
-                        fieldName
-                )
-        );
     }
 }
