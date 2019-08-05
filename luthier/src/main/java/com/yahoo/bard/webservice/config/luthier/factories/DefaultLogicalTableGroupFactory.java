@@ -140,7 +140,10 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      *
      * @return set of PhysicalTables built according to the configTable
      */
-    private LinkedHashSet<PhysicalTable> buildPhysicalTables(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    private LinkedHashSet<PhysicalTable> buildPhysicalTables(
+            ObjectNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
         return StreamSupport.stream(
                 configTable.get(PHYSICAL_TABLES).spliterator(),
                 false

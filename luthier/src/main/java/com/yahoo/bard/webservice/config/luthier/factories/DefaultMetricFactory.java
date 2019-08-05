@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.config.luthier.factories;
 
 import com.yahoo.bard.webservice.config.luthier.Factory;
+import com.yahoo.bard.webservice.config.luthier.LuthierFactoryException;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
@@ -27,6 +28,10 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
     private static final String DESCRIPTION = "description";
     private static final String DATA_TYPE = "dataType";
     private static final String DEPENDENCY_METRIC_NAMES = "dependencyMetricNames";
+    private static final String ILLEGAL_ARG_EXCEPTION = "Unexpected argument found when building "
+            + ENTITY_TYPE + " %s.";
+    private static final String UNSUPPORTED_OPS_EXCEPTION = "Certain operation when building "
+            + ENTITY_TYPE + " %s is not yet supported.";
 
     @Override
     public LogicalMetric build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
@@ -57,6 +62,12 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
         )
                 .map(JsonNode::textValue)
                 .collect(Collectors.toList());
-        return maker.make(metricInfo, dependencyMetricNames);
+        try {
+            return maker.make(metricInfo, dependencyMetricNames);
+        } catch (IllegalArgumentException e) {
+            throw new LuthierFactoryException(String.format(ILLEGAL_ARG_EXCEPTION, name), e);
+        } catch (UnsupportedOperationException e) {
+            throw new LuthierFactoryException(String.format(UNSUPPORTED_OPS_EXCEPTION, name), e);
+        }
     }
 }
