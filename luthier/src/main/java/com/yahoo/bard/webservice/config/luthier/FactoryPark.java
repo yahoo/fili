@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
  */
 public class FactoryPark<T> {
 
-    private static final String ENTITY_TYPE = "factory park";
+    private static final String BUILD_IDENTITY = "factory park";
 
     private static final String FACTORY_KEY = "type";
 
@@ -58,10 +58,10 @@ public class FactoryPark<T> {
      * @return  An instance of T corresponding to this name.
      */
     T buildEntity(String entityName, LuthierIndustrialPark industrialPark) {
-        LuthierValidationUtils.validateField(fetchConfig().get(entityName), ENTITY_TYPE, entityName, entityName);
+        LuthierValidationUtils.validateField(fetchConfig().get(entityName), BUILD_IDENTITY, entityName, entityName);
         ObjectNode entityConfig = (ObjectNode) fetchConfig().get(entityName);
 
-        LuthierValidationUtils.validateField(entityConfig.get(FACTORY_KEY), ENTITY_TYPE, entityName, FACTORY_KEY);
+        LuthierValidationUtils.validateField(entityConfig.get(FACTORY_KEY), BUILD_IDENTITY, entityName, FACTORY_KEY);
         String factoryName = entityConfig.get(FACTORY_KEY).textValue();
 
         if (! factoryMap.containsKey(factoryName)) {
