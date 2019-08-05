@@ -28,6 +28,7 @@ M.DEFAULT_LOGICAL_RETENTION = "P1Y"
 M.DEFAULT_LOGICAL_DEPENDENT_TABLE = {}
 M.DEFAULT_LOGICAL_DATE_TIME_ZONE = "UTC"
 -- Metrics
+M.DEFAULT_METRIC_TYPE = "default"
 M.DEFAULT_METRIC_CATEGORY = "GENERAL"
 M.DEFAULT_METRIC_DEPENDENCY_NAMES = {}
 --- Defaulting methods:
@@ -74,6 +75,7 @@ end
 
 function M.metric_defaulting(metric_name, metric)
     local metric_config = misc.shallow_copy(metric)
+    metric_config.type = metric_config.type or M.DEFAULT_METRIC_TYPE
     metric_config.longName = metric_config.longName or metric_name
     metric_config.description = metric_config.description or metric_config.longName   -- this line must follow the previous one
     metric_config.category = metric_config.category or M.DEFAULT_METRIC_CATEGORY

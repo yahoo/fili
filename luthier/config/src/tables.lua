@@ -200,7 +200,6 @@ M.physical = {
 
 M.logical = {
     wikipedia = {
-        type = "default",
         category = "wikipedia category",
         longName = "wikipedia logical table",
         description = "wikipedia description",
@@ -218,7 +217,6 @@ M.logical = {
         dateTimeZone = "UTC"
     },
     air_quality = {
-        type = "default",
         metrics = {
             "averageCOPerDay", "averageNO2PerDay"
         },
