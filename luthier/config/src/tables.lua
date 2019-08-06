@@ -122,8 +122,8 @@ M.physical = {
     air = {
         dateTimeZone = "UTC",
         metrics = {
-            "CO",
-            "NO2"
+            "COM",
+            "NO2M"
         },
         dimensions = air_quality_dimensions,
         granularity = "hour"
@@ -200,12 +200,13 @@ M.physical = {
 
 M.logical = {
     wikipedia = {
-        type = "default",
         category = "wikipedia category",
         longName = "wikipedia logical table",
         description = "wikipedia description",
         retention = "P2Y",
-        metrics =  {"count", "added", "delta", "deleted"},
+        metrics =  {
+            "count", "added", "delta", "deleted"
+        },
         dimensions = wikipedia_dimensions,
         granularities = {
             "all",
@@ -216,8 +217,9 @@ M.logical = {
         dateTimeZone = "UTC"
     },
     air_quality = {
-        type = "default",
-        metrics = {"averageCOPerDay", "averageNO2PerDay"},
+        metrics = {
+            "averageCOPerDay", "averageNO2PerDay"
+        },
         dimensions = air_quality_dimensions,
         granularities = {
             "all",

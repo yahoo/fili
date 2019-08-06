@@ -51,7 +51,7 @@ M.doubleSum = {
 for _, operation in ipairs({"PLUS","MINUS","MULTIPLY","DIVIDE"}) do
     M["arithmetic" .. operation] = {
         type = "com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker",
-        ["function"] = operation
+        operation = operation
     }
 end
 

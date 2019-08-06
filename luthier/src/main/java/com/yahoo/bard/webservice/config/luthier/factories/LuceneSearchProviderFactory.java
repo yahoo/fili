@@ -11,11 +11,14 @@ import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * A factory that is used by default to support KeyValueStore Dimensions.
+ * A factory that is used to support Lucene Search Provider.
  */
 public class LuceneSearchProviderFactory implements Factory<SearchProvider> {
 
     private static final String ENTITY_TYPE = "SearchProvider";
+    private static final String INDEX_PATH = "indexPath";
+    private static final String MAX_RESULTS = "maxResults";
+    private static final String SEARCH_TIMEOUT = "searchTimeout";
 
     /**
      * Build a SearchProvider instance.
@@ -29,14 +32,16 @@ public class LuceneSearchProviderFactory implements Factory<SearchProvider> {
     @Override
     public SearchProvider build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
 
-        LuthierValidationUtils.validateField(configTable.get("indexPath"), ENTITY_TYPE, name, "indexPath");
-        String indexPath  = configTable.get("indexPath").textValue();
+        LuthierValidationUtils.validateFields(
+                configTable,
+                ENTITY_TYPE,
+                name,
+                INDEX_PATH, MAX_RESULTS, SEARCH_TIMEOUT
+        );
 
-        LuthierValidationUtils.validateField(configTable.get("maxResults"), ENTITY_TYPE, name, "maxResults");
-        int maxResults = configTable.get("maxResults").intValue();
-
-        LuthierValidationUtils.validateField(configTable.get("searchTimeout"), ENTITY_TYPE, name, "searchTimeout");
-        int searchTimeout = configTable.get("searchTimeout").intValue();
+        String indexPath  = configTable.get(INDEX_PATH).textValue();
+        int maxResults = configTable.get(MAX_RESULTS).intValue();
+        int searchTimeout = configTable.get(SEARCH_TIMEOUT).intValue();
 
         return new LuceneSearchProvider(indexPath, maxResults, searchTimeout);
     }

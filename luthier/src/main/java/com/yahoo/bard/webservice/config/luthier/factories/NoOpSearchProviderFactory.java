@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class NoOpSearchProviderFactory implements Factory<SearchProvider> {
 
-    public static final String ENTITY_TYPE = "SearchProvider";
+    private static final String ENTITY_TYPE = "SearchProvider";
 
     /**
      * Build a SearchProvider instance.

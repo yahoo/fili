@@ -48,10 +48,19 @@ import java.util.stream.Collectors;
  * </ol>
  */
 public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
-    public static final String DEFAULT_FIELD_NAME_ERROR =
+    private static final String DEFAULT_FIELD_NAME_ERROR =
             "Dimension '%s': defaultField name '%s' not found in fields '%s'";
 
-    public static final String ENTITY_TYPE = "Dimension";
+    private static final String ENTITY_TYPE = "Dimension";
+    private static final String LONG_NAME = "longName";
+    private static final String CATEGORY = "category";
+    private static final String DESCRIPTION = "description";
+    private static final String KEY_VALUE_STORE = "keyValueStore";
+    private static final String SEARCH_PROVIDER = "searchProvider";
+    private static final String FIELDS = "fields";
+    private static final String DEFAULT_FIELDS = "defaultFields";
+    private static final String IS_AGGREGATABLE = "isAggregatable";
+    private static final String DOMAIN = "domain";
 
     /**
      * Helper function to build both fields and defaultFields.
@@ -112,19 +121,33 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      */
     @Override
     public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
-        validateFields(name, configTable);
-        String longName = configTable.get("longName").textValue();
-        String category = configTable.get("category").textValue();
-        String description = configTable.get("description").textValue();
-        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get("domain").textValue());
-        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get("domain").textValue());
-        boolean isAggregatable = configTable.get("isAggregatable").booleanValue();
+        LuthierValidationUtils.validateFields(
+                configTable,
+                ENTITY_TYPE,
+                name,
+                LONG_NAME,
+                CATEGORY,
+                DESCRIPTION,
+                KEY_VALUE_STORE,
+                SEARCH_PROVIDER,
+                FIELDS,
+                DEFAULT_FIELDS,
+                IS_AGGREGATABLE,
+                DOMAIN
+        );
+
+        String longName = configTable.get(LONG_NAME).textValue();
+        String category = configTable.get(CATEGORY).textValue();
+        String description = configTable.get(DESCRIPTION).textValue();
+        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get(DOMAIN).textValue());
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get(DOMAIN).textValue());
+        boolean isAggregatable = configTable.get(IS_AGGREGATABLE).booleanValue();
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
 
         fieldsBuilder(
-                configTable.get("fields"),
-                configTable.get("defaultFields"),
+                configTable.get(FIELDS),
+                configTable.get(DEFAULT_FIELDS),
                 name,
                 dimensionFields,
                 defaultDimensionFields
@@ -141,22 +164,5 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 defaultDimensionFields,
                 isAggregatable
         );
-    }
-
-    /**
-     * Helper function to validate only the fields needed in the parameter build.
-     *
-     * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
-     */
-    private void validateFields(String name, ObjectNode configTable) {
-        LuthierValidationUtils.validateField(configTable.get("longName"), ENTITY_TYPE, name, "longName");
-        LuthierValidationUtils.validateField(configTable.get("category"), ENTITY_TYPE, name, "category");
-        LuthierValidationUtils.validateField(configTable.get("description"), ENTITY_TYPE, name, "description");
-        LuthierValidationUtils.validateField(configTable.get("keyValueStore"), ENTITY_TYPE, name, "keyValueStore");
-        LuthierValidationUtils.validateField(configTable.get("searchProvider"), ENTITY_TYPE, name, "searchProvider");
-        LuthierValidationUtils.validateField(configTable.get("fields"), ENTITY_TYPE, name, "fields");
-        LuthierValidationUtils.validateField(configTable.get("defaultFields"), ENTITY_TYPE, name, "defaultFields");
-        LuthierValidationUtils.validateField(configTable.get("isAggregatable"), ENTITY_TYPE, name, "isAggregatable");
     }
 }

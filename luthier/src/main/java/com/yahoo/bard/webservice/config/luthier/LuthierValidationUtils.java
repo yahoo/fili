@@ -3,6 +3,9 @@
 package com.yahoo.bard.webservice.config.luthier;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.util.Arrays;
 
 /**
  * Contains a collection of static methods to make it easier to perform configuration validation.
@@ -32,7 +35,6 @@ public class LuthierValidationUtils {
         }
     }
 
-
     /**
      * Validates that the given field actually exists. If it doesn't, throws a useful error message.
      *
@@ -50,6 +52,30 @@ public class LuthierValidationUtils {
         validateField(fieldValue, configEntityType.getConceptKey(), configEntityName, fieldName);
     }
 
+    /**
+     * Validates that the given fieldNames exist in the configTable.
+     * If any of them doesn't exist, throws a useful error message.
+     *
+     * @param configTable  The source of JsonNodes where we extract fields from
+     * @param configEntityType  The type of the config entity whose field we're validating
+     * @param configEntityName The name of the config entity we're currently building
+     * @param fieldNames  The names of the field whose value we're validating
+     */
+    public static void validateFields(
+            ObjectNode configTable,
+            String configEntityType,
+            String configEntityName,
+            String ... fieldNames
+    ) {
+        Arrays.stream(fieldNames).forEach(
+                fieldName -> validateField(
+                        configTable.get(fieldName),
+                        configEntityType,
+                        configEntityName,
+                        fieldName
+                )
+        );
+    }
 
     /** Just a bunch of static functions. **/
     private LuthierValidationUtils() {

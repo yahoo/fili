@@ -2,8 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier;
 
+import com.yahoo.bard.webservice.config.luthier.factories.AggregationAverageMakerFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.ArithmeticMakerFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.CountMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.DefaultLogicalTableGroupFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.DoubleSumMakerFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.LongSumMakerFactory;
+import com.yahoo.bard.webservice.config.luthier.factories.DefaultMetricFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.config.luthier.factories.NoOpSearchProviderFactory;
@@ -14,11 +20,18 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
+import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
+import com.yahoo.bard.webservice.data.dimension.MapStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
@@ -32,13 +45,14 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -59,6 +73,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     private final FactoryPark<SearchProvider> searchProviderFactoryPark;
     private final FactoryPark<KeyValueStore> keyValueStoreFactoryPark;
 
+    private final FactoryPark<LogicalMetric> metricFactoryPark;
     private final FactoryPark<MetricMaker> metricMakerFactoryPark;
 
     private final FactoryPark<ConfigPhysicalTable> physicalTableFactoryPark;
@@ -85,7 +100,9 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         this.keyValueStoreFactoryPark = buildFactoryPark(ConceptType.KEY_VALUE_STORE, conceptFactoryMap);
         this.dimensionFactoryPark = buildFactoryPark(ConceptType.DIMENSION, conceptFactoryMap);
 
+        this.metricFactoryPark =  buildFactoryPark(ConceptType.METRIC, conceptFactoryMap);
         this.metricMakerFactoryPark =  buildFactoryPark(ConceptType.METRIC_MAKER, conceptFactoryMap);
+
         this.physicalTableFactoryPark = buildFactoryPark(ConceptType.PHYSICAL_TABLE, conceptFactoryMap);
         this.logicalTableGroupFactoryPark = buildFactoryPark(ConceptType.LOGICAL_TABLE_GROUP, conceptFactoryMap);
 
@@ -127,22 +144,6 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             dimensionDictionary.add(dimension);
         }
         return dimensionDictionary.findByApiName(dimensionName);
-    }
-
-    /**
-     * Retrieve or build a Metric Maker.
-     *
-     * @param metricMakerName the name for the dimension to be provided.
-     *
-     * @return the dimension instance corresponding to this name.
-     */
-    public MetricMaker getMetricMaker(String metricMakerName) {
-        Map<String, MetricMaker> metricMakerDictionary = resourceDictionaries.getMetricMakerDictionary();
-        if (metricMakerDictionary.get(metricMakerName) == null) {
-            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(metricMakerName, this);
-            metricMakerDictionary.put(metricMakerName, metricMaker);
-        }
-        return metricMakerDictionary.get(metricMakerName);
     }
 
     /**
@@ -212,8 +213,28 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      * @return the LogicalMetric instance corresponding to this metricName.
      */
     public LogicalMetric getMetric(String metricName) {
-        // TODO: to be finished in the metric PR.
-        return null;
+        Map<String, LogicalMetric> metricDictionary = resourceDictionaries.getMetricDictionary();
+        if (metricDictionary.get(metricName) == null) {
+            LogicalMetric metric = metricFactoryPark.buildEntity(metricName, this);
+            metricDictionary.put(metricName, metric);
+        }
+        return metricDictionary.get(metricName);
+    }
+
+    /**
+     * Retrieve or build a Metric Maker.
+     *
+     * @param metricMakerName the name for the metric maker to be provided.
+     *
+     * @return the dimension instance corresponding to this name.
+     */
+    public MetricMaker getMetricMaker(String metricMakerName) {
+        Map<String, MetricMaker> metricMakerDictionary = resourceDictionaries.getMetricMakerDictionary();
+        if (metricMakerDictionary.get(metricMakerName) == null) {
+            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(metricMakerName, this);
+            metricMakerDictionary.put(metricMakerName, metricMaker);
+        }
+        return metricMakerDictionary.get(metricMakerName);
     }
 
     /**
@@ -312,105 +333,174 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             this.granularityDictionary = granularityDictionary;
 
             conceptFactoryMap = new HashMap<>();
-            conceptFactoryMap.put(ConceptType.METRIC_MAKER, new HashMap<>());
             conceptFactoryMap.put(ConceptType.DIMENSION, getDefaultDimensionFactories());
             conceptFactoryMap.put(ConceptType.SEARCH_PROVIDER, getDefaultSearchProviderFactories());
+            conceptFactoryMap.put(ConceptType.METRIC_MAKER, getDefaultMetricMakerFactories());
+            conceptFactoryMap.put(ConceptType.METRIC, getDefaultMetricFactories());
             conceptFactoryMap.put(ConceptType.PHYSICAL_TABLE, getDefaultPhysicalTableFactories());
             conceptFactoryMap.put(ConceptType.KEY_VALUE_STORE, getDefaultKeyValueStoreFactories());
             conceptFactoryMap.put(ConceptType.LOGICAL_TABLE_GROUP, getDefaultLogicalTableGroupFactories());
         }
 
         /**
+         * Add the canonical name, simple name, and any specified aliases of a Factory to the factory map.
+         *
+         * @param factoryMap  the factory map we will populate
+         * @param factory  the factory to be associated
+         * @param conceptClass  the specific class we use to extract canonical class name and simple class name from
+         * @param aliases  the list of custom alias we want to add to the factory map
+         * @param <T>  Factory generic type
+         */
+        private <T> void addAliasesToFactory(
+                Map<String, Factory<T>> factoryMap,
+                Factory<T> factory,
+                Class<? extends T> conceptClass,
+                String ... aliases
+        ) {
+            String canonicalName = conceptClass.getCanonicalName();
+            String simpleName = conceptClass.getSimpleName();
+            Arrays.stream(aliases).forEach(s -> factoryMap.put(s, factory));
+            factoryMap.put(canonicalName, factory);
+            factoryMap.put(simpleName, factory);
+        }
+
+        /**
          * Default dimension factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of KeyValueStoreDimension to its factory
+         * @return a Map of KeyValueStoreDimension to its factory
          */
         private Map<String, Factory<Dimension>> getDefaultDimensionFactories() {
-            Map<String, Factory<Dimension>> dimensionFactoryMap = new LinkedHashMap<>();
-            dimensionFactoryMap.put("KeyValueStoreDimension", new KeyValueStoreDimensionFactory());
-            return dimensionFactoryMap;
+            Map<String, Factory<Dimension>> factoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(factoryMap, new KeyValueStoreDimensionFactory(), KeyValueStoreDimension.class);
+            return factoryMap;
         }
 
         /**
          * Default keyValueStore factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of KeyValueStore to its factory
+         * @return  a Map of KeyValueStore to its factory
          */
         private Map<String, Factory<KeyValueStore>> getDefaultKeyValueStoreFactories() {
-            Map<String, Factory<KeyValueStore>> keyValueStoreFactoryMap = new LinkedHashMap<>();
-            MapKeyValueStoreFactory mapStoreFactory = new MapKeyValueStoreFactory();
-            keyValueStoreFactoryMap.put("memory", mapStoreFactory);
-            keyValueStoreFactoryMap.put("map", mapStoreFactory);
-            keyValueStoreFactoryMap.put("mapStore", mapStoreFactory);
-            keyValueStoreFactoryMap.put("com.yahoo.bard.webservice.data.dimension.MapStore", mapStoreFactory);
+            Map<String, Factory<KeyValueStore>> factoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(factoryMap, new MapKeyValueStoreFactory(), MapStore.class, "memory", "map");
             // TODO: add in Redis Store later
-            return keyValueStoreFactoryMap;
+            return factoryMap;
         }
 
         /**
          * Default searchProvider factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of aliases of search provider type name to its factory
+         * @return a Map of aliases of search provider type name to its factory
          */
         private Map<String, Factory<SearchProvider>> getDefaultSearchProviderFactories() {
-            Map<String, Factory<SearchProvider>> searchProviderFactoryMap = new LinkedHashMap<>();
+            Map<String, Factory<SearchProvider>> factoryMap = new LinkedHashMap<>();
             // all known factories for searchProviders and their possible aliases
-            LuceneSearchProviderFactory luceneSearchProviderFactory = new LuceneSearchProviderFactory();
-            List<String> luceneAliases = Arrays.asList(
-                    "lucene",
-                    LuceneSearchProvider.class.getSimpleName(),
-                    LuceneSearchProvider.class.getCanonicalName()
-            );
-            NoOpSearchProviderFactory noOpSearchProviderFactory = new NoOpSearchProviderFactory();
-            List<String> noOpAliases = Arrays.asList(
-                    "noOp",
-                    NoOpSearchProvider.class.getSimpleName(),
-                    NoOpSearchProvider.class.getCanonicalName()
-            );
-            ScanSearchProviderFactory scanSearchProviderFactory = new ScanSearchProviderFactory();
-            List<String> scanAliases = Arrays.asList(
-                    "memory",
-                    "scan",
-                    ScanSearchProvider.class.getSimpleName(),
-                    ScanSearchProvider.class.getCanonicalName()
-            );
-            luceneAliases.forEach(alias -> searchProviderFactoryMap.put(alias, luceneSearchProviderFactory));
-            noOpAliases.forEach(alias -> searchProviderFactoryMap.put(alias, noOpSearchProviderFactory));
-            scanAliases.forEach(alias -> searchProviderFactoryMap.put(alias, scanSearchProviderFactory));
-            return searchProviderFactoryMap;
+            LuceneSearchProviderFactory luceneFactory = new LuceneSearchProviderFactory();
+            NoOpSearchProviderFactory noOpFactory = new NoOpSearchProviderFactory();
+            ScanSearchProviderFactory scanFactory = new ScanSearchProviderFactory();
+
+            addAliasesToFactory(factoryMap, luceneFactory, LuceneSearchProvider.class, "lucene");
+            addAliasesToFactory(factoryMap, noOpFactory, NoOpSearchProvider.class, "noOp");
+            addAliasesToFactory(factoryMap, scanFactory, ScanSearchProvider.class, "memory", "scan");
+            return factoryMap;
         }
 
         /**
          * Default PhysicalTable factories that are defined in fili-core.
          *
-         * @return a LinkedHashMap of physicalTable type name to its factory
+         * @return a Map of physicalTable type name to its factory
          */
         private Map<String, Factory<ConfigPhysicalTable>> getDefaultPhysicalTableFactories() {
             Map<String, Factory<ConfigPhysicalTable>> physicalTableFactoryMap = new LinkedHashMap<>();
-            StrictPhysicalTableFactory strictFactory = new StrictPhysicalTableFactory();
-            PermissivePhysicalTableFactory permissiveFactory = new PermissivePhysicalTableFactory();
-            physicalTableFactoryMap.put("strictPhysicalTable", strictFactory);
-            physicalTableFactoryMap.put("strict", strictFactory);
-            physicalTableFactoryMap.put("permissivePhysicalTable", permissiveFactory);
-            physicalTableFactoryMap.put("permissive", permissiveFactory);
+            addAliasesToFactory(
+                    physicalTableFactoryMap,
+                    new StrictPhysicalTableFactory(),
+                    StrictPhysicalTable.class,
+                    "strict"
+            );
+            addAliasesToFactory(
+                    physicalTableFactoryMap,
+                    new PermissivePhysicalTableFactory(),
+                    PermissivePhysicalTable.class,
+                    "permissive"
+            );
             return physicalTableFactoryMap;
+        }
+
+        /**
+         * Default LogicalTableGroup factories that are defined in fili-core.
+         *
+         * @return  a Map of LogicalTableGroup type name to its factory
+         */
+        private Map<String, Factory<LogicalTableGroup>> getDefaultLogicalTableGroupFactories() {
+            Map<String, Factory<LogicalTableGroup>> logicalTableFactoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(
+                    logicalTableFactoryMap,
+                    new DefaultLogicalTableGroupFactory(),
+                    LogicalTableGroup.class,
+                    "default"
+            );
+            return logicalTableFactoryMap;
         }
 
         /**
          * Default LogicalTable factories that are defined in fili-core.
          *
-         * @return  a LinkedHashMap of logical Table type name to its factory
+         * @return  a Map of MetricMaker name to its factory
          */
-        private Map<String, Factory<LogicalTableGroup>> getDefaultLogicalTableGroupFactories() {
-            Map<String, Factory<LogicalTableGroup>> logicalTableFactoryMap = new LinkedHashMap<>();
-            DefaultLogicalTableGroupFactory defaultFactory = new DefaultLogicalTableGroupFactory();
-            logicalTableFactoryMap.put("default", defaultFactory);
-            logicalTableFactoryMap.put("DefaultLogicalTableGroup", defaultFactory);
-            return logicalTableFactoryMap;
+        private Map<String, Factory<LogicalMetric>> getDefaultMetricFactories() {
+            Map<String, Factory<LogicalMetric>> metricFactoryMap = new LinkedHashMap<>();
+            addAliasesToFactory(
+                    metricFactoryMap,
+                    new DefaultMetricFactory(),
+                    LogicalMetric.class,
+                    "default"
+            );
+            return metricFactoryMap;
         }
 
-        public GranularityDictionary getGranularityDictionary() {
-            return granularityDictionary;
+        /**
+         * Default LogicalTable factories that are defined in fili-core.
+         *
+         * @return  a Map of MetricMaker name to its factory
+         */
+        private Map<String, Factory<MetricMaker>> getDefaultMetricMakerFactories() {
+            Map<String, Factory<MetricMaker>> metricMakerFactoryMap = new LinkedHashMap<>();
+
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new ArithmeticMakerFactory(),
+                    ArithmeticMaker.class,
+                    "arithmetic"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new LongSumMakerFactory(),
+                    LongSumMaker.class,
+                    "longSum"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleSumMakerFactory(),
+                    DoubleSumMaker.class,
+                    "doubleSum"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new AggregationAverageMakerFactory(),
+                    AggregationAverageMaker.class,
+                    "avg",
+                    "average",
+                    "aggregateAverage"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new CountMakerFactory(),
+                    CountMaker.class,
+                    "count"
+            );
+
+            return metricMakerFactoryMap;
         }
 
         /**
@@ -468,6 +558,10 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             Map<String, Factory<T>> conceptFactory = (Map<String, Factory<T>>) conceptFactoryMap.get(conceptType);
             conceptFactory.put(name, factory);
             return this;
+        }
+
+        public GranularityDictionary getGranularityDictionary() {
+            return granularityDictionary;
         }
 
         /**

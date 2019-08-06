@@ -60,8 +60,13 @@ So the metric "difference" is the (rather silly) formula:
             on directly.
 --]]
 -------------------------------------------------------------------------------
+local M = {}
 
-return {
+local metrics = {
+    longSumCO = {
+        maker = "longSum",
+        druidMetric = "CO"
+    },
     count = {
         maker = "count"
     },
@@ -94,3 +99,10 @@ return {
         dependencies = {"NO2M"}
     }
 }
+
+for metric_name, metric_content in pairs(metrics) do
+    metric_content.type = "default"
+    M[metric_name] = metric_content
+end
+
+return M

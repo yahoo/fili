@@ -2,11 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier.factories;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.

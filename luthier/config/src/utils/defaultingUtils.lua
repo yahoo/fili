@@ -27,12 +27,16 @@ M.DEFAULT_LOGICAL_CATEGORY = "GENERAL"
 M.DEFAULT_LOGICAL_RETENTION = "P1Y"
 M.DEFAULT_LOGICAL_DEPENDENT_TABLE = {}
 M.DEFAULT_LOGICAL_DATE_TIME_ZONE = "UTC"
+-- Metrics
+M.DEFAULT_METRIC_TYPE = "default"
+M.DEFAULT_METRIC_CATEGORY = "GENERAL"
+M.DEFAULT_METRIC_DEPENDENCY_NAMES = {}
 --- Defaulting methods:
 -- Dimensions
 function M.dimension_defaulting(dimension_name, dimension)
     local dim_config = misc.shallow_copy(dimension)
     dim_config.longName = dim_config.longName or dimension_name
-    dim_config.description = dim_config.description or dim_config.longName
+    dim_config.description = dim_config.description or dim_config.longName   -- this line must follow the previous one
     dim_config.domain = dim_config.domain or dimension_name
     dim_config.type = dim_config.type or M.DEFAULT_DIMENSION_TYPE
     dim_config.category = dim_config.category or M.DEFAULT_DIMENSION_CATEGORY
@@ -67,5 +71,18 @@ function M.logical_table_defaulting(logical_table_name, logical_table)
     logi_config.physicalTables = logi_config.physicalTables or M.DEFAULT_LOGICAL_DEPENDENT_TABLE
     logi_config.dateTimeZone = logi_config.dateTimeZone or M.DEFAULT_LOGICAL_DATE_TIME_ZONE
     return logi_config
+end
+
+function M.metric_defaulting(metric_name, metric)
+    local metric_config = misc.shallow_copy(metric)
+    metric_config.type = metric_config.type or M.DEFAULT_METRIC_TYPE
+    metric_config.longName = metric_config.longName or metric_name
+    metric_config.description = metric_config.description or metric_config.longName   -- this line must follow the previous one
+    metric_config.category = metric_config.category or M.DEFAULT_METRIC_CATEGORY
+    metric_config.dependencyMetricNames = metric_config.druidMetric and {metric_config.druidMetric}
+            or metric_config.dependencies           -- if druidMetric exists: use {druidMetric}
+            or M.DEFAULT_METRIC_DEPENDENCY_NAMES    -- else if dependencies exists: use dependencies
+                                                    --      else use an empty table {}
+    return metric_config
 end
 return M
