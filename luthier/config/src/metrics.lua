@@ -57,7 +57,7 @@ So the metric "difference" is the (rather silly) formula:
         dependencies - A list of names of Fili metrics that this metric operates
             on, if any, only applies for nested metrics
         druidMetric - The name of the druid metric that this metric operates
-            on directly, if any, only applies for nested metrics
+            on directly.
 --]]
 -------------------------------------------------------------------------------
 
@@ -86,11 +86,11 @@ return {
         druidMetric = "NO2"
     },
     averageCOPerDay = {
-        maker = "aggregateAveragebyDay",
+        maker = "aggregateAverageByDay",
         dependencies = {"COM"}
     },
     averageNO2PerDay = {
-        maker = "aggregateAveragebyDay",
+        maker = "aggregateAverageByDay",
         dependencies = {"NO2M"}
     }
 }
