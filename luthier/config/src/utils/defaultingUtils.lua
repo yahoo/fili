@@ -15,6 +15,7 @@ M.DEFAULT_DIMENSION_CATEGORY = "UNKNOWN_CATEGORY"
 M.DEFAULT_DIMENSION_IS_AGGREGATABLE = true
 M.DEFAULT_DIMENSION_FIELDS = {}
 M.DEFAULT_DIMENSION_KEY_VALUE_STORE = "memory"
+M.DEFAULT_DIMENSION_SKIP_LOADING = true
 -- Physical Tables
 M.DEFAULT_PHYSICAL_TYPE = "strict"
 M.DEFAULT_PHYSICAL_DEPENDENT_TABLE = {}
@@ -44,6 +45,9 @@ function M.dimension_defaulting(dimension_name, dimension)
     dim_config.keyValueStore = dim_config.keyValueStore or M.DEFAULT_DIMENSION_KEY_VALUE_STORE
     if dim_config.isAggregatable == nil then
         dim_config.isAggregatable = M.DEFAULT_DIMENSION_IS_AGGREGATABLE
+    end
+    if dim_config.skipLoading == nil then
+        dim_config.skipLoading = M.DEFAULT_DIMENSION_SKIP_LOADING
     end
     return dim_config
 end

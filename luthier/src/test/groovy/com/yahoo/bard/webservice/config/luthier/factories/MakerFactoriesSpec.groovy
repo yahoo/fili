@@ -100,7 +100,7 @@ class MakerFactoriesSpec extends Specification {
 
     def "building daily average metricMaker correctly through a LIP"() {
         setup: "Build LIP, and then extract the metricMaker"
-            MetricMaker dailyAvgMaker = luthierIndustrialPark.getMetricMaker("aggregateAverageDAY")
+            MetricMaker dailyAvgMaker = luthierIndustrialPark.getMetricMaker("aggregateAverageByDay")
         expect:
             // a pretty "dumb" check that guarantees that there is no exception in build
             // also guarantees that the factoryMap aliases contain "longSum"

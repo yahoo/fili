@@ -134,6 +134,7 @@ local function verify_then_config_all(tableNames, snapshotTime)
         if snapshotTime == nil then
             -- does not have a previous snapshot, directly config
             write_table(testResourcesDir, tableName, configTable)
+            write_table(appResourcesDir, tableName, configTable)
         else
             verify_then_config(referenceResources .. snapshotTime, tableName, configTable)
         end

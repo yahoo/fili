@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -61,6 +62,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     private static final String DEFAULT_FIELDS = "defaultFields";
     private static final String IS_AGGREGATABLE = "isAggregatable";
     private static final String DOMAIN = "domain";
+    private static final String SKIP_LOADING = "skipLoading";
+    private static final DateTime LOAD_TIME = new DateTime();
 
     /**
      * Helper function to build both fields and defaultFields.
@@ -133,7 +136,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 FIELDS,
                 DEFAULT_FIELDS,
                 IS_AGGREGATABLE,
-                DOMAIN
+                DOMAIN,
+                SKIP_LOADING
         );
 
         String longName = configTable.get(LONG_NAME).textValue();
@@ -142,6 +146,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get(DOMAIN).textValue());
         SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get(DOMAIN).textValue());
         boolean isAggregatable = configTable.get(IS_AGGREGATABLE).booleanValue();
+        boolean skipLoading = configTable.get(SKIP_LOADING).booleanValue();
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
 
@@ -153,7 +158,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 defaultDimensionFields
         );
 
-        return new KeyValueStoreDimension(
+        KeyValueStoreDimension result = new KeyValueStoreDimension(
                 name,
                 longName,
                 category,
@@ -164,5 +169,10 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 defaultDimensionFields,
                 isAggregatable
         );
+        if (skipLoading) {
+            result.setLastUpdated(LOAD_TIME);
+        }
+
+        return result;
     }
 }
