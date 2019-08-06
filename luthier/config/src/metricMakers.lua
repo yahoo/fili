@@ -20,8 +20,7 @@ local M = {}
     and the LongSum of metric2.
 
     Makers themselves are define in Java, as a part of your program using
-    Fili. Therefore, all references to makers are fully-qualified Java class
-    names.
+    Fili.
 
     Each maker is a table containing at least the following key:
         type: A unique string identifying the type for this maker. The full
@@ -56,8 +55,8 @@ for _, operation in ipairs({"PLUS","MINUS","MULTIPLY","DIVIDE"}) do
     }
 end
 
-for _, grain in ipairs {"HOUR", "DAY"} do
-    M["aggregateAverage" .. grain] = {
+for _, grain in ipairs {"Hour", "Day"} do
+    M["aggregateAverageBy" .. grain] = {
         type = "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
         innerGrain = grain
     }
@@ -71,7 +70,7 @@ for orientation, flag in pairs {byRow=true, byColumn=false} do
 end
 
 for sizeName, size in pairs {Big=4096, Medium=2048, Small=1024} do
-    M["ThetaSketch" .. sizeName] = {
+    M["thetaSketch" .. sizeName] = {
         type = "com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker",
         sketchSize=size
     }
