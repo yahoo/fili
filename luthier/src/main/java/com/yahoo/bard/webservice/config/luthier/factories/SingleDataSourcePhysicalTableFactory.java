@@ -113,15 +113,6 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
                 )
         );
         params.metadataService = resourceFactories.getMetadataService();
-        // registers each table we build in the metadataService
-        params.metadataService.update(
-                DataSourceName.of(name),
-                new DataSourceMetadata(
-                        name,
-                        Collections.emptyMap(),
-                        Collections.emptyList()
-                )
-        );
         return params;
     }
 }

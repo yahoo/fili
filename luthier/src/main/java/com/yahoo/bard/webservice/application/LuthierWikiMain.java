@@ -30,7 +30,6 @@ import javax.servlet.DispatcherType;
 public class LuthierWikiMain {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
-    private static final Logger LOG = LoggerFactory.getLogger(LuthierWikiMain.class);
 
     /**
      * Run the Wikipedia applications powered by Luthier.
