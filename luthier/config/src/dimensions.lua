@@ -124,7 +124,7 @@ local FIELDSETS = {
 ]]
 -------------------------------------------------------------------------------
 
-return {
+local M = {
     testDimension = {
         longName = "a longName for testing",
         description = "a description for testing",
@@ -343,3 +343,10 @@ return {
         keyValueStore = "memory"
     }
 }
+
+--- set every dimension to be available at start, i.e. skip loading.
+for dimensionName, dimension in pairs(M) do
+    dimension.skipLoading = true
+end
+
+return M

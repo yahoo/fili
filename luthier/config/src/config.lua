@@ -37,19 +37,19 @@ local metricConfig = metricsUtils.build_metric_config(metrics)
 local metricMakerConfig = metricMakerUtils.build_metric_maker_config(metricMakers)
 local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
 
---- write to testResource/tableName
-local function write_table(targetDir, tableName, configTable)
-    parser.save(targetDir .. tableName, configTable)
-    print(targetDir .. " table " .. tableName .. " Updated now.")
+--- write to testResource/entityName
+local function write_config_entity(targetDir, entityName, configEntity)
+    parser.save(targetDir .. entityName, configEntity)
+    print(targetDir .. entityName .. " Updated now.")
 end
 
-local function config(tableName, configTable)
-    write_table(testResourcesDir, tableName, configTable)
-    write_table(appResourcesDir, tableName, configTable)
+local function write_config(configEntityName, configEntity)
+    write_config_entity(testResourcesDir, configEntityName, configEntity)
+    write_config_entity(appResourcesDir, configEntityName, configEntity)
 end
 
 --- a named map of all config, keyed on the target file name.
-local tableNames = {
+local entityNames = {
     ["DimensionConfig.json"] = dimensionConfig,
     ["KeyValueStoreConfig.json"] = keyValueStoreConfig,
     ["SearchProviderConfig.json"] = searchProviderConfig,
@@ -65,6 +65,6 @@ local tableNames = {
 os.execute("mkdir -p " .. testResourcesDir)
 
 -- add to the test/resource
-for tableName, configTable in pairs(tableNames) do
-    config(tableName, configTable)
+for entityName, configEntity in pairs(entityNames) do
+    write_config(entityName, configEntity)
 end

@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
-import com.codahale.metrics.servlet.InstrumentedFilter;
-import com.codahale.metrics.servlets.AdminServlet;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+
+import com.codahale.metrics.servlet.InstrumentedFilter;
+import com.codahale.metrics.servlets.AdminServlet;
+
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -17,11 +19,13 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
 import java.util.EnumSet;
 
+import javax.servlet.DispatcherType;
+
 /**
- * Launch Bard in Embedded Jetty.
+ * Launch an instance of Fili displays Wikipedia and air quality data, configured using Luthier,
+ * in embedded Jetty Embedded Jetty.
  */
 public class LuthierWikiMain {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
@@ -29,7 +33,7 @@ public class LuthierWikiMain {
     private static final Logger LOG = LoggerFactory.getLogger(LuthierWikiMain.class);
 
     /**
-     * Run the Wikipedia application.
+     * Run the Wikipedia applications powered by Luthier.
      *
      * @param args  command line arguments
      * @throws Exception if the server fails to start or crashes
