@@ -302,19 +302,16 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 : cipherSuites.toArray(new String[cipherSuites.size()]);
 
         // Build the configuration
-        DefaultAsyncHttpClientConfig.Builder asyncHttpClientConfigBuilder = new DefaultAsyncHttpClientConfig.Builder()
+        AsyncHttpClientConfig config = new DefaultAsyncHttpClientConfig.Builder()
                 .setReadTimeout(requestTimeout)
                 .setRequestTimeout(requestTimeout)
                 .setConnectTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
                 .setEnabledCipherSuites(enabledCipherSuites)
-                .setFollowRedirect(true);
-
-        if (sslContext != null) {
-            asyncHttpClientConfigBuilder.setSslContext(sslContext);
-        }
-        AsyncHttpClientConfig config = asyncHttpClientConfigBuilder.build();
+                .setFollowRedirect(true)
+                .setSslContext(sslContext)
+                .build();
 
         return new DefaultAsyncHttpClient(config);
     }

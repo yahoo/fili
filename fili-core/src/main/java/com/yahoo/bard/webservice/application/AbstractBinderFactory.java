@@ -1210,7 +1210,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Get a custom configured ssl context.
+     * Get a custom configured ssl context. If null, the system default SSL Context will be applied
      * @return SSL context
      */
     protected SslContext getSSLContext() {
@@ -1229,19 +1229,17 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
-        SslContext sslContext = getSSLContext();
-
         return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
                 ? new AsyncDruidWebServiceImpl(
                         druidServiceConfig,
                         mapper,
                         supplier,
-                        sslContext,
+                        getSSLContext(),
                         new HeaderNestingJsonBuilderStrategy(
                                 AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
                         )
                 )
-                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier, sslContext);
+                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier, getSSLContext());
     }
 
     /**

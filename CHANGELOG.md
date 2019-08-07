@@ -2235,3 +2235,10 @@ Jobs resource. Here are the highlights of what's in this release:
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
 
+### Added:
+
+- [Add custom ssl context support to druid AsyncHttp requests](https://github.com/yahoo/fili/pull/943)
+  * Added new Constructors in `AsyncDruidWebServiceImpl` class that accept custom `SslContext` as additional argument. 
+   This custom SslContext if not null, replaces the default ssl context while making the request to druid. 
+  * Added `getSSLContext()` method in `AbstractBinderFactory` class that returns null as default. Custom Ssl Context is passed by overriding this method. 
+    
