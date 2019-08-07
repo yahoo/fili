@@ -8,10 +8,12 @@ import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.data.config.LuthierTableName;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.joda.time.DateTimeZone;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
@@ -110,6 +113,15 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
                 )
         );
         params.metadataService = resourceFactories.getMetadataService();
+        // registers each table we build in the metadataService
+        params.metadataService.update(
+                DataSourceName.of(name),
+                new DataSourceMetadata(
+                        name,
+                        Collections.emptyMap(),
+                        Collections.emptyList()
+                )
+        );
         return params;
     }
 }
