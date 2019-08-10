@@ -14,9 +14,8 @@ local M = {}
 -- (You can very well use any alias we provided or the custom ones you added)
 -- This is just to provide an insight about which class you will actually invoke.
 local FULLY_QUALIFIED_NAME = {
-    lucene =
-        "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider",
-    noop = "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider",
+    lucene = "com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider",
+    noOp = "com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider",
     memory = "com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider"
 }
 

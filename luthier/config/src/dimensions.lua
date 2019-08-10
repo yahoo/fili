@@ -30,7 +30,6 @@ dimension row.
 --]]
 
 dimensionUtils = require("utils.dimensionUtils")
-searchProviderTemplates = require("searchProviderTemplates")
 
 -------------------------------------------------------------------------------
 -- FieldSets
@@ -66,7 +65,6 @@ searchProviderTemplates = require("searchProviderTemplates")
 
 local pk = dimensionUtils.pk
 local field = dimensionUtils.field
-local SPT = searchProviderTemplates.templates
 
 local FIELDSETS = {
     default = { pk "ID", field "DESC" },
@@ -89,6 +87,8 @@ local FIELDSETS = {
         Defaults to the dimension's table key
     * fields - A fieldset (see FieldSets above) describing the fields attached
         to the dimension
+    * domain - An identifier for search provider and key value store
+        Defaults to the dimension's table key
     * category - An arbitrary category to put the dimension in. This is not
         used directly by Fili, but rather exists as a marker for UI's should
         they desire to use it to organize dimensions.
@@ -133,7 +133,7 @@ local M = {
         type = "KeyValueStoreDimension",
         isAggregatable = false,
         defaultFields = { "TEST_PK", "TEST_FIELD_1" },
-        domain = "testDomain",
+        dimensionDomain = "testDomain",
         searchProvider = "lucene",
         keyValueStore = "memory"
     },

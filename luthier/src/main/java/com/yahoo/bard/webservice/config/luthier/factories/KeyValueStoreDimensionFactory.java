@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.util.EnumUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,8 +62,9 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     private static final String FIELDS = "fields";
     private static final String DEFAULT_FIELDS = "defaultFields";
     private static final String IS_AGGREGATABLE = "isAggregatable";
-    private static final String DOMAIN = "domain";
+    private static final String DIMENSION_DOMAIN = "dimensionDomain";
     private static final String SKIP_LOADING = "skipLoading";
+    private static final String STORAGE_STRATEGY = "storageStrategy";
     private static final DateTime LOAD_TIME = new DateTime();
 
     /**
@@ -136,17 +138,21 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 FIELDS,
                 DEFAULT_FIELDS,
                 IS_AGGREGATABLE,
-                DOMAIN,
-                SKIP_LOADING
+                DIMENSION_DOMAIN,
+                SKIP_LOADING,
+                STORAGE_STRATEGY
         );
 
         String longName = configTable.get(LONG_NAME).textValue();
         String category = configTable.get(CATEGORY).textValue();
         String description = configTable.get(DESCRIPTION).textValue();
-        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get(DOMAIN).textValue());
-        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get(DOMAIN).textValue());
+        KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get(DIMENSION_DOMAIN).textValue());
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get(DIMENSION_DOMAIN).textValue());
         boolean isAggregatable = configTable.get(IS_AGGREGATABLE).booleanValue();
         boolean skipLoading = configTable.get(SKIP_LOADING).booleanValue();
+        StorageStrategy storageStrategy = StorageStrategy.valueOf(
+                configTable.get(STORAGE_STRATEGY).textValue()
+        );
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
         LinkedHashSet<DimensionField> defaultDimensionFields = new LinkedHashSet<>();
 
@@ -167,7 +173,8 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
                 keyValueStore,
                 searchProvider,
                 defaultDimensionFields,
-                isAggregatable
+                isAggregatable,
+                storageStrategy
         );
         if (skipLoading) {
             result.setLastUpdated(LOAD_TIME);

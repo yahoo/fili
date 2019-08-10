@@ -16,6 +16,7 @@ M.DEFAULT_DIMENSION_IS_AGGREGATABLE = true
 M.DEFAULT_DIMENSION_FIELDS = {}
 M.DEFAULT_DIMENSION_KEY_VALUE_STORE = "memory"
 M.DEFAULT_DIMENSION_SKIP_LOADING = false
+M.DEFAULT_DIMENSION_STORAGE_STRATEGY = "LOADED"
 -- Physical Tables
 M.DEFAULT_PHYSICAL_TYPE = "strict"
 M.DEFAULT_PHYSICAL_DEPENDENT_TABLE = {}
@@ -38,7 +39,7 @@ function M.dimension_defaulting(dimension_name, dimension)
     local dim_config = misc.shallow_copy(dimension)
     dim_config.longName = dim_config.longName or dimension_name
     dim_config.description = dim_config.description or dim_config.longName   -- this line must follow the previous one
-    dim_config.domain = dim_config.domain or dimension_name
+    dim_config.dimensionDomain = dim_config.dimensionDomain or dimension_name
     dim_config.type = dim_config.type or M.DEFAULT_DIMENSION_TYPE
     dim_config.category = dim_config.category or M.DEFAULT_DIMENSION_CATEGORY
     dim_config.defaultFields = dim_config.defaultFields or M.DEFAULT_DIMENSION_FIELDS
@@ -49,6 +50,7 @@ function M.dimension_defaulting(dimension_name, dimension)
     if dim_config.skipLoading == nil then
         dim_config.skipLoading = M.DEFAULT_DIMENSION_SKIP_LOADING
     end
+    dim_config.storageStrategy = dim_config.storageStrategy or M.DEFAULT_DIMENSION_STORAGE_STRATEGY
     return dim_config
 end
 
