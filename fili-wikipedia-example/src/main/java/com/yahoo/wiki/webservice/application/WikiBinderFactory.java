@@ -3,9 +3,9 @@
 package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.AbstractBinderFactory;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.TableLoader;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 import com.yahoo.wiki.webservice.data.config.metric.WikiMetricLoader;
 import com.yahoo.wiki.webservice.data.config.table.WikiTableLoader;

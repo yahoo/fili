@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.luthier.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 
 import java.math.BigDecimal;

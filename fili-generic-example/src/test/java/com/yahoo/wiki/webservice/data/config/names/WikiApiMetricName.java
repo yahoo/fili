@@ -4,7 +4,7 @@ package com.yahoo.wiki.webservice.data.config.names;
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.luthier.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.util.EnumUtils;
 

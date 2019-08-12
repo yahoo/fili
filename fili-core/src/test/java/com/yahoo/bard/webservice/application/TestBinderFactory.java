@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
-import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.COLOR;
-import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SHAPE;
-import static com.yahoo.bard.webservice.data.config.names.TestApiDimensionName.SIZE;
-import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.HOURLY;
-import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MONTHLY;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiDimensionName.COLOR;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiDimensionName.SHAPE;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiDimensionName.SIZE;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestDruidTableName.HOURLY;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestDruidTableName.MONTHLY;
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobRowBuilder;
@@ -22,10 +22,10 @@ import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.cache.TestDataCache;
 import com.yahoo.bard.webservice.data.cache.TestTupleDataCache;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService;
@@ -121,8 +121,8 @@ public class TestBinderFactory extends AbstractBinderFactory {
      * Returns a `VolatileIntervalsService` that provides some test volatility intervals.
      * <p>
      *  The service provides volatile intervals for only two tables:
-     *  {@link com.yahoo.bard.webservice.data.config.names.TestDruidTableName#MONTHLY}, and
-     *  {@link com.yahoo.bard.webservice.data.config.names.TestDruidTableName#HOURLY}. The HOURLY table is volatile
+     *  {@link com.yahoo.bard.webservice.data.config.luthier.names.TestDruidTableName#MONTHLY}, and
+     *  {@link com.yahoo.bard.webservice.data.config.luthier.names.TestDruidTableName#HOURLY}. The HOURLY table is volatile
      *  from August 15 2016 to August 16 2016, while the MONTHLY table is volatile from August 1 2016 to
      *  September 1 2016.
      *

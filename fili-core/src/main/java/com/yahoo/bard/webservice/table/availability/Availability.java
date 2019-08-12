@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.table.availability;
 
 import static org.joda.time.DateTimeZone.UTC;
 
-import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.luthier.names.DataSourceName;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.ApiFilter;

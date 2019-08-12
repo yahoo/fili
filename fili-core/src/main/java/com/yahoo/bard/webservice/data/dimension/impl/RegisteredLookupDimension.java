@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
-import com.yahoo.bard.webservice.data.config.dimension.RegisteredLookupDimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.RegisteredLookupDimensionConfig;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.CascadeExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.serializers.LookupDimensionToDimensionSpec;

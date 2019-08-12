@@ -3,9 +3,9 @@
 package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.TableLoader;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.wiki.webservice.data.config.auto.DataSourceConfiguration;
 import com.yahoo.wiki.webservice.data.config.auto.StaticWikiConfigLoader;

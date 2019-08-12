@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.FilterOptimizable;
-import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.FlagFromTagDimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;

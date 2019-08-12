@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.metadata;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DRUID_METADATA_SEGMENTS_MISSING;
 
-import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.luthier.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;

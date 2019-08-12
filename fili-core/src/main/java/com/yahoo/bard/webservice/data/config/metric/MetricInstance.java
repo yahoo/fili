@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.data.config.metric;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.luthier.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.luthier.names.FieldName;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 

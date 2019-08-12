@@ -4,7 +4,7 @@ package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 
 import com.codahale.metrics.servlet.InstrumentedFilter;

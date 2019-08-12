@@ -4,12 +4,12 @@ package com.yahoo.bard.webservice.application;
 
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.metric.TestMetricLoader;
-import com.yahoo.bard.webservice.data.config.table.TableLoader;
-import com.yahoo.bard.webservice.data.config.table.TestTableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.TableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.TestTableLoader;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;

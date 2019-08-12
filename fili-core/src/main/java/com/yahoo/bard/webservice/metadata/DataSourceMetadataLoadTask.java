@@ -8,7 +8,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import com.yahoo.bard.webservice.application.LoadTask;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.data.config.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.luthier.names.DataSourceName;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;

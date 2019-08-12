@@ -3,15 +3,15 @@
 package com.yahoo.wiki.webservice.data.config.table;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
-import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
-import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.data.config.names.FieldName;
-import com.yahoo.bard.webservice.data.config.names.LogicalTableName;
-import com.yahoo.bard.webservice.data.config.names.TableName;
-import com.yahoo.bard.webservice.data.config.table.BaseTableLoader;
-import com.yahoo.bard.webservice.data.config.table.ConcretePhysicalTableDefinition;
-import com.yahoo.bard.webservice.data.config.table.PhysicalTableDefinition;
+import com.yahoo.bard.webservice.data.config.luthier.dimension.DimensionConfig;
+import com.yahoo.bard.webservice.data.config.luthier.names.ApiMetricName;
+import com.yahoo.bard.webservice.data.config.luthier.names.DataSourceName;
+import com.yahoo.bard.webservice.data.config.luthier.names.FieldName;
+import com.yahoo.bard.webservice.data.config.luthier.names.LogicalTableName;
+import com.yahoo.bard.webservice.data.config.luthier.names.TableName;
+import com.yahoo.bard.webservice.data.config.luthier.table.BaseTableLoader;
+import com.yahoo.bard.webservice.data.config.luthier.table.ConcretePhysicalTableDefinition;
+import com.yahoo.bard.webservice.data.config.luthier.table.PhysicalTableDefinition;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;

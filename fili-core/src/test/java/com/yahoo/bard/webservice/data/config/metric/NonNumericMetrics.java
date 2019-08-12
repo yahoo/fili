@@ -3,11 +3,11 @@
 package com.yahoo.bard.webservice.data.config.metric;
 
 
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_BOOLEAN_METRIC;
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_HEIGHT;
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_JSON_NODE_METRIC;
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_NULL_METRIC;
-import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_STRING_METRIC;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiMetricName.A_BOOLEAN_METRIC;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiMetricName.A_HEIGHT;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiMetricName.A_JSON_NODE_METRIC;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiMetricName.A_NULL_METRIC;
+import static com.yahoo.bard.webservice.data.config.luthier.names.TestApiMetricName.A_STRING_METRIC;
 
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
