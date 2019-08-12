@@ -3,7 +3,10 @@
 package com.yahoo.bard.webservice.config.luthier
 
 import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory
-import com.yahoo.bard.webservice.data.config.LuthierDimensionField
+import com.yahoo.bard.webservice.data.config.ConceptType
+import com.yahoo.bard.webservice.data.config.Factory
+import com.yahoo.bard.webservice.data.config.LuthierIndustrialPark
+import com.yahoo.bard.webservice.data.config.dimension.LuthierDimensionField
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider

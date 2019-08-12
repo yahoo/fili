@@ -2,9 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application;
 
-import com.yahoo.bard.webservice.config.luthier.ConceptType;
-import com.yahoo.bard.webservice.config.luthier.Factory;
-import com.yahoo.bard.webservice.config.luthier.LuthierIndustrialPark;
+import com.yahoo.bard.webservice.data.config.ConceptType;
+import com.yahoo.bard.webservice.data.config.Factory;
+import com.yahoo.bard.webservice.data.config.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;

@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.config.luthier
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.yahoo.bard.webservice.data.config.ResourceNodeSupplier
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
