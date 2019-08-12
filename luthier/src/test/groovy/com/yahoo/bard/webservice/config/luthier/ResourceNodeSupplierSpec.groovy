@@ -65,9 +65,10 @@ class ResourceNodeSupplierSpec extends Specification {
             String category = node.get("category").textValue()
             String description = node.get("description").textValue()
             Boolean isAggregatable = node.get("isAggregatable").booleanValue()
-            String domain = node.get("domain").textValue()
+            String dimensionDomain = node.get("dimensionDomain").textValue()
             String searchProvider = node.get("searchProvider").textValue()
             String keyValueStore = node.get("keyValueStore").textValue()
+            String storageStrategy = node.get("storageStrategy").textValue()
         then:
             longName == "a longName for testing"
             fields.size() == 4
@@ -88,9 +89,10 @@ class ResourceNodeSupplierSpec extends Specification {
             !isAggregatable
             category == "a category for testing"
             description == "a description for testing"
-            domain == "testDomain"
+            dimensionDomain == "testDomain"
             searchProvider == "lucene"
             keyValueStore == "memory"
+            storageStrategy == "LOADED"
     }
 
     def "All dimensions contain necessary keys (apiName, type, field, etc.), regardless their values"() {

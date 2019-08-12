@@ -7,7 +7,8 @@ the dimensions, metrics and tables configuration defined in the dimensions.lua,
 metrics.lua, and tables.lua files respectively, and generates JSON files that
 are then read by Fili at start up.
 ]]
-local testResources = "../../src/test/resources/"
+local appResourcesDir = "../../src/main/resources/"
+local testResourcesDir = "../../src/test/resources/"
 
 local parser = require("utils.jsonParser")
 local dimensionUtils = require("utils.dimensionUtils")
@@ -36,16 +37,34 @@ local metricConfig = metricsUtils.build_metric_config(metrics)
 local metricMakerConfig = metricMakerUtils.build_metric_maker_config(metricMakers)
 local physicalTableConfig, logicalTableConfig = tableUtils.build_table_config(tables)
 
+--- write to testResource/entityName
+local function write_config_entity(targetDir, entityName, configEntity)
+    parser.save(targetDir .. entityName, configEntity)
+    print(targetDir .. entityName .. " Updated now.")
+end
+
+local function write_config(configEntityName, configEntity)
+    write_config_entity(testResourcesDir, configEntityName, configEntity)
+    write_config_entity(appResourcesDir, configEntityName, configEntity)
+end
+
+--- a named map of all config, keyed on the target file name.
+local entityNames = {
+    ["DimensionConfig.json"] = dimensionConfig,
+    ["KeyValueStoreConfig.json"] = keyValueStoreConfig,
+    ["SearchProviderConfig.json"] = searchProviderConfig,
+    ["MetricConfig.json"] = metricConfig,
+    ["PhysicalTableConfig.json"] = physicalTableConfig,
+    ["LogicalTableConfig.json"] = logicalTableConfig,
+    ["MetricMakerConfig.json"] = metricMakerConfig
+}
+
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
 -- can be circumvented by using the LuaFileSystem module
-os.execute("mkdir -p " .. testResources)
+os.execute("mkdir -p " .. testResourcesDir)
 
 -- add to the test/resource
-parser.save(testResources .. "DimensionConfig.json", dimensionConfig)
-parser.save(testResources .. "KeyValueStoreConfig.json", keyValueStoreConfig)
-parser.save(testResources .. "SearchProviderConfig.json", searchProviderConfig)
-parser.save(testResources .. "MetricConfig.json", metricConfig)
-parser.save(testResources .. "PhysicalTableConfig.json", physicalTableConfig)
-parser.save(testResources .. "LogicalTableConfig.json", logicalTableConfig)
-parser.save(testResources .. "MetricMakerConfig.json", metricMakerConfig)
+for entityName, configEntity in pairs(entityNames) do
+    write_config(entityName, configEntity)
+end

@@ -62,13 +62,13 @@ function M.build_key_value_store_config(dimensions, keyValueStoreTemplates)
     local configuration = {}
     for name, dimension in pairs(dimensions) do
         local template = keyValueStoreTemplates[dimension.keyValueStore]
-        local domain = dimension.domain or name
-        if configuration[domain] then
-            assert(configuration[domain] == template,
+        local dimensionDomain = dimension.dimensionDomain or name
+        if configuration[dimensionDomain] then
+            assert(configuration[dimensionDomain] == template,
                     "Found contradicting keyValueStore config with the same domain name: "
-                            .. domain)
+                            .. dimensionDomain)
         else
-            configuration[domain] = template
+            configuration[dimensionDomain] = template
         end
     end
     return configuration
@@ -78,13 +78,13 @@ function M.build_search_provider_config(dimensions, searchProviderTemplates)
     local configuration = {}
     for name, dimension in pairs(dimensions) do
         local template = searchProviderTemplates[dimension.searchProvider]
-        local domain = dimension.domain or name
-        if configuration[domain] then
-            assert(configuration[domain] == template,
+        local dimensionDomain = dimension.dimensionDomain or name
+        if configuration[dimensionDomain] then
+            assert(configuration[dimensionDomain] == template,
                     "Found contradicting searchProvider config with the same domain name: "
-                            .. domain)
+                            .. dimensionDomain)
         else
-            configuration[domain] = template
+            configuration[dimensionDomain] = template
         end
     end
     return configuration

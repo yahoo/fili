@@ -7,8 +7,9 @@ the dimensions, metrics and tables configuration defined in the dimensions.lua,
 metrics.lua, and tables.lua files respectively, and generates JSON files that
 are then read by Fili at start up.
 ]]
-local resourcesDir = "../../src/test/resources/"
-local referenceResources = resourcesDir .. "snapshots/"
+local appResourcesDir = "../../src/main/resources/"
+local testResourcesDir = "../../src/test/resources/"
+local referenceResources = testResourcesDir .. "snapshots/"
 local snapshotHistoryFilePath = referenceResources .. ".snapshotsHistory.json"
 
 local parser = require("utils.jsonParser")
@@ -97,7 +98,7 @@ end
 --- exit if not successful, will finish function execution if succeeded.
 local function verify_tables(reference_table, new_table, table_name)
     if type(reference_table) ~= 'table' or type(new_table) ~= 'table' then
-        print("check your " .. resourcesDir .. table_name .. " and " ..
+        print("check your " .. testResourcesDir .. table_name .. " and " ..
                 referenceResources .. table_name .. ".\nAt least one of them is not a proper lua table.")
         confirm_or_exit()
     end
@@ -121,7 +122,8 @@ local function verify_then_config(referenceDir, tableName, configTable)
     local referenceTable = parser.load(referenceDir .. tableName)
     verify_tables(referenceTable, configTable, tableName)
     io.write("Contents matches with previous record, ")
-    write_table(resourcesDir, tableName, configTable)
+    write_table(testResourcesDir, tableName, configTable)
+    write_table(appResourcesDir, tableName, configTable)
 end
 
 --- Yet another wrapper to operate on all tables.
@@ -131,7 +133,8 @@ local function verify_then_config_all(tableNames, snapshotTime)
     for tableName, configTable in pairs(tableNames) do
         if snapshotTime == nil then
             -- does not have a previous snapshot, directly config
-            write_table(resourcesDir, tableName, configTable)
+            write_table(testResourcesDir, tableName, configTable)
+            write_table(appResourcesDir, tableName, configTable)
         else
             verify_then_config(referenceResources .. snapshotTime, tableName, configTable)
         end
@@ -140,7 +143,7 @@ local function verify_then_config_all(tableNames, snapshotTime)
     local current_time = os.date("%Y_%m_%b_%d_%a_%X/")
     os.execute("mkdir -p " .. referenceResources .. current_time)
     for tableName, configTable in pairs(tableNames) do
-        local newTable = parser.load(resourcesDir .. tableName)
+        local newTable = parser.load(testResourcesDir .. tableName)
         parser.save(referenceResources .. current_time .. tableName, configTable)
     end
     print("new snapshot saved at " .. referenceResources .. current_time .. "*Config.json")
@@ -160,7 +163,7 @@ local tableNames = {
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
 -- can be circumvented by using the LuaFileSystem module
-os.execute("mkdir -p " .. resourcesDir)
+os.execute("mkdir -p " .. testResourcesDir)
 os.execute("mkdir -p " .. referenceResources)
 
 --- if there has not been any record, return nil;

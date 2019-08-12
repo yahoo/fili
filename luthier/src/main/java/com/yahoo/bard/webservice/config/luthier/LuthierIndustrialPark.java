@@ -26,6 +26,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
@@ -41,6 +42,7 @@ import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadata;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -51,6 +53,7 @@ import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -192,6 +195,15 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         if (!physicalTableDictionary.containsKey(tableName)) {
             ConfigPhysicalTable physicalTable = physicalTableFactoryPark.buildEntity(tableName, this);
             physicalTableDictionary.put(tableName, physicalTable);
+            // registers each table we build in the metadataService
+            metadataService.update(
+                    DataSourceName.of(tableName),
+                    new DataSourceMetadata(
+                            tableName,
+                            Collections.emptyMap(),
+                            Collections.emptyList()
+                    )
+            );
         }
         return physicalTableDictionary.get(tableName);
     }
