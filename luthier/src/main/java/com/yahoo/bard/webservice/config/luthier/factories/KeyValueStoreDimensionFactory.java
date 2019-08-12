@@ -147,9 +147,11 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         String category = configTable.get(CATEGORY).textValue();
         String description = configTable.get(DESCRIPTION).textValue();
         KeyValueStore keyValueStore = resourceFactories.getKeyValueStore(configTable.get(DIMENSION_DOMAIN).textValue());
-        SearchProvider searchProvider = resourceFactories.getSearchProvider(configTable.get(DIMENSION_DOMAIN).textValue());
         boolean isAggregatable = configTable.get(IS_AGGREGATABLE).booleanValue();
         boolean skipLoading = configTable.get(SKIP_LOADING).booleanValue();
+        SearchProvider searchProvider = resourceFactories.getSearchProvider(
+                configTable.get(DIMENSION_DOMAIN).textValue()
+        );
         StorageStrategy storageStrategy = StorageStrategy.valueOf(
                 configTable.get(STORAGE_STRATEGY).textValue()
         );
