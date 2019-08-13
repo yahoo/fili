@@ -69,7 +69,6 @@ local M = {}
 -------------------------------------------------------------------------------
 
 local wikipedia_dimensions = {
-    "testDimension",
     "comment",
     "countryIsoCode",
     "regionIsoCode",

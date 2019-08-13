@@ -40,7 +40,7 @@ class StrictPhysicalTableFactorSpec extends Specification {
             airTable = park.getPhysicalTable("air")
             expectedTestDimension = park.getDimension("testDimension")
         then:
-            wikitickerTable.getDimensions().contains(expectedTestDimension)
+            ! wikitickerTable.getDimensions().contains(expectedTestDimension)
             ! airTable.getDimensions().contains(expectedTestDimension)
             wikitickerTable.getPhysicalColumnName("testDimension") == "testDimensionPhysicalName"
             wikitickerTable.getPhysicalColumnName("testDimension") != "wrongPhysicalName"

@@ -32,7 +32,8 @@ else
     os.exit(-1)
 end
 
-local TEST_RESOURCE_DIR = "../../test/resources/"
+--- uncomment the next line if we need to refresh the wikipedia test jsons
+-- local TEST_RESOURCE_DIR = "../../test/resources/"
 local APP_RESOURCE_DIR = "../resources/"
 
 --- general lua dependency
@@ -75,7 +76,9 @@ local function write_config_entity(targetDir, entityName, configEntity)
 end
 
 local function write_config(configEntityName, configEntity)
-    write_config_entity(TEST_RESOURCE_DIR, configEntityName, configEntity)
+    if TEST_RESOURCE_DIR ~= nil then
+        write_config_entity(TEST_RESOURCE_DIR, configEntityName, configEntity)
+    end
     write_config_entity(APP_RESOURCE_DIR, configEntityName, configEntity)
 end
 
@@ -93,7 +96,9 @@ local entityNames = {
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
 -- can be circumvented by using the LuaFileSystem module
-os.execute("mkdir -p " .. TEST_RESOURCE_DIR)
+if TEST_RESOURCE_DIR ~= nil then
+    os.execute("mkdir -p " .. TEST_RESOURCE_DIR)
+end
 os.execute("mkdir -p " .. APP_RESOURCE_DIR)
 
 -- add to the test/resource
