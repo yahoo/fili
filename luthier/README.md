@@ -10,18 +10,18 @@ You don't have to connect to Druid to run this example, but if you have set up o
  attempt to connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1).
  If your set up is different, you'll have to change the `bard__druid_coord`,
   `bard__druid_broker` url in `applicationConfig.properties`.
-  
-Note that this was last tested using [version 0.9.1](https://github.com/yahoo/fili/tree/0.9.1)
 
 ## Setup and Launching
 
 1. [Optional] Have a [Druid](http://druid.io/docs/latest/tutorials/quickstart.html) cluster running on your Unix based machine.
+    Its coordinator should be running on port 8081. Modify it in Druid configuration if necessary.
    
 2. run 
     ```bash
     git clone git@github.com:yahoo/fili.git
     cd fili
-    luthier/scripts/luWiki.sh
+    luthier/scripts/luWiki.sh      # this script can be run from anywhere, as it will attempt to 
+                                   # modify your directory when running
     ```
 
 From another window, run a test query against the default druid data.
@@ -93,7 +93,8 @@ Here are some sample queries that you can run to verify your server:
     
     **NOTE:** if you're running this locally and haven't changed any settings (like the Wikipedia example) 
     you can **skip step 3**.
-3. Under `src/main/resources/applicationConfig.properties`, change `bard__druid_broker`,
- `bard__druid_coord`, and other properties.
+3. Under `luthier/src/main/resources/applicationConfig.properties`, change `bard__druid_broker`,
+    `bard__druid_coord`, and other properties.
     
-4. Run `GenericMain` which can be found in `fili-generic-example` (e.g. right click and choose run)
+4. Run `LuthierWikiMain` which can be found in `src/main/java/com/yahoo/bard/webservice/application`
+    (e.g. right click and choose run)
