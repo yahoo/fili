@@ -17,6 +17,12 @@
         Luthier provides a complete external configuration system.
     </description>
 
+    <properties>
+        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+        <skipLuthierTests>true</skipLuthierTests>
+    </properties>
+
     <profiles>
         <profile>
             <!--      only run tests if Lua is installed to /usr/local/bin/lua      -->
@@ -48,6 +54,9 @@
                     </plugin>
                 </plugins>
             </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
         </profile>
     </profiles>
 
@@ -59,10 +68,6 @@
         </license>
     </licenses>
 
-    <properties>
-        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
-        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -123,6 +128,13 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipLuthierTests}</skipTests>
+                </configuration>
             </plugin>
         </plugins>
     </build>
