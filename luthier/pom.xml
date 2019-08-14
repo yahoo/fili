@@ -17,6 +17,40 @@
         Luthier provides a complete external configuration system.
     </description>
 
+    <profiles>
+        <profile>
+            <!--      only run tests if Lua is installed to /usr/local/bin/lua      -->
+            <id>lua-installed</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/local/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <id>prepare-luthier-test-resources</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -86,16 +120,6 @@
                         </goals>
                         <configuration>
                             <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>prepare-luthier-test-resources</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
                         </configuration>
                     </execution>
                 </executions>
