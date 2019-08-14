@@ -80,23 +80,25 @@
                 <version>1.1</version>
                 <executions>
                     <execution>
-                        <id>run Luthier Main Program</id>
+                        <id>run-luthier-main</id>
                         <goals>
                             <goal>java</goal>
                         </goals>
+                        <configuration>
+                            <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
+                        </configuration>
                     </execution>
                     <execution>
-                        <id>prepare Luthier test resources</id>
+                        <id>prepare-luthier-test-resources</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
-                    <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
-                </configuration>
             </plugin>
         </plugins>
     </build>
