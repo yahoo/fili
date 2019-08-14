@@ -25,7 +25,7 @@ import javax.servlet.DispatcherType;
  * Launch an instance of Fili displays Wikipedia and air quality data, configured using Luthier,
  * in embedded Jetty Embedded Jetty.
  */
-public class LuthierWikiMain {
+public class LuthierMain {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 

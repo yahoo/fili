@@ -18,7 +18,7 @@ public class LuthierTableName implements TableName {
      */
     public LuthierTableName(String name) {
         if (isAllCaps(name)) {
-            // if already in ALL_CAPS_CASE, convert to camelCase
+            // if name argument is in ALL_CAPS_CASE, convert to camelCase
             camelName = EnumUtils.camelCase(name);
         } else {
             // otherwise, assume that the user has sanitized this into camelCaseName already.
