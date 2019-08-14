@@ -5,6 +5,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # the test json generation must be run in the following directory
-cd $DIR/../src/main/lua/ && lua config.lua wikiApp ../../../target/test-classes/
+cd "$DIR"/../src/main/lua/ && lua config.lua wikiApp ../../../target/test-classes/
 
 echo TEST_PREP_DONE
