@@ -1,5 +1,8 @@
 #!/bin/bash
 # get path to this file
+APPLICATION=${1:app}
+PORT=${2:9012}
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # clean last build's artifacts
@@ -8,11 +11,12 @@ mvn clean
 
 # prepares json files
 cd $DIR/../src/main/lua/
-lua config.lua
-# this is equivalent to lua config.lua app ../../../target/classes/
+
+# this is equivalent to lua $1 wikiApp ../../../target/classes/
+lua config.lua $APPLICATION
 
 # install fili using mvn
 cd $DIR/../../
 mvn install -DskipTests -Dcheckstyle.skip
-# runs luthier wiki example on port 9012
-mvn -pl luthier exec:java -Dbard__fili_port=9012 -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1 -Dbard__druid_broker=http://localhost:8082/druid/v2
+# runs luthier wiki example on port ${PORT}
+./luthier/scripts/runApp $PORT

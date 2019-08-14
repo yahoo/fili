@@ -20,8 +20,7 @@ You don't have to connect to Druid to run this example, but if you have set up o
     ```bash
     git clone git@github.com:yahoo/fili.git
     cd fili
-    luthier/scripts/luWiki.sh      # this script can be run from anywhere, as it will attempt to 
-                                   # modify your directory when running
+    luthier/scripts/buildApp.sh wikiApp                                                  
     ```
 
 From another window, run a test query against the default druid data.
