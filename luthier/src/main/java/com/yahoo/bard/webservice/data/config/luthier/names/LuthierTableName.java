@@ -19,7 +19,7 @@ public class LuthierTableName implements TableName {
     public LuthierTableName(String name) {
         if (isAllCaps(name)) {
             // if already in ALL_CAPS_CASE, convert to camelCase
-            camelName = EnumUtils.camelCase(name);;
+            camelName = EnumUtils.camelCase(name);
         } else {
             // otherwise, assume that the user has sanitized this into camelCaseName already.
             camelName = name;
@@ -38,11 +38,12 @@ public class LuthierTableName implements TableName {
      * @return true if the word is ALL_CAPS_CASE (i.e. made of A-Z or _ ) false otherwise
      */
     private Boolean isAllCaps(String word) {
+        final char underscore = '_';
         for (int i = 1; i < word.length(); i++) {
             char character = word.charAt(i);
             if (Character.isLetter(character) && Character.isLowerCase(character)) {
                 return false;
-            } else if (character != '_') {
+            } else if (character != underscore) {
                 return false;
             }
         }
