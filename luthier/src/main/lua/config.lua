@@ -11,30 +11,37 @@ are then read by Fili at start up.
 local CMD_USAGE = [[
 --- command line usage:
 
---- `lua config.lua <DIR>` will set LUTHIER_CONFIG_DIR to <DIR>;
---- `lua config.lua` will set LUTHIER_CONFIG_DIR to "app" by default;
---- all other formats of command line argument are illegal.
+--- lua config.lua [ LUTHIER_CONFIG_DIR [ JSON_OUTPUT_DIR ] ]
+--- LUTHIER_CONFIG_DIR is set to "app" by default;
+--- JSON_OUTPUT_DIR is set to "luthier/target/classes/" by default;
 
 --- This script builds json using the application level config lua files specified in LUTHIER_CONFIG_DIR.
---- directly running this script generates the json files into
---- luthier/src/main/lua/generated
+--- directly running this script generates the json files into JSON_OUTPUT_DIR
 ]]
 
-if #arg == 1 then
-    LUTHIER_CONFIG_DIR = arg[1]
-    if LUTHIER_CONFIG_DIR[-1] ~= '/' then
-        LUTHIER_CONFIG_DIR = LUTHIER_CONFIG_DIR .. '/'
-    end
-elseif #arg == 0 then
-    LUTHIER_CONFIG_DIR = "app/"
-else
+local JSON_OUTPUT_DIR
+
+if #arg >= 3 then
     print(CMD_USAGE)
     os.exit(-1)
 end
 
---- uncomment the next line if we need to refresh the wikipedia test jsons
--- local TEST_RESOURCE_DIR = "../../test/resources/"
-local APP_RESOURCE_DIR = "../resources/"
+if #arg >= 2 then
+    JSON_OUTPUT_DIR = arg[2]
+else
+    JSON_OUTPUT_DIR = "../../../target/classes/"
+end
+
+if #arg >= 1 then
+    LUTHIER_CONFIG_DIR = arg[1]         -- this needs to be Global for other
+                                        -- lua modules to use
+    if LUTHIER_CONFIG_DIR[-1] ~= '/' then
+        LUTHIER_CONFIG_DIR = LUTHIER_CONFIG_DIR .. '/'
+    end
+else
+    LUTHIER_CONFIG_DIR = "app/"
+end
+
 
 --- general lua dependency
 local json = require("lib/json")
@@ -76,10 +83,7 @@ local function write_config_entity(targetDir, entityName, configEntity)
 end
 
 local function write_config(configEntityName, configEntity)
-    if TEST_RESOURCE_DIR ~= nil then
-        write_config_entity(TEST_RESOURCE_DIR, configEntityName, configEntity)
-    end
-    write_config_entity(APP_RESOURCE_DIR, configEntityName, configEntity)
+    write_config_entity(JSON_OUTPUT_DIR, configEntityName, configEntity)
 end
 
 --- a named map of all config, keyed on the target file name.
@@ -96,10 +100,7 @@ local entityNames = {
 -- make the directory that is used for the test, which can be automated in
 -- a script since creating a dir in Lua is awkard, in future.
 -- can be circumvented by using the LuaFileSystem module
-if TEST_RESOURCE_DIR ~= nil then
-    os.execute("mkdir -p " .. TEST_RESOURCE_DIR)
-end
-os.execute("mkdir -p " .. APP_RESOURCE_DIR)
+os.execute("mkdir -p " .. JSON_OUTPUT_DIR)
 
 -- add to the test/resource
 for entityName, configEntity in pairs(entityNames) do

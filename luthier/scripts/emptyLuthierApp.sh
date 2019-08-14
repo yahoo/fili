@@ -8,8 +8,8 @@ mvn clean
 
 # prepares json files
 cd $DIR/../src/main/lua/
-lua config.lua wikiApp
-# this is equivalent to lua config.lua wikiApp ../../../target/classes/
+lua config.lua
+# this is equivalent to lua config.lua app ../../../target/classes/
 
 # install fili using mvn
 cd $DIR/../../
