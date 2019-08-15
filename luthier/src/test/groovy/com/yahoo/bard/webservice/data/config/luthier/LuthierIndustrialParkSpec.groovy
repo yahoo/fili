@@ -85,7 +85,7 @@ class LuthierIndustrialParkSpec extends Specification {
         resourceDictionaries.getMetricDictionary().put("test", logicalMetric)
 
         then:
-        defaultIndustrialPark.getMetric("test")  == logicalMetric
+        defaultIndustrialPark.getMetric("test").is(logicalMetric)
     }
 
     def "Verify that a sample table builds"() {

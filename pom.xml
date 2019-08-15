@@ -1045,7 +1045,7 @@
                 <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
                 <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
                 <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
-                <sonar.coverage.exclusions>**/*Main.java</sonar.coverage.exclusions>
+                <sonar.coverage.exclusions>**/*Main.java,**/*Params*</sonar.coverage.exclusions>
             </properties>
             <build>
                 <pluginManagement>
