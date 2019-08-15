@@ -10,6 +10,23 @@ Users of Luthier goes through a four-step-process before launching an applicatio
  (for a more comprehensive example, see [LUTHIER_WIKI_README.md](luthier/LUTHIER_WIKI_README.md))
  
 ## Setup and Launching
+> Note: at the current stage, Luthier will build regardless whether you have Lua installed on your machine or not.
+> However, if you have written custom tests, mvn will skip it unless you have lua installed at `/usr/bin/lua` or 
+> `/usr/local/bin/lua`. To determine this, you can run `which lua`.
+>
+> you need to have Lua to take full advantage of extending from the existing architecture. To do this, run 
+>
+> `yum install epel-release && yum install lua` if you are on RHEL or CentOS
+>
+> `sudo dnf install lua` if you are on Fedora
+>
+> `sudo apt-get install lua` if you are on Debian/Ubuntu
+> 
+> `brew install lua` if you are on MacOS
+>
+> The pre-existing system is tested on both Lua 5.3 and 5.2
+
+ 
 ### Automatically
 You can use the following script which fully automates configuration generation, installation, and java execution:
 ```bash

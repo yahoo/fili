@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Contains a collection of static methods to make it easier to perform configuration validation.
  */
-public class LuthierValidationUtils {
+public final class LuthierValidationUtils {
 
     public static final String MISSING_FIELD_ERROR = "%s '%s': Missing required field '%s'";
 

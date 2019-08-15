@@ -12,11 +12,11 @@ import java.util.Objects;
  */
 public class LuthierDimensionField implements DimensionField {
 
-    private String camelName;
+    private final String camelName;
 
-    private String description;
+    private final String description;
 
-    private List<String> tags;
+    private final List<String> tags;
 
     /**
      * Constructor.

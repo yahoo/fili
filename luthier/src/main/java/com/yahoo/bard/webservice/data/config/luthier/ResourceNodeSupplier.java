@@ -15,12 +15,12 @@ import java.util.function.Supplier;
  */
 public class ResourceNodeSupplier implements Supplier<ObjectNode> {
 
-    public static final String NOT_AN_OBJECT = "%s is not formatted as a JSON Object";
-    public static final String LOAD_FAILURE = "Can't load resource: %s";
+    private static final String NOT_AN_OBJECT = "%s is not formatted as a JSON Object";
+    private static final String LOAD_FAILURE = "Can't load resource: %s";
 
     private final String resourceName;
 
-    ObjectNode objectNode;
+    private ObjectNode objectNode;
 
     /**
      * Constructor.
@@ -40,7 +40,7 @@ public class ResourceNodeSupplier implements Supplier<ObjectNode> {
         if (resourceName != null) {
             try {
                 JsonNode node = new ObjectMapper().reader()
-                        .readTree(this.getClass().getClassLoader().getResourceAsStream(resourceName));
+                        .readTree(Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName));
                 if (!(node instanceof ObjectNode)) {
                     String message = String.format(NOT_AN_OBJECT, resourceName);
                     throw new LuthierFactoryException(message);

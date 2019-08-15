@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.util.EnumUtils;
  */
 public class LuthierTableName implements TableName {
     private final String camelName;
+    private final static char UNDERSCORE = '_';
 
     /**
      * Constructor.
@@ -38,12 +39,11 @@ public class LuthierTableName implements TableName {
      * @return true if the word is ALL_CAPS_CASE (i.e. made of A-Z or _ ) false otherwise
      */
     private Boolean isAllCaps(String word) {
-        final char underscore = '_';
         for (int i = 1; i < word.length(); i++) {
             char character = word.charAt(i);
             if (Character.isLetter(character) && Character.isLowerCase(character)) {
                 return false;
-            } else if (character != underscore) {
+            } else if (character != UNDERSCORE) {
                 return false;
             }
         }
