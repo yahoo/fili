@@ -17,6 +17,49 @@
         Luthier provides a complete external configuration system.
     </description>
 
+    <properties>
+        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+        <skipLuthierTests>true</skipLuthierTests>
+    </properties>
+
+    <profiles>
+        <profile>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/local/bin/lua      -->
+            <id>lua-installed-local-bin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/local/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                </plugins>
+            </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
+        </profile>
+        <profile>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/bin/lua      -->
+            <id>lua-installed-bin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                </plugins>
+            </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
+        </profile>
+    </profiles>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -25,10 +68,6 @@
         </license>
     </licenses>
 
-    <properties>
-        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
-        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -79,10 +118,40 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.1</version>
                 <executions>
-                    <execution><goals><goal>java</goal></goals></execution>
+                    <execution>
+                        <id>run-luthier-main</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
+                        </configuration>
+                    </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>prepare-luthier-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipLuthierTests}</skip>
+                            <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.yahoo.bard.webservice.application.LuthierWikiMain</mainClass>
+                    <skipTests>${skipLuthierTests}</skipTests>
                 </configuration>
             </plugin>
         </plugins>

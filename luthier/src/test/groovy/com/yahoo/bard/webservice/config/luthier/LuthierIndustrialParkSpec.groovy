@@ -2,9 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.config.luthier
 
-import com.yahoo.bard.webservice.config.luthier.factories.KeyValueStoreDimensionFactory
-import com.yahoo.bard.webservice.data.config.LuthierDimensionField
-import com.yahoo.bard.webservice.data.config.LuthierResourceDictionaries
+import com.yahoo.bard.webservice.data.config.luthier.ConceptType
+import com.yahoo.bard.webservice.data.config.luthier.Factory
+import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark
+import com.yahoo.bard.webservice.data.config.luthier.dimension.LuthierDimensionField
+import com.yahoo.bard.webservice.data.config.luthier.LuthierResourceDictionaries
+import com.yahoo.bard.webservice.data.config.luthier.factories.KeyValueStoreDimensionFactory
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProvider
 import spock.lang.Specification
