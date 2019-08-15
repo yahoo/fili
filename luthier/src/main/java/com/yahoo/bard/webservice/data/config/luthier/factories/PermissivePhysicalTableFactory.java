@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
-import com.yahoo.bard.webservice.data.config.luthier.table.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
 

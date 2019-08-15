@@ -3,15 +3,14 @@
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
-import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
-import com.yahoo.bard.webservice.data.config.luthier.table.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.data.config.luthier.names.LuthierTableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 
@@ -64,8 +63,9 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
                 GRANULARITY, DATE_TIME_ZONE, DIMENSIONS, LOGICAL_TO_PHYSICAL_COLUMN_NAMES, METRICS
         );
 
-        LuthierPhysicalTableParams params = new LuthierPhysicalTableParams();
-        params.tableName = new LuthierTableName(name);
+        LuthierPhysicalTableParams.LuthierPhysicalTableParamsBuilder params = LuthierPhysicalTableParams.builder()
+                .tableName(new LuthierTableName(name));
+
 
         DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
         try {
@@ -78,7 +78,7 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
                         String.format(GRANULARITY_TYPE_ERROR, ENTITY_TYPE, name)
                 );
             }
-            params.timeGrain = (ZonedTimeGrain) granularity;
+            params.timeGrain((ZonedTimeGrain) granularity);
         } catch (GranularityParseException e) {
             throw new LuthierFactoryException(
                     String.format(GRANULARITY_PARSING_ERROR, name, ENTITY_TYPE),
@@ -86,11 +86,12 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
             );
         }
 
-        params.columns = new LinkedHashSet<>();
+        LinkedHashSet columns = new LinkedHashSet<>();
+        params.columns(columns);
 
         JsonNode dimensionsNode = configTable.get(DIMENSIONS);
         dimensionsNode.forEach(
-                node -> params.columns.add(new DimensionColumn(resourceFactories.getDimension(node.textValue())))
+                node -> columns.add(new DimensionColumn(resourceFactories.getDimension(node.textValue())))
         );
 
         JsonNode metricsNode = configTable.get(METRICS);
@@ -98,18 +99,19 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
                 node -> {
                     String metricName = node.textValue();
                     resourceFactories.getMetric(metricName);
-                    params.columns.add(new MetricColumn(metricName));
+                    columns.add(new MetricColumn(metricName));
                 }
         );
 
-        params.logicalToPhysicalColumnNames = new LinkedHashMap<>();
+        LinkedHashMap logicalToPhysicalNames = new LinkedHashMap<>();
+        params.logicalToPhysicalColumnNames(logicalToPhysicalNames);
         configTable.get(LOGICAL_TO_PHYSICAL_COLUMN_NAMES).forEach(
-                node -> params.logicalToPhysicalColumnNames.put(
+                node -> logicalToPhysicalNames.put(
                         node.get("logicalName").textValue(),
                         node.get("physicalName").textValue()
                 )
         );
-        params.metadataService = resourceFactories.getMetadataService();
-        return params;
+        params.metadataService(resourceFactories.getMetadataService());
+        return params.build();
     }
 }
