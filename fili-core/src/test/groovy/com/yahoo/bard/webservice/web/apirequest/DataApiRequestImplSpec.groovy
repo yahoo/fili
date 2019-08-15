@@ -4,9 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory
 import com.yahoo.bard.webservice.config.BardFeatureFlag
-import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -16,9 +14,6 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.data.time.AllGranularity
-import com.yahoo.bard.webservice.data.time.GranularityParser
-import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
@@ -46,8 +41,6 @@ class DataApiRequestImplSpec extends Specification {
     MetricDictionary metricDict
     @Shared
     LogicalTable table
-
-    GranularityParser granularityParser = new StandardGranularityParser()
 
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
 
@@ -140,30 +133,6 @@ class DataApiRequestImplSpec extends Specification {
         then: "BadApiRequestException is thrown"
         BadApiRequestException exception = thrown()
         exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
-    }
-
-    @Unroll
-    def "check valid granularity name #name parses to granularity #expected"() {
-        expect:
-        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
-
-        where:
-        name    | expected
-        "day"   | DAY
-        "all"   | AllGranularity.INSTANCE
-    }
-
-    def "check invalid granularity creates error"() {
-        setup: "Define an improper granularity name"
-        String timeGrainName = "seldom"
-        String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
-
-        when:
-        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, granularityParser)
-
-        then:
-        Exception e = thrown(BadApiRequestException)
-        e.getMessage() == expectedMessage
     }
 
     def "if metrics are required an exception is thrown on request with no metrics"() {

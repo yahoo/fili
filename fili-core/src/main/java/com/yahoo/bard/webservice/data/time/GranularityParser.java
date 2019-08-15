@@ -12,6 +12,13 @@ import org.joda.time.DateTimeZone;
 public interface GranularityParser {
 
     /**
+     * Provides a default implementation for this interface.
+     *
+     * @return a default granularity parser
+     */
+    GranularityParser DEFAULT_PARSER = new StandardGranularityParser();
+
+    /**
      * Parse a granularity from a string and time zone.
      *
      * @param granularityName The name of the granularity being parsed
