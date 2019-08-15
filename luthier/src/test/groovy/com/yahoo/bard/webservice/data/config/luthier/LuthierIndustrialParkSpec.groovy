@@ -79,7 +79,7 @@ class LuthierIndustrialParkSpec extends Specification {
             ! differentTestDimension.is(testDimension)
     }
 
-    def "When a metric name is fetched the second time, it refers to the same object as the first one"() {
+    def "When a metric name is fetched while one is already in cache, it returns the cached value"() {
         when:
         LogicalMetric logicalMetric = Mock(LogicalMetric)
         resourceDictionaries.getMetricDictionary().put("test", logicalMetric)
