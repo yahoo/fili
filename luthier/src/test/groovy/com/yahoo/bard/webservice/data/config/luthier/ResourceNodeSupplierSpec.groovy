@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier
 
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.yahoo.bard.webservice.data.config.luthier.ResourceNodeSupplier
 import com.yahoo.bard.webservice.exceptions.LuthierFactoryException
+
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+
 import spock.lang.Specification
 
 class ResourceNodeSupplierSpec extends Specification {
