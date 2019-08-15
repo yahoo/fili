@@ -28,7 +28,7 @@ import javax.inject.Inject;
  */
 public class DefaultConfigurationLoader implements ConfigurationLoader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultConfigurationLoader.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     protected final ResourceDictionaries dictionaries = new ResourceDictionaries();

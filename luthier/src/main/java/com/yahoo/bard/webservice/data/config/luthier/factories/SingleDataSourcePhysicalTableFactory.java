@@ -3,15 +3,17 @@
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
-import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
-import com.yahoo.bard.webservice.data.config.luthier.table.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.data.config.luthier.names.LuthierTableName;
+import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 
@@ -22,6 +24,8 @@ import org.joda.time.DateTimeZone;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
@@ -39,6 +43,17 @@ public abstract class SingleDataSourcePhysicalTableFactory implements Factory<Co
     private static final String DIMENSIONS = "dimensions";
     private static final String LOGICAL_TO_PHYSICAL_COLUMN_NAMES = "logicalToPhysicalColumnNames";
     private static final String METRICS = "metrics";
+
+    /**
+     * Parameter value object.
+     */
+    public static class LuthierPhysicalTableParams {
+        public TableName tableName;
+        public ZonedTimeGrain timeGrain;
+        public Set<Column> columns;
+        public Map<String, String> logicalToPhysicalColumnNames;
+        public DataSourceMetadataService metadataService;
+    }
 
     /**
      * Build the parameter for the subclass of SingleDataSourceParams to use.

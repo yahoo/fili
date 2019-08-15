@@ -26,9 +26,9 @@ local M = {}
             * strict - strict single data source physical table:
                 A physical table backed up by one druid table. When querying a strict table with
                 partial data turned on, the data is considered "complete" if and only if there
-                is no missing data in any of the queried columns. 
+                is no missing data in any of the queried columns.
             * permissive - permissive single data source physical table:
-                A physical table backed up by one druid table. When querying a permissive table 
+                A physical table backed up by one druid table. When querying a permissive table
                 with partial data turned on, the data is considered "complete" if at least one
                 of the queried columns has no missing data.
     * dateTimeZone - A case sensitive name according to joda's dateTimeZone to indicate the
@@ -119,6 +119,7 @@ M.physical = {
         }
     },
     air = {
+        type = "permissive",
         dateTimeZone = "UTC",
         metrics = {
             "COM",
@@ -184,7 +185,7 @@ M.physical = {
     Logical tables serve two purposes:
         1. They provide a logical grouping of metrics and dimensions for people
             to query against.
-        2. They serve as a means of grouping a physical table and its 
+        2. They serve as a means of grouping a physical table and its
             performance slices together. A performance slice is a druid
             table that is intended to be a subtable of another druid table.
             Typically this table has fewer dimensions or preaggregated to a
