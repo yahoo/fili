@@ -6,7 +6,8 @@ Luthier Module serves as a tool chain to automate configuration generation and s
  to extend from. Using Luthier is optional, but it will organize and speed up your workflow.
 
 Users of Luthier goes through a four-step-process before launching an application. 
- Let us take the lifecycle of the default [`app`](luthier/src/main/lua/app) as an example:
+ Let us take the lifecycle of a bare-bone [`app`](luthier/src/main/lua/app) as an example:
+ (for a more comprehensive example, see [LUTHIER_WIKI_README.md](luthier/LUTHIER_WIKI_README.md))
  
 ## Setup and Launching
 ### Automatically
