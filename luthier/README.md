@@ -1,27 +1,47 @@
-Fili Luthier Demo App
+Fili Luthier
 ==================================
 
-This application will automatically configure fili to load wikipedia data and set up configuration using the 
- Luthier module.
+## What is Luthier Module
+Luthier Module serves as a tool chain to automate configuration generation and supplies a standard configuration loader
+ to extend from. Using Luthier is optional, but it will organize and speed up your workflow.
 
-
-
-You don't have to connect to Druid to run this example, but if you have set up one locally, this app will 
- attempt to connect to druid at  [http://localhost:8081/druid/coordinator/v1](http://localhost:8081/druid/coordinator/v1).
- If your set up is different, you'll have to change the `bard__druid_coord`,
-  `bard__druid_broker` url in `applicationConfig.properties`.
-
+Users of Luthier goes through a four-step-process before launching an application. 
+ Let us take the lifecycle of the default [`app`](luthier/src/main/lua/app) as an example:
+ 
 ## Setup and Launching
+### Automatically
+You can use the following script which fully automates configuration generation, installation, and java execution:
+```bash
+git clone git@github.com:yahoo/fili.git
+cd fili
+luthier/scripts/buildApp.sh
+```
 
-1. [Optional] Have a [Druid](http://druid.io/docs/latest/tutorials/quickstart.html) cluster running on your Unix based machine.
-    Its coordinator should be running on port 8081. Modify it in Druid configuration if necessary.
-   
-2. run 
-    ```bash
-    git clone git@github.com:yahoo/fili.git
-    cd fili
-    luthier/scripts/buildApp.sh wikiApp                                                  
-    ```
+---
+
+### Manually
+1. Build `*Config.json` into `luthier/target/classes/`.
+    > This is done by running a [Lua](https://www.lua.org/) script:
+    > ```bash
+    > cd luthier/src/main/lua/
+    > lua config.lua app
+    > ```
+    > The `config.lua` will trigger more Lua files to build respective configuration concepts, e.g. dimensions,
+    > logicalTables, metrics, etc. They can be found in the default [`app`](luthier/src/main/lua/app)
+2. Supply necessary Factories to handle each type of configuration concepts in
+ [`luthier/src/main/java/com/yahoo/bard/webservice/data/config/luthier/factories`](luthier/src/main/java/com/yahoo/bard/webservice/data/config/luthier/factories). 
+    > We have already supplied the common ones, as you can see in the above link.
+3. Install Luthier using mvn
+4. Run the Fili webservice by executing the [LuthierMain](luthier/src/main/java/com/yahoo/bard/webservice/applicatoin/LuthierMain) file
+    > ```bash 
+    > # cd to the project base directory and 
+    > mvn -pl luthier exec:java@run-luthier-main
+    > ```
+    > or 
+    > ```bash 
+    > # cd to this directory
+    > mvn -pl exec:java@run-luthier-main
+    > ```
 
 From another window, run a test query against the default druid data.
 
@@ -43,44 +63,11 @@ Here are some sample queries that you can run to verify your server:
   
       GET http://localhost:9012/v1/metrics/
 
-### Specific to Wikipedia data
-
-- If everything is working, the [query below](http://localhost:9012/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H)
-    ```bash
-    curl "http://localhost:9012/v1/data/wikiticker/day/?metrics=deleted&dateTime=2015-09-12/PT24H" -H "Content-Type: application/json" | python -m json.tool
-    ```
-     should show something like:
-    ```
-    {
-        "rows": [{
-            "dateTime": "2015-09-12 00:00:00.000",
-            "deleted": 394298.0
-        }]
-    }
-    ```
-
-- Count of edits by hour for the last 72 hours:  
-  
-      GET http://localhost:9012/v1/data/wikiticker/day/?metrics=count&dateTime=PT72H/current
-    
-    Note: this will should be something like the response below since the 
-    wikiticker table doesn't have data for the past 72 hours from now.
-    ```json
-    {
-        "rows": [],
-        "meta": {
-            "missingIntervals": ["2017-03-30 00:00:00.000/2017-04-02 00:00:00.000"]
-        }
-    }
-    ```  
-
-- Show [debug info](http://localhost:9012/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current),
- including the query sent to Druid:  
-
-      GET http://localhost:9012/v1/data/wikiticker/day/?format=debug&metrics=count&dateTime=PT72H/current
+## How to extend Luthier
+We have provided a working example that takes advantage of Luthier's base app and extend it to build REST Api for
+ some public data. Please see the set-up in [LUTHIER_WIKI_README.md](LUTHIER_WIKI_README.md) for details.
 
 ## Notable Restrictions
-
 - Using this is great for testing out fili and druid, but it can't do interesting things with metrics.
 - This can only use 1 timegrain even though a datasource in druid *could* have more.
 
