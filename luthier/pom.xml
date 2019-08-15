@@ -25,8 +25,8 @@
 
     <profiles>
         <profile>
-            <!--      only run tests if Lua is installed to /usr/local/bin/lua      -->
-            <id>lua-installed</id>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/local/bin/lua      -->
+            <id>lua-installed-local-bin</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <file>
@@ -35,23 +35,23 @@
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>prepare-luthier-test-resources</id>
-                                <phase>generate-test-resources</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
+                </plugins>
+            </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
+        </profile>
+        <profile>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/bin/lua      -->
+            <id>lua-installed-bin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
                 </plugins>
             </build>
             <properties>
@@ -125,6 +125,24 @@
                         </goals>
                         <configuration>
                             <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>prepare-luthier-test-resources</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipLuthierTests}</skip>
+                            <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
                         </configuration>
                     </execution>
                 </executions>
