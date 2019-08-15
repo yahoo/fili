@@ -27,7 +27,7 @@ public interface LogicalTableGenerator {
     );
 
     /**
-     * Default
+     * Default implementations of this interface.
      */
     LogicalTableGenerator DEFAULT_LOGICAL_TABLE_GENERATOR = (tableName, granularity, logicalTableDictionary) -> {
         LogicalTable generated = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));

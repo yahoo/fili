@@ -10,6 +10,12 @@ Current
 
 ### Added:
 
+- [Add generator objects to which build objects used a ApiRequest implementations](https://github.com/yahoo/fili/pull/952)
+    * `ApiRequestImpl` contained a significant amount of logic for constructing pieces of an `ApiRequest` and a `DataApiRequest`
+    which are used by subclasses of `ApiRequestImpl`. This logic has now been externalized into Generator interfaces 
+    under the `com.yahoo.bard.webservice.web.apirequest.building` package. `ApiRequestImpl` now defers to the default 
+    implementations of these interfaces.   
+
 - [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
     * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
     based on the presence or absence of a tag value in an underlying multivalued dimension.
