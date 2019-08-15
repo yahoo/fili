@@ -21,8 +21,8 @@ env:
   - LUA=lua5.3
 
 before_install:
+- sudo apt-get install $LUA -y
 - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then source ./travis/non_pull_request_setup.bash; fi'
-- sudo apt-get install lua5.3 -y
 
 install:
 - travis/install.bash
