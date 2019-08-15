@@ -1,6 +1,7 @@
+// Copyright 2018 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.building;
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.util.GranularityParseException;
@@ -23,7 +24,6 @@ public interface GranularityGenerator {
      * @param granularityParser  The parser for granularity
      *
      * @return A granularity instance with time zone information
-     * @throws BadApiRequestException if the string matches no meaningful granularity
      */
     Granularity generateGranularity(String granularity, DateTimeZone dateTimeZone, GranularityParser granularityParser);
 
@@ -34,14 +34,12 @@ public interface GranularityGenerator {
      * @param granularityParser  The parser for granularity
      *
      * @return A granularity instance without time zone information
-     * @throws BadApiRequestException if the string matches no meaningful granularity
      */
     Granularity generateGranularity(String granularity, GranularityParser granularityParser);
 
     /**
-     * Provides a default implementation of this interface.
-     *
-     * @return
+     * A default implementation of this interface. Simply uses the provided granularity parser to parse the provided
+     * String representation of the granularity
      */
     GranularityGenerator DEFAULT_GRANULARITY_GENERATOR = new GranularityGenerator() {
             @Override

@@ -1,3 +1,5 @@
+// Copyright 2018 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.building;
 
 import com.yahoo.bard.webservice.web.BadApiRequestException;
@@ -6,6 +8,9 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import java.util.Optional;
 
+/**
+ * Generates a PaginationParameters object based on Strings representing the user requested pagination.
+ */
 public interface PaginationParameterGenerator {
 
     /**
@@ -15,8 +20,6 @@ public interface PaginationParameterGenerator {
      * @param page  The page to display.
      *
      * @return An Optional wrapping a PaginationParameters if both 'perPage' and 'page' exist.
-     * @throws BadApiRequestException if 'perPage' or 'page' is not a positive integer, or if either one is empty
-     * string but not both.
      */
     Optional<PaginationParameters> generatePaginationParameters(String perPage, String page);
 

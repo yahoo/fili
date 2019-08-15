@@ -1,3 +1,5 @@
+// Copyright 2018 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.building;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
@@ -34,7 +36,6 @@ public interface DimensionGenerator {
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
      *
      * @return Set of dimension objects.
-     * @throws BadApiRequestException if an invalid dimension is requested.
      */
     LinkedHashSet<Dimension> generateDimensions(
             List<PathSegment> apiDimensions,
@@ -46,11 +47,14 @@ public interface DimensionGenerator {
      *
      * @param requestDimensions  The dimensions being requested
      * @param table  The logical table being checked
-     *
-     * @throws BadApiRequestException if any of the dimensions do not match the logical table
      */
-    void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table) throws BadApiRequestException;
+    void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table);
 
+    /**
+     * Default implementation of this interface. Simply loops over the path segments, checks if the apiName in the
+     * segment matches an apiName of a dimension in the DimensionDictionary, and if so adds it to the list. If any
+     * of the path segments are not valid dimensions an error is thrown.
+     */
     DimensionGenerator DEFAULT_DIMENSION_GENERATOR =
         new DimensionGenerator() {
             @Override
@@ -95,7 +99,7 @@ public interface DimensionGenerator {
             public void validateRequestDimensions(
                     Set<Dimension> requestDimensions,
                     LogicalTable table
-            ) throws BadApiRequestException {
+            ) {
                 // Requested dimensions must lie in the logical table
                 requestDimensions = new HashSet<>(requestDimensions);
                 requestDimensions.removeAll(table.getDimensions());

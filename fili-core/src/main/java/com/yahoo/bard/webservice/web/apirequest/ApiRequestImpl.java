@@ -2,16 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -19,24 +11,17 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.BadPaginationException;
-import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.TimeMacro;
-import com.yahoo.bard.webservice.web.apirequest.building.GranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.building.DimensionGenerator;
+import com.yahoo.bard.webservice.web.apirequest.building.GranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.building.IntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.building.LogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.building.LogicalTableGenerator;
@@ -46,23 +31,17 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.joda.time.Interval;
-import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -227,7 +206,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String granularity,
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
-    ) {
+    ) throws BadApiRequestException {
         return granularityGenerator.generateGranularity(granularity, dateTimeZone, granularityParser);
     }
 
@@ -240,7 +219,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @return A granularity instance without time zone information
      * @throws BadApiRequestException if the string matches no meaningful granularity
      */
-    protected Granularity generateGranularity(String granularity, GranularityParser granularityParser) {
+    protected Granularity generateGranularity(String granularity, GranularityParser granularityParser)
+            throws BadApiRequestException {
         return granularityGenerator.generateGranularity(granularity, granularityParser);
     }
 

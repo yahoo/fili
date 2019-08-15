@@ -1,3 +1,5 @@
+// Copyright 2018 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.building;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
@@ -25,7 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Generates intervals used by an ApiRequest implementation. Currently only has static methods, but will likely
+ * eventually contain a contract.
+ */
 public interface IntervalGenerator {
+
     /**
      * Extracts the set of intervals from the api request.
      *
@@ -175,5 +182,4 @@ public interface IntervalGenerator {
             throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
         }
     }
-
 }

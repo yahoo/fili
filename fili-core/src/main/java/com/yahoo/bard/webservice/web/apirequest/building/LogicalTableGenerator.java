@@ -1,3 +1,5 @@
+// Copyright 2018 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.building;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
@@ -8,6 +10,9 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
+/**
+ * Generates a logical table given information to identify a logical table.
+ */
 public interface LogicalTableGenerator {
 
     /**
@@ -18,7 +23,6 @@ public interface LogicalTableGenerator {
      * @param logicalTableDictionary  Logical table dictionary contains the map of valid table names and table objects.
      *
      * @return Set of logical table objects.
-     * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
      */
     LogicalTable generateTable(
             String tableName,
