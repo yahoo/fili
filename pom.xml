@@ -1045,7 +1045,12 @@
                 <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
                 <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
                 <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
-                <sonar.coverage.exclusions>**/*Main.java</sonar.coverage.exclusions>
+                <sonar.coverage.exclusions>
+                    **/*Main.java,
+                    **/*Params.java
+                </sonar.coverage.exclusions>
+                <sonar.java.libraries>/jenkins/jenkins-user-home/.m2/repository/org/projectlombok/lombok/1.16.20/lombok-1.16.20.jar</sonar.java.libraries>
+
             </properties>
             <build>
                 <pluginManagement>
