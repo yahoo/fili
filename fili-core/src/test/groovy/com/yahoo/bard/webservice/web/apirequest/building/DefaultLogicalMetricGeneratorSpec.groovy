@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator
 
 import spock.lang.Specification
 
