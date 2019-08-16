@@ -60,13 +60,13 @@ import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
-import com.yahoo.bard.webservice.web.apirequest.building.DimensionGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.GranularityGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.IntervalGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.LogicalMetricGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.LogicalTableGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.PaginationParameterGenerator;
-import com.yahoo.bard.webservice.web.apirequest.building.ResponseFormatTypeGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.LogicalTableGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.PaginationParameterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.ResponseFormatTypeGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -1828,7 +1828,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalGenerator.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalBinders.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
 
@@ -1849,7 +1849,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalGenerator.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalBinders.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
     /**
@@ -1870,7 +1870,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        return IntervalGenerator.getAsDateTime(now, granularity, dateText, timeFormatter);
+        return IntervalBinders.getAsDateTime(now, granularity, dateText, timeFormatter);
     }
 
     /**
@@ -1907,7 +1907,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
-        IntervalGenerator.validateTimeAlignment(granularity, intervals);
+        IntervalBinders.validateTimeAlignment(granularity, intervals);
     }
 
     /**
