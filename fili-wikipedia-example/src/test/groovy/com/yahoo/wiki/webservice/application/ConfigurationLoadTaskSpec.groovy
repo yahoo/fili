@@ -4,10 +4,11 @@ package com.yahoo.wiki.webservice.application
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
-import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
 import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
+import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -33,7 +34,7 @@ class ConfigurationLoadTaskSpec extends Specification {
 
     def setupSpec() {
         LinkedHashSet<DimensionConfig> dimensions = new WikiDimensions().getAllDimensionConfigurations();
-        loader = new ConfigurationLoader(
+        loader = new DefaultConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new WikiMetricLoader(),
                 new WikiTableLoader()
