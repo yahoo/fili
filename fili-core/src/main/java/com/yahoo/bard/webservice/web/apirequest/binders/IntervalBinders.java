@@ -38,6 +38,9 @@ public final class IntervalBinders {
     protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String ADJUSTED_TIME_ZONE_KEY = "adjusted_time_zone";
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private IntervalBinders() {
         throw new AssertionError("IntervalBinders is a nonstantiable util class");
     }
@@ -67,7 +70,7 @@ public final class IntervalBinders {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    static List<Interval> generateIntervals(
+    public static List<Interval> generateIntervals(
             String apiIntervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
@@ -87,7 +90,7 @@ public final class IntervalBinders {
      * @return Set of jodatime interval objects.
      * @throws BadApiRequestException if the requested interval is not found.
      */
-    static List<Interval> generateIntervals(
+    public static List<Interval> generateIntervals(
             DateTime now,
             String apiIntervalQuery,
             Granularity granularity,
@@ -172,7 +175,7 @@ public final class IntervalBinders {
      *
      * @throws BadApiRequestException if the granularity is "all" and a macro is used
      */
-    static DateTime getAsDateTime(
+    public static DateTime getAsDateTime(
             DateTime now,
             Granularity granularity,
             String dateText,
@@ -197,7 +200,7 @@ public final class IntervalBinders {
      *
      * @throws BadApiRequestException if the granularity does not align to the intervals
      */
-    static void validateTimeAlignment(
+    public static void validateTimeAlignment(
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
