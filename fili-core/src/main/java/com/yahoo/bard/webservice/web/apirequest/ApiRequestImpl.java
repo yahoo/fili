@@ -23,7 +23,6 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalTableGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.PaginationParameterGenerator;
