@@ -72,10 +72,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final long asyncAfter;
     protected final String downloadFilename;
 
-    protected GranularityGenerator granularityGenerator = GranularityGenerator.DEFAULT_GRANULARITY_GENERATOR;
-    protected DimensionGenerator dimensionGenerator =
-            DimensionGenerator.DEFAULT_DIMENSION_GENERATOR;
-
     /**
      * Parses the API request URL and generates the API request object.
      *
@@ -207,7 +203,11 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
     ) throws BadApiRequestException {
-        return granularityGenerator.generateGranularity(granularity, dateTimeZone, granularityParser);
+        return GranularityGenerator.DEFAULT_GRANULARITY_GENERATOR.generateGranularity(
+                granularity,
+                dateTimeZone,
+                granularityParser
+        );
     }
 
     /**
@@ -221,7 +221,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected Granularity generateGranularity(String granularity, GranularityParser granularityParser)
             throws BadApiRequestException {
-        return granularityGenerator.generateGranularity(granularity, granularityParser);
+        return GranularityGenerator.DEFAULT_GRANULARITY_GENERATOR.generateGranularity(granularity, granularityParser);
     }
 
     /**
@@ -238,7 +238,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return dimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);
+        return DimensionGenerator.DEFAULT_DIMENSION_GENERATOR.generateDimensions(apiDimensions, dimensionDictionary);
     }
 
     /**
@@ -251,7 +251,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
-        dimensionGenerator.validateRequestDimensions(requestDimensions, table);
+        DimensionGenerator.DEFAULT_DIMENSION_GENERATOR.validateRequestDimensions(requestDimensions, table);
     }
 
     /**

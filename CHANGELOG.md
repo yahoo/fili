@@ -140,6 +140,12 @@ Current
 
 ### Changed:
 
+- [Changed DataApiRequestImpl to NOT extend ApiRequestImpl](https://github.com/yahoo/fili/pull/952)
+    * As part of the effort to implement a POJO DataApiRequestImplementation, DataApiRequestImpl is being changed to 
+    not extend ApiRequestImpl. This will more easily facilitate the change to externalizing building logic.
+    * Methods inherited from ApiRequestImpl have been copied into DataApiRequestImpl to avoid breaking downstream 
+    customers, though these methods will probably become unused in the future.
+
 - [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
     * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
     that file extension is removed.
