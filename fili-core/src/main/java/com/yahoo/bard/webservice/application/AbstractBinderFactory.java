@@ -46,6 +46,7 @@ import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
@@ -235,6 +236,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         return new AbstractBinder() {
             @Override
             protected void configure() {
+
                 HealthCheckRegistry healthCheckRegistry = HealthCheckRegistryFactory.getRegistry();
 
                 Stream.concat(
@@ -1062,7 +1064,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader getConfigurationLoader() {
+    protected ConfigurationLoader getConfigurationLoader() {
         if (Objects.isNull(loader)) {
             loader = buildConfigurationLoader(getDimensionLoader(), getMetricLoader(), getTableLoader());
         }
@@ -1083,7 +1085,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             MetricLoader metricLoader,
             TableLoader tableLoader
     ) {
-        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+        return new DefaultConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
     }
 
     /**

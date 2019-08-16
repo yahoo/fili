@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application
 
+
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DATASOURCE_METADATA
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DIMENSION
 import static com.yahoo.bard.webservice.application.AbstractBinderFactory.HEALTH_CHECK_NAME_DRUID_DIM_LOADER
