@@ -134,6 +134,11 @@ Current
 
 ### Changed:
 
+- [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
+    * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
+    that file extension is removed.
+    * Some other small refactors where do on the `ResponseUtils` class
+
 - [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
     * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
 
@@ -273,6 +278,16 @@ Current
 - [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
 
 ### Fixed:
+
+- [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
+    * Problem: Previously, if an unexpected behaviour happens in the Class build time in 
+    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build, 
+    where we suspect only Exceptions are logged.
+    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its 
+    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by 
+    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged. 
+    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead. 
+    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught. 
 
 - [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
     * table api filters where not being used in query planning, moving the merge above query planning fixes this. 
@@ -702,6 +717,7 @@ Added by @mpardesh in https://github.com/yahoo/fili/pull/518
 `ui_druid_broke` and `non_ui_druid_broker` are not used separately anymore. Instead, a single `druid_broker` replaces the two. For backwards compatibility, Fili checks if `druid_broker` is set. If not, Fili uses `non_ui_druid_broker` and then `ui_druid_broker`
 
 Added by @mpardesh in https://github.com/yahoo/fili/pull/489
+Amended by @gab-umich in https://github.com/yahoo/fili/pull/933
 
 Credits
 ---------

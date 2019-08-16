@@ -4,6 +4,8 @@ package com.yahoo.wiki.webservice.application;
 
 import com.yahoo.bard.webservice.application.HealthCheckServletContextListener;
 import com.yahoo.bard.webservice.application.MetricServletContextListener;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.wiki.webservice.data.config.dimension.WikiDimensions;
 
@@ -37,6 +39,8 @@ import javax.servlet.DispatcherType;
  */
 public class WikiMain {
     private static final Logger LOG = LoggerFactory.getLogger(WikiMain.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 
     /**
      * Makes the dimensions passthrough.
@@ -82,7 +86,7 @@ public class WikiMain {
      * @throws Exception if the server fails to start or crashes
      */
     public static void main(String[] args) throws Exception {
-        int port = 9998;
+        int port = SYSTEM_CONFIG.getIntProperty(FILI_PORT);
 
         Server server = new Server(port);
         ServletContextHandler servletContextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);

@@ -20,8 +20,17 @@ This example is an entirely self contained example that provides a Fili applicat
     mvn install
     mvn -pl fili-wikipedia-example exec:java
     ```
+- Note that if your setup is different you can adjust it by changing the default parameters below
+    ```bash
+    # cd fili
+    # mvn install
+    mvn -pl fili-generic-example exec:java -Dbard__fili_port=9998 \
+    -Dbard__druid_coord=http://localhost:8081/druid/coordinator/v1 \
+    -Dbard__druid_broker=http://localhost:8082/druid/v2
+    ```
     From another window, run a test query against the default druid data:
 
+    _(Make sure the port matches the `-Dbard__fili_port` argument if you customized it in the previous step)_
     ```bash
     curl "http://localhost:9998/v1/data/wikipedia/hour/?metrics=deleted&dateTime=2015-09-12/PT2H" -H "Content-Type: application/json" | python -m json.tool
     ```
