@@ -54,7 +54,6 @@ import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerationUtils;
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalTableGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.PaginationParameterGenerator;
