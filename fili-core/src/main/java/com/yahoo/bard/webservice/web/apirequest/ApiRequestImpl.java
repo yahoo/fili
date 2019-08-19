@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerationUtils;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalTableGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.PaginationParameterGenerator;
@@ -314,7 +314,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
 
@@ -335,7 +335,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
     /**
@@ -356,7 +356,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.getAsDateTime(now, granularity, dateText, timeFormatter);
+        return IntervalGenerationUtils.getAsDateTime(now, granularity, dateText, timeFormatter);
     }
 
     /**
@@ -393,7 +393,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
-        IntervalBinders.validateTimeAlignment(granularity, intervals);
+        IntervalGenerationUtils.validateTimeAlignment(granularity, intervals);
     }
 
     /**

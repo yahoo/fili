@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -31,16 +32,50 @@ public interface LogicalTableGenerator {
     );
 
     /**
+     * Validates that the generated logical table matches the parameters that where used to generate it.
+     *
+     * @param table The table to validate
+     * @param tableName Name of the logical table
+     * @param granularity Granularity of the logical table
+     * @param logicalTableDictionary Dictionary containing references to all constructed logical tables in the system.
+     */
+    void validateTable(
+            LogicalTable table,
+            String tableName,
+            Granularity granularity,
+            LogicalTableDictionary logicalTableDictionary
+    );
+
+    /**
      * Default implementations of this interface.
      */
-    LogicalTableGenerator DEFAULT_LOGICAL_TABLE_GENERATOR = (tableName, granularity, logicalTableDictionary) -> {
-        LogicalTable generated = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
+    LogicalTableGenerator DEFAULT_LOGICAL_TABLE_GENERATOR = new LogicalTableGenerator() {
+        @Override
+        public LogicalTable generateTable(
+                String tableName,
+                Granularity granularity,
+                LogicalTableDictionary logicalTableDictionary
+        ) {
+            LogicalTable generated = logicalTableDictionary.get(new TableIdentifier(tableName, granularity));
 
-        // check if requested logical table grain pair exists
-        if (generated == null) {
-            String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
-            throw new BadApiRequestException(msg);
+            // check if requested logical table grain pair exists
+            if (generated == null) {
+                String msg = TABLE_GRANULARITY_MISMATCH.logFormat(granularity, tableName);
+                throw new BadApiRequestException(msg);
+            }
+            return generated;
         }
-        return generated;
+
+        @Override
+        public void validateTable(
+                LogicalTable table,
+                String tableName,
+                Granularity granularity,
+                LogicalTableDictionary logicalTableDictionary
+        ) {
+            if (table == null) {
+                throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
+            }
+        }
     };
 }

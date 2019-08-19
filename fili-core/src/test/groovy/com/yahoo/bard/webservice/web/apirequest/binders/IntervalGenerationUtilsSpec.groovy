@@ -4,14 +4,13 @@ package com.yahoo.bard.webservice.web.apirequest.binders
 
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders
 
 import org.joda.time.DateTime
 
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class IntervalBindersSpec extends Specification {
+class IntervalGenerationUtilsSpec extends Specification {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance()
 
@@ -21,7 +20,7 @@ class IntervalBindersSpec extends Specification {
         when:
 
         SYSTEM_CONFIG.setProperty("bard__adjusted_time_zone",zone)
-        DateTime adjustedNow = IntervalBinders.getAdjustedTime(new DateTime(serverTime))
+        DateTime adjustedNow = IntervalGenerationUtils.getAdjustedTime(new DateTime(serverTime))
 
         then:
         adjustedNow.toString() == expectedDateTime

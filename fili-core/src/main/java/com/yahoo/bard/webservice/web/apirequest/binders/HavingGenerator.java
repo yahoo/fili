@@ -13,5 +13,4 @@ import java.util.function.BiFunction;
  * Generates having maps from having strings.
  */
 public interface HavingGenerator extends BiFunction<String, Set<LogicalMetric>, Map<LogicalMetric, Set<ApiHaving>>> {
-
 }

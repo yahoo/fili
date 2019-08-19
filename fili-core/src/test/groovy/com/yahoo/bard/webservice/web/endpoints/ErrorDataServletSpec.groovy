@@ -20,6 +20,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_IN
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
@@ -30,12 +31,15 @@ import com.yahoo.bard.webservice.config.SystemConfigException
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+
+import org.joda.time.DateTimeZone
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -267,7 +271,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Bad table name fails"() {
-        String message = TABLE_UNDEFINED.format("badtable")
+        String message = TABLE_GRANULARITY_MISMATCH.logFormat(DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC), "badtable");
 
         String jsonFailure =
                 """{"status":400,

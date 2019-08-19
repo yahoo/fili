@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.binders.SortGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -37,7 +38,7 @@ import javax.ws.rs.core.Response;
 public interface DataApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
     String RATIO_METRIC_CATEGORY = "Ratios";
-    String DATE_TIME_STRING = "dateTime";
+    String DATE_TIME_STRING = SortGenerator.DATE_TIME_STRING;
 
     // Schema fields
 

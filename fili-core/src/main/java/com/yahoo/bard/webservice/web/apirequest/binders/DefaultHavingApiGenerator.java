@@ -24,13 +24,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Generates having objects based on the having query in the api request.
  */
 public class DefaultHavingApiGenerator implements HavingGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHavingApiGenerator.class);
-    private static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
+    private static final Pattern COMMA_AFTER_BRACKET_PATTERN = Pattern.compile("(?<=]),");
 
     private final Map<String, LogicalMetric> metricDictionary;
 
@@ -78,7 +79,7 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
             List<String> unmatchedMetrics = new ArrayList<>();
 
             // split on '],' to get list of havings
-            List<String> apiHavings = Arrays.asList(havingQuery.split(COMMA_AFTER_BRACKET_PATTERN));
+            List<String> apiHavings = Arrays.asList(COMMA_AFTER_BRACKET_PATTERN.split(havingQuery));
             Map<LogicalMetric, Set<ApiHaving>> generated = new LinkedHashMap<>();
             for (String apiHaving : apiHavings) {
                 try {

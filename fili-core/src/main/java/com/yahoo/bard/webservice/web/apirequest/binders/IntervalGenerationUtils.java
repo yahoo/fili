@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
+import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
@@ -33,7 +34,7 @@ import java.util.Locale;
 /**
  * This utility class adjusts the DateTime for bindIntervals method of DataApiRequestImpl.
  */
-public final class IntervalBinders {
+public final class IntervalGenerationUtils {
 
     protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     private static final String ADJUSTED_TIME_ZONE_KEY = "adjusted_time_zone";
@@ -41,8 +42,18 @@ public final class IntervalBinders {
     /**
      * Private constructor to prevent instantiation.
      */
-    private IntervalBinders() {
-        throw new AssertionError("IntervalBinders is a nonstantiable util class");
+    private IntervalGenerationUtils() {
+        throw new AssertionError("IntervalGenerationUtils is a nonstantiable util class");
+    }
+
+    /**
+     * Generates an implementation of a DateTimeFormatter where all time grains up to year are optional.
+     *
+     * @param timeZone time zone for the formatter to be in.
+     * @return the formatter
+     */
+    public static DateTimeFormatter generateDateTimeFormatter(DateTimeZone timeZone) {
+        return FULLY_OPTIONAL_DATETIME_FORMATTER.withZone(timeZone);
     }
 
     /**

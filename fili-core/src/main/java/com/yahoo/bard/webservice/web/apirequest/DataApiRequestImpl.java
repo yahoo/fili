@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
@@ -12,11 +11,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 import static com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl.DEFAULT_PAGINATION;
 
@@ -43,11 +37,8 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
-import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
@@ -56,17 +47,21 @@ import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.binders.CountGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultSortGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerationUtils;
 import com.yahoo.bard.webservice.web.apirequest.binders.IntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.LogicalTableGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.PaginationParameterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.ResponseFormatTypeGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.SortGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.TopNGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -134,6 +129,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     protected final String downloadFilename;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
+    protected SortGenerator sortGenerator = new DefaultSortGenerator();
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
@@ -566,11 +562,11 @@ public class DataApiRequestImpl implements DataApiRequest {
         );
         validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
 
-
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
         validateCount(countRequest, count);
 
+        // TODO use topN generator
         // Requested number of rows per time bucket in the response
         this.topN = bindTopN(topNRequest);
         validateTopN(topNRequest, topN, sorts);
@@ -880,11 +876,11 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             LogicalTableDictionary logicalTableDictionary
     ) {
-
-        TableIdentifier tableId = new TableIdentifier(tableName, granularity);
-
-        // Logical table must be in the logical table dictionary
-        return logicalTableDictionary.get(tableId);
+        return LogicalTableGenerator.DEFAULT_LOGICAL_TABLE_GENERATOR.generateTable(
+                tableName,
+                granularity,
+                logicalTableDictionary
+        );
     }
 
     /**
@@ -903,10 +899,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             LogicalTableDictionary logicalTableDictionary
     ) throws BadApiRequestException {
-        if (table == null) {
-            LOG.debug(TABLE_UNDEFINED.logFormat(tableName));
-            throw new BadApiRequestException(TABLE_UNDEFINED.format(tableName));
-        }
+        LogicalTableGenerator.DEFAULT_LOGICAL_TABLE_GENERATOR
+                .validateTable(table, tableName, granularity, logicalTableDictionary);
     }
 
     /**
@@ -1061,27 +1055,8 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return  A bound list of intervals for the query
      */
     protected List<Interval> bindIntervals(String intervalsName, Granularity granularity, DateTimeZone timeZone) {
-        DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
-        List<Interval> result;
-
-        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
-        DateTime adjustedNow = new DateTime();
-
-        if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
-            adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
-            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
-        } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
-            if (! availability.isEmpty()) {
-                DateTime firstUnavailable =  availability.getLast().getEnd();
-                if (firstUnavailable.isBeforeNow()) {
-                    adjustedNow = firstUnavailable;
-                }
-            }
-            result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
-        } else {
-            result = generateIntervals(intervalsName, granularity, dateTimeFormatter);
-        }
-        return result;
+        return IntervalGenerator.DEFAULT_INTERVAL_GENERATOR
+                .generateIntervals(intervalsName, granularity, timeZone, getTable());
     }
 
     /**
@@ -1099,9 +1074,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             List<Interval> intervals,
             Granularity granularity,
             DateTimeZone timeZone
-    )
-            throws BadApiRequestException {
-        validateTimeAlignment(granularity, intervals);
+    ) throws BadApiRequestException {
+        IntervalGenerator.DEFAULT_INTERVAL_GENERATOR.validateIntervals(intervalsName, intervals, granularity, timeZone);
     }
 
     /**
@@ -1164,16 +1138,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return LinkedHashMap of columns and their direction. Using LinkedHashMap to preserve the order
      */
     protected LinkedHashMap<String, SortDirection> bindToColumnDirectionMap(String sorts) {
-        LinkedHashMap<String, SortDirection> sortDirectionMap = new LinkedHashMap<>();
-
-        if (sorts != null && !sorts.isEmpty()) {
-            Arrays.stream(sorts.split(","))
-                    .map(e -> Arrays.asList(e.split("\\|")))
-                    .forEach(e -> sortDirectionMap.put(e.get(0), getSortDirection(e)));
-            return sortDirectionMap;
-        } else {
-            return null;
-        }
+        return SortGenerator.generateSortDirectionMap(sorts);
     }
 
     /**
@@ -1191,52 +1156,11 @@ public class DataApiRequestImpl implements DataApiRequest {
             Set<LogicalMetric> logicalMetrics,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingSortColumns")) {
-            String sortMetricName;
-            LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
-
-            if (sortDirectionMap == null) {
-                return metricSortColumns;
-            }
-            List<String> unknownMetrics = new ArrayList<>();
-            List<String> unmatchedMetrics = new ArrayList<>();
-            List<String> unsortableMetrics = new ArrayList<>();
-
-            for (Map.Entry<String, SortDirection> entry : sortDirectionMap.entrySet())  {
-                sortMetricName = entry.getKey();
-
-                LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
-
-                // If metric dictionary returns a null, it means the requested sort metric is not found.
-                if (logicalMetric == null) {
-                    unknownMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (!logicalMetrics.contains(logicalMetric)) {
-                    unmatchedMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (logicalMetric.getTemplateDruidQuery() == null) {
-                    unsortableMetrics.add(sortMetricName);
-                    continue;
-                }
-                metricSortColumns.add(new OrderByColumn(logicalMetric, entry.getValue()));
-            }
-            if (!unknownMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_UNDEFINED.format(unknownMetrics.toString()));
-            }
-            if (!unmatchedMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
-            }
-            if (!unsortableMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_SORTABLE_FORMAT.logFormat(unsortableMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_SORTABLE_FORMAT.format(unsortableMetrics.toString()));
-            }
-
-            return metricSortColumns;
+        if (sortDirectionMap == null) {
+            return new LinkedHashSet<>();
         }
+        LinkedHashMap<String, SortDirection> orderedSortDirection = new LinkedHashMap<>(sortDirectionMap);
+        return sortGenerator.generateSorts(orderedSortDirection, logicalMetrics, metricDictionary);
     }
 
     /**
@@ -1247,15 +1171,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return Instance of OrderByColumn for dateTime
      */
     protected Optional<OrderByColumn> bindDateTimeSortColumn(LinkedHashMap<String, SortDirection> sortColumns) {
-
-        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
-            if (!isDateTimeFirstSortField(sortColumns)) {
-                LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
-                throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
-            }
-            return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
-        }
-        return Optional.empty();
+        return Optional.ofNullable(sortGenerator.generateDateTimeSort(sortColumns));
     }
 
     /**
@@ -1286,7 +1202,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return The requested value, zero if null or empty
      */
     protected int bindCount(String countRequest) {
-        return generateInteger(countRequest, "count");
+        return CountGenerator.DEFAULT_COUNT_GENERATOR.generateCount(countRequest);
     }
 
     /**
@@ -1296,11 +1212,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @param count The bound value for the count
      */
     protected void validateCount(String countRequest, int count) {
-        // This is the validation part for count that is inlined here because currently it is very brief.
-        if (count < 0) {
-            LOG.debug(INTEGER_INVALID.logFormat(countRequest, "count"));
-            throw new BadApiRequestException(INTEGER_INVALID.logFormat(countRequest, "count"));
-        }
+        CountGenerator.DEFAULT_COUNT_GENERATOR.validateCount(countRequest, count);
     }
     /**
      * Bind the top N bucket size (if any).
@@ -1310,7 +1222,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return The requested value, zero if null or empty
      */
     protected int bindTopN(String topNRequest) {
-        return generateInteger(topNRequest, "topN");
+        return TopNGenerator.DEFAULT_TOP_N_GENERATOR.generateTopN(topNRequest);
     }
 
     /**
@@ -1321,14 +1233,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @param topN The bound value for the count
      */
     protected void validateTopN(String topNRequest,  int topN, LinkedHashSet<OrderByColumn> sorts) {
-        // This is the validation part for topN that is inlined here because currently it is very brief.
-        if (topN < 0) {
-            LOG.debug(INTEGER_INVALID.logFormat(topNRequest, "topN"));
-            throw new BadApiRequestException(INTEGER_INVALID.logFormat(topNRequest, "topN"));
-        } else if (topN > 0 && this.sorts.isEmpty()) {
-            LOG.debug(TOP_N_UNSORTED.logFormat(topNRequest));
-            throw new BadApiRequestException(TOP_N_UNSORTED.format(topNRequest));
-        }
+        TopNGenerator.DEFAULT_TOP_N_GENERATOR.validateTopN(topNRequest, topN, this.sorts);
     }
 
 
@@ -1478,7 +1383,10 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
      *
      * @return True if dateTime column is first one in the sort list. False otherwise
+     * @deprecated prefer utilizing a {@link SortGenerator} instead of building sorts using the methods provided by
+     * {@link DataApiRequestImpl}
      */
+    @Deprecated
     protected Boolean isDateTimeFirstSortField(LinkedHashMap<String, SortDirection> sortColumns) {
         if (sortColumns != null) {
             List<String> columns = new ArrayList<>(sortColumns.keySet());
@@ -1828,9 +1736,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
     }
-
 
     /**
      * Extracts the set of intervals from the api request.
@@ -1849,7 +1756,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils.generateIntervals(now, apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
     /**
@@ -1870,7 +1777,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             String dateText,
             DateTimeFormatter timeFormatter
     ) throws BadApiRequestException {
-        return IntervalBinders.getAsDateTime(now, granularity, dateText, timeFormatter);
+        return IntervalGenerationUtils.getAsDateTime(now, granularity, dateText, timeFormatter);
     }
 
     /**
@@ -1907,7 +1814,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             List<Interval> intervals
     ) throws BadApiRequestException {
-        IntervalBinders.validateTimeAlignment(granularity, intervals);
+        IntervalGenerationUtils.validateTimeAlignment(granularity, intervals);
     }
 
     /**
