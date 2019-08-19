@@ -48,7 +48,6 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.CountGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.DefaultSortGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
@@ -129,7 +128,6 @@ public class DataApiRequestImpl implements DataApiRequest {
     protected final String downloadFilename;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
-    protected SortGenerator sortGenerator = new DefaultSortGenerator();
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
@@ -1160,7 +1158,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             return new LinkedHashSet<>();
         }
         LinkedHashMap<String, SortDirection> orderedSortDirection = new LinkedHashMap<>(sortDirectionMap);
-        return sortGenerator.generateSorts(orderedSortDirection, logicalMetrics, metricDictionary);
+        return SortGenerator.DEFAULT_SORT_GENERATOR
+                .generateSorts(orderedSortDirection, logicalMetrics, metricDictionary);
     }
 
     /**
@@ -1171,7 +1170,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return Instance of OrderByColumn for dateTime
      */
     protected Optional<OrderByColumn> bindDateTimeSortColumn(LinkedHashMap<String, SortDirection> sortColumns) {
-        return Optional.ofNullable(sortGenerator.generateDateTimeSort(sortColumns));
+        return Optional.ofNullable(SortGenerator.DEFAULT_SORT_GENERATOR.generateDateTimeSort(sortColumns));
     }
 
     /**
@@ -1736,7 +1735,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalGenerationUtils.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils
+                .generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
     /**

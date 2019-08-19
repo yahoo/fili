@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
@@ -25,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Default implementation of {@link SortGenerator}.
+ */
 @Incubating
 public class DefaultSortGenerator implements SortGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);

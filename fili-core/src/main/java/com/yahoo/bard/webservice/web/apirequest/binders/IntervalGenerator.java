@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -47,8 +46,6 @@ public interface IntervalGenerator {
      * @param intervals  The bound intervals
      * @param granularity The request granularity
      * @param timeZone  The time zone to evaluate interval timestamps in
-     *
-     * @throws BadApiRequestException if invalid
      */
     void validateIntervals(
             String intervalsName,
@@ -57,6 +54,10 @@ public interface IntervalGenerator {
             DateTimeZone timeZone
     );
 
+    /**
+     * Default implementation of {@link IntervalGenerator}. Relies heavily on util methods provided by
+     * {@link com.yahoo.bard.webservice.util.IntervalUtils}.
+     */
     IntervalGenerator DEFAULT_INTERVAL_GENERATOR = new IntervalGenerator() {
         @Override
         public List<Interval> generateIntervals(

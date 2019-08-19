@@ -314,7 +314,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return IntervalGenerationUtils.generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return IntervalGenerationUtils
+                .generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
     }
 
 
