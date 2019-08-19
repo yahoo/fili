@@ -61,9 +61,10 @@ public final class IntervalBinders {
     }
 
     /**
-     * Extracts the set of intervals from the api request.
+     * Extracts the set of intervals from the query parameters. Uses system datetime as the default 'now' for
+     * calculating time macros.
      *
-     * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
+     * @param intervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
      * @param granularity  The granularity to generate the date based on period or macros.
      * @param dateTimeFormatter  The formatter to parse date time interval segments
      *
@@ -71,19 +72,19 @@ public final class IntervalBinders {
      * @throws BadApiRequestException if the requested interval is not found.
      */
     public static List<Interval> generateIntervals(
-            String apiIntervalQuery,
+            String intervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
-        return generateIntervals(new DateTime(), apiIntervalQuery, granularity, dateTimeFormatter);
+        return generateIntervals(new DateTime(), intervalQuery, granularity, dateTimeFormatter);
     }
 
 
     /**
-     * Extracts the set of intervals from the api request.
+     * Extracts the set of intervals from the query parameters.
      *
      * @param now The 'now' for which time macros will be relatively calculated
-     * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
+     * @param intervalQuery  String containing the requested intervals in ISO 8601 format, values separated by ','.
      * @param granularity  The granularity to generate the date based on period or macros.
      * @param dateTimeFormatter  The formatter to parse date time interval segments
      *
@@ -92,16 +93,16 @@ public final class IntervalBinders {
      */
     public static List<Interval> generateIntervals(
             DateTime now,
-            String apiIntervalQuery,
+            String intervalQuery,
             Granularity granularity,
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingIntervals")) {
             List<Interval> generated = new ArrayList<>();
-            if (apiIntervalQuery == null || apiIntervalQuery.equals("")) {
+            if (intervalQuery == null || intervalQuery.equals("")) {
                 throw new BadApiRequestException(INTERVAL_MISSING.format());
             }
-            List<String> apiIntervals = Arrays.asList(apiIntervalQuery.split(","));
+            List<String> apiIntervals = Arrays.asList(intervalQuery.split(","));
             // Split each interval string into the start and stop instances, parse them, and add the interval to the
             // list
 
@@ -111,7 +112,7 @@ public final class IntervalBinders {
                 // Check for both a start and a stop
                 if (split.length != 2) {
                     String message = "Start and End dates are required.";
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, message));
+                    throw new BadApiRequestException(INTERVAL_INVALID.format(intervalQuery, message));
                 }
 
                 try {
@@ -156,7 +157,7 @@ public final class IntervalBinders {
                     String internalMessage = iae.getMessage().equals("The end instant must be greater the start") ?
                             "The end instant must be greater than the start instant" :
                             iae.getMessage();
-                    throw new BadApiRequestException(INTERVAL_INVALID.format(apiIntervalQuery, internalMessage), iae);
+                    throw new BadApiRequestException(INTERVAL_INVALID.format(intervalQuery, internalMessage), iae);
                 }
             }
             return generated;
