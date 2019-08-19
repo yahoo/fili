@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerationUtils;
 
 import javax.validation.constraints.NotNull;
 
@@ -34,14 +35,22 @@ public final class ApiFilterGenerator {
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * valid.
      *
-     * @deprecated Use {@link FilterBinders#generateApiFilter(String, DimensionDictionary)}
+     * @deprecated Use {@link com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator
+     * #generateFilters(String, LogicalTable, DimensionDictionary)}
      */
     @Deprecated
     public static ApiFilter build(
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
-        return FilterBinders.getInstance().generateApiFilter(filterQuery, dimensionDictionary);
+        FilterGenerationUtils.FilterComponents components
+                = FilterGenerationUtils.generateFilterComponents(filterQuery, dimensionDictionary);
+        return FilterGenerationUtils.DEFAULT_FILTER_FACTORY.buildFilter(
+                components.dimension,
+                components.dimensionField,
+                components.operation,
+                components.values
+        );
     }
 
     /**
@@ -52,10 +61,10 @@ public final class ApiFilterGenerator {
      *
      * @return an ApiFilter with the union of values
      *
-     * @deprecated Use {@link FilterBinders#union(ApiFilter, ApiFilter)}
+     * @deprecated Use {@link FilterGenerationUtils#union(ApiFilter, ApiFilter)}
      */
     @Deprecated
     public static ApiFilter union(ApiFilter one, ApiFilter two) {
-        return FilterBinders.getInstance().union(one, two);
+        return FilterGenerationUtils.union(one, two);
     }
 }

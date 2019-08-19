@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
@@ -10,7 +9,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_METRIC_FI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 import static com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl.DEFAULT_PAGINATION;
 
@@ -43,13 +41,12 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
-import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.CountGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.DimensionFieldGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.DimensionGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.GranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
@@ -76,13 +73,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -127,7 +122,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     protected final long asyncAfter;
     protected final String downloadFilename;
 
-    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
+    protected FilterGenerator filterGenerator = FilterGenerator.DEFAULT_FILTER_GENERATOR;
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
@@ -564,7 +559,6 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.count = bindCount(countRequest);
         validateCount(countRequest, count);
 
-        // TODO use topN generator
         // Requested number of rows per time bucket in the response
         this.topN = bindTopN(topNRequest);
         validateTopN(topNRequest, topN, sorts);
@@ -972,7 +966,6 @@ public class DataApiRequestImpl implements DataApiRequest {
      *
      * @throws BadApiRequestException if invalid
      */
-
     protected void validateDimensionFields(
             List<PathSegment> apiDimensionPathSegments,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
@@ -980,7 +973,13 @@ public class DataApiRequestImpl implements DataApiRequest {
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        // Extend to implement validation
+        DimensionFieldGenerator.DEFAULT_DIMENSION_FIELD_GENERATOR.validateDimensionFields(
+                apiDimensionPathSegments,
+                perDimensionFields,
+                dimensions,
+                logicalTable,
+                dimensionDictionary
+        );
     }
 
     /**
@@ -1040,7 +1039,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return filterGenerator.generate(filterQuery, logicalTable, dimensionDictionary);
+        return filterGenerator.generateFilters(filterQuery, logicalTable, dimensionDictionary);
     }
 
     /**
@@ -1093,6 +1092,7 @@ public class DataApiRequestImpl implements DataApiRequest {
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         // Extend to implement validation
+
     }
 
     /**
@@ -1253,89 +1253,8 @@ public class DataApiRequestImpl implements DataApiRequest {
             @NotNull List<PathSegment> apiDimensionPathSegments,
             @NotNull DimensionDictionary dimensionDictionary
     ) {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
-            return apiDimensionPathSegments.stream()
-                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
-                    .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
-                            pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
-                                    StreamUtils.orderedSetMerge(e, i),
-                            LinkedHashMap::new
-                    ));
-        }
-    }
-
-    /**
-     * Given a path segment, bind the fields specified in it's "show" matrix parameter for the dimension specified in
-     * the path segment's path.
-     *
-     * @param pathSegment  Path segment to bind from
-     * @param dimensionDictionary  Dimension dictionary to look the dimension up in
-     *
-     * @return the set of bound DimensionFields specified in the show clause
-     * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
-     */
-    private LinkedHashSet<DimensionField> bindShowClause(
-            PathSegment pathSegment,
-            DimensionDictionary dimensionDictionary
-    )
-            throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
-        List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
-                .filter(entry -> entry.getKey().equals("show"))
-                .flatMap(entry -> entry.getValue().stream())
-                .flatMap(s -> Arrays.stream(s.split(",")))
-                .collect(Collectors.toList());
-
-        if (showFields.size() == 1 && showFields.contains(DimensionFieldSpecifierKeywords.ALL.toString())) {
-            // Show all fields
-            return dimension.getDimensionFields();
-        } else if (showFields.size() == 1 && showFields.contains(DimensionFieldSpecifierKeywords.NONE.toString())) {
-            // Show no fields
-            return new LinkedHashSet<>();
-        } else if (!showFields.isEmpty()) {
-            // Show the requested fields
-            return bindDimensionFields(dimension, showFields);
-        } else {
-            // Show the default fields
-            return dimension.getDefaultDimensionFields();
-        }
-    }
-
-    /**
-     * Given a Dimension and a set of DimensionField names, bind the names to the available dimension fields of the
-     * dimension.
-     *
-     * @param dimension  Dimension to bind the fields for
-     * @param showFields  Names of the fields to bind
-     *
-     * @return the set of DimensionFields for the names
-     * @throws BadApiRequestException if any of the names are not dimension fields on the dimension
-     */
-    private LinkedHashSet<DimensionField> bindDimensionFields(Dimension dimension, List<String> showFields)
-            throws BadApiRequestException {
-        Map<String, DimensionField> dimensionNameToFieldMap = dimension.getDimensionFields().stream()
-                .collect(StreamUtils.toLinkedDictionary(DimensionField::getName));
-
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>();
-        Set<String> invalidDimensionFields = new LinkedHashSet<>();
-        for (String field : showFields) {
-            if (dimensionNameToFieldMap.containsKey(field)) {
-                dimensionFields.add(dimensionNameToFieldMap.get(field));
-            } else {
-                invalidDimensionFields.add(field);
-            }
-        }
-
-        if (!invalidDimensionFields.isEmpty()) {
-            LOG.debug(DIMENSION_FIELDS_UNDEFINED.logFormat(invalidDimensionFields, dimension.getApiName()));
-            throw new BadApiRequestException(DIMENSION_FIELDS_UNDEFINED.format(
-                    invalidDimensionFields,
-                    dimension.getApiName()
-            ));
-        }
-        return dimensionFields;
+        return DimensionFieldGenerator.DEFAULT_DIMENSION_FIELD_GENERATOR
+                .generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
     }
 
     /**
@@ -1346,6 +1265,8 @@ public class DataApiRequestImpl implements DataApiRequest {
      *
      * @throws BadApiRequestException if a the request violates aggregatability constraints of dimensions.
      */
+    // TODO this validate phase depends on two different generators: dimensions and api filters. Once arbitrary
+    // hooks on pojo dari building lifecycles are implemented this should be moved to an external generator.
     protected void validateAggregatability(
             Set<Dimension> apiDimensions, Map<Dimension, Set<ApiFilter>> apiFilters
     ) throws BadApiRequestException {
@@ -1420,6 +1341,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return A predicate that determines a given dimension is non aggregatable and also not constrained to one row
      * per result
      */
+    // TODO move this along with the validateAggregatability when possible
     protected static Predicate<ApiFilter> isNonAggregatableInFilter() {
         return apiFilter ->
                 !apiFilter.getDimensionField().equals(apiFilter.getDimension().getKey()) ||
@@ -1441,6 +1363,9 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return set of metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
+    // TODO this signature is for a very special case only used by a few downstream customers. When Generator APIs
+    // are standardized this should be moved into a generator. For now, this logic will NOT be copied into the generator
+    // classes
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary,
@@ -1577,15 +1502,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @return Sorting direction. If no direction provided then the default one will be DESC
      */
     protected SortDirection getSortDirection(List<String> columnWithDirection) {
-        try {
-            return columnWithDirection.size() == 2 ?
-                    SortDirection.valueOf(columnWithDirection.get(1).toUpperCase(Locale.ENGLISH)) :
-                    SortDirection.DESC;
-        } catch (IllegalArgumentException ignored) {
-            String sortDirectionName = columnWithDirection.get(1);
-            LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
-            throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
-        }
+        return SortGenerator.getSortDirection(columnWithDirection);
     }
 
     /**
@@ -1915,7 +1832,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      */
     @Deprecated
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.getInstance()::generateFilters;
+        return FilterGenerator.DEFAULT_FILTER_GENERATOR;
     }
 
     // CHECKSTYLE:OFF
@@ -2063,7 +1980,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     public Map<Dimension, Set<ApiFilter>> generateFilters(
             final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
     ) {
-        return filterGenerator.generate(filterQuery, table, dimensionDictionary);
+        return filterGenerator.generateFilters(filterQuery, table, dimensionDictionary);
     }
 
     @Override

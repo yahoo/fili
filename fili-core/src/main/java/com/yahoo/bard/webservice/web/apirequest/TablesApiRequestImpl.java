@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -325,7 +324,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * @return An implementation of FilterGenerator.
      */
     protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.getInstance()::generateFilters;
+        return FilterGenerator.DEFAULT_FILTER_GENERATOR;
     }
 
     /**

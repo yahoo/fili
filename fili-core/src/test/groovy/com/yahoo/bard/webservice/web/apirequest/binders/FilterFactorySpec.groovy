@@ -35,7 +35,7 @@ class FilterFactorySpec extends Specification {
 
     def "Build through proxy"() {
         given:
-        FilterFactory.FilterFactoryFunction factoryFunction = { FilterFactory.FilterComponents components ->
+        FilterFactory.FilterFactoryFunction factoryFunction = { FilterGenerationUtils.FilterComponents components ->
             new TestApiFilter(
                 components.dimension,
                 components.dimensionField,

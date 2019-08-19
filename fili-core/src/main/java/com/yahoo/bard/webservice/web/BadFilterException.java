@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web;
 /**
  * Bad filter exception is an exception encountered when the filter object cannot be built.
  */
-public class BadFilterException extends Exception {
+public class BadFilterException extends RuntimeException {
 
     /**
      * Constructor.

@@ -29,7 +29,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOpera
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,7 +53,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     private static final Logger LOG = LoggerFactory.getLogger(FilteredThetaSketchMetricsHelper.class);
     private static final String ALPHANUMERIC_REGEX = "[^a-zA-Z0-9]";
 
-    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
+    protected FilterGenerator filterGenerator = FilterGenerator.DEFAULT_FILTER_GENERATOR;
     protected DruidFilterBuilder filterBuilder;
 
     /**
@@ -430,7 +429,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         Map<String, Filter> filterHashMap = new HashMap<>();
 
         for (String aFilter : filterList) {
-            Map<Dimension, Set<ApiFilter>> metricFilter = filterGenerator.generate(
+            Map<Dimension, Set<ApiFilter>> metricFilter = filterGenerator.generateFilters(
                     aFilter,
                     table,
                     dimensionDictionary

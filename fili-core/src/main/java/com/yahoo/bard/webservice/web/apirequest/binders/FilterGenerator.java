@@ -15,6 +15,36 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 public interface FilterGenerator {
 
     /**
+     * Default implementation of this interface
+     */
+    FilterGenerator DEFAULT_FILTER_GENERATOR = new FilterBinders();
+
+    /**
+     * Generates api filter objects on the based on the filter query vallue in the request parameters.
+     *
+     * @param filterQuery  A String description of a filter model
+     * @param logicalTable  The logical table for the data request
+     * @param dimensionDictionary  DimensionDictionary
+     *
+     * @return Set of filter objects.
+     * @throws BadApiRequestException if the filter query string does not match required syntax, or the filter
+     * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
+     * off.
+     *
+     * @deprecated generateFilters was first added to the public API as just generate. The name was changed for clarity,
+     * and the new version should be used instead. This method is kept on the public api to keep the name change from
+     * breaking existing code. Please use the newer version.
+     */
+    @Deprecated
+    default ApiFilters generate(
+            String filterQuery,
+            LogicalTable logicalTable,
+            DimensionDictionary dimensionDictionary
+    ) {
+        return generateFilters(filterQuery, logicalTable, dimensionDictionary);
+    }
+
+    /**
      * Generates api filter objects on the based on the filter query vallue in the request parameters.
      *
      * @param filterQuery  A String description of a filter model
@@ -26,6 +56,20 @@ public interface FilterGenerator {
      * contains a 'startsWith' or 'contains' operation while the BardFeatureFlag.DATA_STARTS_WITH_CONTAINS_ENABLED is
      * off.
      */
-    ApiFilters generate(String filterQuery, LogicalTable logicalTable, DimensionDictionary dimensionDictionary)
-            throws BadApiRequestException;
+    ApiFilters generateFilters(String filterQuery, LogicalTable logicalTable, DimensionDictionary dimensionDictionary);
+
+    /**
+     * Validated bound api filter objects.
+     *
+     * @param filterQuery  A String description of a filter model
+     * @param apiFilters  Bound api filters
+     * @param logicalTable  The logical table for the data request
+     * @param dimensionDictionary  DimensionDictionary
+     */
+    void validateApiFilters(
+            String filterQuery,
+            ApiFilters apiFilters,
+            LogicalTable logicalTable,
+            DimensionDictionary dimensionDictionary
+    );
 }

@@ -18,7 +18,7 @@ import org.joda.time.DateTime
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class FilterBindersSpec extends Specification {
+class DefaultFilterGeneratorSpec extends Specification {
 
     DimensionDictionary dimStore
     Dimension dimension1
