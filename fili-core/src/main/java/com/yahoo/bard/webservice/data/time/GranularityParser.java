@@ -13,8 +13,6 @@ public interface GranularityParser {
 
     /**
      * Provides a default implementation for this interface.
-     *
-     * @return a default granularity parser
      */
     GranularityParser DEFAULT_PARSER = new StandardGranularityParser();
 

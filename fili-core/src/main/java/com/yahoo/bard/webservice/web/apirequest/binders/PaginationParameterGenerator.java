@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadPaginationException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -11,6 +12,7 @@ import java.util.Optional;
 /**
  * Generates a PaginationParameters object based on Strings representing the user requested pagination.
  */
+@Incubating
 public interface PaginationParameterGenerator {
 
     /**

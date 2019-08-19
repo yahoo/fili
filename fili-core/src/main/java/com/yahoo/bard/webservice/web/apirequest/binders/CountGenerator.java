@@ -2,8 +2,10 @@ package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
 
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
+@Incubating
 public interface CountGenerator {
     int generateCount(String count);
 

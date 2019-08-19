@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TA
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Generates an ordered set of logical metrics based on a String representing the metrics requested by the user.
  */
+@Incubating
 public interface LogicalMetricGenerator {
 
     /**

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest.binders;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
@@ -19,6 +20,7 @@ import java.util.List;
 /**
  * Generates intervals used by an ApiRequest implementation.
  */
+@Incubating
 public interface IntervalGenerator {
 
     /**

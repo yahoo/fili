@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
 
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
@@ -13,6 +14,7 @@ import java.util.Locale;
 /**
  * Generates a ResponseFormatType object given a String representation of the desired format.
  */
+@Incubating
 public interface ResponseFormatTypeGenerator {
 
     /**

@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadFilterException;
@@ -45,6 +46,7 @@ import javax.validation.constraints.NotNull;
 /**
  * This utility class captures default implementations for binding and validating API models for filtering requests.
  */
+@Incubating
 public class FilterBinders {
     private static final Logger LOG = LoggerFactory.getLogger(FilterBinders.class);
 

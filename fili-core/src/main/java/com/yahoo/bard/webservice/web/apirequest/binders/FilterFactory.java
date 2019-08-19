@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.FilterOperation;
 
@@ -17,6 +18,7 @@ import java.util.function.Predicate;
 /**
  * Filter factory provides a chain of responsibility for building ApiFilters.
  */
+@Incubating
 public class FilterFactory {
 
     private final FilterFactoryFunction defaultFilterFactory;

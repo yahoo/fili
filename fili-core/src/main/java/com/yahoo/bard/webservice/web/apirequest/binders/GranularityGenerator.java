@@ -5,15 +5,16 @@ package com.yahoo.bard.webservice.web.apirequest.binders;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.util.GranularityParseException;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
 import org.joda.time.DateTimeZone;
 
 /**
- * This interface is intended to be a temporary bridge while ApiRequest and subclass/interfaces are refactored. Note
- * that if you depend on this interface it will likely be removed in future major version increases.
+ * Generator to parse the granularity parameter from an ApiRequest. This interface will likely be removed in favor
+ * of just using {@link GranularityParser} directly.
  */
-@Deprecated
+@Incubating
 public interface GranularityGenerator {
 
     /**

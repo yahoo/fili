@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.ApiHaving;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 /**
  * A having generator decorator that uses the metrics from the query as the dictionary of metrics for building havings.
  */
+@Incubating
 public class PerRequestDictionaryHavingGenerator implements HavingGenerator {
 
     private final DefaultHavingApiGenerator havingGenerator;

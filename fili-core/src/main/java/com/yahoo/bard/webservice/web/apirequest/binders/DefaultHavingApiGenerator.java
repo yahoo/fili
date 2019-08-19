@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.BadHavingException;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 /**
  * Generates having objects based on the having query in the api request.
  */
+@Incubating
 public class DefaultHavingApiGenerator implements HavingGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHavingApiGenerator.class);
     private static final Pattern COMMA_AFTER_BRACKET_PATTERN = Pattern.compile("(?<=]),");

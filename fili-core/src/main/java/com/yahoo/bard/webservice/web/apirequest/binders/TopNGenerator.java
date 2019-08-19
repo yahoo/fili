@@ -4,10 +4,12 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
 import java.util.LinkedHashSet;
 
+@Incubating
 public interface TopNGenerator {
     int generateTopN(String topN);
 

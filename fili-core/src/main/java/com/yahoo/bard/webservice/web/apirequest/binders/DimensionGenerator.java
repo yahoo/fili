@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.util.Incubating;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javax.ws.rs.core.PathSegment;
 /**
  * Generator that creates a set of dimensions based on path segments.
  */
+@Incubating
 public interface DimensionGenerator {
 
     /**
