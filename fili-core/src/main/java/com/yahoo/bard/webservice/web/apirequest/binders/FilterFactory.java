@@ -19,8 +19,9 @@ import java.util.function.Predicate;
 /**
  * Filter factory provides a chain of responsibility for building ApiFilters.
  */
-//TODO This class feels overly complicated. Do we really need a chain of responsibility for building ApiFilters? I
+// TODO This class feels overly complicated. Do we really need a chain of responsibility for building ApiFilters? I
 // think an interface for producing an ApiFilter with a default implementation is sufficient.
+// TODO probably extract an interface from this
 @Incubating
 public class FilterFactory {
 
@@ -61,7 +62,8 @@ public class FilterFactory {
      * @param defaultFilterFactory  Default factory method for building ApiFilters.
      */
     protected FilterFactory(
-            List<Map.Entry<Predicate<FilterGenerationUtils.FilterComponents>, FilterFactoryFunction>> filterFactoryProviders,
+            List<Map.Entry<Predicate<FilterGenerationUtils.FilterComponents>, FilterFactoryFunction>>
+                    filterFactoryProviders,
             FilterFactoryFunction defaultFilterFactory
     ) {
         this.filterFactoryProviders = filterFactoryProviders;
@@ -76,7 +78,7 @@ public class FilterFactory {
      * @param operation  Operation for ApiFilter.
      * @param values  Values for ApiFilters.
      *
-     * @return  A newly constructed ApiFilter
+     * @return A newly constructed ApiFilter
      */
     public ApiFilter buildFilter(
             Dimension dimension,

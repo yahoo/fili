@@ -44,7 +44,7 @@ public final class ApiFilterGenerator {
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
         FilterGenerationUtils.FilterComponents components
-                = FilterGenerationUtils.generateFilterComponents(filterQuery, dimensionDictionary);
+                = FilterGenerationUtils.buildFilterComponents(filterQuery, dimensionDictionary);
         return FilterGenerationUtils.DEFAULT_FILTER_FACTORY.buildFilter(
                 components.dimension,
                 components.dimensionField,

@@ -108,7 +108,7 @@ public class FilterBinders implements FilterGenerator {
                 ApiFilter newFilter;
                 try {
                     FilterGenerationUtils.FilterComponents filterComponents
-                            = FilterGenerationUtils.generateFilterComponents(apiFilter, dimensionDictionary);
+                            = FilterGenerationUtils.buildFilterComponents(apiFilter, dimensionDictionary);
                     newFilter = FilterGenerationUtils.DEFAULT_FILTER_FACTORY.buildFilter(
                             filterComponents.dimension,
                             filterComponents.dimensionField,

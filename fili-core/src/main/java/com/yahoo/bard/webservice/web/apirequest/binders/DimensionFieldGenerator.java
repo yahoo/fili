@@ -1,3 +1,5 @@
+// Copyright 2019 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -5,7 +7,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.Incubating;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -13,6 +14,9 @@ import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
 
+/**
+ * Generates the a mapping of dimension to dimension field based on the queried dimension and relevant fields.
+ */
 @Incubating
 public interface DimensionFieldGenerator {
     // Binders and Validators complete
@@ -47,8 +51,6 @@ public interface DimensionFieldGenerator {
      * @param logicalTable  The logical table for this query
      * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
      *
-     * @throws BadApiRequestException if invalid
-     *
      * @incubating PathSegment should be REMOVED from this interface as soon as possible. PathSegment ties this class
      * to the web request input format. Generator classes should be ambivalent about the request ingestion
      * implementation.
@@ -63,7 +65,7 @@ public interface DimensionFieldGenerator {
     );
 
     /**
-     * Default implementation
+     * Default implementation.
      */
     DimensionFieldGenerator DEFAULT_DIMENSION_FIELD_GENERATOR = new DefaultDimensionFieldGenerator();
 }

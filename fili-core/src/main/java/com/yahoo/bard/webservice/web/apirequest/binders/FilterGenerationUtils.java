@@ -1,3 +1,5 @@
+// Copyright 2019 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
@@ -15,6 +17,7 @@ import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,9 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * Util class for building {@link ApiFilter} and {@link ApiFilters} objects.
+ */
 @Incubating
 public final class FilterGenerationUtils {
     private static final Logger LOG = LoggerFactory.getLogger(FilterGenerationUtils.class);
@@ -126,7 +132,15 @@ public final class FilterGenerationUtils {
         return filterDefinition;
     }
 
-    public static FilterComponents generateFilterComponents(
+    /**
+     * Builds a {@link FilterComponents} object, which is a data object that groups all necessary data for constructing
+     * and {@link ApiFilter}.
+     *
+     * @param filterQuery  The string representation of an {@link ApiFilter}.
+     * @param dimensionDictionary  The dimension dictionary.
+     * @return a FilterComponents built from parsing the filter query.
+     */
+    public static FilterComponents buildFilterComponents(
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
     ) {
@@ -195,7 +209,7 @@ public final class FilterGenerationUtils {
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
     ) {
-        FilterComponents components = FilterGenerationUtils.generateFilterComponents(filterQuery, dimensionDictionary);
+        FilterComponents components = FilterGenerationUtils.buildFilterComponents(filterQuery, dimensionDictionary);
         return FilterGenerationUtils.DEFAULT_FILTER_FACTORY.buildFilter(
                 components.dimension,
                 components.dimensionField,

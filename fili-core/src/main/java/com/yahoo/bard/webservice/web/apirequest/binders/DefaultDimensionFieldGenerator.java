@@ -1,3 +1,5 @@
+// Copyright 2019 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.binders;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
@@ -27,6 +29,9 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
 
+/**
+ * Default implementation of {@link DimensionFieldGenerator}.
+ */
 @Incubating
 public class DefaultDimensionFieldGenerator implements DimensionFieldGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDimensionFieldGenerator.class);
@@ -53,6 +58,7 @@ public class DefaultDimensionFieldGenerator implements DimensionFieldGenerator {
      *
      * @return A map of dimension to requested dimension fields
      */
+    // TODO all references to PathSegment should eventually be removed and replaced with Strings.
     @Override
     public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
             @NotNull List<PathSegment> apiDimensionPathSegments,
