@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * The response when serialized is in the following format:
  * <pre>
- * {@code{
+ * {@code {
  *   "rows" : [
  *     {
  *       "dateTime" : "YYYY-MM-dd HH:mm:ss.SSS",

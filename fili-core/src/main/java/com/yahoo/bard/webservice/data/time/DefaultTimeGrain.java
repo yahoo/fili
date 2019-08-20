@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.time;
 
+import static org.joda.time.DateTime.Property;
+
 import com.yahoo.bard.webservice.util.DateTimeUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -31,7 +33,7 @@ import javax.validation.constraints.NotNull;
  * blocks corresponding to standard rounding rules.
  * These time grains are all based on single field implementations of Joda's {@link ReadablePeriod}. Satisfiability is
  * determined by configuring an explicit tree together via the satisfying grains property. Rounding functions support
- * alignment testing, and are provided by joda's {@link DateTime.Property} class.
+ * alignment testing, and are provided by joda's {@link Property} class.
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum DefaultTimeGrain implements ZonelessTimeGrain {
@@ -71,7 +73,7 @@ public enum DefaultTimeGrain implements ZonelessTimeGrain {
      */
     DefaultTimeGrain(
             ReadablePeriod period,
-            Function<DateTime, DateTime.Property> propertyFunction,
+            Function<DateTime, Property> propertyFunction,
             String alignmentDescription,
             TimeGrain... satisfyingGrains
     ) {

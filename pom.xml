@@ -136,7 +136,7 @@
         <checkstyle.resourceIncludes>**/*.properties*</checkstyle.resourceIncludes>
 
         <dependency.locations.enabled>false</dependency.locations.enabled>
-        <maven-javadoc-plugin-version>3.1.0</maven-javadoc-plugin-version>
+        <maven-javadoc-plugin-version>3.1.1</maven-javadoc-plugin-version>
         <maven-jar-plugin-version>3.1.1</maven-jar-plugin-version>
         <maven-war-plugin-version>3.2.2</maven-war-plugin-version>
         <maven-compiler-plugin-version>3.8.0</maven-compiler-plugin-version>
@@ -217,7 +217,7 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.8.1</version>
+                <version>1.8.2</version>
             </dependency>
 
             <!-- All things Spring -->
@@ -734,6 +734,7 @@
                     <artifactId>maven-pmd-plugin</artifactId>
                     <version>${maven-pmd-plugin-version}</version>
                     <configuration>
+                        <linkXRef>false</linkXRef>
                         <targetJdk>${maven.compiler.target}</targetJdk>
                         <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                     </configuration>
@@ -816,6 +817,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <version>4.2.0</version>
             </plugin>
 
             <!-- Mandatory plugins for using Spock -->
@@ -923,6 +931,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                            <reports>
+                            <report>team</report>
+                            <report>mailing-lists</report>
+                            <report>ci-management</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>

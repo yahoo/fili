@@ -279,6 +279,10 @@ Current
 
 ### Fixed:
 
+- [Fix maven build errors and warnings](https://github.com/yahoo/fili/issues/956)
+    * Addressed build errors by disabling a report that was broken under avro 1.8
+    * Fixed some bad imports and javadocs
+
 - [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
     * Problem: Previously, if an unexpected behaviour happens in the Class build time in 
     fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build, 
