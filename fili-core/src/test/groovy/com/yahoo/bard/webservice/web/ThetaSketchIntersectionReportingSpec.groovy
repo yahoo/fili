@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.web.apirequest.binders.LogicalMetricGenerator
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
@@ -226,7 +227,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        LogicalMetricGenerator.DEFAULT_LOGICAL_METRIC_GENERATOR.validateMetrics(logicalMetrics, resources.table)
 
         then:
         String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
@@ -244,7 +245,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        LogicalMetricGenerator.DEFAULT_LOGICAL_METRIC_GENERATOR.validateMetrics(logicalMetrics, resources.table)
 
         then:
         noExceptionThrown()
