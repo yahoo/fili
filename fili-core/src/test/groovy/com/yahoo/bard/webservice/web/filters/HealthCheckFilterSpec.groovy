@@ -14,6 +14,7 @@ import com.codahale.metrics.health.HealthCheckRegistry
 
 import org.joda.time.format.ISODateTimeFormat
 
+import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Timeout
 
@@ -24,6 +25,7 @@ import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.Response.Status
 import javax.ws.rs.core.SecurityContext
 
+@Retry
 @Timeout(30)    // Fail test if hangs
 class HealthCheckFilterSpec extends Specification {
 
