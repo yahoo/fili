@@ -1,0 +1,9 @@
+--langdef=lua
+--langmap=lua:.lua
+--regex-lua=/^ *function +M\.([a-zA-Z0-9_]+)/\1/f,function/
+--regex-lua=/^ *local +function +([a-zA-Z0-9_]+)/\1/f,function/
+--regex-lua=/^ *function +([a-zA-Z0-9_]+)/\1/f,function/
+--regex-lua=/^ *local +([a-zA-Z0-9_]+) *= *function/\1/f,function/
+--regex-lua=/^ *M\.([a-zA-Z0-9_]+) *=/\1/v,variable/
+--regex-lua=/^ *local +([a-zA-Z0-9_]+)/\1/v,variable/
+--regex-lua=/^ *([a-zA-Z0-9_]+) *=/\1/v,variable/

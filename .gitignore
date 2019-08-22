@@ -14,6 +14,13 @@
 # Build artifacts get put in these folder. Never include build artifacts
 target
 out
+luthier/src/test/resources/snapshots
+
+# For all file that we don't want to keep a version control, we 
+# ignore them. If any *Config.json contains important information,
+# we do not add it to this list. 
+# example: luthier/src/test/resources/example.json
+luthier/tmp
 
 # Ignore generated jars
 *-system-config-*.jar

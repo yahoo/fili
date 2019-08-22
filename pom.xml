@@ -21,6 +21,7 @@
         <module>fili-wikipedia-example</module>
         <module>fili-generic-example</module>
         <module>fili-sql</module>
+        <module>luthier</module>
     </modules>
 
     <organization>
@@ -645,6 +646,16 @@
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>${version.gmavenplus.plugin}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>addSources</goal>
+                                <goal>addTestSources</goal>
+                                <goal>compile</goal>
+                                <goal>compileTests</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1035,6 +1046,12 @@
                 <sonar.java.pmd.reportPaths>target/pmd.xml</sonar.java.pmd.reportPaths>
                 <sonar.java.cpd.reportPaths>target/cpd.xml</sonar.java.cpd.reportPaths>
                 <sonar.java.checkstyle.reportPaths>target/checkstyle-result.xml</sonar.java.checkstyle.reportPaths>
+                <sonar.coverage.exclusions>
+                    **/*Main.java,
+                    **/*Params.java
+                </sonar.coverage.exclusions>
+                <sonar.java.libraries>/jenkins/jenkins-user-home/.m2/repository/org/projectlombok/lombok/1.16.20/lombok-1.16.20.jar</sonar.java.libraries>
+
             </properties>
             <build>
                 <pluginManagement>

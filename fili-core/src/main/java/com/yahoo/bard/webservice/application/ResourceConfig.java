@@ -52,6 +52,7 @@ public class ResourceConfig extends org.glassfish.jersey.server.ResourceConfig {
 
         // Call post-registration hook to allow for additional registration
         binderFactory.afterRegistration(this);
+
     }
 
     /**
