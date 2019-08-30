@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 
 import spock.lang.Specification
@@ -11,14 +11,14 @@ import spock.lang.Unroll
 class ApiHavingSpec extends Specification {
 
     MetricDictionary metricStore
-    LogicalMetric metric1
-    LogicalMetric metric2
-    LogicalMetric metric3
+    LogicalMetricImpl metric1
+    LogicalMetricImpl metric2
+    LogicalMetricImpl metric3
 
     def setup() {
-        metric1 = new LogicalMetric(null, null, "metric1")
-        metric2 = new LogicalMetric(null, null, "metric2")
-        metric3 = new LogicalMetric(null, null, "metric3")
+        metric1 = new LogicalMetricImpl(null, null, "metric1")
+        metric2 = new LogicalMetricImpl(null, null, "metric2")
+        metric3 = new LogicalMetricImpl(null, null, "metric3")
 
         metricStore = new MetricDictionary()
         metricStore.add(metric1)

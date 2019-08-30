@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
@@ -79,7 +79,7 @@ class FilteredAggregationSpec extends Specification{
 
         ThetaSketchMaker sketchCountMaker = new ThetaSketchMaker(new MetricDictionary(), 16384)
         MetricInstance fooNoBarSketchPm = new MetricInstance(filtered_metric_name,sketchCountMaker,"FOO_NO_BAR_SKETCH")
-        LogicalMetric fooNoBarSketch = fooNoBarSketchPm.make()
+        LogicalMetricImpl fooNoBarSketch = fooNoBarSketchPm.make()
         metricDictionary.put(filtered_metric_name, fooNoBarSketch)
 
         metricAgg = fooNoBarSketch.getTemplateDruidQuery().getAggregations().first()

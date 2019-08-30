@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.aggregation.CardinalityAggregation
 
@@ -35,7 +35,7 @@ class CardinalityMakerSpec extends Specification {
                 dimensionDictionary,
                 true
         )
-        LogicalMetric actualMetric = cardinalityMaker.make("metricName", dimensionApiName)
+        LogicalMetricImpl actualMetric = cardinalityMaker.make("metricName", dimensionApiName)
         CardinalityAggregation actual = (CardinalityAggregation) actualMetric.getTemplateDruidQuery().getMetricField("metricName")
 
         expect:
@@ -54,7 +54,7 @@ class CardinalityMakerSpec extends Specification {
                 true
         )
         MetricInstance metricInstance = new MetricInstance("metricName", cardinalityMaker, dimensionApiName)
-        LogicalMetric actualMetric = metricInstance.make()
+        LogicalMetricImpl actualMetric = metricInstance.make()
         CardinalityAggregation actual = (CardinalityAggregation) actualMetric.getTemplateDruidQuery().getMetricField("metricName")
 
         expect:

@@ -4,9 +4,11 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Build a Filtered Aggregation logical metric.
@@ -63,14 +66,15 @@ public class FilteredAggregationMaker extends MetricMaker {
                 filter
         );
 
-        return new LogicalMetric(
+        return new LogicalMetricImpl(
                 new TemplateDruidQuery(
                         ImmutableSet.of(filteredAggregation),
                         Collections.emptySet(),
                         sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null)
                 ),
                 sourceMetric.getCalculation(),
-                logicalMetricInfo
+                logicalMetricInfo,
+                (Predicate<Granularity>) sourceMetric::isValidFor
         );
     }
 

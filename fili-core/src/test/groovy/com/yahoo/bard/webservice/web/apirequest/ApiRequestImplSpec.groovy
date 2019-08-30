@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.table.LogicalTable
@@ -57,8 +57,8 @@ class ApiRequestImplSpec extends Specification {
 
     def "generateLogicalMetrics() returns existing LogicalMetrics"() {
         given: "two LogicalMetrics in MetricDictionary"
-        LogicalMetric logicalMetric1 = Mock(LogicalMetric)
-        LogicalMetric logicalMetric2 = Mock(LogicalMetric)
+        LogicalMetricImpl logicalMetric1 = Mock(LogicalMetricImpl)
+        LogicalMetricImpl logicalMetric2 = Mock(LogicalMetricImpl)
         MetricDictionary metricDictionary = Mock(MetricDictionary)
         metricDictionary.get("logicalMetric1") >> logicalMetric1
         metricDictionary.get("logicalMetric2") >> logicalMetric2
@@ -70,7 +70,7 @@ class ApiRequestImplSpec extends Specification {
 
     def "generateLogicalMetrics() throws BadApiRequestException on non-existing LogicalMetric"() {
         given: "a MetricDictionary"
-        LogicalMetric logicalMetric = Mock(LogicalMetric)
+        LogicalMetricImpl logicalMetric = Mock(LogicalMetricImpl)
         MetricDictionary metricDictionary = Mock(MetricDictionary)
         metricDictionary.get("logicalMetric") >> logicalMetric
 

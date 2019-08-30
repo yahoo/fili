@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -36,23 +36,21 @@ class ThetaSketchSetOperationMakerSpec extends Specification {
                 new ThetaSketchSetOperationPostAggregation(METRIC_NAME, SET_FUNCTION, [accessYahoos, accessNonYahoos])
         )
 
-        LogicalMetric firstMetric = new LogicalMetric(
+        LogicalMetricImpl firstMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery([allYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
-                "all_yahoos",
-                "All users from Yahoo"
+                new LogicalMetricInfo("all_yahoos", "All users from Yahoo")
         )
-        LogicalMetric secondMetric = new LogicalMetric(
+        LogicalMetricImpl secondMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery([allNonYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
-                "all_nonyahoos",
-                "All users not from Yahoo"
+                new LogicalMetricInfo("all_nonyahoos", "All users not from Yahoo")
         )
-        List<LogicalMetric> allUsers = [firstMetric, secondMetric]
+        List<LogicalMetricImpl> allUsers = [firstMetric, secondMetric]
 
         and: "the expected LogicalMetric"
         TemplateDruidQuery expectedQuery = new TemplateDruidQuery([allYahoos, allNonYahoos] as Set, [userNumber] as Set)
-        LogicalMetric metric = new LogicalMetric(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME)
+        LogicalMetricImpl metric = new LogicalMetricImpl(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME)
 
         and: "the maker with populated metrics."
         MetricMaker maker = new ThetaSketchSetOperationMaker(new MetricDictionary(), SET_FUNCTION)

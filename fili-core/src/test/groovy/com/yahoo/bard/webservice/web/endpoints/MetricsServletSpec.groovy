@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.endpoints
 import static com.yahoo.bard.webservice.util.JsonSortStrategy.SORT_BOTH
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -31,10 +31,10 @@ class MetricsServletSpec extends Specification {
         ["metricA", "metricB", "metricC"].each { String metricName ->
             jerseyTestBinder.configurationLoader.metricDictionary.put(
                     metricName,
-                    new LogicalMetric(
+                    new LogicalMetricImpl(
                             null,
                             mapper,
-                            new LogicalMetricInfo(metricName, metricName, DEFAULT_CATEGORY, metricName, metricName)
+                            new LogicalMetricInfo(metricName)
                     )
             )
         }
@@ -51,9 +51,9 @@ class MetricsServletSpec extends Specification {
         String expectedResponse = """{
                                         "rows":
                                         [
-                                            {"category": "General", "name":"metricA", "longName": "metricA", "type": "metricA", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricA"},
-                                            {"category": "General", "name":"metricB", "longName": "metricB", "type": "metricB", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricB"},
-                                            {"category": "General", "name":"metricC", "longName": "metricC", "type": "metricC", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricC"}
+                                            {"category": "General", "name":"metricA", "longName": "metricA", "type": "number", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricA"},
+                                            {"category": "General", "name":"metricB", "longName": "metricB", "type": "number", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricB"},
+                                            {"category": "General", "name":"metricC", "longName": "metricC", "type": "number", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/metrics/metricC"}
                                         ]
                                     }"""
 

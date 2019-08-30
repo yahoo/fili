@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -102,7 +102,7 @@ abstract class ResponseWriterSpec extends Specification {
     ]
 
     Set<Column> columns
-    Set<LogicalMetric> testLogicalMetrics
+    Set<LogicalMetricImpl> testLogicalMetrics
     ResponseData response
     CsvResponseWriter csvResponseWriter
     JsonResponseWriter jsonResponseWriter
@@ -199,7 +199,7 @@ abstract class ResponseWriterSpec extends Specification {
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
-            new LogicalMetric(null, null, it.name)
+            new LogicalMetricImpl(null, null, it.name)
         } as Set
 
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }

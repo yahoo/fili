@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.table
 
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
@@ -16,10 +16,10 @@ class LogicalTableSchemaSpec extends Specification {
         String metricNameGood = "nameGood"
         String metricNameBad = "nameBad"
 
-        LogicalMetric logicalMetricGood = Mock(LogicalMetric) {
+        LogicalMetricImpl logicalMetricGood = Mock(LogicalMetricImpl) {
             getName() >> metricNameGood
         }
-        LogicalMetric logicalMetricBad = Mock(LogicalMetric) {
+        LogicalMetricImpl logicalMetricBad = Mock(LogicalMetricImpl) {
             getName() >> metricNameBad
         }
 

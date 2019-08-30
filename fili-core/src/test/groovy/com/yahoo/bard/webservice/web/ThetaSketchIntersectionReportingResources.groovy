@@ -23,8 +23,9 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -154,8 +155,14 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         metricDict.add(unregFoos.make())
         metricDict.add(viz.make())
 
-        LogicalMetric foosMetric = metricDict.get("foos")
-        LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
+        LogicalMetricImpl foosMetric = metricDict.get("foos")
+        LogicalMetricInfo lmi = new LogicalMetricInfo(
+                "ratioMetric",
+                "ratioMetric Long Name",
+                "Dummy metric Ratio Metric description",
+                "Ratios"
+        )
+        LogicalMetricImpl ratioMetric = new LogicalMetricImpl(foosMetric.templateDruidQuery, foosMetric.calculation, lmi)
         metricDict.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);

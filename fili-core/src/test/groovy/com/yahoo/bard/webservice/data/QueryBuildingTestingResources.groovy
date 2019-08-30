@@ -32,7 +32,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -73,7 +73,7 @@ class QueryBuildingTestingResources {
     public Dimension d14, d15
 
     // Logical metrics, numbered for identification
-    public LogicalMetric m1, m2, m3, m4, m5, m6
+    public LogicalMetricImpl m1, m2, m3, m4, m5, m6
 
     // Some intervals
     public Interval interval1, interval2, interval3
@@ -241,12 +241,12 @@ class QueryBuildingTestingResources {
         dimensionDictionary.add(d14)
         dimensionDictionary.add(d15)
 
-        m1 = new LogicalMetric(null, null, "metric1")
-        m2 = new LogicalMetric(null, null, "metric2")
-        m3 = new LogicalMetric(null, null, "metric3")
-        m4 = new LogicalMetric(null, null, "metric4")
-        m5 = new LogicalMetric(null, null, "metric5")
-        m6 = new LogicalMetric(null, null, "metric6")
+        m1 = new LogicalMetricImpl(null, null, "metric1")
+        m2 = new LogicalMetricImpl(null, null, "metric2")
+        m3 = new LogicalMetricImpl(null, null, "metric3")
+        m4 = new LogicalMetricImpl(null, null, "metric4")
+        m5 = new LogicalMetricImpl(null, null, "metric5")
+        m6 = new LogicalMetricImpl(null, null, "metric6")
 
         metricDictionary = new MetricDictionary()
         [m1, m2, m3, m4, m5, m6].each {
@@ -432,7 +432,7 @@ class QueryBuildingTestingResources {
         if (item instanceof Dimension)
             return new DimensionColumn(item)
 
-        if (item instanceof LogicalMetric)
+        if (item instanceof LogicalMetricImpl)
             return new MetricColumn(item.getName())
     }
 }

@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
@@ -75,7 +75,7 @@ class DataApiRequestIntervalsSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()

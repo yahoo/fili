@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
@@ -40,7 +40,7 @@ class ResponseDataSpec extends Specification {
     static final int PER_PAGE = 2
 
     Set<Column> columns
-    Set<LogicalMetric> testLogicalMetrics
+    Set<LogicalMetricImpl> testLogicalMetrics
     ResponseData response
     DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
     DataApiRequest apiRequest = Mock(DataApiRequest)
@@ -78,7 +78,7 @@ class ResponseDataSpec extends Specification {
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
-            new LogicalMetric(null, null, it.name)
+            new LogicalMetricImpl(null, null, it.name)
         } as Set
 
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }

@@ -3,9 +3,11 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
@@ -52,7 +54,7 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         String metricName = logicalMetricInfo.getName();
         Aggregation aggregation = aggregationFactory.apply(metricName, dependentMetrics.get(0));
-        return new LogicalMetric(
+        return new LogicalMetricImpl(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 getResultSetMapper(metricName),
                 logicalMetricInfo
@@ -72,6 +74,6 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
      * @return The result set mapper bound to a metric being produced by this maker.
      */
     protected ResultSetMapper getResultSetMapper(String metricName) {
-        return NO_OP_MAPPER;
+        return NoOpResultSetMapper.INSTANCE;
     }
 }

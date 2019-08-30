@@ -5,14 +5,19 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class ThetaSketchMakerSpec extends Specification {
 
@@ -24,7 +29,7 @@ class ThetaSketchMakerSpec extends Specification {
         String dependentMetricName = TestDruidMetricName.USERS.asName()
 
         and: "An aggregation"
-         Aggregation aggregation = new ThetaSketchAggregation(metricName, dependentMetricName, SKETCH_SIZE)
+        Aggregation aggregation = new ThetaSketchAggregation(metricName, dependentMetricName, SKETCH_SIZE)
 
         expect:
         aggregation.getType() == "thetaSketch"
@@ -37,7 +42,7 @@ class ThetaSketchMakerSpec extends Specification {
 
         and: "The logical metric the maker is expected to build"
         Set aggregations = [new ThetaSketchAggregation(metricName, dependentMetricName, SKETCH_SIZE)] as Set
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetricImpl expectedMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery(aggregations, [] as Set),
                 new SketchRoundUpMapper(metricName),
                 metricName
@@ -48,5 +53,20 @@ class ThetaSketchMakerSpec extends Specification {
 
         expect:
         maker.make(new LogicalMetricInfo(metricName), [dependentMetricName]) == expectedMetric
+    }
+
+    def "ThetaSketchMaker is valid is true for every standard grain including all"() {
+        setup:
+        MetricMaker maker = new ThetaSketchMaker(new MetricDictionary(), SKETCH_SIZE)
+        LogicalMetric metric = maker.make(TestApiMetricName.A_OTHER_USERS.asName(), TestDruidMetricName.USERS.asName())
+
+
+        List<Granularity> grains = new ArrayList<>()
+        grains.addAll(Arrays.asList(DefaultTimeGrain.values()))
+        grains.add(AllGranularity.INSTANCE)
+
+        expect:
+        metric.validGrains != null
+        grains.stream().allMatch() {metric.isValidFor(it)}
     }
 }

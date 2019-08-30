@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.druid.model.builders
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.druid.model.having.Having
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.ApiHaving
@@ -121,13 +121,13 @@ public class DefaultDruidHavingBuilderSpec extends Specification {
     def "Test build multi-metric havings"() {
 
         setup:
-        Map<LogicalMetric, Set<String>> havingStrings = [
+        Map<LogicalMetricImpl, Set<String>> havingStrings = [
                 (resources.m1): ["metric1-lt[10]", "metric1-gt[2]"] as Set,
                 (resources.m2): ["metric2-eq[14.7,8]"] as Set,
                 (resources.m3): ["metric3-neq[14.7,8,37]"] as Set,
         ]
 
-        Map<LogicalMetric, Set<ApiHaving>> metricMap = [:]
+        Map<LogicalMetricImpl, Set<ApiHaving>> metricMap = [:]
 
         havingStrings.each {
             metricMap[it.key] = [] as Set<ApiHaving>

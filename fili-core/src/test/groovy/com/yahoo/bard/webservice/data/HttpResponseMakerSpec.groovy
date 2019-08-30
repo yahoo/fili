@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
@@ -84,9 +84,9 @@ class HttpResponseMakerSpec extends Specification {
         dimensionDictionary.findByApiName("dim1") >> dim1
 
         ResultSetMapper resultSetMapper = Mock(ResultSetMapper)
-        LogicalMetric logicalMetric = Mock(LogicalMetric)
+        LogicalMetricImpl logicalMetric = Mock(LogicalMetricImpl)
         logicalMetric.getCalculation() >> resultSetMapper
-        Set<LogicalMetric> metricSet = [logicalMetric] as Set
+        Set<LogicalMetricImpl> metricSet = [logicalMetric] as Set
 
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
