@@ -943,7 +943,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     protected LinkedHashSet<OrderByColumn> bindSorts(
             Map<String, SortDirection> sortDirectionMap,
             Set<LogicalMetric> logicalMetrics,
-            MetricDictionary metricDictionary
+            Set<Dimension> dimensions,
+            MetricDictionary metricDictionary,
+            DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         return DefaultSortColumnGenerators.INSTANCE.generateSortColumns(
                 sortDirectionMap,
