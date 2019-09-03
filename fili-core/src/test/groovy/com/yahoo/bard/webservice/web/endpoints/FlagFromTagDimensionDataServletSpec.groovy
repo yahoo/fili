@@ -229,7 +229,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                         },
                         {
                           "type": "regex",
-                          "expr": "(.+,)*(TAG_VALUE)(,.+)*",
+                          "expr": "^(.+,)*(TAG_VALUE)(,.+)*\$",
                           "index": 2,
                           "replaceMissingValueWith": "",
                           "replaceMissingValue": true
