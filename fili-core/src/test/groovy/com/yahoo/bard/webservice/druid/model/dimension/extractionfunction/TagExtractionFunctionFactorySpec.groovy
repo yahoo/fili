@@ -19,7 +19,7 @@ class TagExtractionFunctionFactorySpec extends Specification {
             "extractionFns" : [
                 {
                     "type":"regex",
-                    "expr":"(.+,)*(11)(,.+)*",
+                    "expr":"^(.+,)*(11)(,.+)*\$",
                     "index":2,
                     "replaceMissingValue":true,
                     "replaceMissingValueWith":""
@@ -65,10 +65,13 @@ class TagExtractionFunctionFactorySpec extends Specification {
         Pattern.compile(patternString).matcher(value).matches() == expected
 
         where:
-        value      | expression | expected
-        "11,12,13" | "11"       | true
-        "11"       | "11"       | true
-        "10,11"    | "11"       | true
-        "111"      | "11"       | false
+        expression | value      || expected
+        "11"       | "11,12,13" || true
+        "11"       | "11"       || true
+        "11"       | "10,11"    || true
+        "11"       | "111"      || false
+        "1"        | "2,3,12"   || false
+        "1"        | "21,2,3"   || false
+
     }
 }
