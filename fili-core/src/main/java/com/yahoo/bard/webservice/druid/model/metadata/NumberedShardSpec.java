@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model.metadata;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Range;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -14,7 +15,9 @@ import io.druid.timeline.partition.PartitionChunk;
 import io.druid.timeline.partition.ShardSpec;
 import io.druid.timeline.partition.ShardSpecLookup;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * NumberedShardSpec class. Reflects the current shardspec type that is used in druid datasource metadata endpoints.
@@ -98,5 +101,14 @@ public class NumberedShardSpec implements ShardSpec {
      */
     public int getPartitions() {
         return partitions;
+    }
+
+    /**
+     * Get the possible range of each dimension for the rows this shard contains.
+     *
+     * @return map of dimensions to its possible range. Dimensions with unknown possible range are not mapped
+     */
+    public Map<String, Range<String>> getDomain() {
+        return Collections.emptyMap();
     }
 }

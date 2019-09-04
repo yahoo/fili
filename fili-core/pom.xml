@@ -11,7 +11,7 @@
 
     <artifactId>fili-core</artifactId>
     <packaging>jar</packaging>
-    
+
     <name>Fili: Core Libraries</name>
     <description>
         Fili web service library provides core capabilities for RESTful aggregation navigation, query planning and
@@ -229,6 +229,22 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>5.2.1</version>
+                <configuration>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.10</version>
@@ -261,18 +277,18 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <target>
-                                <delete 
+                                <delete
                                     quiet="true"
                                     file="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"/>
                                 <mkdir dir="${project.build.directory}/avro/avroFilesTesting"/>
-                                <java 
+                                <java
                                     jar="${project.build.directory}/avro-dependencies/jar/avro-tools.jar"
                                     fork="true">
                                     <arg value="fromjson"/>
                                     <arg value="--schema-file"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.avsc"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.json"/>
-                                    <redirector 
+                                    <redirector
                                         output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"
                                         binaryOutput="true"/>
                                 </java>
@@ -294,7 +310,7 @@
                         <goals>
                             <goal>add-test-resource</goal>
                         </goals>
-                        <configuration> 
+                        <configuration>
                             <resources>
                                 <resource>
                                     <directory>target/avro</directory>
@@ -312,18 +328,6 @@
                         <id>test-source</id>
                         <goals>
                             <goal>test-jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-test-javadocs</id>
-                        <goals>
-                            <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>

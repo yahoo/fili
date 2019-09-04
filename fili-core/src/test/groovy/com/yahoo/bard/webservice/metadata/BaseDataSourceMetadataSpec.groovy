@@ -222,7 +222,7 @@ abstract class BaseDataSourceMetadataSpec extends Specification {
      * @return a map of binary version name to its actual version
      */
     Map<String, Integer> generateBinaryVersions() {
-        return [binaryversion1: 9]
+        return [binaryVersion1: 9]
     }
 
     /**
