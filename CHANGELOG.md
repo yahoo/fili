@@ -12,6 +12,12 @@ Current
 
 ### Changed:
 
+- [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
+   * Split luthier into a library package and a sample application
+   * Nested all sample applications
+   * Resolved dependecy issues around where properties files were sourced
+   * Rationalized dependencies for sample applications
+   
 ### Removed:
 
 ### Deprecated:
