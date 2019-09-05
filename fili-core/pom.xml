@@ -236,6 +236,8 @@
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipDependencyManagement>false</skipDependencyManagement>
                 </configuration>
                 <executions>
                     <execution>
