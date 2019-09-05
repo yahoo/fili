@@ -19,7 +19,7 @@ gender in Fili may look like:
 
         Gender
 ---------------------
-|   ID  |   Name    |
+|   id  |   Name    |
 |   0   |   male    |
 |   1   |   female  |
 |   2   |   unknown |
@@ -29,7 +29,7 @@ Each tuple (0, Male), (1, Female) and (2, Unknown) is referred to as a
 dimension row.
 --]]
 --local CONFIG_DIR = require('config').CONFIG_DIR
-local dimensionUtils = require(LUTHIER_CONFIG_DIR .. 'utils/dimensionUtils')
+local dimensionUtils = require(LUTHIER_CONFIG_DIR .. 'utils.dimensionUtils')
 
 -------------------------------------------------------------------------------
 -- FieldSets
@@ -67,10 +67,9 @@ local pk = dimensionUtils.pk
 local field = dimensionUtils.field
 
 local FIELDSETS = {
-    default = { pk "ID", field "DESC" },
-    country = { pk "ID", field("DESC", "COUNTY", "STATE") },
-    page = { pk "ID", field "DESC" },
-    test = { pk "TEST_PK", field("TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3") }
+    default = { pk "id", field "desc" },
+    country = { pk "id", field("desc", "county", "state") },
+    page = { pk "id", field "desc" },
 }
 
 -------------------------------------------------------------------------------
@@ -102,7 +101,7 @@ local FIELDSETS = {
         countries that have the string "States" in their name.
     * keyValueStore - The fully qualified Java class name of the KeyValueStore
         to use. A KeyValueStore is a service that handles point look ups based
-        on dimension ID.
+        on dimension id.
 
     To aid in configuration, the dimensionUtils module provides two tables,
     searchProviders and keyValueStores that map a terse name to the class names
@@ -114,7 +113,7 @@ local FIELDSETS = {
         memory - Backed by an in-memory data structure.
             May be used for smallish (<10K values) dimensions.
         noop - Does not perform search. Useful for dimensions that only have
-            an ID field.
+            an id field.
 
     The built in key value stores are:
         redis - Backed by [Redis](https://redis.io/).
@@ -128,11 +127,14 @@ local M = {
     testDimension = {
         longName = "a longName for testing",
         description = "a description for testing",
-        fields = FIELDSETS.test,
+        fields = {
+            pk("id"),
+            field("testField1", "testField2", "testField3")
+        },
         category = "a category for testing",
         type = "KeyValueStoreDimension",
         isAggregatable = false,
-        defaultFields = { "TEST_PK", "TEST_FIELD_1" },
+        defaultFields = { "id", "testField1" },
         dimensionDomain = "testDomain",
         searchProvider = "lucene",
         keyValueStore = "memory"
@@ -170,7 +172,7 @@ local M = {
     user = {
         longName = "wiki user",
         description = "User is a person who generally use or own wiki services",
-        fields = { pk "ID", field("DESC", "AGE", "SEX") },
+        fields = { pk "id", field("desc", "age", "sex") },
         searchProvider = "memory",
         keyValueStore = "memory"
     },
@@ -345,7 +347,7 @@ local M = {
 }
 
 --- set every dimension to be available at start, i.e. skip loading.
-for dimensionName, dimension in pairs(M) do
+for _, dimension in pairs(M) do
     dimension.skipLoading = true
 end
 

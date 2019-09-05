@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 
 /**
  * A factory method to create a config entity using Json config and the LuthierIndustrialPark to resolve dependencies.
@@ -20,5 +20,5 @@ public interface Factory<T> {
      *
      * @return  A newly constructed config instance for the name and config provided
      */
-    T build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories);
+    T build(String name, LuthierConfigNode configTable, LuthierIndustrialPark resourceFactories);
 }

@@ -1,7 +1,7 @@
 -- Copyright 2019 Oath Inc.
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-local misc = require 'lib/misc'
+local misc = require 'lib.misc'
 --- a module provides util functions for metricMaker config.
 -- @module tableUtils
 

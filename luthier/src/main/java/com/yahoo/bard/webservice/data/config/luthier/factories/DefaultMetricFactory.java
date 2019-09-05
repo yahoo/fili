@@ -2,16 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
-import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +32,7 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
             + ENTITY_TYPE + " %s is not yet supported.";
 
     @Override
-    public LogicalMetric build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public LogicalMetric build(String name, LuthierConfigNode configTable, LuthierIndustrialPark resourceFactories) {
         LuthierValidationUtils.validateFields(
                 configTable,
                 ENTITY_TYPE,
@@ -60,7 +58,7 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
                 configTable.get(DEPENDENCY_METRIC_NAMES).spliterator(),
                 false
         )
-                .map(JsonNode::textValue)
+                .map(LuthierConfigNode::textValue)
                 .collect(Collectors.toList());
         try {
             return maker.make(metricInfo, dependencyMetricNames);

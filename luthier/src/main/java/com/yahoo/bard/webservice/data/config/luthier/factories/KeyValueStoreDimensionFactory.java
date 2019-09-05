@@ -2,8 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
-import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
 import com.yahoo.bard.webservice.data.config.luthier.dimension.LuthierDimensionField;
@@ -13,10 +13,8 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
 import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
-import com.yahoo.bard.webservice.util.EnumUtils;
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -24,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
 
 /**
  * A factory that is used by default to support KeyValueStore Dimensions.
@@ -38,7 +35,7 @@ import java.util.stream.Collectors;
  *  <li> {@code description} - Text. Long-winded description of the dimension for human consumption.
  *  <li> {@code keyValueStore} - Text. Name of the KeyValueStore instance used by this dimension.
  *  <li> {@code searchProvider} - Text. Name of the SearchProvider instance used by this dimension.
- *  <li> {@code fields} - List&lt;ObjectNode&gt;. DimensionField configuration for dimension's fields.
+ *  <li> {@code fields} - List&lt;LuthierConfigNode&gt;. DimensionField configuration for dimension's fields.
  *      Required Fields:
  *      <ol>
  *       <li> {@code name} - Text. Name of the field. Should be unique for this Dimension.
@@ -70,31 +67,32 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
     /**
      * Helper function to build both fields and defaultFields.
      *
-     * @param fieldsNode  the JsonNode object that points to the content of "fields" key
-     * @param defaultFieldsNode  the JsonNode object that contains the list of field names to be shown by default
+     * @param fieldsNode  the LuthierConfigNode object that points to the content of "fields" key
+     * @param defaultFieldsNode  the LuthierConfigNode object that contains the list of field names to be shown by
+     * default
      * @param dimensionName  the name of the dimension passed by the caller, needed for error messages
      * @param dimensionFields  an empty collection that will be populated with the dimension's fields
      * @param defaultDimensionFields an empty collection that will be populated by the dimension's default fields
      */
     private void fieldsBuilder(
-            JsonNode fieldsNode,
-            JsonNode defaultFieldsNode,
+            LuthierConfigNode fieldsNode,
+            LuthierConfigNode defaultFieldsNode,
             String dimensionName,
             LinkedHashSet<DimensionField> dimensionFields,
             LinkedHashSet<DimensionField> defaultDimensionFields
     ) {
         LinkedHashMap<String, DimensionField> fieldsMap = new LinkedHashMap<>();
         // build the fields map
-        for (JsonNode node : fieldsNode) {
+        for (LuthierConfigNode node : fieldsNode) {
             List<String> tags = new ArrayList<>();
-            for (JsonNode strNode : node.get("tags")) {
+            for (LuthierConfigNode strNode : node.get("tags")) {
                 tags.add(strNode.textValue());
             }
             String fieldName = node.get("name").textValue();
             fieldsMap.put(
                     fieldName,
                     new LuthierDimensionField(
-                            EnumUtils.camelCase(fieldName),
+                            fieldName,
                             fieldName,
                             tags
                     )
@@ -102,7 +100,7 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
         }
         dimensionFields.addAll(fieldsMap.values());
         // build the defaultFields map
-        for (JsonNode node: defaultFieldsNode) {
+        for (LuthierConfigNode node: defaultFieldsNode) {
             String defaultFieldName = node.textValue();
             if (fieldsMap.get(defaultFieldName) == null) {
                 String fieldNames = dimensionFields.stream()
@@ -119,13 +117,13 @@ public class KeyValueStoreDimensionFactory implements Factory<Dimension> {
      * Build a dimension instance.
      *
      * @param name  the config dictionary name (normally the apiName)
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param configTable  LuthierConfigNode that points to the value of corresponding table entry in config file
      * @param resourceFactories  the source for locating dependent objects
      *
      * @return  A newly constructed config instance for the name and config provided
      */
     @Override
-    public Dimension build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public Dimension build(String name, LuthierConfigNode configTable, LuthierIndustrialPark resourceFactories) {
         LuthierValidationUtils.validateFields(
                 configTable,
                 ENTITY_TYPE,

@@ -8,10 +8,10 @@ just know how many "pageViews" our website has had. We can also partition
 "pageViews" into the number of men who've seen our pages, the number of women,
 and the number of people whose gender is unknown.
 
-Although we typically conceive of dimensions as being flat values (i.e. the 
-"male", "female" and "unknown" values for gender), in Fili each dimension is 
+Although we typically conceive of dimensions as being flat values (i.e. the
+"male", "female" and "unknown" values for gender), in Fili each dimension is
 in fact a table. Each dimension has a set of fields, which provide additional
-information about the dimension. Each dimension value corresponds to a 
+information about the dimension. Each dimension value corresponds to a
 particular tuple in the dimension table.
 
 For example, the gender dimension may have the id, and name fields. So then
@@ -25,11 +25,10 @@ gender in Fili may look like:
 |   2   |   unknown |
 ---------------------
 
-Each tuple (0, Male), (1, Female) and (2, Unknown) is referred to as a 
+Each tuple (0, Male), (1, Female) and (2, Unknown) is referred to as a
 dimension row.
 --]]
---local CONFIG_DIR = require('config').CONFIG_DIR
-local dimensionUtils = require(LUTHIER_CONFIG_DIR .. 'utils/dimensionUtils')
+local dimensionUtils = require(LUTHIER_CONFIG_DIR .. 'utils.dimensionUtils')
 
 -------------------------------------------------------------------------------
 -- FieldSets
@@ -57,18 +56,14 @@ local dimensionUtils = require(LUTHIER_CONFIG_DIR .. 'utils/dimensionUtils')
                 a. name - The name of the field
                 b. tags - A singleton list containing the value "primaryKey"
         2. field - A function that takes a variable number of field names and
-                returns an equal number of fields. Each field is a table with
-                one key:
+        returns field for each name. Each field is a table with
+        one key:
                 a. name - The name passed in for that field
 --]]
 -------------------------------------------------------------------------------
 
 local pk = dimensionUtils.pk
 local field = dimensionUtils.field
-
-local FIELDSETS = {
-    default = { pk "ID", field "DESC" },
-}
 
 -------------------------------------------------------------------------------
 -- Dimensions
@@ -97,8 +92,7 @@ local FIELDSETS = {
         A SearchProvider is a service that searches for dimensions based
         on their dimension fields. For example, a SearchProvider can find all
         countries that have the string "States" in their name.
-    * keyValueStore - The fully qualified Java class name of the KeyValueStore
-        to use. A KeyValueStore is a service that handles point look ups based
+    * keyValueStore - A service that handles point look ups based
         on dimension ID.
 
     To aid in configuration, the dimensionUtils module provides two tables,
@@ -121,24 +115,23 @@ local FIELDSETS = {
 ]]
 -------------------------------------------------------------------------------
 
-local M = {
+return {
     testDimension = {
         longName = "a longName for testing",
         description = "a description for testing",
-        fields = FIELDSETS.default,
+        fields = {
+            pk("id"),
+            field("desc")
+        },
+        defaultFields = {
+            "desc"
+        },
         category = "a category for testing",
         type = "KeyValueStoreDimension",
         isAggregatable = true,
-        defaultFields = { "DESC" },
         dimensionDomain = "testDomain",
         searchProvider = "memory",
-        keyValueStore = "memory"
+        keyValueStore = "memory",
+        skipLoading = true
     }
 }
-
---- set every dimension to be available at start, i.e. skip loading.
-for dimensionName, dimension in pairs(M) do
-    dimension.skipLoading = true
-end
-
-return M
