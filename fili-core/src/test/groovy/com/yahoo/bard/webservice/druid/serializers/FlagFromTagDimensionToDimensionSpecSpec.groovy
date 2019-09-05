@@ -145,7 +145,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
               },
               {
                 "type": "regex",
-                "expr": "(.+,)*(TAG_VALUE)(,.+)*",
+                "expr": "^(.+,)*(TAG_VALUE)(,.+)*$",
                 "index": 2,
                 "replaceMissingValue": true,
                 "replaceMissingValueWith": ""
@@ -204,7 +204,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
               },
               {
                 "type": "regex",
-                "expr": "(.+,)*(TAG_VALUE)(,.+)*",
+                "expr": "^(.+,)*(TAG_VALUE)(,.+)*$",
                 "index": 2,
                 "replaceMissingValue": true,
                 "replaceMissingValueWith": ""

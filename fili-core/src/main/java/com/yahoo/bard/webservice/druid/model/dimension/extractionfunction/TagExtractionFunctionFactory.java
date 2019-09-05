@@ -30,7 +30,7 @@ public final class TagExtractionFunctionFactory {
     /**
      * This pattern describes a set of values, comma delimited, with the target value (matching pattern 2) in the list.
      */
-    public static final String DEFAULT_TAG_REG_EX_FORMAT = "(.+,)*(%s)(,.+)*";
+    public static final String DEFAULT_TAG_REG_EX_FORMAT = "^(.+,)*(%s)(,.+)*$";
 
     /**
      * Private constructor for utility class.
