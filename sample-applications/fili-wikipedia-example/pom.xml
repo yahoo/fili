@@ -7,6 +7,7 @@
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
         <version>0.12-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
     </parent>
 
     <artifactId>fili-wikipedia-example</artifactId>
@@ -26,64 +27,22 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-
-        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
-        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+        <checkstyle.config.location>../../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../../checkstyle-suppressions.xml</checkstyle.suppressions.location>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.yahoo.fili</groupId>
-            <artifactId>fili</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.yahoo.fili</groupId>
-            <artifactId>fili-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.yahoo.fili</groupId>
-            <artifactId>fili-core</artifactId>
-            <type>test-jar</type>
-        </dependency>
-
-        <!-- Servlet API -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
-        <!-- Jersey -->
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.glassfish.jersey.test-framework</groupId>
-            <artifactId>jersey-test-framework-core</artifactId>
+            <artifactId>sample-applications</artifactId>
+            <version>${version.fili}</version>
+            <type>pom</type>
         </dependency>
 
         <!-- Jersey Test 'grizzly' container -->
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-        </dependency>
-
-        <!-- Jetty Servlet Support -->
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
         </dependency>
     </dependencies>
 

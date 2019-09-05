@@ -18,10 +18,9 @@
         <module>fili-navi</module>
         <module>fili-security</module>
         <module>fili</module>
-        <module>fili-wikipedia-example</module>
-        <module>fili-generic-example</module>
         <module>fili-sql</module>
         <module>luthier</module>
+        <module>sample-applications</module>
     </modules>
 
     <organization>
@@ -171,6 +170,11 @@
             <dependency>
                 <groupId>com.yahoo.fili</groupId>
                 <artifactId>fili</artifactId>
+                <version>${version.fili}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yahoo.fili</groupId>
+                <artifactId>luthier</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
