@@ -50,7 +50,7 @@ class FilterEvaluatorSpec extends Specification {
         filter                                             | filterString
         search(API + IS_ROBOT)                             | "WHERE `isRobot` LIKE '%%'"
         or(search(API + IS_ROBOT), search(API + IS_ROBOT)) | "WHERE `isRobot` LIKE '%%'"
-        not(not(not(search(API + IS_ROBOT))))              | "WHERE NOT `isRobot` LIKE '%%'"
+        not(not(not(search(API + IS_ROBOT))))              | "WHERE `isRobot` NOT LIKE '%%'"
         and(
                 search(API + IS_ROBOT),
                 or(search(API + IS_NEW), search(API + IS_ROBOT))
@@ -66,7 +66,7 @@ class FilterEvaluatorSpec extends Specification {
                         search(API + IS_NEW),
                         or(search(API + IS_ROBOT), search(API + METRO_CODE))
                 )
-        )                                                  | "WHERE NOT `isRobot` LIKE '%%' OR NOT `isNew` LIKE '%%' OR NOT `isRobot` LIKE '%%' AND NOT `metroCode` LIKE '%%'"
+        )                                                  | "WHERE `isRobot` NOT LIKE '%%' OR `isNew` NOT LIKE '%%' OR `isRobot` NOT LIKE '%%' AND `metroCode` NOT LIKE '%%'"
     }
 
     def "Test null input"() {

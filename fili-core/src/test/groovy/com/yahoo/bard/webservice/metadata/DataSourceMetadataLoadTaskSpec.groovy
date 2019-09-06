@@ -22,7 +22,11 @@ import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 
+import com.fasterxml.jackson.databind.InjectableValues
+
 import org.joda.time.Interval
+
+import io.druid.timeline.DataSegment
 
 class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
 
@@ -71,6 +75,12 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
     }
 
     def setup() {
+        childSetupSpec()
+
+        InjectableValues injectableValues = new InjectableValues.Std()
+        MAPPERS.mapper.setInjectableValues(injectableValues)
+        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.name, DataSegment.PruneLoadSpecHolder.DEFAULT)
+
         dimensions13 = [
                 dimensions.(TestApiDimensionName.BREED.asName()).asName(),
                 dimensions.(TestApiDimensionName.SEX.asName()).asName()

@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.application.healthchecks;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
 import com.codahale.metrics.health.HealthCheck;
@@ -41,23 +40,15 @@ public class VersionHealthCheck extends HealthCheck {
      */
     public VersionHealthCheck(String versionKey, String gitShaKey) {
         usedVersionKey = versionKey;
-        String tempVersion;
-        try {
-            tempVersion = SYSTEM_CONFIG.getStringProperty(versionKey);
-        } catch (SystemConfigException ignored) {
-            LOG.error("{} not found in configuration", versionKey);
-            tempVersion = null;
+        version = SYSTEM_CONFIG.getStringProperty(versionKey, null);
+        if (version == null) {
+            LOG.warn("{} not found in configuration", versionKey);
         }
-        version = tempVersion;
 
-        String tempGitSha;
-        try {
-            tempGitSha = SYSTEM_CONFIG.getStringProperty(gitShaKey);
-        } catch (SystemConfigException ignored) {
+        gitSha = SYSTEM_CONFIG.getStringProperty(gitShaKey, null);
+        if (gitSha == null) {
             LOG.warn("{} not found in configuration", gitShaKey);
-            tempGitSha = null;
         }
-        gitSha = tempGitSha;
     }
 
     @Override

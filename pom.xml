@@ -104,15 +104,19 @@
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
         <version.netty>4.1.31.Final</version.netty>
+        <version.jetty>9.4.20.v20190813</version.jetty>
 
-        <version.spring>[5.1.2,)</version.spring>
+        <version.lombok>1.18.8</version.lombok>
+
+
+        <version.spring>5.1.9.RELEASE</version.spring>
         <version.groovy>2.4.15</version.groovy>
         <version.jackson>2.9.9</version.jackson>
-        <version.jackson-databind>2.9.9.1</version.jackson-databind>
+        <version.jackson-databind>2.9.9.3</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
-        <version.guava>21.0</version.guava>
-        <version.druid.api>0.3.8</version.druid.api>
+        <version.guava>25.0-jre</version.guava>
+        <version.druid.api>0.12.1</version.druid.api>
         <profiles.active>test</profiles.active>
 
         <disableDocLint>-Xdoclint:none</disableDocLint>
@@ -217,7 +221,7 @@
             <dependency>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro</artifactId>
-                <version>1.8.1</version>
+                <version>1.9.1</version>
             </dependency>
 
             <!-- All things Spring -->
@@ -504,7 +508,7 @@
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-servlet</artifactId>
-                <version>9.2.5.v20141112</version>
+                <version>${version.jetty}</version>
             </dependency>
 
         </dependencies>
@@ -629,7 +633,9 @@
                     <configuration>
                         <quiet>true</quiet>
                         <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                        <additionalJOptions>
+                        <detectLinks>false</detectLinks>
+                        <detectOfflineLinks>false</detectOfflineLinks>
+                        <additionalJOptions>H
                             <additionalJOption>-XDiag</additionalJOption>
                             <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
                             <additionalJOption>-J-Xms20m</additionalJOption>
@@ -765,6 +771,19 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>5.2.1</version>
+                <configuration>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipDependencyManagement>false</skipDependencyManagement>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -1050,8 +1069,7 @@
                     **/*Main.java,
                     **/*Params.java
                 </sonar.coverage.exclusions>
-                <sonar.java.libraries>/jenkins/jenkins-user-home/.m2/repository/org/projectlombok/lombok/1.16.20/lombok-1.16.20.jar</sonar.java.libraries>
-
+                <sonar.java.libraries>$HOME/.m2/repository/org/projectlombok/lombok/${version.lombok}/lombok-${version.lombok}.jar</sonar.java.libraries>
             </properties>
             <build>
                 <pluginManagement>
@@ -1059,7 +1077,7 @@
                         <plugin>
                             <groupId>org.sonarsource.scanner.maven</groupId>
                             <artifactId>sonar-maven-plugin</artifactId>
-                            <version>3.6.0.1398</version>
+                            <version>3.6.1.1688</version>
                         </plugin>
                     </plugins>
                 </pluginManagement>

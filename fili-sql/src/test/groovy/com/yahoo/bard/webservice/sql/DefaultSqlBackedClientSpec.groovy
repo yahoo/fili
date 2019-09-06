@@ -291,7 +291,7 @@ class DefaultSqlBackedClientSpec extends Specification {
         where: "we have"
         timeGrain | dims               | filter                         | having                          | size
         INSTANCE  | []                 | null                           | null                            | 39244
-        HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(ADDED, 1), lt(ADDED, 1)) | 0
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(ADDED, 1), lt(ADDED, 1.01)) | 0
         HOUR      | [IS_ROBOT]         | null                           | null                            | 24 * 2
         DAY       | [IS_NEW, IS_ROBOT] | null                           | null                            | 4
         HOUR      | [IS_NEW, IS_ROBOT] | null                           | equal(ADDED, 0)                 | 0
