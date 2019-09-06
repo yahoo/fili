@@ -27,7 +27,7 @@ public class ConstantMaker extends MetricMaker {
     /**
      * Constructor.
      *
-     * @param metricDictionary  Dictionary from which to look up dependent metrics
+     * @param metricDictionary  Dictionary of which to look up dependent metrics
      */
     public ConstantMaker(MetricDictionary metricDictionary) {
         super(metricDictionary);

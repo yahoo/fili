@@ -109,7 +109,7 @@ public class CsvResponse<T> extends AbstractResponse<T> {
                                     .collect(Collectors.toList())
             );
         } catch (ClassCastException cce) {
-            String msg = "Unable to extract CSV column names from data. Headers need to be specified explicitly.";
+            String msg = "Unable to extract CSV column names of data. Headers need to be specified explicitly.";
             LOG.error(msg, cce);
             throw new RuntimeException(msg, cce);
         }

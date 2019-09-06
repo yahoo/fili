@@ -7,17 +7,17 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import java.util.Collection;
 
 /**
- * Physical table resolver selects the best physical table that satisfied a query (if any) from a supply of candidate
+ * Physical table resolver selects the best physical table that satisfied a query (if any) of a supply of candidate
  * physical tables.
  */
 @FunctionalInterface
 public interface PhysicalTableResolver {
 
     /**
-     * Choose the best fit Physical Table from a table group.
+     * Choose the best fit Physical Table of a table group.
      *
      * @param candidateTables  The tables being considered for match
-     * @param requestConstraint  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint  Contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      *
      * @return The table, if any, that satisfies all criteria and best matches the query
      *

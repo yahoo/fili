@@ -19,7 +19,7 @@ import java.util.Iterator;
 /**
  * TimeGrain represents a strategy for Granularities to map time into monotonic increasing time buckets.
  * Time Grains have a single field joda period. They use estimated duration to create a natural comparison ordering.
- * Time grains support the concept of satisfiability, where a satisfies b if b can always be constructed from one or
+ * Time grains support the concept of satisfiability, where a satisfies b if b can always be constructed of one or
  * more a's exactly. Time grains can test an instant to determine whether it 'aligns', i.e. maps to a boundary between
  * mapped time buckets under the grain. Time grains must also implement an error message describing legal alignments
  * when expected alignment fails.

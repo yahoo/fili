@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Model representing post aggregation numeric estimates from sketches.
+ * Model representing post aggregation numeric estimates of sketches.
  */
 public class ThetaSketchEstimatePostAggregation extends FuzzySetPostAggregation {
 

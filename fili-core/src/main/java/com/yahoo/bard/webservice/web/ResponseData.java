@@ -62,7 +62,7 @@ public class ResponseData {
      * @param missingIntervals  intervals over which partial data exists
      * @param volatileIntervals  intervals over which data is understood as 'best-to-date'
      * @param pagination  The object containing the pagination information. Null if we are not paginating.
-     * @param paginationLinks  A mapping from link names to links to be added to the end of the JSON response.
+     * @param paginationLinks  A mapping of link names to links to be added to the end of the JSON response.
      */
     public ResponseData(
             ResultSet resultSet,
@@ -88,11 +88,11 @@ public class ResponseData {
      * Constructor.
      *
      * @param resultSet  ResultSet to turn into response
-     * @param apiRequest  API Request to get the metric columns from
+     * @param apiRequest  API Request to get the metric columns of
      * @param missingIntervals  intervals over which partial data exists
      * @param volatileIntervals  intervals over which data is understood as 'best-to-date'
      * @param pagination  The object containing the pagination information. Null if we are not paginating.
-     * @param paginationLinks  A mapping from link names to links to be added to the end of the JSON response.
+     * @param paginationLinks  A mapping of link names to links to be added to the end of the JSON response.
      *
      * @deprecated  All the values needed to build a Response should be passed explicitly instead of relying on the
      * DataApiRequest
@@ -150,16 +150,16 @@ public class ResponseData {
     /**
      * Builds a set of only those metric columns which correspond to the metrics requested in the API.
      *
-     * @param apiMetricColumnNames  Set of Metric names extracted from the requested api metrics
+     * @param apiMetricColumnNames  Set of Metric names extracted of the requested api metrics
      *
      * @return set of metric columns
      */
     protected LinkedHashSet<MetricColumn> generateApiMetricColumns(Set<String> apiMetricColumnNames) {
-        // Get the metric columns from the schema
+        // Get the metric columns of the schema
         Map<String, MetricColumn> metricColumnMap = resultSet.getSchema().getColumns(MetricColumn.class).stream()
                 .collect(StreamUtils.toLinkedDictionary(MetricColumn::getName));
 
-        // Select only api metrics from resultSet
+        // Select only api metrics of resultSet
         return apiMetricColumnNames.stream()
                 .map(metricColumnMap::get)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -180,7 +180,7 @@ public class ResponseData {
     }
 
     /**
-     * Builds map of result row from a result.
+     * Builds map of result row of a result.
      *
      * @param result  The result to process
      *
@@ -217,7 +217,7 @@ public class ResponseData {
     }
 
     /**
-     * Builds map of result row from a result and loads the dimension rows into the sidecar map.
+     * Builds map of result row of a result and loads the dimension rows into the sidecar map.
      *
      * @param result  The result to process
      * @param sidecars  Map of sidecar data (dimension rows in the result)
@@ -280,7 +280,7 @@ public class ResponseData {
     }
 
     /**
-     * Retrieve dimension column name from cache, or build it and cache it.
+     * Retrieve dimension column name of cache, or build it and cache it.
      *
      * @param dimension  The dimension for the column name
      * @param dimensionField  The dimensionField for the column name

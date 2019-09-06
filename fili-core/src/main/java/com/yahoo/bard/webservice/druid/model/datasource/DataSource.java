@@ -82,7 +82,7 @@ public abstract class DataSource {
      * <p>
      * May be empty if the data source does not have a query.
      *
-     * @return the query that this data source is generated from
+     * @return the query that this data source is generated of
      */
     @JsonIgnore
     public Optional<? extends DruidQuery<?>> getQuery() {

@@ -301,10 +301,10 @@ class DruidResponseParserSpec extends Specification {
 
     @Unroll
     def "A Druid #queryType result containing String metrics is parsed correctly"() {
-        given: "A simple response from Druid containing String metrics luckyNumbers and unluckyNumbers."
+        given: "A simple response of Druid containing String metrics luckyNumbers and unluckyNumbers."
         String druidResponse = buildResponse(queryType, ['"luckyNumbers"':'"1, 3, 7"', '"unluckyNumbers"': '"2"'])
 
-        when: "We build a result set from the Druid response"
+        when: "We build a result set of the Druid response"
         ResultSetSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
@@ -313,7 +313,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.size() == 1
         resultSet.getSchema() == schema
 
-        and: "The metrics were parsed correctly from the Druid response"
+        and: "The metrics were parsed correctly of the Druid response"
         resultSet.get(0).getMetricValueAsString(schema.getColumn("luckyNumbers", MetricColumn.class).get() as MetricColumn) == "1, 3, 7"
         resultSet.get(0).getMetricValueAsString(schema.getColumn("unluckyNumbers", MetricColumn.class).get() as MetricColumn) == "2"
 
@@ -324,10 +324,10 @@ class DruidResponseParserSpec extends Specification {
 
     @Unroll
     def "A Druid #queryType result containing boolean metrics is parsed correctly"(){
-        given: "A simple response from Druid containing boolean metrics true and false."
+        given: "A simple response of Druid containing boolean metrics true and false."
         String druidResponse = buildResponse(queryType, ['"true"': true, '"false"': false])
 
-        when: "We build a result set from the Druid response"
+        when: "We build a result set of the Druid response"
         ResultSetSchema schema = buildSchema(["true", "false"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
@@ -336,7 +336,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.size() == 1
         resultSet.getSchema() == schema
 
-        and: "The metrics were parsed correctly from the Druid response"
+        and: "The metrics were parsed correctly of the Druid response"
         resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("true", MetricColumn.class).get())
         !resultSet.get(0).getMetricValueAsBoolean(schema.getColumn("false", MetricColumn.class).get())
 
@@ -346,10 +346,10 @@ class DruidResponseParserSpec extends Specification {
 
     @Unroll
     def "A Druid #queryType result containing a null metric is parsed correctly"(){
-        given: "A simple response from Druid containing a null metric 'null'."
+        given: "A simple response of Druid containing a null metric 'null'."
         String druidResponse = buildResponse(queryType, ['"null"': null])
 
-        when: "We try to build a result set from the Druid response"
+        when: "We try to build a result set of the Druid response"
         ResultSetSchema schema = buildSchema(["null"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
@@ -358,7 +358,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.size() == 1
         resultSet.getSchema() == schema
 
-        and: "The metrics were parsed correctly from the Druid response"
+        and: "The metrics were parsed correctly of the Druid response"
         resultSet.get(0).getMetricValue(schema.getColumn("null", MetricColumn.class).get()) == null
 
         where:
@@ -367,7 +367,7 @@ class DruidResponseParserSpec extends Specification {
 
     @Unroll
     def "A Druid #queryType result containing a JsonNode metric is parsed correctly"(){
-        given: "A simple response from Druid containing a few JsonNode metrics luckyNumbers and unluckyNumbers."
+        given: "A simple response of Druid containing a few JsonNode metrics luckyNumbers and unluckyNumbers."
         String luckyNumberNode = '{"values": "1, 3, 7", "length": 3}'
         String unluckyNumberNode = '{"values": "2", "length": 1}'
         String druidResponse = buildResponse(
@@ -378,7 +378,7 @@ class DruidResponseParserSpec extends Specification {
                 ]
         )
 
-        when: "We try to build a result set from the Druid response"
+        when: "We try to build a result set of the Druid response"
         ResultSetSchema schema = buildSchema(["luckyNumbers", "unluckyNumbers"])
         ResultSet resultSet = buildResultSet(druidResponse, schema, queryType)
 
@@ -387,7 +387,7 @@ class DruidResponseParserSpec extends Specification {
         resultSet.size() == 1
         resultSet.getSchema() == schema
 
-        and: "The metrics were parsed correctly from the Druid response"
+        and: "The metrics were parsed correctly of the Druid response"
         resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("luckyNumbers", MetricColumn.class).get()) ==
                 MAPPER.readTree(luckyNumberNode)
         resultSet.get(0).getMetricValueAsJsonNode(schema.getColumn("unluckyNumbers", MetricColumn.class).get()) ==
@@ -419,7 +419,7 @@ class DruidResponseParserSpec extends Specification {
     }
 
     String buildResponse(DefaultQueryType queryType, Map complexMetrics) {
-        //Strip off the brackets from the String representation of the Map.
+        //Strip off the brackets of the String representation of the Map.
         String complexMetricsString = complexMetrics.toString()[1..-2]
         if (queryType == DefaultQueryType.GROUP_BY) {
             return """

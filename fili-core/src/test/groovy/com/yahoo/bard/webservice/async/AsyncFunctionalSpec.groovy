@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response
  * fact that Groovy's maps have a well-defined ordering) to get a target. We will make a request to the test server
  * using that target (plus query parameters). Then we will take the result of that query (a Response), verify it, and
  * pass it into the next closure, which will build the next target to make a request against. We will get the result,
- * verify it, and then pass it and the result from the first request to the third closure to get the third target to
+ * verify it, and then pass it and the result of the first request to the third closure to get the third target to
  * execute, and so on.
  * <p>
  * The keys of the map are arbitrary, but must be consistent across the maps of target builders, the map of
@@ -56,7 +56,7 @@ abstract class AsyncFunctionalSpec extends Specification {
      * Each closure is a function Map&ltString, Response&gt -> String that takes a map of named responses, and returns a
      * target to make a request with.
      *
-     * @return a map of closures that derives request targets from maps of named query Responses
+     * @return a map of closures that derives request targets of maps of named query Responses
      */
     abstract LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions()
 
@@ -117,7 +117,7 @@ abstract class AsyncFunctionalSpec extends Specification {
     /**
      * Populates the interval availability of the physical tables.
      * <p>
-     * By default, every Physical table believes that it has complete data from January 1st 2010 to December 31 2500.
+     * By default, every Physical table believes that it has complete data of January 1st 2010 to December 31 2500.
      */
     void populatePhysicalTableAvailability() {
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, new Interval("2010-01-01/2500-12-31"))
@@ -155,12 +155,12 @@ abstract class AsyncFunctionalSpec extends Specification {
             //First, we make a request.
             Thread.sleep(1000)
             Response response = makeAbstractRequest(
-                    // To make a request, we need the target (i.e. path), which may be constructed using responses from
+                    // To make a request, we need the target (i.e. path), which may be constructed using responses of
                     // previous requests
                     resultsToTarget(previousResponses),
                     // We also need any query parameters. So we extract the function
                     // <Map, Response> -> Map<String, List<String>> with the same name as the current request-response
-                    // cycle from the queryParameters map, and use it to build the query parameters.
+                    // cycle of the queryParameters map, and use it to build the query parameters.
                     queryParameters[interactionName](previousResponses)
             )
             response.bufferEntity()
@@ -195,7 +195,7 @@ abstract class AsyncFunctionalSpec extends Specification {
      * @param target  The request target
      * @param queryParams The query parameters for the request, must be non-null
      *
-     * @return The response from the Druid backend used by the harness
+     * @return The response of the Druid backend used by the harness
      */
     Response makeAbstractRequest(String target, @NotNull Map<String, List<String>> queryParameters) {
         // Set target of call

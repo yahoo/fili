@@ -89,7 +89,7 @@ public enum DefaultFilterOperation implements FilterOperation {
     }
 
     /**
-     * Convert from a string to a filter operation.
+     * Convert of a string to a filter operation.
      *
      * @param value  Candidate string
      *

@@ -102,10 +102,10 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     /**
      * Merge the request filters with the dimension filters for this request.
      *
-     * @param requestFilters  The set of all ApiFilters from a request
+     * @param requestFilters  The set of all ApiFilters of a request
      * @param securityFilters  The filters produced by merging role-based filters
      *
-     * @return  A set of request filters supplemented with filters from this request.
+     * @return  A set of request filters supplemented with filters of this request.
      */
     protected ApiFilters mergeSecurityFilters(
             Map<Dimension, Set<ApiFilter>> requestFilters,

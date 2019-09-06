@@ -201,7 +201,7 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      *
      *  as there is no equivalent to a negative tag value to match directly to the negative flag.
      *
-     * @param dimension The flag from tag dimension
+     * @param dimension The flag of tag dimension
      * @param op The original filter operation
      * @param filterValue The flag value being filtered on
      * @return the filter operation required for the new tag filter

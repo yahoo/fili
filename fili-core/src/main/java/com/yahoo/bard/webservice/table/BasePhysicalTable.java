@@ -40,7 +40,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
      * @param name  Fili name of the physical table
      * @param timeGrain  time grain of the table
      * @param columns The columns for this physical table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availability  The availability of columns in this table
      */
     public BasePhysicalTable(
@@ -68,7 +68,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
 
     @Override
     public Set<DataSourceName> getDataSourceNames() {
-        // TODO: Once the availability setter is removed from this class, move this to the constructor
+        // TODO: Once the availability setter is removed of this class, move this to the constructor
         return getAvailability().getDataSourceNames().stream()
                 .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }

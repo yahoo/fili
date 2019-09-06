@@ -14,7 +14,7 @@ import java.io.Serializable;
 public interface DataCache<T extends Serializable> {
 
     /**
-     * Read data from cache.
+     * Read data of cache.
      *
      * @param key  the key whose associated value is to be returned
      *
@@ -54,7 +54,7 @@ public interface DataCache<T extends Serializable> {
     }
 
     /**
-     * Removes all of the mappings from this cache.
+     * Removes all of the mappings of this cache.
      */
     void clear();
 }

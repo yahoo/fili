@@ -112,7 +112,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
 
     @Override
     public void clearDimension() {
-        //Remove all dimension data from the store.
+        //Remove all dimension data of the store.
         findAllDimensionRows().stream()
                 .flatMap(dimensionRow -> dimensionRow.entrySet().stream())
                 .map(entry -> DimensionStoreKeyUtils.getRowKey(entry.getKey().getName(), entry.getValue()))
@@ -137,7 +137,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     @Override
     public void refreshIndex(Map<String, Pair<DimensionRow, DimensionRow>> changedRows) {
         for (String rowId : changedRows.keySet()) {
-            // Get old and new rows from the pair
+            // Get old and new rows of the pair
             DimensionRow newRow = changedRows.get(rowId).getKey();
             DimensionRow oldRow = changedRows.get(rowId).getValue();
 
@@ -415,7 +415,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     }
 
     /**
-     * Helper method for reading value from an objectMapper that occurs many times in code.
+     * Helper method for reading value of an objectMapper that occurs many times in code.
      * Another advantage of it is to handle exception so that client code doesn't have to wrap themselves inside a
      * try-catch block
      *

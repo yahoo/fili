@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import org.apache.commons.collections4.map.LinkedMap;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
@@ -105,7 +106,9 @@ public interface DataApiRequest extends ApiRequest {
     }
 
     /**
-     * The api having constraints for this request, grouped by logical metrics.
+     * The api having constraints for this request, grouped by logical metrics. This method should return a map with
+     * a strongly defined map, such as {@link LinkedHashMap}. This method returning a Map is an oversight. All
+     * implementations should ensure they return an ordered map.
      *
      * @return a map of havings by metrics.
      */
@@ -153,7 +156,7 @@ public interface DataApiRequest extends ApiRequest {
     // Query model objects
 
     /**
-     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
+     * Builds and returns the Druid filters of this request's {@link ApiFilter}s.
      * <p>
      * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
      *
@@ -165,7 +168,7 @@ public interface DataApiRequest extends ApiRequest {
     Filter getQueryFilter();
 
     /**
-     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
+     * Builds and returns the Druid filters of this request's {@link ApiFilter}s.
      * <p>
      * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
      *
@@ -257,7 +260,14 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withFilters(ApiFilters filters);
 
-    DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
+    @Deprecated
+    default DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+        return withHavings(new LinkedHashMap<>(havings));
+    }
+
+    default DataApiRequest withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
+        throw new UnsupportedOperationException("this method has not been implemented");
+    }
 
     DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
 

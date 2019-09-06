@@ -33,7 +33,7 @@ public class Preface implements LogInfo {
     /**
      * Constructor.
      *
-     * @param request  Request to extract preface info from
+     * @param request  Request to extract preface info of
      */
     public Preface(ContainerRequestContext request) {
         uri = request.getUriInfo().getRequestUri().toASCIIString();
@@ -48,7 +48,7 @@ public class Preface implements LogInfo {
         }
 
         headers = request.getHeaders();
-        //Discard all cookies from header by overriding the entry
+        //Discard all cookies of header by overriding the entry
         if (headers.put("Cookie", Collections.singletonList("Cookies present in header but not logged")) == null) {
             headers.put("Cookie", Collections.singletonList("Cookies not present in header"));
         }

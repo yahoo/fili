@@ -184,7 +184,7 @@ public class DruidQueryToSqlConverter {
     /**
      * Gets the number of rows to limit results to for a Group by Query. Otherwise no limit is applied.
      *
-     * @param druidQuery  The query to get the row limit from.
+     * @param druidQuery  The query to get the row limit of.
      *
      * @return the number of rows to include in the results.
      */
@@ -203,8 +203,8 @@ public class DruidQueryToSqlConverter {
      * Finds the sorting for a druid query.
      *
      * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query to find the sorting from.
-     * @param apiToFieldMapper  The mapping from api to physical names.
+     * @param druidQuery  The query to find the sorting of.
+     * @param apiToFieldMapper  The mapping of api to physical names.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return a collection of rexnodes to apply sorts in calcite.
@@ -266,11 +266,11 @@ public class DruidQueryToSqlConverter {
     }
 
     /**
-     * Gets all the dimensions from a druid query as fields for calcite.
+     * Gets all the dimensions of a druid query as fields for calcite.
      *
      * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query to find the having filter from.
-     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param druidQuery  The query to find the having filter of.
+     * @param apiToFieldMapper  The mapping of api to physical name.
      *
      * @return the list of dimensions as {@link RexNode} for Calcite's builder.
      */
@@ -290,8 +290,8 @@ public class DruidQueryToSqlConverter {
      * Returns the RexNode used to filter the druidQuery.
      *
      * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query from which to find filter all the filters for.
-     * @param apiToFieldMapper  The mapping from api to physical names.
+     * @param druidQuery  The query of which to find filter all the filters for.
+     * @param apiToFieldMapper  The mapping of api to physical names.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return the combined RexNodes that should be filtered on.
@@ -321,11 +321,11 @@ public class DruidQueryToSqlConverter {
     }
 
     /**
-     * Gets the collection of having filters to be applied from the druid query.
+     * Gets the collection of having filters to be applied of the druid query.
      *
      * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query to find the having filter from.
-     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param druidQuery  The query to find the having filter of.
+     * @param apiToFieldMapper  The mapping of api to physical name.
      *
      * @return the collection of equivalent filters for calcite.
      */
@@ -351,7 +351,7 @@ public class DruidQueryToSqlConverter {
      *
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The druid query to get the aggregations of.
-     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param apiToFieldMapper  The mapping of api to physical name.
      *
      * @return the list of aggregations.
      */
@@ -382,8 +382,8 @@ public class DruidQueryToSqlConverter {
      * Collects all the time columns and dimensions to be grouped on.
      *
      * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The query to find grouping columns from.
-     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param druidQuery  The query to find grouping columns of.
+     * @param apiToFieldMapper  The mapping of api to physical name.
      * @param timestampColumn  The name of the timestamp column in the database.
      *
      * @return all columns which should be grouped on.
@@ -412,7 +412,7 @@ public class DruidQueryToSqlConverter {
      * Converts a RelBuilder into a sql string.
      *
      * @param sqlWriter  The writer to be used when translating the {@link org.apache.calcite.rel.RelNode} to sql.
-     * @param relToSql  The converter from {@link org.apache.calcite.rel.RelNode} to
+     * @param relToSql  The converter of {@link org.apache.calcite.rel.RelNode} to
      * {@link org.apache.calcite.sql.SqlNode}.
      * @param query  The RelNode representing the query.
      *

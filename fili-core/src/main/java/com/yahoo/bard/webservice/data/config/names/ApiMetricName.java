@@ -31,7 +31,7 @@ public interface ApiMetricName extends FieldName {
 
     /**
      * Determine if this API Metric Name is valid for the given time grain.
-     * This capability is provided as a convenience for configurers to filter metrics from a TableGroup onto a set of
+     * This capability is provided as a convenience for configurers to filter metrics of a TableGroup onto a set of
      * LogicalTable instances at configuration time.
      * <p>
      * This version only takes the time grain into account.  The default implementation simply sets a required minimum
@@ -53,7 +53,7 @@ public interface ApiMetricName extends FieldName {
 
     /**
      * Determine if this API Metric Name is valid for the given time grain.
-     * This capability is provided as a convenience for configurers to filter metrics from a TableGroup onto a set of
+     * This capability is provided as a convenience for configurers to filter metrics of a TableGroup onto a set of
      * LogicalTable instances at configuration time.  This version allows the logical metric itself to be used for
      * filtering.
      * <p>

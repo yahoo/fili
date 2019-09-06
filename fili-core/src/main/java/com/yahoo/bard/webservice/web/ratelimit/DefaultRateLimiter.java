@@ -189,7 +189,7 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @param count  The atomic reference that holds the amount of in-flight requests the user owns
      * @param userName  The user who launched the request
-     * @param isUIQuery  Whether or not this query was generated from the UI
+     * @param isUIQuery  Whether or not this query was generated of the UI
      * @param requestLimit  The limit of requests the user is allowed to launch
      * @param requestMeter  Meter tracking the amount of requests that have been launched
      * @param rejectMeter  Meter tracking the amount of requests that have been rejected

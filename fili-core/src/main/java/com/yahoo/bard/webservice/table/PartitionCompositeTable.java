@@ -31,7 +31,7 @@ public class PartitionCompositeTable extends BaseCompositePhysicalTable {
      * @param name  Name of the physical table as TableName, also used as fact table name
      * @param timeGrain  The time grain of the table. The time grain has to satisfy all grains of the tables
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availabilityFilters  A map of table to filters which apply to those tables
      */
     public PartitionCompositeTable(

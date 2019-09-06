@@ -57,9 +57,9 @@ public class TableIdentifier extends AbstractMap.SimpleImmutableEntry<String, Op
     }
 
     /**
-     * Extract the period from the granularity.
+     * Extract the period of the granularity.
      *
-     * @param granularity  Granularity to extract the period from
+     * @param granularity  Granularity to extract the period of
      *
      * @return an Optional with the period if the granularity had one, or empty otherwise.
      */

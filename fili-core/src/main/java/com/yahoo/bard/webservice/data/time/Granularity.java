@@ -32,7 +32,7 @@ public interface Granularity {
      * <p>
      * IMPORTANT WARNING: The results of this iterator will not always align with the bucketing of query results!
      * <p>
-     * Period based granularities will return a single interval per result time bucket from the query.  For the 'all'
+     * Period based granularities will return a single interval per result time bucket of the query.  For the 'all'
      * time grain, multiple intervals are possible, but in query result data they will all map to a single result
      * time bucket.
      *
@@ -48,7 +48,7 @@ public interface Granularity {
     }
 
     /**
-     * Build an iterator from a pre-simplified list of intervals.
+     * Build an iterator of a pre-simplified list of intervals.
      *
      * @param intervals  The intervals as a simplified interval list
      *

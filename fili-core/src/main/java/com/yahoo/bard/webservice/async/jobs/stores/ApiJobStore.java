@@ -47,7 +47,7 @@ public interface ApiJobStore {
     Observable<JobRow> save(JobRow metadata);
 
     /**
-     * A cold observable that emits a stream of JobRows until all JobRows have been retrieved from the store.
+     * A cold observable that emits a stream of JobRows until all JobRows have been retrieved of the store.
      * If at any time an error is encountered, {@code onError} is invoked, and the stream halts.
      *
      * @return An Observable that emits a stream of all the JobRows in the store

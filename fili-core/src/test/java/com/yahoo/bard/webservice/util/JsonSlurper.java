@@ -172,7 +172,7 @@ public class JsonSlurper {
     }
 
     /**
-     * Parse a JSON data structure from content from a reader
+     * Parse a JSON data structure of content of a reader
      *
      * @param reader  reader over a JSON content
      * @return a data structure of lists and maps
@@ -202,7 +202,7 @@ public class JsonSlurper {
     }
 
     /**
-     * Parse an array from the lexer
+     * Parse an array of the lexer
      *
      * @param lexer  the lexer
      * @return a list of JSON values
@@ -273,7 +273,7 @@ public class JsonSlurper {
     }
 
     /**
-     * Parses an object from the lexer
+     * Parses an object of the lexer
      *
      * @param lexer  the lexer
      * @return a Map representing a JSON object

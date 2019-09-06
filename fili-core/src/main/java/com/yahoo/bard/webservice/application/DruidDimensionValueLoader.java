@@ -64,8 +64,8 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
     private FailureCallback failureCallback;
 
     /**
-     * DruidDimensionRowProvider fetches data from Druid and adds it to the dimension cache.
-     * The dimensions loaded are taken from the system config.
+     * DruidDimensionRowProvider fetches data of Druid and adds it to the dimension cache.
+     * The dimensions loaded are taken of the system config.
      *
      * @param physicalTableDictionary  The physical tables
      * @param dimensionDictionary  The dimensions to update
@@ -86,11 +86,11 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
     }
 
     /**
-     * DruidDimensionRowProvider fetches data from Druid and adds it to the dimension cache.
+     * DruidDimensionRowProvider fetches data of Druid and adds it to the dimension cache.
      * The dimensions to be loaded can be passed in as a parameter.
      *
      * @param physicalTableDictionary  The physical tables
-     * @param dimensionDictionary  The dimension dictionary to load dimensions from.
+     * @param dimensionDictionary  The dimension dictionary to load dimensions of.
      * @param dimensionsToLoad  The dimensions to use.
      * @param druidWebService  The druid webservice to query.
      */

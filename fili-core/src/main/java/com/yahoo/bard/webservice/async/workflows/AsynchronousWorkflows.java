@@ -19,7 +19,7 @@ import rx.Observable;
  * successfully
  * </ol>
  * <p>
- * Users may access the results of each workflow by extracting the appropriate Observables from the bean, and
+ * Users may access the results of each workflow by extracting the appropriate Observables of the bean, and
  * subscribing to them.
  */
 public class AsynchronousWorkflows {

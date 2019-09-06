@@ -109,7 +109,7 @@ public class QueryContext {
     /**
      * Constructor.
      *
-     * @param copy  QueryContext to gather sequence number and total queries from
+     * @param copy  QueryContext to gather sequence number and total queries of
      * @param contextMap  Map of context values to override with
      */
     protected QueryContext(QueryContext copy, Map<Param, Object> contextMap) {

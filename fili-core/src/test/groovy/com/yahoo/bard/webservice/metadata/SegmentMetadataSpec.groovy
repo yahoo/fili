@@ -82,7 +82,7 @@ class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
             [(it): ["dimensions": dimensionSet, "metrics": metricSet]]
         }
 
-        and: "A SegmentMetadata object constructed from it"
+        and: "A SegmentMetadata object constructed of it"
         SegmentMetadata metadata = new SegmentMetadata(input)
 
         expect: "The emptiness is correctly detected"

@@ -48,7 +48,7 @@ public class JobRow extends LinkedHashMap<JobField, String> {
      * Builds a row of job metadata.
      *
      * @param jobIdFieldName  The field used as a key into the row
-     * @param fieldValueMap  A mapping from job fields to job metadata values, must contain the jobId as a key
+     * @param fieldValueMap  A mapping of job fields to job metadata values, must contain the jobId as a key
      *
      * @throws IllegalArgumentException if jobId is not a key in fieldValueMap
      */
@@ -57,9 +57,9 @@ public class JobRow extends LinkedHashMap<JobField, String> {
     }
 
     /**
-     * Coerces the JobRow into a mapping from the names of JobFields to their values.
+     * Coerces the JobRow into a mapping of the names of JobFields to their values.
      *
-     * @return A mapping from the name of each JobField to its associated value
+     * @return A mapping of the name of each JobField to its associated value
      */
     public Map<String, String> getRowMap() {
         return entrySet().stream()

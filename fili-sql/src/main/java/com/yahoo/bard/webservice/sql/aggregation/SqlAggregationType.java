@@ -25,7 +25,7 @@ public interface SqlAggregationType {
      * @param aggregation  The druid aggregation.
      * @param apiToFieldMapper  The mapping between api and physical names for the query.
      *
-     * @return the AggCall built from the aggregation type.
+     * @return the AggCall built of the aggregation type.
      */
     SqlAggregation getSqlAggregation(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper);
 }

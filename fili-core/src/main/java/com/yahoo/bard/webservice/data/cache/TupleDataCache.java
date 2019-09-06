@@ -15,7 +15,7 @@ import java.io.Serializable;
 public interface TupleDataCache<K, M extends Serializable, V extends Serializable>
         extends DataCache<TupleDataCache.DataEntry<K, M, V>> {
     /**
-     * Retrieve the complete data entry from the cache.
+     * Retrieve the complete data entry of the cache.
      *
      * @param key  The key associated with data entry to be retrieved
      *
@@ -26,7 +26,7 @@ public interface TupleDataCache<K, M extends Serializable, V extends Serializabl
     DataEntry<K, M, V> get(String key);
 
     /**
-     * Read the raw data from cache.
+     * Read the raw data of cache.
      *
      * @param key  The key whose associated value is to be returned
      *

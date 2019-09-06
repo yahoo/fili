@@ -51,7 +51,7 @@ public interface LogicalTableName extends TableName {
     }
 
     /**
-     * Build a default LogicalTableName from a string name.
+     * Build a default LogicalTableName of a string name.
      *
      * @param name  The name to be used for description and long name
      *
@@ -62,7 +62,7 @@ public interface LogicalTableName extends TableName {
     }
 
     /**
-     * Build a default LogicalTableName from a string name.
+     * Build a default LogicalTableName of a string name.
      *
      * @param name  The name to be used for description and long name
      *

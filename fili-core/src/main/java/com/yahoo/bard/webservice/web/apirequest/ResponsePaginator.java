@@ -56,14 +56,14 @@ public class ResponsePaginator {
     }
 
     /**
-     * Add links to the response builder and return a stream with the requested page from the raw data.
+     * Add links to the response builder and return a stream with the requested page of the raw data.
      *
      * @param <T>  The type of the collection elements
      * @param pagination  The pagination object
      * @param responseBuilder The builder for the http response
      * @param uriInfo  The context object desribing the requested uri
      *
-     * @return  A stream from the subcollection of the data collection corresponding to the page described
+     * @return  A stream of the subcollection of the data collection corresponding to the page described
      */
 
     public static <T> Stream<T> paginate(

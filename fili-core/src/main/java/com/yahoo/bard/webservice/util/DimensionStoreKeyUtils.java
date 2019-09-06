@@ -62,7 +62,7 @@ public class DimensionStoreKeyUtils {
      *  Returns a key that, when fed into a {@link com.yahoo.bard.webservice.data.dimension.KeyValueStore} returns the
      *  field name used by Lucene.
      *
-     * @param columnName  The name of the column to extract from Lucene.
+     * @param columnName  The name of the column to extract of Lucene.
      *
      * @return A key that, when fed into a KeyValueStore, returns the ID used to query a dimension in Lucene.
      */

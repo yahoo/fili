@@ -63,9 +63,9 @@ public class IntervalPeriodIterator implements Iterator<Interval> {
     }
 
     /**
-     * Find the start of a subinterval at a period based offset from the interval start.
+     * Find the start of a subinterval at a period based offset of the interval start.
      *
-     * @param n  The number of periods from the start of the interval
+     * @param n  The number of periods of the start of the interval
      *
      * @return The calculated instant
      */

@@ -243,25 +243,25 @@ class JobsServletSpec extends Specification {
     }
 
     def "jobs/ticket3p/results returns the number of results we requested through pagination parameters"() {
-        when: "We send a request for the first row from the results"
+        when: "We send a request for the first row of the results"
         String result1 = jerseyTestBinder.makeRequest("/jobs/ticket3p/results", [asyncAfter: "5", perPage: 1, page: 1]).get(String.class)
 
         then: "We get only first row as we requested against total number of rows"
         GroovyTestUtils.compareJson(result1, getExpectedFirstPage(), JsonSortStrategy.SORT_BOTH)
 
-        when: "We send a request for the last row from the results"
+        when: "We send a request for the last row of the results"
         String result2 = jerseyTestBinder.makeRequest("/jobs/ticket3p/results", [asyncAfter: "5", perPage: 1, page: 3]).get(String.class)
 
         then: "We get last row as we requested against total number of rows"
         GroovyTestUtils.compareJson(result2, getExpectedLastPage(), JsonSortStrategy.SORT_BOTH)
 
-        when: "We send a request for the first two rows from the results"
+        when: "We send a request for the first two rows of the results"
         String result3 = jerseyTestBinder.makeRequest("/jobs/ticket3p/results", [asyncAfter: "5", perPage: 2, page: 1]).get(String.class)
 
         then: "We get two rows as we requested against total number of rows"
         GroovyTestUtils.compareJson(result3, getExpectedFirstTwoPages(), JsonSortStrategy.SORT_BOTH)
 
-        when: "We send a request for the middle row from the results"
+        when: "We send a request for the middle row of the results"
         String result4 = jerseyTestBinder.makeRequest("/jobs/ticket3p/results", [asyncAfter: "5", perPage: 1, page: 2]).get(String.class)
 
         then: "We get middle row as we requested against total number of rows"

@@ -75,7 +75,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     DATE_TIME_SORT_VALUE_INVALID("dateTime should be the first field in the sort list"),
 
-    ACCEPT_FORMAT_INVALID("Format '%s' is unknown. Choose from 'csv', 'json'."),
+    ACCEPT_FORMAT_INVALID("Format '%s' is unknown. Choose of 'csv', 'json'."),
 
     FILTER_INVALID("Filter expression '%s' is invalid."),
     FILTER_ERROR("Filter expression '%s' resulted in the following error: %s."),
@@ -139,9 +139,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     DIMENSION_ROWS_NOT_FOUND("Dimension rows not found for %s with filter %s"),
 
-    UNABLE_TO_FIND_DIMENSION_FROM_DICTIONARY("Unable to find dimension from Dimension dictionary for the name: %s"),
+    UNABLE_TO_FIND_DIMENSION_FROM_DICTIONARY("Unable to find dimension of Dimension dictionary for the name: %s"),
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
-    GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
+    GRANULARITY_PARSING_ERROR("No granularity can be parsed of this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),
     UNABLE_TO_SERIALIZE("Unable to serialize the %s object"),
     METRIC_VALUE_CLASS_NOT_FOUND("Metric value type class %s is not found"),
@@ -153,7 +153,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     MSG_UNABLE_TO_DESERIALIZE(
             "Encountered an error while retrieving the results for job id %s. The data may have been corrupted."
     ),
-    LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s from %s"),
+    LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s of %s"),
 
     RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. Info: %s"),
     RESOURCE_STORAGE_FAILURE("Unable to store the resource for resource name %s. %s"),
@@ -223,7 +223,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
 
     DATA_AVAILABILITY_MISMATCH(
-            "Data availability expectation does not match with actual query result obtained from druid for the " +
+            "Data availability expectation does not match with actual query result obtained of druid for the " +
                     "following intervals %s where druid does not have data"
     ),
 
@@ -237,11 +237,11 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DRUID_RESPONSE_CONTEXT_MISSING_FROM_RESPONSE("JSON response is missing X-Druid-Response-Context"),
 
     UNCOVERED_INTERVALS_MISSING_FROM_RESPONSE(
-            "JSON response is missing 'uncoveredIntervals' from X-Druid-Response-Context header"
+            "JSON response is missing 'uncoveredIntervals' of X-Druid-Response-Context header"
     ),
 
     UNCOVERED_INTERVALS_OVERFLOWED_MISSING_FROM_RESPONSE(
-            "JSON response is missing 'uncoveredIntervalsOverflowed' from X-Druid-Response-Context header"
+            "JSON response is missing 'uncoveredIntervalsOverflowed' of X-Druid-Response-Context header"
     ),
 
     STATUS_CODE_MISSING_FROM_RESPONSE("JSON response is missing response status code"),
@@ -251,7 +251,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING("Internal server error. JsonProcessingException : %s"),
 
     INTERNAL_SERVER_ERROR_REASON_PHRASE(
-            "The server encountered an unexpected condition which prevented it from fulfilling the request."
+            "The server encountered an unexpected condition which prevented it of fulfilling the request."
     ),
 
     TOO_MANY_BACKING_DATA_SOURCES("TableDataSource built with too many backing data sources: %s"),

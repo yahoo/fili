@@ -83,7 +83,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
 
     @Override
     def setup() {
-        // setup flag from tag dimension and its dependencies.
+        // setup flag of tag dimension and its dependencies.
         Dimension filteringDimension = Mock()
         filteringDimension.getApiName() >> "filteringDimension"
         filteringDimension.getKey() >> DefaultDimensionField.ID
@@ -114,7 +114,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
         fft = new FlagFromTagDimension(fftConfig, dimensionStore)
         dimensionStore.add(fft)
 
-        // Flag from tag dimension needs to be on the logical table and relevant physical tables
+        // Flag of tag dimension needs to be on the logical table and relevant physical tables
         LogicalTableDictionary logicalDictionary = jtb.configurationLoader.logicalTableDictionary
         LogicalTable table = logicalDictionary.get(
                 new TableIdentifier(TestLogicalTableName.PETS.asName(), DefaultTimeGrain.DAY)

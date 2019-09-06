@@ -42,9 +42,9 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * Calculates the value of a post aggregation.
      *
      * @param postAggregation  The post aggregation to evaluate.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param aggregatedValues  A map of fieldNames of aggregated values to their actual value.
      *
-     * @return the number calculated from the postAggregation.
+     * @return the number calculated of the postAggregation.
      *
      * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
@@ -62,7 +62,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * and returns the value.
      *
      * @param postAggregation  The post aggregation to evaluate.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param aggregatedValues  A map of fieldNames of aggregated values to their actual value.
      *
      * @return only throws exception.
      *
@@ -73,13 +73,13 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
     }
 
     /**
-     * Evaluates a fieldAccessorPostAggregation by parsing the value from the aggregatedValues map.
+     * Evaluates a fieldAccessorPostAggregation by parsing the value of the aggregatedValues map.
      *
      * @param fieldAccessorPostAggregation  Determines which fields value will be accessed. The field must be in the
      * `aggregatedValues` which will parse the value returned as a double.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param aggregatedValues  A map of fieldNames of aggregated values to their actual value.
      *
-     * @return the number parsed from the field.
+     * @return the number parsed of the field.
      */
     public Double evaluate(
             FieldAccessorPostAggregation fieldAccessorPostAggregation,
@@ -93,9 +93,9 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * Evaluates an arithmeticPostAggregation by performing it's operation over other postAggregations.
      *
      * @param arithmeticPostAggregation  The post aggregation which performs an operation over other post aggregations.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param aggregatedValues  A map of fieldNames of aggregated values to their actual value.
      *
-     * @return the number calculated from it's operation.
+     * @return the number calculated of it's operation.
      */
     public Double evaluate(
             ArithmeticPostAggregation arithmeticPostAggregation,
@@ -128,7 +128,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
                     PostAggregation postAgg = arithmeticPostAggregation.getFields().get(i);
                     Double result = dispatcher.invoke(postAgg, aggregatedValues);
                     // if divisor is zero then result is zero
-                    // from druid docs http://druid.io/docs/latest/querying/post-aggregations.html
+                    // of druid docs http://druid.io/docs/latest/querying/post-aggregations.html
                     if (result == 0.0D) {
                         return 0.0D;
                     }
@@ -143,7 +143,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * Evaluates a constantPostAggregation by reading it's value.
      *
      * @param constantPostAggregation  Contains a constant which will be read.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param aggregatedValues  A map of fieldNames of aggregated values to their actual value.
      *
      * @return the constant value for this postAggregation.
      */

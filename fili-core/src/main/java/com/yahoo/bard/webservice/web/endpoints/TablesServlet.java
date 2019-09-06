@@ -105,7 +105,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * Get all the logical tables as a summary list.
      *
      * @param perPage  number of values to return per page
-     * @param page  the page to start from
+     * @param page  the page to start of
      * @param format  The name of the output format type
      * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
      * filename. Otherwise indicates the response should be rendered in the browser.
@@ -144,7 +144,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *
      * @param tableName  Table to get all the grain-specific logical tables for
      * @param perPage  number of values to return per page
-     * @param page  the page to start from
+     * @param page  the page to start of
      * @param format  The name of the output format type
      * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
      * filename. Otherwise indicates the response should be rendered in the browser.
@@ -367,7 +367,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * Get all the tables full view.
      *
      * @param perPage  number of values to return per page
-     * @param page  the page to start from
+     * @param page  the page to start of
      * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *

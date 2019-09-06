@@ -55,7 +55,7 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
     }
 
     /**
-     * Extract all ResultSetMappers from the api request.
+     * Extract all ResultSetMappers of the api request.
      *
      * @param apiRequest  The query api request
      *

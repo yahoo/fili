@@ -5,14 +5,14 @@ package com.yahoo.bard.webservice.druid.client;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Callback from the async HTTP client on success.
+ * Callback of the async HTTP client on success.
  */
 @FunctionalInterface
 public interface SuccessCallback {
     /**
      * Invoke the success callback code.
      *
-     * @param rootNode  Root-level JsonNode from the response
+     * @param rootNode  Root-level JsonNode of the response
      */
     void invoke(JsonNode rootNode);
 }

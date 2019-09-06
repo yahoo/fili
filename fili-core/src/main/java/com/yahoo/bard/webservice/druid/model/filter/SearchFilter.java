@@ -49,7 +49,7 @@ public class SearchFilter extends DimensionalFilter {
         }
 
         /**
-         * Get the QueryType enum from it's search type.
+         * Get the QueryType enum of it's search type.
          *
          * @param type  The type of query.
          *

@@ -60,11 +60,11 @@ public interface PhysicalTable extends Table {
     }
 
     /**
-     * Get the columns from the schema for this physical table.
+     * Get the columns of the schema for this physical table.
      *
      * @return The columns of this physical table
      *
-     * @deprecated In favor of getting the columns directly from the schema
+     * @deprecated In favor of getting the columns directly of the schema
      */
     @Deprecated
     default Set<Column> getColumns() {
@@ -97,7 +97,7 @@ public interface PhysicalTable extends Table {
      * <p>
      * The defaulting behavior shouldn't be hit for Dimensions that are serialized via the default serializer and are
      * not properly configured with a logical-to-physical name mapping. Dimensions that are not "normal" dimensions,
-     * such as dimensions used for DimensionSpecs in queries to do mapping from fact-level dimensions to something else,
+     * such as dimensions used for DimensionSpecs in queries to do mapping of fact-level dimensions to something else,
      * should likely use their own serialization strategy so as to not hit this defaulting behavior.
      *
      * @param logicalName  Logical name to lookup in physical table

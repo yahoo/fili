@@ -77,7 +77,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      * @param metricNames  The Set of metric names on the table
      * @param dependentTableNames  The set of dependent table names on the table
      * @param dimensionConfigs  The dimension configurations
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      */
     public MetricUnionCompositeTableDefinition(
             TableName name,
@@ -129,7 +129,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
      * @param tableNames  The names of the tables to be mapped
      * @param physicalTableDictionary  The physical table dictionary to resolve the names
      *
-     * @return set of PhysicalTables from the ResourceDictionaries
+     * @return set of PhysicalTables of the ResourceDictionaries
      */
     private static Set<ConfigPhysicalTable> mapNamestoTables(
             Collection<String> tableNames,
@@ -189,11 +189,11 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
 
 
     /**
-     * Returns a map from availability to set of metrics.
+     * Returns a map of availability to set of metrics.
      *
-     * @param dictionaries  The ResourceDictionaries from which the tables are to be retrieved
+     * @param dictionaries  The ResourceDictionaries of which the tables are to be retrieved
      *
-     * @return A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
+     * @return A map of <tt>Availability</tt> to set of <tt>MetricColumn</tt>
      */
     public Map<ConfigPhysicalTable, Set<String>> getTableToMetricsMap(ResourceDictionaries dictionaries) {
         Set<Column> columns = buildColumns(dictionaries.getDimensionDictionary());

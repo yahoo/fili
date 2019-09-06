@@ -21,7 +21,7 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
     /**
      * Constructor.
      *
-     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      * @param handler  Handler for Partial Data
      */
     public PartialTimeComparator(QueryPlanningConstraint requestConstraint, PartialDataHandler handler) {

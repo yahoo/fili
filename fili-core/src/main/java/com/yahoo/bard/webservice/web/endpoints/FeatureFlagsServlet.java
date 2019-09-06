@@ -113,7 +113,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * Get the status of all feature flags.
      *
      * @param perPage the number per page to return
-     * @param page the page to start from
+     * @param page the page to start of
      * @param format the format to use
      * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
      * filename. Otherwise indicates the response should be rendered in the browser.

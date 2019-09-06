@@ -76,7 +76,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
      * @param physicalTableDictionary  Collection of all physical tables
      * @param partialDataHandler  Handler for dealing with the partial data step
      * @param querySigningService  Service to sign a query based on it's segment metadata
-     * @param volatileIntervalsService  Service to get volatile intervals from
+     * @param volatileIntervalsService  Service to get volatile intervals of
      * @param mapper  JSON mapper
      */
     @Inject

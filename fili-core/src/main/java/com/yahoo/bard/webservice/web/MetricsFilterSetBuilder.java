@@ -67,10 +67,10 @@ public interface MetricsFilterSetBuilder {
      * A method to update outer query aggregations and postAggregations.
      *
      * @param outerQuery  Outer query of a Logical Metric
-     * @param oldFieldNameToNewFieldNameMap  Map which contains mapping old name --&gt; new name of the post aggs from
+     * @param oldFieldNameToNewFieldNameMap  Map which contains mapping old name --&gt; new name of the post aggs of
      * the nested query. Eg: foo --&gt; foo-dim1334dim2445
      *
-     * @return TemplateDruidQuery which is generated from updated aggs, post aggs and the given nested query
+     * @return TemplateDruidQuery which is generated of updated aggs, post aggs and the given nested query
      */
     TemplateDruidQuery updateOuterQuery(
             TemplateDruidQuery outerQuery,
@@ -81,7 +81,7 @@ public interface MetricsFilterSetBuilder {
      * Update the outer query aggs if their respective inner post agg names are updated.
      *
      * @param outerAggregations  Outer query aggregations
-     * @param oldFieldNameToNewFieldNameMap  Map which contains mapping old name --&gt; new name of the post aggs from
+     * @param oldFieldNameToNewFieldNameMap  Map which contains mapping old name --&gt; new name of the post aggs of
      * the nested query. Eg: foo --&gt; foo-dim1334dim2445
      * @param oldNameToNewAggregationMapping  Empty Map to keep old name as key and new aggregation as value
      *
@@ -142,7 +142,7 @@ public interface MetricsFilterSetBuilder {
      *
      * @return A new PostAggregation formed by replacing its FieldAccessor with intersection of its
      * filtered aggregations and replacing each of the intermediate post aggregations with new post aggregations formed
-     * from its new children
+     * of its new children
      */
     PostAggregation replacePostAggregation(
             SketchSetOperationPostAggFunction func,
@@ -203,7 +203,7 @@ public interface MetricsFilterSetBuilder {
     Set<Dimension> gatherFilterDimensions(Filter filter);
 
     /**
-     * Method to get dimensions from a Filter object.
+     * Method to get dimensions of a Filter object.
      *
      * @param filter  filter whose dimensions need to be collected
      * @param dimensions  Set of dimensions belonging to a filter. Empty when the method is first called.

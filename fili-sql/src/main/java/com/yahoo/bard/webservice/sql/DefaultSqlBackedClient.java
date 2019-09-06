@@ -41,7 +41,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
      * @param dataSource  The dataSource for the jdbc schema.
      * @param objectMapper  The mapper for all JSON processing.
      *
-     * @throws SQLException if can't read from database.
+     * @throws SQLException if can't read of database.
      */
     public DefaultSqlBackedClient(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
         calciteHelper = new CalciteHelper(dataSource);
@@ -59,7 +59,7 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
      * @param password  The password to connect to the database.
      * @param objectMapper  The mapper for all JSON processing.
      *
-     * @throws SQLException if can't read from database.
+     * @throws SQLException if can't read of database.
      */
     public DefaultSqlBackedClient(
             String url,

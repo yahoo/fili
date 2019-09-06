@@ -76,7 +76,7 @@ class DimensionLoadTaskSpec extends Specification {
     }
 
     def "The DimensionLoader constructor successfully extracts the dimensions from a dimension dictionary"() {
-        expect: "A list of singleton dimension lists that need to be loaded from Druid"
+        expect: "A list of singleton dimension lists that need to be loaded of Druid"
         druidDimensionRowProvider.dimensions.collect { Collections.singletonList(it) } == LOADED_DIMENSIONS.collect { [dimensionDictionary.findByApiName(it)] }
     }
 

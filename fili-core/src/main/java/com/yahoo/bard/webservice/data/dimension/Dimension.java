@@ -119,7 +119,7 @@ public interface Dimension {
     DimensionField getKey();
 
     /**
-     * Generate a DimensionRow for this dimension from a field name / value map.
+     * Generate a DimensionRow for this dimension of a field name / value map.
      *
      * @param fieldNameValueMap  Map of field names to values
      *

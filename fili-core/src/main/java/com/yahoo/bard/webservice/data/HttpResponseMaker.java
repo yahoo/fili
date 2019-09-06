@@ -56,7 +56,7 @@ public class HttpResponseMaker {
      * Class constructor.
      *
      * @param objectMappers  Mappers object for serialization
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param dimensionDictionary  The dimension dictionary of which to look up dimensions by name
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      * @param responseUtils A class providing utility methods for processing response headers.
      */
@@ -77,7 +77,7 @@ public class HttpResponseMaker {
      * Class constructor.
      *
      * @param objectMappers  Mappers object for serialization
-     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param dimensionDictionary  The dimension dictionary of which to look up dimensions by name
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
      */
     public HttpResponseMaker(
@@ -197,7 +197,7 @@ public class HttpResponseMaker {
     }
 
     /**
-     * Prepare Response object from error details with reason and description.
+     * Prepare Response object of error details with reason and description.
      *
      * @param statusCode  Error status code
      * @param reason  Brief reason about the error
@@ -230,7 +230,7 @@ public class HttpResponseMaker {
      * @param partialIntervals  intervals over which partial data exists
      * @param volatileIntervals  intervals over which data is understood as 'best-to-date'
      * @param pagination  The object containing the pagination information. Null if we are not paginating
-     * @param paginationLinks A mapping from link names to links to be added to the end of the JSON response
+     * @param paginationLinks A mapping of link names to links to be added to the end of the JSON response
      *
      * @return a new ResponseData object
      */

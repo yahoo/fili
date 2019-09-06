@@ -40,13 +40,13 @@ class ThetaSketchSetOperationMakerSpec extends Specification {
                 new TemplateDruidQuery([allYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_yahoos",
-                "All users from Yahoo"
+                "All users of Yahoo"
         )
         LogicalMetric secondMetric = new LogicalMetric(
                 new TemplateDruidQuery([allNonYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_nonyahoos",
-                "All users not from Yahoo"
+                "All users not of Yahoo"
         )
         List<LogicalMetric> allUsers = [firstMetric, secondMetric]
 

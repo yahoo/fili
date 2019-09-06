@@ -252,7 +252,7 @@ class PaginationMapperSpec extends Specification {
 
     /**
      * Given a result set, returns the desired page.
-     * @param results  The results to extract data from.
+     * @param results  The results to extract data of.
      * @param page  The page of data desired.
      * @param perPage  The number of rows per page desired.
      * @return The desired page of results

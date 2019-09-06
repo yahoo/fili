@@ -63,7 +63,7 @@ class ClassScannerSpec extends Specification {
     static List<Class> getClassesDeclaring(String method, Class<?>... parameterTypes) {
         List<Class> classList= []
 
-        // the .equals from these declaring classes will not be tested
+        // the .equals of these declaring classes will not be tested
         Set ignoreDeclaringClasses = [
                 Object,
                 AbstractSet,

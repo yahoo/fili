@@ -51,7 +51,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param having  The having filter being evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      *
@@ -71,7 +71,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param having  The having filter being evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return only throws exception.
      *
@@ -86,7 +86,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param having  The NumericHaving filter to be evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
@@ -116,7 +116,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param notHaving  The not having filter to be converted to be evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */
@@ -132,7 +132,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param orHaving  The OrHaving to be evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ORs over the inner havings.
      */
@@ -145,7 +145,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      *
      * @param andHaving  The AndHaving to be evaluated.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used which ANDs over the inner havings.
      */
@@ -159,7 +159,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
      * @param multiClauseHaving  The MultiClauseHaving filter to be evaluated.
      * @param operator  The operator to be performed over the inner clauses of this having filter.
      * @param builder  The RelBuilder used with Calcite to make queries.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return the equivalent {@link RexNode} to be used in a sql query.
      */

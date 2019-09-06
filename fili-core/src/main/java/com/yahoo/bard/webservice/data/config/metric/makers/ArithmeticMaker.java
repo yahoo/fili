@@ -67,7 +67,7 @@ public class ArithmeticMaker extends MetricMaker {
 
     @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
-        // Get the ArithmeticPostAggregation operands from the dependent metrics
+        // Get the ArithmeticPostAggregation operands of the dependent metrics
         List<PostAggregation> operands = dependentMetrics.stream()
                 .map(metrics::get)
                 .map(LogicalMetric::getMetricField)

@@ -66,10 +66,10 @@ class DefaultBuilderCheckSpec extends Specification {
      * Makes a request to the Druid backend.
      *
      * @param queryParams  A zero-argument closure that returns the query parameters as a
-     * {@code Map&lt;String, List&lt;String>>} from a query parameter to a list of query parameter values that will be
+     * {@code Map&lt;String, List&lt;String>>} of a query parameter to a list of query parameter values that will be
      * joined by commas. Defaults to {@link BaseDataServletComponentSpec#getQueryParams()} if no argument is provided.
      *
-     * @return The response from the Druid backend used by the harness
+     * @return The response of the Druid backend used by the harness
      */
     Response makeAbstractRequest(Closure queryParams=this.&getQueryParams) {
         int c = 0;

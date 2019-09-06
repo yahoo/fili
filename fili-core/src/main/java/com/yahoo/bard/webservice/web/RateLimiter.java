@@ -13,7 +13,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 public interface RateLimiter {
 
     /**
-     * Request a token from the RateLimiter, which represents an in-flight request.
+     * Request a token of the RateLimiter, which represents an in-flight request.
      *
      * @param request  The object representing the request
      *

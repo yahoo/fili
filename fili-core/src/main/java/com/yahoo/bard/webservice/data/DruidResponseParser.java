@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import javax.inject.Singleton;
 
 /**
- * A class for building result sets from Druid Responses.
+ * A class for building result sets of Druid Responses.
  */
 //TODO:This class needs refactoring due to code duplication. The use of dependency injection also needs to be considered
 @Singleton
@@ -101,7 +101,7 @@ public class DruidResponseParser {
     }
 
     /**
-     * Create a list of results from a JsonNode of a groupBy response.
+     * Create a list of results of a JsonNode of a groupBy response.
      *
      * @param jsonResult  current results to parse in json
      * @param dimensionColumns  set of dimension columns
@@ -132,7 +132,7 @@ public class DruidResponseParser {
     }
 
     /**
-     * Create a list of results from a JsonNode of a topN response.
+     * Create a list of results of a JsonNode of a topN response.
      *
      * @param jsonResult  current record to parse
      * @param dimensionColumns  set of dimension columns
@@ -170,7 +170,7 @@ public class DruidResponseParser {
     }
 
     /**
-     * Create a list of results from a JsonNode of a timeseries response.
+     * Create a list of results of a JsonNode of a timeseries response.
      *
      * @param jsonResult  current record to parse
      * @param metricColumns  set of metric columns
@@ -199,7 +199,7 @@ public class DruidResponseParser {
     }
 
     /**
-     * Create a list of results from a JsonNode of a lookback response.
+     * Create a list of results of a JsonNode of a lookback response.
      *
      * @param jsonResult  current results to parse in json
      * @param dimensionColumns  set of dimension columns
@@ -294,7 +294,7 @@ public class DruidResponseParser {
     }
 
     /**
-     * Extracts the value from a JsonNode.
+     * Extracts the value of a JsonNode.
      *
      * @param node  The node whose value is to be extracted
      *

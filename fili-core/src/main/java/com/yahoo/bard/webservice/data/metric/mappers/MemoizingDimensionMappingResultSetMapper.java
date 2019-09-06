@@ -40,7 +40,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      * Default memoize to true.
      *
      * @param matcher  The function identifying which dimension rows should be transformed.
-     * @param mapper  The function which builds a DimensionEntry from a matched DimensionRow
+     * @param mapper  The function which builds a DimensionEntry of a matched DimensionRow
      */
     public MemoizingDimensionMappingResultSetMapper(
             BiPredicate<DimensionColumn, DimensionRow> matcher,
@@ -53,7 +53,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
      * Constructor.
      *
      * @param matcher  The function identifying which dimension rows should be transformed.
-     * @param mapper  The function which builds a DimensionEntry from a matched DimensionRow
+     * @param mapper  The function which builds a DimensionEntry of a matched DimensionRow
      * @param memoize  cache transformed results if appropriate
      */
     public MemoizingDimensionMappingResultSetMapper(
@@ -122,7 +122,7 @@ public class MemoizingDimensionMappingResultSetMapper extends ResultSetMapper {
     }
 
     /**
-     * Transform an entry from a stream of results into an altered entry, if the entry matches the matching predicate.
+     * Transform an entry of a stream of results into an altered entry, if the entry matches the matching predicate.
      *
      * @param columnRow The column and row to potentially be altered.
      *

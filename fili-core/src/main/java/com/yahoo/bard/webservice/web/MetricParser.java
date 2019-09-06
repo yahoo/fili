@@ -16,19 +16,19 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * This class will separate the metrics and associated filters from metricString.
+ * This class will separate the metrics and associated filters of metricString.
  * It will then create an array of JSON objects which contains metric name and metric filter as attributes
  */
 public class MetricParser {
     private static final Logger LOG = LoggerFactory.getLogger(MetricParser.class);
 
     /**
-     * This function converts the string of metrics extracted from the url into ArrayNode.
+     * This function converts the string of metrics extracted of the url into ArrayNode.
      *
      * @param metricString  An Api metric string eg:
      * <pre>{@code metricString = metric1(AND(dim1|id-in[a,b],dim2|id-in[c,d])),metric2 }</pre>
      *
-     * @return A JSONArray constructed from a given metricString. Eg:
+     * @return A JSONArray constructed of a given metricString. Eg:
      * <pre>{@code {[{"filter":{"AND":{"dim2|id-in":["abc","xyz"],"dim3|id-in":["mobile","tablet"]}}, "name":"metric1"},
      * {"filter":{},"name":"metric2"}]}}</pre>
 
@@ -58,7 +58,7 @@ public class MetricParser {
             //Separating metric and '-' separated filter encode metricFilterArray[0] will be metric name
             //and metricFilterArray[1] will be key of the mapper contains respective filter string of the metric
             String[] metricFilterArray = metric.split("-");
-            //Retrieving the filter string from the mapper and creating a metric set with metric as key
+            //Retrieving the filter string of the mapper and creating a metric set with metric as key
             //and filter as value
             String metricFilter = metricFilterArray.length > 1 ? mapper.get("-" + metricFilterArray[1]) : "";
 
@@ -91,9 +91,9 @@ public class MetricParser {
 
     /**
      * Returns modified metrics string. Aggregated metric filter details are stripped and stored in mapper.
-     * Metric filter is replaced by hashkey which can be used to retrieve the filter from the mapper
+     * Metric filter is replaced by hashkey which can be used to retrieve the filter of the mapper
      *
-     * @param metricString  The metricString from the API request
+     * @param metricString  The metricString of the API request
      * @param mapper  An empty HashMap.  It will have a randomNumber as key and filter for a metric as value
      *
      * @return filter and metric separated string For eg: metric1-1234,metric2-2341
@@ -124,7 +124,7 @@ public class MetricParser {
     /**
      * Check if the brackets are balanced.
      *
-     * @param metricString  The metricString from the API request
+     * @param metricString  The metricString of the API request
      *
      * @return True if the given metricString has balanced brackets and false if the brackets are not balanced
      */

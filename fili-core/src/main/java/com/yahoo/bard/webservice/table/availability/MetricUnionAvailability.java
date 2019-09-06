@@ -127,7 +127,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     /**
      * Validates whether the metric columns are unique across each of the underlying datasource.
      *
-     * @param availabilityToMetricNames  A map from <tt>Availability</tt> to set of <tt>MetricColumn</tt>
+     * @param availabilityToMetricNames  A map of <tt>Availability</tt> to set of <tt>MetricColumn</tt>
      * contained in that <tt>Availability</tt>
      *
      * @return true if metric is unique across data sources, false otherwise
@@ -140,7 +140,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     /**
-     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a map from each availability, A, in this MetricUnion to
+     * Given a <tt>DataSourceConstraint</tt> - DSC1, construct a map of each availability, A, in this MetricUnion to
      * its <tt>DataSourceConstraint</tt>, DSC2.
      * <p>
      * DSC2 is constructed as the intersection of metric columns between DSC1 and
@@ -150,7 +150,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      * @param constraint  The data constraint whose contained metric columns will be intersected with availabilities'
      * metric columns
      *
-     * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
+     * @return A map of <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
      */
     private Map<Availability, DataSourceConstraint> constructSubConstraint(
             DataSourceConstraint constraint
@@ -169,7 +169,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     /**
      * Produce a metric union availability.
      *
-     * @param physicalTables  The physical tables to source metrics and dimensions from.
+     * @param physicalTables  The physical tables to source metrics and dimensions of.
      * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
      *
      * @return A metric union availability decorated with an official aggregate.

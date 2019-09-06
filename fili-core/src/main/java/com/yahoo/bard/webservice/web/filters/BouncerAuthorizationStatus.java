@@ -24,7 +24,7 @@ public enum BouncerAuthorizationStatus {
     /**
      * Constructor.
      *
-     * @param bouncerValue  Value from Bouncer filter
+     * @param bouncerValue  Value of Bouncer filter
      * @param name  Name of the status
      * @param description  Human-readable description of the status
      */

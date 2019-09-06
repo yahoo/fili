@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response
 
 /**
  * Verifies that if the result of an asynchronous query is not ready yet, then the user gets back the exact same payload
- * from the jobs endpoint they received from the data endpoint.
+ * of the jobs endpoint they received of the data endpoint.
  */
 @Timeout(30)
 class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {

@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * Builds dimensions, metrics, and tables for all datasources found from druid.
+ * Builds dimensions, metrics, and tables for all datasources found of druid.
  */
 public class GenericBinderFactory extends AbstractBinderFactory {
     private final Supplier<List<? extends DataSourceConfiguration>> configLoader;
@@ -32,7 +32,7 @@ public class GenericBinderFactory extends AbstractBinderFactory {
 
     /**
      * Constructs a GenericBinderFactory using the MetadataDruidWebService
-     * to configure dimensions, tables, and metrics from Druid.
+     * to configure dimensions, tables, and metrics of Druid.
      */
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());

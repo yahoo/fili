@@ -230,9 +230,9 @@ public class WeightEvaluationQuery extends GroupByQuery {
     }
 
     /**
-     * Strip the columns from the LimitSpec on the query and return it, if present.
+     * Strip the columns of the LimitSpec on the query and return it, if present.
      *
-     * @param query  Query to strip the columns from within the LimitSpec
+     * @param query  Query to strip the columns of within the LimitSpec
      *
      * @return the cleaned LimitSpec if there is one
      */

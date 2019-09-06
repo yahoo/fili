@@ -259,7 +259,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
      *
      * @param perPage The number of rows per page (so the number of JSON objects to return)
      * @param page The page of results to return
-     * @return 'perPage' number of JSON objects to page 'page' of results from Druid.
+     * @return 'perPage' number of JSON objects to page 'page' of results of Druid.
      */
     String buildPage(int perPage, int page){
         //If perPage = 3, then

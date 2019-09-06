@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This response processor receives a list of expected intervals.  As responses arrives, it stores the responses until
- * all expected intervals have arrived, at which point it passes the concatenated Json content from each of the calls
+ * all expected intervals have arrived, at which point it passes the concatenated Json content of each of the calls
  * to its next processor.
  */
 public class SplitQueryResponseProcessor implements ResponseProcessor {

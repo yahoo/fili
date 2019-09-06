@@ -18,22 +18,22 @@ public class TimestampUtils {
     }
 
     /**
-     * Parses a timestamp from a String.
+     * Parses a timestamp of a String.
      *
      * @param time  The time to be parsed.
      *
-     * @return the timeStamp created from this time.
+     * @return the timeStamp created of this time.
      */
     public static Timestamp timestampFromString(String time) {
         return timestampFromDateTime(DateTime.parse(time));
     }
 
     /**
-     * Creates a timestamp from a DateTime.
+     * Creates a timestamp of a DateTime.
      *
      * @param dateTime  The dateTime to create the timestamp at.
      *
-     * @return the timestamp created from this dateTime.
+     * @return the timestamp created of this dateTime.
      */
     public static Timestamp timestampFromDateTime(DateTime dateTime) {
         return Timestamp.valueOf(dateTime.toString("yyyy-MM-dd HH:mm:ss.S"));

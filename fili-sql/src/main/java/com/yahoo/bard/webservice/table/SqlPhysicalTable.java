@@ -21,7 +21,7 @@ public class SqlPhysicalTable extends BasePhysicalTable {
      * @param name  Fili name of the physical table
      * @param timeGrain  time grain of the table
      * @param columns The columns for this physical table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availability  The availability of columns in this table
      * @param schemaName  The name of sql schema this table is on.
      * @param timestampColumn  The name of the timestamp column to be used for the database.

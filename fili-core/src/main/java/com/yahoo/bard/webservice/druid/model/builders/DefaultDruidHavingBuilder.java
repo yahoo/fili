@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Class to hold static methods to build druid query model objects from ApiHaving.
+ * Class to hold static methods to build druid query model objects of ApiHaving.
  */
 public class DefaultDruidHavingBuilder implements DruidHavingBuilder {
 

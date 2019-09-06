@@ -36,7 +36,7 @@ public interface PhysicalTableMatcher extends Predicate<PhysicalTable> {
      *
      * @param  tables A stream of tables to match on
      *
-     * @return Any tables which match the criteria from {@link #test(PhysicalTable)}
+     * @return Any tables which match the criteria of {@link #test(PhysicalTable)}
      * @throws NoMatchFoundException if no tables in the stream match
      */
     default Set<PhysicalTable> matchNotEmpty(Stream<PhysicalTable> tables) throws NoMatchFoundException {

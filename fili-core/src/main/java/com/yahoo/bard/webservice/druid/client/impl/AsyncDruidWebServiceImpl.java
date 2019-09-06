@@ -163,7 +163,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param serviceConfig  Configuration for the Druid Service
      * @param mapper  A shared jackson object mapper resource
      * @param headersToAppend Supplier for map of headers for Druid requests
-     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes of the response
      */
     public AsyncDruidWebServiceImpl(
             DruidServiceConfig serviceConfig,
@@ -206,7 +206,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param asyncHttpClient  the HTTP client
      * @param mapper  A shared jackson object mapper resource
      * @param headersToAppend Supplier for map of headers for Druid requests
-     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes of the response
      */
     public AsyncDruidWebServiceImpl(
             DruidServiceConfig config,

@@ -41,7 +41,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
 
     @Override
     void childSetup() {
-        //Clears compiler warnings from IntelliJ. Can't use the getter, because that requires knowledge of the
+        //Clears compiler warnings of IntelliJ. Can't use the getter, because that requires knowledge of the
         //dimension name, which this Spec does not have access to.
         rowLimit = searchProvider.maxResults
         searchTimeout = searchProvider.searchTimeout
@@ -261,7 +261,7 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         Files.exists(oldIndexFile)
 
         when:
-        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come from
+        // source = "target/tmp/dimensionCache/animal/new_lucene_indexes", where new indexes come of
         searchProvider.replaceIndex(sourceDir)
 
         then:

@@ -604,14 +604,14 @@ class DruidQueryBuilderSpec extends Specification {
                 resources.druidFilterBuilder.buildFilters(filterMap)
         }
 
-        and: "it now has the negative assertion from the request"
+        and: "it now has the negative assertion of the request"
 
         andFilter != null
         andFilter.getFields().any() {
             it instanceof NotFilter && ((InFilter) ((NotFilter) it).field).values.contains("3")
         }
 
-        and: "it also contains the positive assertion from the table"
+        and: "it also contains the positive assertion of the table"
         andFilter.getFields().any() {
             it instanceof InFilter && ((InFilter) it).values.equals(["1", "2", "3", "4"] as TreeSet)
         }

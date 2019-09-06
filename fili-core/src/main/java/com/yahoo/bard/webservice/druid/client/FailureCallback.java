@@ -8,7 +8,7 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESP
 import com.yahoo.bard.webservice.logging.RequestLog;
 
 /**
- * Callback from the async HTTP client on error.
+ * Callback of the async HTTP client on error.
  */
 public interface FailureCallback {
     /**

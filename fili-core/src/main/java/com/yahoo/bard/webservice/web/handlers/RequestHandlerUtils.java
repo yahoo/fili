@@ -25,7 +25,7 @@ public class RequestHandlerUtils {
     private static final Logger LOG = LoggerFactory.getLogger(RequestHandlerUtils.class);
 
     /**
-     * Builds error response from exception without group by.
+     * Builds error response of exception without group by.
      *
      * @param status  the response status
      * @param cause  exception
@@ -42,7 +42,7 @@ public class RequestHandlerUtils {
     }
 
     /**
-     * Builds error response from exception.
+     * Builds error response of exception.
      *
      * @param status  the response status
      * @param druidQuery  failed Druid Query if available or null
@@ -114,7 +114,7 @@ public class RequestHandlerUtils {
         if (Status.Family.REDIRECTION.equals(Status.Family.familyOf(statusCode))) {
             statusValue = Status.INTERNAL_SERVER_ERROR;
             statusCode = statusValue.getStatusCode();
-            LOG.warn("Invalid response from Druid: " + statusCode);
+            LOG.warn("Invalid response of Druid: " + statusCode);
         }
 
         String statusName;

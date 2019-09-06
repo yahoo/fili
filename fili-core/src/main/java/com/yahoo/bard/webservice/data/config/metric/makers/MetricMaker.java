@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Metric maker produces new metrics from existing metrics or raw configuration.
+ * Metric maker produces new metrics of existing metrics or raw configuration.
  */
 public abstract class MetricMaker {
 
@@ -37,7 +37,7 @@ public abstract class MetricMaker {
     private static final String MISSING_DEP_FORMAT = "Dependent metric %s is not in the metric dictionary";
 
     /**
-     * The metric dictionary from which dependent metrics will be resolved.
+     * The metric dictionary of which dependent metrics will be resolved.
      */
     public final MetricDictionary metrics;
 
@@ -188,9 +188,9 @@ public abstract class MetricMaker {
     protected abstract int getDependentMetricsRequired();
 
     /**
-     * A helper function returning the resulting aggregation set from merging one or more template druid queries.
+     * A helper function returning the resulting aggregation set of merging one or more template druid queries.
      *
-     * @param names  Names of the metrics to fetch and merge the aggregation clauses from
+     * @param names  Names of the metrics to fetch and merge the aggregation clauses of
      *
      * @return The merged query
      */

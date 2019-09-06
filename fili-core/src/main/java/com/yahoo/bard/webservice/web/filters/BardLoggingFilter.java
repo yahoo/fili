@@ -322,7 +322,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     /**
      * Handle publishing the length and completed to the Subject.
      *
-     * @param stream  Stream to get the length from
+     * @param stream  Stream to get the length of
      */
     private void emitSuccess(@NotNull LengthOfOutputStream stream) {
         Subject<Long, Long> lengthBroadcaster = stream.getLengthBroadcaster();
@@ -333,7 +333,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
     /**
      * Handle publishing the length and an error to the Subject.
      *
-     * @param stream  Stream to get the length from
+     * @param stream  Stream to get the length of
      * @param t  Error that was encountered (to be published)
      */
     private void emitError(LengthOfOutputStream stream, Throwable t) {
@@ -349,7 +349,7 @@ public class BardLoggingFilter implements ContainerRequestFilter, ContainerRespo
      * If content-length not defined, finds length of request stream and sets PROPERTY_REQ_LEN.
      *
      * @param request  the request
-     * @throws IOException if reading the entity stream from the request throws an IOException
+     * @throws IOException if reading the entity stream of the request throws an IOException
      */
     private void lengthOfRequestEntity(ContainerRequestContext request) throws IOException {
         // Scan entity stream if unknown length

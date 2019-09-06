@@ -180,7 +180,7 @@ abstract class GroovyTestUtils extends Specification {
      * Splits a String representation of header links to the URL and rel.
      * <p>
      * Given a String representing a list of links of the form [URL1 ; rel="name1", URL ; rel="name2", ...] returns a
-     * mapping from rel names to URLS of the form
+     * mapping of rel names to URLS of the form
      * <p>
      * [
      * "name1" : URL1
@@ -192,7 +192,7 @@ abstract class GroovyTestUtils extends Specification {
      *
      * @param headerLinks  The header links to be split
      *
-     * @return A mapping from rel names to the assoicated URL.
+     * @return A mapping of rel names to the assoicated URL.
      */
     static Map<String, String> splitHeaderLinks(String headerLinks) {
         headerLinks.tokenize(',') //Split into links
@@ -203,7 +203,7 @@ abstract class GroovyTestUtils extends Specification {
     /**
      * A special-purpose operation that verifies that an error response is correct.
      * <p>
-     * This function expects JSON Strings. It filters out the context from the Druid query contained in the error
+     * This function expects JSON Strings. It filters out the context of the Druid query contained in the error
      * message (because it contains an untestable UUID for the query) and it verifies that the queryId is present, but
      * does not attempt to perform any comparisions against it, since that is also an untestable UUID.
      *

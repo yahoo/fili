@@ -139,7 +139,7 @@ public class AvroDimensionRowParser {
      *
      * @param dimension  The dimension object used to configure the dimension
      * @param avroFilePath  The path of the AVRO data file (.avro)
-     * @param consumer  A consumer to process records from the avro file
+     * @param consumer  A consumer to process records of the avro file
      *
      * @throws IllegalArgumentException thrown if JSON object `fields` is not present
      */
@@ -203,7 +203,7 @@ public class AvroDimensionRowParser {
      * Retrieve the given field in the generic record, replace null value record with string "null".
      *
      * @param genericRecord  One of the record in the given avro file
-     * @param dimensionFieldName  Name of the dimension field used to retrieve the value from the record
+     * @param dimensionFieldName  Name of the dimension field used to retrieve the value of the record
      *
      * @return string representing the record value
      */

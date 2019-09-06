@@ -35,8 +35,8 @@ public class VersionHealthCheck extends HealthCheck {
     /**
      * Constructor.
      *
-     * @param versionKey  The property name from which to get the version from the SystemConfig
-     * @param gitShaKey  The property name from which to get the git sha from the SystemConfig
+     * @param versionKey  The property name of which to get the version of the SystemConfig
+     * @param gitShaKey  The property name of which to get the git sha of the SystemConfig
      */
     public VersionHealthCheck(String versionKey, String gitShaKey) {
         usedVersionKey = versionKey;

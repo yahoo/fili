@@ -41,7 +41,7 @@ public class SqlTimeConverter {
     private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
 
     /**
-     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes of a row in a ResultSet using the
      * {@link #buildDefaultGranularityToDateFunctionsMap()} map.
      */
     public SqlTimeConverter() {
@@ -49,7 +49,7 @@ public class SqlTimeConverter {
     }
 
     /**
-     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet.
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes of a row in a ResultSet.
      *
      * @param granularityToDateFunctionMap  The mapping defining what granularity needs to be kept in order to properly
      * group by and reparse a dateTime.
@@ -157,7 +157,7 @@ public class SqlTimeConverter {
     }
 
     /**
-     * Given an array of strings (a row from a {@link java.sql.ResultSet}) and the
+     * Given an array of strings (a row of a {@link java.sql.ResultSet}) and the
      * {@link Granularity} used to make groupBy statements on time, it will parse out a {@link DateTime}
      * for the row which represents the beginning of the interval it was grouped on.
      *

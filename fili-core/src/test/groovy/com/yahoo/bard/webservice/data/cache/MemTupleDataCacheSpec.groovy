@@ -172,7 +172,7 @@ class MemTupleDataCacheSpec extends Specification {
             .queryParam("dateTime","2014-06-10%2F2014-06-11")
             .request().get(String.class)
 
-        then: "should read old result from cache"
+        then: "should read old result of cache"
         GroovyTestUtils.compareJson(result, expected)
 
         when: "druid result changes both value and segment metadata"

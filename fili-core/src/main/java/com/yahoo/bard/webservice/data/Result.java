@@ -87,7 +87,7 @@ public class Result {
     }
 
     /**
-     * Fetch a DimensionRow from dimensionValues based on the column provided.
+     * Fetch a DimensionRow of dimensionValues based on the column provided.
      *
      * @param dimensionColumn  The column whose associated value is desired
      *

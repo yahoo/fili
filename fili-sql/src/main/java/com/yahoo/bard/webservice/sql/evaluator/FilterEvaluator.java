@@ -56,7 +56,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param filter  The filter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      *
@@ -76,7 +76,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param filter  The filter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return only throws exception.
      *
@@ -91,7 +91,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param regexFilter  A regexFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
@@ -114,7 +114,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param selectorFilter  A selectorFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
@@ -132,7 +132,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param searchFilter  A searchFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
@@ -174,7 +174,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param inFilter  An inFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */
@@ -195,7 +195,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param orFilter  An orFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter which ORs over the inner filters.
      */
@@ -208,7 +208,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param andFilter  An andFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter which ANDs over the inner filters.
      */
@@ -221,7 +221,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      *
      * @param notFilter  An notFilter to be evaluated.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter which NOTs over the inner filters.
      */
@@ -235,7 +235,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
      * @param complexFilter  A complexFilter to be evaluated.
      * @param operator  The sql operator to be applied to a complexFilter's fields.
      * @param builder  The RelBuilder used to build queries with Calcite.
-     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name of the metric name.
      *
      * @return a RexNode containing an equivalent filter to the one given.
      */

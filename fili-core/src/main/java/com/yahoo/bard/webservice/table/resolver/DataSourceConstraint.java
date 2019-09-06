@@ -113,7 +113,7 @@ public class DataSourceConstraint {
     /**
      * Copy Constructor.
      *
-     * @param dataSourceConstraint  The data source constraint to copy from
+     * @param dataSourceConstraint  The data source constraint to copy of
      */
     protected DataSourceConstraint(DataSourceConstraint dataSourceConstraint) {
         this.requestDimensions = dataSourceConstraint.getRequestDimensions();

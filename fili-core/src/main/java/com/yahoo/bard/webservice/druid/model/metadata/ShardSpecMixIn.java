@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.druid.timeline.partition.NoneShardSpec;
 
 /**
- * Defines a mix-in that is used to deserialize shard spec from json.
+ * Defines a mix-in that is used to deserialize shard spec of json.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({

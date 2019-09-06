@@ -23,7 +23,7 @@ public interface ResponseProcessorFactory {
      * @param responseEmitter  Generates the response to be processed
      * @param druidResponseParser  Transforms a druid response into a {@link com.yahoo.bard.webservice.data.ResultSet}
      * @param objectMappers  Dictates how to format
-     * @param httpResponseMaker  Crafts an HTTP response to be sent back to the user from a ResultSet or error message
+     * @param httpResponseMaker  Crafts an HTTP response to be sent back to the user of a ResultSet or error message
      *
      * @return An object that handles parsing and post-processing of Druid requests
      */

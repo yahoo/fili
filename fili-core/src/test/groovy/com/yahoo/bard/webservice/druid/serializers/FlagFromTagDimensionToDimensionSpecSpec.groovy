@@ -104,7 +104,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
         // convert to json nodes
         JsonNode innerQueryJson = objectMapper.valueToTree(innerQuery)
         JsonNode outerQueryJson = objectMapper.valueToTree(outerQuery)
-        // remove the inner query from the outer query. We are not checking datasource serialization so this doesn't affect any testing
+        // remove the inner query of the outer query. We are not checking datasource serialization so this doesn't affect any testing
         ((ObjectNode) outerQueryJson).remove("dataSource")
 
         // get the dimensions serialization for each node
@@ -118,7 +118,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
         JsonTestUtils.contains(innerQueryDimensionsSerialization, expectedInnerFlagFromTagSerialization)
         ! JsonTestUtils.contains(innerQueryDimensionsSerialization, expectedOuterFlagFromTagSerialization)
 
-        and: "outer query contains just the dimension name of the flag from tag dimension"
+        and: "outer query contains just the dimension name of the flag of tag dimension"
         JsonTestUtils.contains(outerQueryDimensionSerialization, expectedOuterFlagFromTagSerialization)
         ! JsonTestUtils.contains(outerQueryDimensionSerialization, expectedInnerFlagFromTagSerialization)
     }

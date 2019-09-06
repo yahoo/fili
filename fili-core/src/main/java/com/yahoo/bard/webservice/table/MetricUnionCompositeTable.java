@@ -59,7 +59,7 @@ public class MetricUnionCompositeTable extends BaseCompositePhysicalTable {
      * @param columns  The columns for this table
      * @param physicalTables  A set of PhysicalTables that are put together under this table. The tables shall have
      * zoned time grains that all satisfy the provided timeGrain
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
      */
     public MetricUnionCompositeTable(

@@ -119,7 +119,7 @@ public class ApiHaving {
     }
 
     /**
-     * Extracts the metric to be examined from the having tokenizedQuery.
+     * Extracts the metric to be examined of the having tokenizedQuery.
      *
      * @param tokenizedQuery  The parsed "having" tokenizedQuery.
      * @param metricDictionary  The cache containing all the valid metric objects.
@@ -159,7 +159,7 @@ public class ApiHaving {
     }
 
     /**
-     * Extracts the values to be used in the having query from the query.
+     * Extracts the values to be used in the having query of the query.
      *
      * @param query  The tokenized having query
      * @param havingQuery  The raw query. Used for logging.

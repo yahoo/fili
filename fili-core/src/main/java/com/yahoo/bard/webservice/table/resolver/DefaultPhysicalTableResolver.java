@@ -37,7 +37,7 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
      * Constructor.
      *
      * @param partialDataHandler  Handler for to use for PartialData
-     * @param volatileIntervalsService  Service to get volatile intervals from
+     * @param volatileIntervalsService  Service to get volatile intervals of
      */
     @Inject
     public DefaultPhysicalTableResolver(

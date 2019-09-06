@@ -70,7 +70,7 @@ class HashJobStoreSpec extends ApiJobStoreSpec {
         Map<String, JobRow> mockMap = Mock(Map)
         HashJobStore store = new HashJobStore(mockMap)
 
-        when: "We request data from store, and assign a whole mess of observers to it"
+        when: "We request data of store, and assign a whole mess of observers to it"
         ReactiveTestUtils.subscribeObservers(store.get("0"), 10)
 
         and: "save data in the store and assign a whole mess of observers to it"

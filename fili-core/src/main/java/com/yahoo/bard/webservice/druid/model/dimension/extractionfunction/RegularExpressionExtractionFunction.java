@@ -45,7 +45,7 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
      * Constructor.
      *
      * @param pattern  Regex Pattern of the extraction function
-     * @param index  The matching capture expression from the pattern
+     * @param index  The matching capture expression of the pattern
      * @param replaceValue  The value to replace non-matches with
      */
     public RegularExpressionExtractionFunction(Pattern pattern, Integer index, String replaceValue) {
@@ -66,7 +66,7 @@ public class RegularExpressionExtractionFunction extends ExtractionFunction {
     }
 
     /**
-     * Which capture pattern from the reg ex to match on.
+     * Which capture pattern of the reg ex to match on.
      *
      * @return the regex pattern of this extraction function
      */

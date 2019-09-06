@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- * Extracts the requested page of data from the Druid results. Behavior is undefined if the page requested is
+ * Extracts the requested page of data of the Druid results. Behavior is undefined if the page requested is
  * less than 1, or the requested number of results on each page is less than 1.
  */
 public class PaginationMapper extends ResultSetMapper {

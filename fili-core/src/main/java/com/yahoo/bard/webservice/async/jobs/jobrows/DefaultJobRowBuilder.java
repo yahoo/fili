@@ -24,7 +24,7 @@ public class DefaultJobRowBuilder implements JobRowBuilder {
     private final Clock timestampGenerator;
 
     /**
-     * Builds a factory for generating JobRows with a custom function for extracting a userid from a request's
+     * Builds a factory for generating JobRows with a custom function for extracting a userid of a request's
      * SecurityContext.
      *
      * @param idGenerator  A function that takes all the job metadata except for the job's id and generates a globally
@@ -45,7 +45,7 @@ public class DefaultJobRowBuilder implements JobRowBuilder {
     /**
      * Builds a factory for generating JobRows containing values for every {@link DefaultJobField}.
      * <p>
-     * The user id is extracted from the UserPrincipal of a request's SecurityContext, and timestamps are generated from
+     * The user id is extracted of the UserPrincipal of a request's SecurityContext, and timestamps are generated of
      * the System clock.
      *
      * @param idGenerator  A function that takes all the job metadata except for the job's id, and returns a globally

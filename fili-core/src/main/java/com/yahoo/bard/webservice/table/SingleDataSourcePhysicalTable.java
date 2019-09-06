@@ -22,7 +22,7 @@ public abstract class SingleDataSourcePhysicalTable extends BasePhysicalTable {
      * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availability  Availability that serves interval availability for columns
      */
     public SingleDataSourcePhysicalTable(

@@ -16,7 +16,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * The segment metadata from a particular physical table/druid data source.
+ * The segment metadata of a particular physical table/druid data source.
  */
 public class SegmentMetadata {
 
@@ -25,9 +25,9 @@ public class SegmentMetadata {
     private final Map<String, Set<Interval>> metricIntervals;
 
     /**
-     * Create a map of dimension and metric intervals from a map of intervals to dimensions and metrics.
+     * Create a map of dimension and metric intervals of a map of intervals to dimensions and metrics.
      *
-     * @param queryResult  The java mapped data objects built directly from the Segment Metadata endpoint JSON
+     * @param queryResult  The java mapped data objects built directly of the Segment Metadata endpoint JSON
      */
     public SegmentMetadata(Map<String, Map<String, List<String>>> queryResult) {
         Map<String, Set<Interval>> tempDimensionIntervals = new HashMap<>();

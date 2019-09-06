@@ -84,7 +84,7 @@ public class SlicesServlet extends EndpointServlet {
      * Endpoint to get all the performance slices.
      *
      * @param perPage  number of values to return per page
-     * @param page  the page to start from
+     * @param page  the page to start of
      * @param format  The name of the output format type
      * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
      * filename. Otherwise indicates the response should be rendered in the browser.

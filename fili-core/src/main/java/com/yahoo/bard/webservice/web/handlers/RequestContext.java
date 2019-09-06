@@ -26,7 +26,7 @@ public class RequestContext {
     /**
      * Build a context for a request.
      *
-     * @param containerRequestContext  context from the http request object
+     * @param containerRequestContext  context of the http request object
      * @param readCache  true if the cache should be checked for a response
      */
     public RequestContext(ContainerRequestContext containerRequestContext, boolean readCache) {
@@ -50,7 +50,7 @@ public class RequestContext {
     }
 
     /**
-     * Get a container property from the RequestContext.
+     * Get a container property of the RequestContext.
      *
      * @param name  Name of the property
      * @param <T>  Type of the property to get

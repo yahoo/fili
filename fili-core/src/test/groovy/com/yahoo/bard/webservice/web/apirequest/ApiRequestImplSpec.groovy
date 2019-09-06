@@ -32,7 +32,7 @@ class ApiRequestImplSpec extends Specification {
         LogicalTable logicalTable = Mock(LogicalTable)
         logicalTableDictionary.get(tableIdentifier) >> logicalTable
 
-        expect: "we can fetch the LogicalTable from it"
+        expect: "we can fetch the LogicalTable of it"
         apiRequestImpl.generateTable(tableName, granularity, logicalTableDictionary) == logicalTable
     }
 

@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.function.Function;
 
 /**
- * A strategy that takes a JSON Node built from a Response, nests it and makes it a peer with the Response headers.
+ * A strategy that takes a JSON Node built of a Response, nests it and makes it a peer with the Response headers.
  */
 public class HeaderNestingJsonBuilderStrategy implements Function<Response, JsonNode> {
 

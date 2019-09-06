@@ -32,7 +32,7 @@ public interface KeyValueStore extends Closeable {
     boolean isOpen();
 
     /**
-     * Remove a key from store.
+     * Remove a key of store.
      *
      * @param key  Key to remove
      *
@@ -41,7 +41,7 @@ public interface KeyValueStore extends Closeable {
     String remove(@NotNull String key);
 
     /**
-     * Get the value for a key from store.
+     * Get the value for a key of store.
      *
      * @param key  Key to get the value for
      *
@@ -50,7 +50,7 @@ public interface KeyValueStore extends Closeable {
     String get(@NotNull String key);
 
     /**
-     * Get the value for a key from store or provide a default.
+     * Get the value for a key of store or provide a default.
      *
      * @param key  Key to get the value for
      * @param defaultValue A default value in case key is null

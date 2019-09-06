@@ -26,7 +26,7 @@ public class DefaultingDictionary<K, V> extends LinkedHashMap<K, V> {
     }
 
     /**
-     * Construct DefaultingDictionary using the given defaultValue and entries from the given defaultingDictionaryMap.
+     * Construct DefaultingDictionary using the given defaultValue and entries of the given defaultingDictionaryMap.
      *
      * @param defaultValue  The defaultValue to be returned if a key is not present in the map
      * @param defaultingDictionaryMap  A Map whose entries will be inserted into the DefaultingDictionary

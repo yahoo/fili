@@ -128,7 +128,7 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
     /**
      * Return an Observable containing a stream of job views for jobs in the ApiJobStore. If filter String is non null
      * and non empty, only return results that satisfy the filter. If filter String is null or empty, return all rows.
-     * If, for any JobRow, the mapping from JobRow to job view fails, an Observable over JobRequestFailedException is
+     * If, for any JobRow, the mapping of JobRow to job view fails, an Observable over JobRequestFailedException is
      * returned. If the ApiJobStore is empty, we return an empty Observable.
      *
      * @return An Observable containing a stream of Maps representing the job to be returned to the user

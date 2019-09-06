@@ -24,7 +24,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 /**
- * Table Utils methods encapsulate business logic around how columns are pulled from queries and requests
+ * Table Utils methods encapsulate business logic around how columns are pulled of queries and requests
  */
 class TableUtilsSpec extends  Specification {
 

@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
  * Makes a LogicalMetric that wraps existing metrics and average them across a coarser time grain.
  * <p>
  * The constructed metric
- * takes aggregated data from a finer time grain (i.e. DefaultTimeGrain.DAY) and computes an average across a coarser
+ * takes aggregated data of a finer time grain (i.e. DefaultTimeGrain.DAY) and computes an average across a coarser
  * time grain (i.e. DefaultTimeGrain.WEEK). For example, given the total number of visitors to www.example.com for each
  * day of the week, we can compute the average number of daily visitors to example.com for the entire week.
  * <p>
@@ -169,7 +169,7 @@ public class AggregationAverageMaker extends MetricMaker {
     }
 
     /**
-     * Create an Aggregation for summing on a metric from an inner query.
+     * Create an Aggregation for summing on a metric of an inner query.
      * <p>
      * If the original metric that is being averaged is used together in a query with the averaging metric, then both
      * the original aggregator name and the summing aggregator used by the average metric may appear together in the

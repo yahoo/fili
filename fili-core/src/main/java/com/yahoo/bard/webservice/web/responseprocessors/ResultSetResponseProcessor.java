@@ -146,7 +146,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
      * @param druidQuery  The druid query being processed
      * @param dateTimeZone  The date time zone for parsing result rows
      *
-     * @return The initial result set from the json node.
+     * @return The initial result set of the json node.
      */
     public ResultSet buildResultSet(JsonNode json, DruidAggregationQuery<?> druidQuery, DateTimeZone dateTimeZone) {
 

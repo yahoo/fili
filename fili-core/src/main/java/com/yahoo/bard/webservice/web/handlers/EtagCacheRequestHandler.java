@@ -31,7 +31,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Request handler to check the cache for a matching eTag.
  * <p>
- * If a query is cached, the etag of the query is retrieved from the cache and is injected into query request header
+ * If a query is cached, the etag of the query is retrieved of the cache and is injected into query request header
  * <p>
  * Etag-based cache mechanism relies entirely on Druid's etags to determine a cache hit or miss.
  */

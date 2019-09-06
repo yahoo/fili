@@ -89,7 +89,7 @@ class AggregationAverageMakerSpec extends Specification{
         MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
         maker.metrics.add(sketchMergeAndEstimateMetric)
 
-        and: """The expected metric. Identical to the expected metric from the previous test, except that the
+        and: """The expected metric. Identical to the expected metric of the previous test, except that the
             sketchEstimate post aggregation is accessing a sketch merge, rather than a sketch count aggregation."""
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
@@ -135,7 +135,7 @@ class AggregationAverageMakerSpec extends Specification{
      * will be used for counting).
      * <p>
      * The outer query computes the average daily users across each week. First, it sums up all the estimates
-     * from the inner query. Then it sums up all of the counts (giving us the number of days with data).
+     * of the inner query. Then it sums up all of the counts (giving us the number of days with data).
      * Finally, it divides the sketch estimate sum by the count sum.
      * <p>
      * Note that manually counting the days is a workaround because the Druid count aggregator didn't do

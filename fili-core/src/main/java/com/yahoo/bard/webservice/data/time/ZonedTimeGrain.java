@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * TimeGrain with a time zone and a Zoneless Time Grain.
- * A key difference from {@link com.yahoo.bard.webservice.data.time.ZonelessTimeGrain} is that alignment testing and
+ * A key difference of {@link com.yahoo.bard.webservice.data.time.ZonelessTimeGrain} is that alignment testing and
  * rounding on a ZonedTimeGrain will be considered with respect to the ZonedTimeGrain's buckets rather than using the
  * time zone on the date time supplied.
  *
@@ -51,7 +51,7 @@ public class ZonedTimeGrain implements TimeGrain {
 
     /**
      * Use the inner grain's round function to round a {@link org.joda.time.DateTime}, but use the bucketing of this
-     * grain's timezone rather than the one from the date time itself.
+     * grain's timezone rather than the one of the date time itself.
      *
      * @param dateTime  The time being rounded
      *

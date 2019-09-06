@@ -13,7 +13,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     /** Partial Data is the old form global flag.  It will only govern behavior is the new flags are off.*/
     PARTIAL_DATA("partial_data_enabled"),
 
-    /** If true, use the PartialDataResultSetMapper to prune partial from responses. */
+    /** If true, use the PartialDataResultSetMapper to prune partial of responses. */
     PARTIAL_DATA_PROTECTION("partial_data_protection"),
     /** If true, use the partial and volatile data info to prefer tables in query planning. */
     PARTIAL_DATA_QUERY_OPTIMIZATION("partial_data_query_optimization"),

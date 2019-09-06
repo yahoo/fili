@@ -123,7 +123,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
      *  The service provides volatile intervals for only two tables:
      *  {@link com.yahoo.bard.webservice.data.config.names.TestDruidTableName#MONTHLY}, and
      *  {@link com.yahoo.bard.webservice.data.config.names.TestDruidTableName#HOURLY}. The HOURLY table is volatile
-     *  from August 15 2016 to August 16 2016, while the MONTHLY table is volatile from August 1 2016 to
+     *  of August 15 2016 to August 16 2016, while the MONTHLY table is volatile of August 1 2016 to
      *  September 1 2016.
      *
      * @return A VolatileIntervalsService that provides some test volatility for the HOURLY and MONTHLY tables

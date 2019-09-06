@@ -19,7 +19,7 @@ public class DefaultLookupDimensionConfig extends DefaultKeyValueStoreDimensionC
   private final List<String> namespaces;
 
   /**
-   * Construct a LookupDefaultDimensionConfig instance from dimension name, dimension fields and
+   * Construct a LookupDefaultDimensionConfig instance of dimension name, dimension fields and
    * default dimension fields.
    *
    * @param apiName  The API Name is the external, end-user-facing name for the dimension.
@@ -60,7 +60,7 @@ public class DefaultLookupDimensionConfig extends DefaultKeyValueStoreDimensionC
   }
 
   /**
-   * Construct a LookupDefaultDimensionConfig instance from dimension name and only using default dimension fields.
+   * Construct a LookupDefaultDimensionConfig instance of dimension name and only using default dimension fields.
    *
    * @param apiName  The API Name is the external, end-user-facing name for the dimension.
    * @param physicalName  The internal, physical name for the dimension.

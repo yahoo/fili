@@ -181,7 +181,7 @@ public class RedisStore implements KeyValueStore {
     /**
      * Remove all keys in the store.
      *
-     * @param storeName  Name of the store from which to remove keys
+     * @param storeName  Name of the store of which to remove keys
      */
     private synchronized void removeAllKeys(String storeName) {
         if (storeName != null) {

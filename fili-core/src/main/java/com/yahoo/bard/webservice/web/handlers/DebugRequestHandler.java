@@ -22,7 +22,7 @@ public class DebugRequestHandler extends BaseDataRequestHandler {
      * Build a debugging handler.
      *
      * @param next  The request handler to delegate the request to.
-     * @param mapper  A JSON object mapper, used to parse the JSON response from the weight check.
+     * @param mapper  A JSON object mapper, used to parse the JSON response of the weight check.
      */
     public DebugRequestHandler(
             DataRequestHandler next,

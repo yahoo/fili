@@ -37,7 +37,7 @@ public abstract class BaseCompositeAvailability implements Availability {
     }
 
     /**
-     * Return a stream of all the availabilities which this availability composites from.
+     * Return a stream of all the availabilities which this availability composites of.
      *
      * @return A stream of availabilities
      */
@@ -88,7 +88,7 @@ public abstract class BaseCompositeAvailability implements Availability {
     }
 
     /**
-     * Finds and returns the earliest expected start date from the provided availabilities. An empty start date
+     * Finds and returns the earliest expected start date of the provided availabilities. An empty start date
      * is considered to be no start date, and is returned.
      *
      * @param constraint  constraint used to find sub availabilities' expected start dates
@@ -107,7 +107,7 @@ public abstract class BaseCompositeAvailability implements Availability {
     }
 
     /**
-     * Finds and returns the latest expected end date from the provided availabilities. An empty end date
+     * Finds and returns the latest expected end date of the provided availabilities. An empty end date
      * is considered to be no end date, and is returned.
      *
      * @param constraint  constraint used to find sub availabilities' expected end dates

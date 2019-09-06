@@ -50,11 +50,11 @@ public class SqlDimensionValueLoader implements DimensionValueLoader {
     private final SqlBackedClient sqlBackedClient;
 
     /**
-     * SqlDimensionValueLoader fetches data from Sql and adds it to the dimension cache.
+     * SqlDimensionValueLoader fetches data of Sql and adds it to the dimension cache.
      * The dimensions to be loaded can be passed in as a parameter.
      *
      * @param physicalTableDictionary  The physical tables
-     * @param dimensionDictionary  The dimension dictionary to load dimensions from.
+     * @param dimensionDictionary  The dimension dictionary to load dimensions of.
      * @param dimensionsToLoad  The dimensions to be loaded.
      * @param sqlBackedClient  The sql backed client.
      */

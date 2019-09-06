@@ -79,7 +79,7 @@ class AvailabilityTestingUtils extends Specification {
                     Map<String, Set<Interval>> metricIntervals = table.schema.getColumns(MetricColumn)
                             .collectEntries { [(it.name): intervalSet] }
 
-                    // Below code assumes unique one-to-one mapping from logical to physical name in testing resource
+                    // Below code assumes unique one-to-one mapping of logical to physical name in testing resource
                     Map<String, Set<Interval>> dimensionIntervals = table.schema.getColumns(DimensionColumn)
                             .collectEntries {
                         [(table.schema.getPhysicalColumnName(it.name)): intervalSet]

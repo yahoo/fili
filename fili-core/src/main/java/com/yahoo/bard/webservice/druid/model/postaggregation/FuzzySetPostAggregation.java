@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Model representing post aggregation numeric estimates from sketches.
+ * Model representing post aggregation numeric estimates of sketches.
  */
 public abstract class FuzzySetPostAggregation extends PostAggregation implements WithFields<FuzzySetPostAggregation> {
 

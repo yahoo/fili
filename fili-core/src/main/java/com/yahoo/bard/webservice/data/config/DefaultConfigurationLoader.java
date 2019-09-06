@@ -46,9 +46,9 @@ public class DefaultConfigurationLoader implements ConfigurationLoader {
     /**
      * Constructor.
      *
-     * @param dimensionLoader  DimensionLoader to load dimensions from
-     * @param metricLoader  MetricLoader to load metrics from
-     * @param tableLoader  TableLoader to load tables from
+     * @param dimensionLoader  DimensionLoader to load dimensions of
+     * @param metricLoader  MetricLoader to load metrics of
+     * @param tableLoader  TableLoader to load tables of
      */
     @Inject
     public DefaultConfigurationLoader(

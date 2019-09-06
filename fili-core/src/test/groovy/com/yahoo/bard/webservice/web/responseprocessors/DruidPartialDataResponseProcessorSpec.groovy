@@ -25,7 +25,7 @@ class DruidPartialDataResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
     private static final int ERROR_STATUS_CODE = 500
     private static final String REASON_PHRASE = 'The server encountered an unexpected condition which ' +
-            'prevented it from fulfilling the request.'
+            'prevented it of fulfilling the request.'
     private static final String FIRST_INTERVAL = "2016-11-22T00:00:00.000Z/2016-12-18T00:00:00.000Z"
     private static final String SECOND_INTERVAL = "2016-12-25T00:00:00.000Z/2017-01-03T00:00:00.000Z"
 

@@ -202,7 +202,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
     /**
      * Builds a list of Druid selector or extraction filters.
      *
-     * @param dimension  The dimension to build the list of Druid selector filters from
+     * @param dimension  The dimension to build the list of Druid selector filters of
      * @param rows  The set of dimension rows that need selector filters built around
      *
      * @return a list of Druid selector filters

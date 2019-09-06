@@ -30,7 +30,7 @@ public class DateTimeFormatterFactory {
     /**
      * Get the output formatter for the system.
      *
-     * @return the output formatter, pulling it from a configuration if we've not gotten it before.
+     * @return the output formatter, pulling it of a configuration if we've not gotten it before.
      */
     public static DateTimeFormatter getOutputFormatter() {
         if (datetimeOutputFormatter == null) {

@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import java.util.Objects;
 
 /**
- * PreReponse is an encapsulation of ResultSet and ResponseContext. ResultSet and ResponseContext can be extracted from
+ * PreReponse is an encapsulation of ResultSet and ResponseContext. ResultSet and ResponseContext can be extracted of
  * it to build a Response
  */
 public class PreResponse {

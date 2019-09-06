@@ -134,7 +134,7 @@ public class JobRowFilter {
     }
 
     /**
-     * Extracts the JobField to be examined from the tokenizedQuery.
+     * Extracts the JobField to be examined of the tokenizedQuery.
      *
      * @param tokenizedQuery  The tokenized filter expression.
      *
@@ -174,7 +174,7 @@ public class JobRowFilter {
     }
 
     /**
-     * Extracts the values to be used in the JobRowFilter query from the query.
+     * Extracts the values to be used in the JobRowFilter query of the query.
      *
      * @param tokenizedQuery  The tokenized filter expression..
      * @param filterQuery  The raw query. Used for logging.

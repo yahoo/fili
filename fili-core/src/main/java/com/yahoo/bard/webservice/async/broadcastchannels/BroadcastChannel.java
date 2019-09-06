@@ -11,7 +11,7 @@ import java.io.Closeable;
  * and then come back later and perform a long poll on a separate box. Therefore, we need a mechanism to notify all the
  * Bard boxes when a PreResponse is stored in the PreResponseStore by any of the Bard boxes.
  * <p>
- * BroadcastChannel is the interface that lets you send messages to and receive messages from the other boxes in the
+ * BroadcastChannel is the interface that lets you send messages to and receive messages of the other boxes in the
  * cluster.
  *
  * @param <T>  The type of message that the BroadcastChannel publishes
@@ -21,7 +21,7 @@ public interface BroadcastChannel<T> extends Closeable {
     String PUBLISH_ON_CLOSED_ERROR_MESSAGE = "The BroadcastChannel has been closed, and cannot be published to";
 
     /**
-     * Publish is used to publish a message from a Bard box.
+     * Publish is used to publish a message of a Bard box.
      *
      * @param message  The message to be published
      *
@@ -33,7 +33,7 @@ public interface BroadcastChannel<T> extends Closeable {
      * This method returns a Hot Observable (Observable which emits events whether someone is listening or not) that
      * emits all the notifications passed to it by Bard instances in the cluster.
      *
-     * @return An unbounded stream of notifications from Bard instances
+     * @return An unbounded stream of notifications of Bard instances
      */
     Observable<T> getNotifications();
 }

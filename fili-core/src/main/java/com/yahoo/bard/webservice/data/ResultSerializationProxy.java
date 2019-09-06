@@ -25,7 +25,7 @@ public class ResultSerializationProxy {
     /**
      * Constructor.
      *
-     * @param result  Result row from a result set
+     * @param result  Result row of a result set
      */
     public ResultSerializationProxy(Result result) {
         this.result = result;
@@ -73,7 +73,7 @@ public class ResultSerializationProxy {
     }
 
     /**
-     * Generates the dimension names and its unique id map from Result for custom serialization.
+     * Generates the dimension names and its unique id map of Result for custom serialization.
      *
      * @param result  Result object for the custom serialization
      *
@@ -87,7 +87,7 @@ public class ResultSerializationProxy {
     }
 
     /**
-     * Generates the metric names and their value map from Result for custom serialization.
+     * Generates the metric names and their value map of Result for custom serialization.
      *
      * @param result  Result object for the custom serialization
      *

@@ -81,7 +81,7 @@ public class DruidQueryBuilder {
     }
 
     /**
-     * Build a druid query object from an API request and it's templateDruidQuery.
+     * Build a druid query object of an API request and it's templateDruidQuery.
      *
      * @param request  DataApiRequest to use in building the query
      * @param template  TemplateDruidQuery to build out the query with
@@ -126,7 +126,7 @@ public class DruidQueryBuilder {
             druidTopNMetric = null;
         }
 
-        // Get the tableGroup from the logical table and the alias
+        // Get the tableGroup of the logical table and the alias
         LogicalTable logicalTable = tableDictionary.get(TableIdentifier.create(request));
         TableGroup group = logicalTable.getTableGroup();
 
@@ -137,7 +137,7 @@ public class DruidQueryBuilder {
                         .orElse(request.getApiFilters())
         );
 
-        // Resolve the table from the the group, the combined dimensions in request, and template time grain
+        // Resolve the table of the the group, the combined dimensions in request, and template time grain
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(tableFilteredRequest, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 
@@ -183,12 +183,12 @@ public class DruidQueryBuilder {
      *
      * @param template  The query template, possibly nested
      * @param table  The physical table that underlies the lowest-level datasource
-     * @param granularity  The granularity from the request
-     * @param timeZone  The time zone from the request
-     * @param groupByDimensions  The grouping dimensions from the request
+     * @param granularity  The granularity of the request
+     * @param timeZone  The time zone of the request
+     * @param groupByDimensions  The grouping dimensions of the request
      * @param filter  The filters specified in the request (only applied at the lowest level)
      * @param having  The having clause specified in the request.
-     * @param intervals  The intervals specified from the request
+     * @param intervals  The intervals specified of the request
      * @param druidOrderBy  The order by
      *
      * @return a GroupByQuery
@@ -253,7 +253,7 @@ public class DruidQueryBuilder {
             mergedFilter = null;
         }
 
-        // Filters must be applied at the lowest level as they exclude data from aggregates
+        // Filters must be applied at the lowest level as they exclude data of aggregates
         return new GroupByQuery(
                 dataSource,
                 mergedGranularity,
@@ -268,7 +268,7 @@ public class DruidQueryBuilder {
     }
 
     /**
-     * Build a data source from a table.
+     * Build a data source of a table.
      *
      * @param table A fact table or fact table view
      *
@@ -287,11 +287,11 @@ public class DruidQueryBuilder {
      *
      * @param template  The query template. Not nested since nesting is not supported in druid topN queries
      * @param table  The physical table that underlies the lowest-level datasource
-     * @param granularity  The grain from the request
-     * @param timeZone  The time zone from the request
-     * @param groupByDimension  The grouping dimension from the request
+     * @param granularity  The grain of the request
+     * @param timeZone  The time zone of the request
+     * @param groupByDimension  The grouping dimension of the request
      * @param filter  The filters specified in the request
-     * @param intervals  The intervals specified from the request
+     * @param intervals  The intervals specified of the request
      * @param metricSpec The topn metric spec
      * @param topN  The number of requested top entries per time bucket
      *
@@ -357,10 +357,10 @@ public class DruidQueryBuilder {
      *
      * @param template  The query template. Not nested since nesting is not supported in druid timeseries queries
      * @param table  The physical table that underlies the lowest-level datasource
-     * @param granularity  The grain from the request
-     * @param timeZone  The time zone from the request
+     * @param granularity  The grain of the request
+     * @param timeZone  The time zone of the request
      * @param filter  The filters specified in the request
-     * @param intervals  The intervals specified from the request
+     * @param intervals  The intervals specified of the request
      *
      * @return a TimeSeriesQuery
      */

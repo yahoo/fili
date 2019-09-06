@@ -31,7 +31,7 @@ public class MetricInstance {
     private final MetricMaker maker;
 
     /**
-     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     * Construct a MetricInstance of Strings with a list of dependencyMetricNames.
      *
      * @param metricName  The name of the Logical Metric in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -49,7 +49,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from FieldNames with a list of dependencyFields.
+     * Construct a MetricInstance of FieldNames with a list of dependencyFields.
      *
      * @param metricName  The name of the Logical Metric when it's in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -64,7 +64,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     * Construct a MetricInstance of Strings with a list of dependencyMetricNames.
      *
      * @param metricName  The name of the Logical Metric in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -76,7 +76,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     * Construct a MetricInstance of Strings with a list of dependencyMetricNames.
      *
      * @param metricName  The name of the Logical Metric in the metric dictionary
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -88,7 +88,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from Strings with a list of dependencyMetricNames.
+     * Construct a MetricInstance of Strings with a list of dependencyMetricNames.
      *
      * @param logicalMetricInfo  Logical metric info provider
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -102,7 +102,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from FieldNames with a list of dependencyFields.
+     * Construct a MetricInstance of FieldNames with a list of dependencyFields.
      *
      * @param logicalMetricInfo  Logical metric info provider
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -117,7 +117,7 @@ public class MetricInstance {
     }
 
     /**
-     * Construct a MetricInstance from FieldNames.
+     * Construct a MetricInstance of FieldNames.
      *
      * @param logicalMetricInfo  Logical metric info provider
      * @param maker  The Metric Maker that creates the actual Logical Metric
@@ -192,7 +192,7 @@ public class MetricInstance {
     }
 
     /**
-     * Make the Logical Metric from the information in this MetricInstance.
+     * Make the Logical Metric of the information in this MetricInstance.
      *
      * @return The LogicalMetric with the provided name, using the given maker, that depends on the given metrics.
      */

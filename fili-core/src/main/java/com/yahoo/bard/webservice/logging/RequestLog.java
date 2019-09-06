@@ -75,7 +75,7 @@ public class RequestLog {
     /**
      * Copy constructor is also private.
      *
-     * @param  rl request log object to copy from
+     * @param  rl request log object to copy of
      */
     private RequestLog(RequestLog rl) {
         logId = rl.logId;
@@ -457,7 +457,7 @@ public class RequestLog {
         RequestLog current = RLOG.get();
         if (!Objects.equals(current.logId, ctx.logId)) {
             LOG.warn(
-                    "Tried to accumulate information to the current request: {} from a different request context: {}",
+                    "Tried to accumulate information to the current request: {} of a different request context: {}",
                     current.logId,
                     ctx.logId
             );

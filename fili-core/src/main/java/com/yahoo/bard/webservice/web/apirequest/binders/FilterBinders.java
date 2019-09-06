@@ -239,7 +239,7 @@ public class FilterBinders {
      *
      * @param filterQuery  The raw filterQuery as provided by the URI.
      *
-     * @return  An object describing the string components from the request URI.
+     * @return  An object describing the string components of the request URI.
      *
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * valid.

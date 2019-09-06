@@ -32,7 +32,7 @@ class JobTestUtils {
      * Builds a job row with the specified metadata, and provides a default value for any fields in
      * {@link com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField} that are not keys in the metadata.
      *
-     * @param jobData  A mapping from JobField to Strings describing overrides to the default metadata for the job
+     * @param jobData  A mapping of JobField to Strings describing overrides to the default metadata for the job
      *
      * @return A JobRow populated with the specified metadata, and defaults for all missing DefaultJobFields
      */

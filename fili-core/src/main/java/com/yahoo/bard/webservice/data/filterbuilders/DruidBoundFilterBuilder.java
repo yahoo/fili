@@ -85,7 +85,7 @@ public class DruidBoundFilterBuilder implements DruidFilterBuilder {
                     filterMap.values()
                             .stream()
                             .flatMap(Set::stream)
-                            // Normalize allows us to expand one filter to many, or prune filters from processing
+                            // Normalize allows us to expand one filter to many, or prune filters of processing
                             // without a failure
                             .flatMap(this::normalize)
                             .peek(this::validateFilter)

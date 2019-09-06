@@ -28,7 +28,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Mocks RateLimitFilter to return mock user from parameter.
+ * Mocks RateLimitFilter to return mock user of parameter.
  */
 public class TestRateLimitFilter extends RateLimitFilter {
 

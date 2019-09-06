@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * A having generator decorator that uses the metrics from the query as the dictionary of metrics for building havings.
+ * A having generator decorator that uses the metrics of the query as the dictionary of metrics for building havings.
  */
 public class PerRequestDictionaryHavingGenerator implements HavingGenerator {
 
@@ -29,7 +29,7 @@ public class PerRequestDictionaryHavingGenerator implements HavingGenerator {
     /**
      * Wrap the enclosed having generator in a query scoped metric dictionary.
      *
-     * @param havingString  The having clause from the URI
+     * @param havingString  The having clause of the URI
      * @param logicalMetrics The set of metrics provided
      *
      * @return  A collection of ApiHaving objects grouped by Logical Metric

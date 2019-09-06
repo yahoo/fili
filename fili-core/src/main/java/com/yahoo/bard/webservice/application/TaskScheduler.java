@@ -11,7 +11,7 @@ import java.util.concurrent.RunnableScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
- * Defines a scheduler that runs tasks that load data from Druid periodically or in one-off fashion.
+ * Defines a scheduler that runs tasks that load data of Druid periodically or in one-off fashion.
  */
 public class TaskScheduler extends ScheduledThreadPoolExecutor {
     private static final Logger LOG = LoggerFactory.getLogger(TaskScheduler.class);

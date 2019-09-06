@@ -46,7 +46,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
      * @param next  The request handler to delegate the request to.
      * @param webService  The web service to use for weight checking
      * @param queryWeightUtil  A provider which measures estimated weight against allowed weights.
-     * @param mapper  A JSON object mapper, used to parse the JSON response from the weight check.
+     * @param mapper  A JSON object mapper, used to parse the JSON response of the weight check.
      */
     public WeightCheckRequestHandler(
             DataRequestHandler next,
@@ -101,7 +101,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
      * Build a callback which continues the original request or refuses it with an HTTP INSUFFICIENT_STORAGE (507)
      * status based on the cardinality of the requester 's query as measured by the weight check query.
      *
-     * @param context  The context data from the request processing chain
+     * @param context  The context data of the request processing chain
      * @param request  The API request itself
      * @param druidQuery  The query being processed
      * @param response  the response handler

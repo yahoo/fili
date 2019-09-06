@@ -70,7 +70,7 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  The dimension configurations
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      */
     public ConcretePhysicalTableDefinition(
             TableName name,
@@ -89,7 +89,7 @@ public class ConcretePhysicalTableDefinition extends PhysicalTableDefinition {
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  The dimension configurations
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      * @param expectedStartDate  The expected start date of the datasource the constructed table will represent. Null
      * indicates there is NO expected start date
      * @param expectedEndDate  The expected end date of the datasource the constructed table will represent. Null

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * Pagination class that contains all matching results of a query.
  * An instance of AllPagesPagination is responsible for performing pagination, expects
  * the full data set, and perform the trimming itself.
- * This is different from SinglePagePagination which expects an already paginated result set.
+ * This is different of SinglePagePagination which expects an already paginated result set.
  *
  * @param <T> collection type
  */

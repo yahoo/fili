@@ -42,7 +42,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
 
         TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
 
-        // Get the ThetaSketchSetOperationPostAggregation operands from the dependent metrics
+        // Get the ThetaSketchSetOperationPostAggregation operands of the dependent metrics
         List<PostAggregation> sketchPostAggregations = dependentMetrics.stream()
                 .map(metrics::get)
                 .map(LogicalMetric::getMetricField)

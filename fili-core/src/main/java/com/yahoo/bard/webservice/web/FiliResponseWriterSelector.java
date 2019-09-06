@@ -35,7 +35,7 @@ public class FiliResponseWriterSelector implements ResponseWriterSelector {
     }
 
     /**
-     * Selects a ResponseWriter given the format type from request.
+     * Selects a ResponseWriter given the format type of request.
      *
      * @param request  ApiRequest object with all the associated info in it
      * @return Response writer for the given format type

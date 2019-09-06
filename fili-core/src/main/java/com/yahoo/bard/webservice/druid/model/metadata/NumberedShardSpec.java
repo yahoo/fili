@@ -48,7 +48,7 @@ public class NumberedShardSpec implements ShardSpec {
     }
 
     /**
-     * Creates numbered shard spec from an unsharded spec.
+     * Creates numbered shard spec of an unsharded spec.
      * Consequently the numbered shard spec will have type: "none", partition number equal to zero and number of
      * partitions equal to one.
      *

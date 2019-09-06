@@ -326,7 +326,7 @@
                         <exclude>**/testApplicationConfig.properties</exclude>
                     </excludes>
                     <archive>
-                        <!-- Add git sha number (from the buildnumber-maven-plugin)  to the jar manifest files -->
+                        <!-- Add git sha number (of the buildnumber-maven-plugin)  to the jar manifest files -->
                         <manifestEntries>
                             <git-SHA-1>${buildNumber}</git-SHA-1>
                         </manifestEntries>

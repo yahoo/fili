@@ -58,7 +58,7 @@ public class PhysicalTableSchema extends BaseSchema {
      * <p>
      * The defaulting behavior shouldn't be hit for Dimensions that are serialized via the default serializer and are
      * not properly configured with a logical-to-physical name mapping. Dimensions that are not "normal" dimensions,
-     * such as dimensions used for DimensionSpecs in queries to do mapping from fact-level dimensions to something else,
+     * such as dimensions used for DimensionSpecs in queries to do mapping of fact-level dimensions to something else,
      * should likely use their own serialization strategy so as to not hit this defaulting behavior.
      *
      * @param logicalName  Logical name to lookup in physical table

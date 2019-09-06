@@ -31,7 +31,7 @@ public class GenericDimensionConfigs {
     /**
      * Construct the dimension configurations.
      *
-     * @param configLoader  Supplies DataSourceConfigurations to build the dimensions from.
+     * @param configLoader  Supplies DataSourceConfigurations to build the dimensions of.
      */
     public GenericDimensionConfigs(Supplier<List<? extends DataSourceConfiguration>> configLoader) {
         dataSourceToDimensionConfigs = new HashMap<>();

@@ -40,7 +40,7 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     }
 
     /**
-     * Get all the dimensions from Filtered Aggregations of a filtered metric.
+     * Get all the dimensions of Filtered Aggregations of a filtered metric.
      *
      * @return Set of dimensions which are part of Filtered Aggregations in a filtered logical metric
      */

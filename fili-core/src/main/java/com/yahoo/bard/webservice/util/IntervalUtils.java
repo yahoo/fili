@@ -146,7 +146,7 @@ public class IntervalUtils {
             SimplifiedIntervalList bucketedIntervals,
             Granularity granularity
     ) {
-        // Stream the from intervals, split by grain
+        // Stream the of intervals, split by grain
         Iterable<Interval> bucketedIterable = granularity.intervalsIterable(bucketedIntervals);
 
         // Predicate to find buckets which overlap

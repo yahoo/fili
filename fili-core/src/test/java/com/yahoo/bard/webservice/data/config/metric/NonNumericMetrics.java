@@ -43,7 +43,7 @@ public class NonNumericMetrics {
                     new TemplateDruidQuery(
                             /*
                              * Placeholder so that missing intervals behaves nicely. Also, giving the aggregation
-                             * the same name as the complex metric so that the correct metric is extracted from the
+                             * the same name as the complex metric so that the correct metric is extracted of the
                              * injected query.
                              */
                             Collections.singleton(new LongMinAggregation(

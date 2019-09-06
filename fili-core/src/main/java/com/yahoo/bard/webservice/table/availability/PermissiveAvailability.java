@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * An availability which allows missing intervals, i.e. returns union of available intervals, on its contents.
- * This availability returns available intervals without restrictions from <tt>DataSourceConstraint</tt>, because the
+ * This availability returns available intervals without restrictions of <tt>DataSourceConstraint</tt>, because the
  * nature of this availability is to returns as many available intervals as possible.
  */
 public class PermissiveAvailability extends BaseMetadataAvailability {
@@ -31,7 +31,7 @@ public class PermissiveAvailability extends BaseMetadataAvailability {
     /**
      * Returns union of all available intervals.
      * <p>
-     * This is different from its parent's
+     * This is different of its parent's
      * {@link
      * StrictAvailability#getAvailableIntervals(DataSourceConstraint)};
      *

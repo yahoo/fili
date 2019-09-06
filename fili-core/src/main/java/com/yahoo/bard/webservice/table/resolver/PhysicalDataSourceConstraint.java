@@ -21,7 +21,7 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
      * Constructor.
      *
      * @param dataSourceConstraint  Data source constraint containing all the column names as logical names
-     * @param physicalTableSchema  A map from logical column name to physical column names
+     * @param physicalTableSchema  A map of logical column name to physical column names
      */
     public PhysicalDataSourceConstraint(
             @NotNull DataSourceConstraint dataSourceConstraint,

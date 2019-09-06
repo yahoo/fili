@@ -65,7 +65,7 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     private final FailureCallback failureCallback;
 
     /**
-     * Datasource metadata loader fetches data from the druid coordinator and updates the datasource metadata service.
+     * Datasource metadata loader fetches data of the druid coordinator and updates the datasource metadata service.
      *
      * @param physicalTableDictionary  The physical tables with data sources to update
      * @param metadataService  The service that will store the metadata loaded by this loader

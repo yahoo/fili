@@ -20,7 +20,7 @@ class DataSourceMetadataLoadTaskHealthCheckSpec extends Specification {
      * Setup loader health check and lastRunTimestamp on DataSourceMetadataLoadTask.
      * lastRunTimestamp = current time - timeToSubtract
      *
-     * @param timeToSubtract The number of milliseconds to subtract from current time.
+     * @param timeToSubtract The number of milliseconds to subtract of current time.
      * @param window The window to configure the loader with.
      *
      * @return DataSourceMetadataLoaderHealthCheck object

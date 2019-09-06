@@ -24,7 +24,7 @@ public class TableConfig implements DataSourceConfiguration {
     private TimeGrain timeGrain;
 
     /**
-     * Construct the TableConfig from a name.
+     * Construct the TableConfig of a name.
      *
      * @param name  Name of the TableConfig.
      */
@@ -92,7 +92,7 @@ public class TableConfig implements DataSourceConfiguration {
     }
 
     /**
-     * Gets the metrics from the datasource.
+     * Gets the metrics of the datasource.
      *
      * @return the names of metrics stored in TableConfig.
      */
@@ -102,7 +102,7 @@ public class TableConfig implements DataSourceConfiguration {
     }
 
     /**
-     * Gets the dimensions from the datasource.
+     * Gets the dimensions of the datasource.
      *
      * @return the names of the dimensions stored in the TableConfig.
      */

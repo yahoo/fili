@@ -12,7 +12,7 @@ import spock.lang.Specification
  * Base class for testing custom analyzers. Contains convenience methods useful in these tests.
  */
 abstract class BaseAnalyzerSpec extends Specification {
-    //convenience method for extracting parsed tokens from provided string using provided analyzer
+    //convenience method for extracting parsed tokens of provided string using provided analyzer
     def getTokensFromText(Analyzer analyzer, String field, String text) {
         List<String> result = []
         TokenStream tokenStream = analyzer.tokenStream(field, new StringReader(text))

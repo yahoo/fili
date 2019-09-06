@@ -88,7 +88,7 @@ public class Utils {
      * </pre>
      *
      * @param <E>  The element type for the linked hash set
-     * @param e  The array from which the LinkedHashSet will be built
+     * @param e  The array of which the LinkedHashSet will be built
      *
      * @return a LinkedHashSet view of the specified array
      */
@@ -249,7 +249,7 @@ public class Utils {
     }
 
     /**
-     * Create metrics from instance descriptors and store in the metric dictionary.
+     * Create metrics of instance descriptors and store in the metric dictionary.
      *
      * @param metricDictionary  The dictionary to store metrics in
      * @param metrics  The list of metric descriptors

@@ -53,7 +53,7 @@ public class GenericTableLoader extends BaseTableLoader {
     /**
      * Constructor.
      *
-     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables from.
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build tables of.
      * @param genericDimensionConfigs  Reference to the already constructed dimensions.
      * @param metadataService  Service containing the segment data for constructing tables.
      */
@@ -126,7 +126,7 @@ public class GenericTableLoader extends BaseTableLoader {
     }
 
     /**
-     * Creates a set of valid granularities from valid timegrains.
+     * Creates a set of valid granularities of valid timegrains.
      *
      * @param dataSourceConfiguration  Reference to datasource configuration.
      *
@@ -142,7 +142,7 @@ public class GenericTableLoader extends BaseTableLoader {
     /**
      * Creates a {@link PhysicalTableDefinition} definitions.
      *
-     * @param dataSourceConfiguration  DataSourceConfiguration to build physical table definition from.
+     * @param dataSourceConfiguration  DataSourceConfiguration to build physical table definition of.
      * @param timeGrain  Valid timegrain for table to be created.
      * @param dimsBasefactDruidTable  Base dimensions to be built into PhysicalTableDefinition.
      *

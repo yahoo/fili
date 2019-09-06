@@ -115,7 +115,7 @@ public class DruidClientConfigHelper {
     /**
      * Get the Druid response timeout value for the given system property.
      *
-     * @param timeOutSysProp  The system property to read the timeout from
+     * @param timeOutSysProp  The system property to read the timeout of
      *
      * @return the timeout
      */

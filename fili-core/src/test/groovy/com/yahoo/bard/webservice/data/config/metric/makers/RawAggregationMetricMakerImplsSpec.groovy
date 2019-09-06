@@ -58,7 +58,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
     }
 
     /*
-       It feels like cheating to duplicate so much of the makeInner from the class under test, but Mocking a logical
+       It feels like cheating to duplicate so much of the makeInner of the class under test, but Mocking a logical
        metric can't be more accurate than this and the test primarily tests the subclasses integrating correctly.
      */
     def makeNumericMetric(Aggregation aggregation) {

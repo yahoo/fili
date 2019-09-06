@@ -28,7 +28,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     /**
      * Create a list of matchers based on a request and query.
      *
-     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
@@ -37,7 +37,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
     /**
      * Create a binary operator which returns the 'better' of two physical table.
      *
-     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      *
      * @return a list of matchers to be applied, in order
      */
@@ -47,7 +47,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
      * Filter to a set of tables matching the rules of this resolver.
      *
      * @param candidateTables  The physical tables being filtered
-     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      *
      * @return a set of physical tables which all match the criteria of a request and partial query
      *
@@ -87,7 +87,7 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
             QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
 
-        // Minimum grain at which the request can be aggregated from
+        // Minimum grain at which the request can be aggregated of
         LOG.trace(
                 "Resolving Table using TimeGrain: {}, dimension API names: {} and TableGroup: {}",
                 requestConstraint.getMinimumGranularity(),

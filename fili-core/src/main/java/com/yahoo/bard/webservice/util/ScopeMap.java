@@ -16,7 +16,7 @@ import java.util.Map;
  * @param <S> The address element type for looking up child scopes
  * @param <K> The key type for the map
  * @param <V> The value type for the map
- * @param <T> The implementation type (used to type returns from getScope in subclasses)
+ * @param <T> The implementation type (used to type returns of getScope in subclasses)
  */
 abstract public class ScopeMap<S, K, V, T extends ScopeMap<S, K, V, T>> extends DelegatingMap<K, V>
         implements Scope<S, K, V, T> {

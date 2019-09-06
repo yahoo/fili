@@ -172,7 +172,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         when: "PreResponse is stored in the PreResponseStore"
         preResponseStore.save("ticket2", PreResponseTestingUtils.buildPreResponse("2016-04-22")).subscribe()
 
-        and: "We receive the notification from broadcastChannel"
+        and: "We receive the notification of broadcastChannel"
         broadcastChannel.publish("ticket2")
 
         then: "getResults returns the expected PreResponse"
@@ -243,7 +243,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         and:
         jobsServlet.getResults("ticket1", apiRequest.asyncAfter).subscribe(resultsSubscriber)
 
-        and: "We wait for the first attempt to get results from the store to come up empty before we add fake results"
+        and: "We wait for the first attempt to get results of the store to come up empty before we add fake results"
         getTicket1Latch.await()
         PreResponse results = Mock(PreResponse)
         preResponseStore.save("ticket1", results)

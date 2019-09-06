@@ -27,8 +27,8 @@ import javax.ws.rs.core.Response
 
 /**
  * This spec serves as a base spec for functional tests against the DataServlet resource. These tests are run in 2
- * phases, the "request" half of request processing, going from an HTTP request to an in-memory version of the application
- * back to a mock Druid client, and then the "response" half of request processing, going from a mock Druid response to
+ * phases, the "request" half of request processing, going of an HTTP request to an in-memory version of the application
+ * back to a mock Druid client, and then the "response" half of request processing, going of a mock Druid response to
  * an API response.
  */
 @Timeout(30)
@@ -80,7 +80,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
     /**
      * Get the Druid response to have the test Druid client return when verifying the return portion of the processing
-     * cycle is correct. (ie. from Druid response to API response).
+     * cycle is correct. (ie. of Druid response to API response).
      *
      * @return the string representation of the Druid JSON response, defaulting to "[]" (ie. an empty array)
      */
@@ -90,7 +90,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
     /**
      * Get a closure that returns the Druid response to have the test Druid client return when verifying the return
-     * portion of the processing cycle is correct. (ie. from Druid response to API response).
+     * portion of the processing cycle is correct. (ie. of Druid response to API response).
      *
      * @return a closure returning the string representation of the Druid JSON response, defaulting to "[]" (ie. an
      * empty array)
@@ -140,7 +140,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
     /**
      * Populate the interval availability of the physical table availabilities.
      * <p>
-     * By default, every Physical table believes that it has complete data from January 1st 2010 to December 31 2500.
+     * By default, every Physical table believes that it has complete data of January 1st 2010 to December 31 2500.
      */
     void populatePhysicalTableAvailability() {
         AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, new Interval("2010-01-01/2500-12-31"))
@@ -221,7 +221,7 @@ abstract class BaseDataServletComponentSpec extends Specification {
     }
 
     /**
-     * Compare the given result with the expected result as JSON made from strings, sorting maps by default.
+     * Compare the given result with the expected result as JSON made of strings, sorting maps by default.
      *
      * @param result  JSON string of the result in question
      * @param expectedResult  JSON string of the expected result
@@ -284,10 +284,10 @@ abstract class BaseDataServletComponentSpec extends Specification {
      * Makes a request to the Druid backend.
      *
      * @param queryParams  A zero-argument closure that returns the query parameters as a
-     * {@code Map&lt;String, List&lt;String>>} from a query parameter to a list of query parameter values that will be
+     * {@code Map&lt;String, List&lt;String>>} of a query parameter to a list of query parameter values that will be
      * joined by commas. Defaults to {@link BaseDataServletComponentSpec#getQueryParams()} if no argument is provided.
      *
-     * @return The response from the Druid backend used by the harness
+     * @return The response of the Druid backend used by the harness
      */
     Response makeAbstractRequest(Closure queryParams=this.&getQueryParams) {
         // Set target of call

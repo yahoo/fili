@@ -65,7 +65,7 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
         and: "Remove the NOT if there is one"
         Filter positiveFilter = outerFilter.type == NOT ? outerFilter.field : outerFilter
 
-        and: "Extract the clauses from the constructed filter, if the filter has more than one clause"
+        and: "Extract the clauses of the constructed filter, if the filter has more than one clause"
         List<Filter> clauses = positiveFilter.getType() == SELECTOR ? [positiveFilter] : positiveFilter.fields
 
         then: "The extracted Filter has been correctly hydrated"

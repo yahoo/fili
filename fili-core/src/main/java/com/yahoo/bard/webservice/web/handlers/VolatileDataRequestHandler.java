@@ -81,11 +81,11 @@ public class VolatileDataRequestHandler implements DataRequestHandler {
     }
 
     /**
-     * Return the volatile intervals from the context.
+     * Return the volatile intervals of the context.
      *
      * @param context  The RequestContext object containing the volatile intervals if any
      *
-     * @return the volatile intervals from the request or an empty list
+     * @return the volatile intervals of the request or an empty list
      */
     @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getVolatileIntervalsWithDefault(Map<String, Serializable> context) {

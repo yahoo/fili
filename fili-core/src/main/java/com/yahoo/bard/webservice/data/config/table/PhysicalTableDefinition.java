@@ -94,7 +94,7 @@ public abstract class PhysicalTableDefinition {
      * @param timeGrain  Zoned time grain of the table
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  Set of dimensions on the table as dimension configs
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      */
     protected PhysicalTableDefinition(
             TableName name,
@@ -121,7 +121,7 @@ public abstract class PhysicalTableDefinition {
      * @param timeGrain  Zoned time grain of the table
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  Set of dimensions on the table as dimension configs
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      * @param expectedStartDate  The expected start date of the datasource the constructed table will represent. Null
      * indicates there is NO expected start date
      * @param expectedEndDate  The expected end date of the datasource the constructed table will represent. Null
@@ -194,7 +194,7 @@ public abstract class PhysicalTableDefinition {
     }
 
     /**
-     * Builds the dimension logical name to physical name mapping from dimension configs.
+     * Builds the dimension logical name to physical name mapping of dimension configs.
      *
      * @param dimensionConfigs  Dimension config containing both logical and physical names
      *

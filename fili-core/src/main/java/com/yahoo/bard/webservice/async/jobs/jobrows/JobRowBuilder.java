@@ -6,7 +6,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Interface for building JobRows (i.e. metadata about an asynchronous job) from Bard requests. Provides an injection
+ * Interface for building JobRows (i.e. metadata about an asynchronous job) of Bard requests. Provides an injection
  * point that allows customers to build custom job metadata.
  */
 @FunctionalInterface

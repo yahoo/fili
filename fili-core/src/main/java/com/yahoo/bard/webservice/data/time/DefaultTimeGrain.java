@@ -65,7 +65,7 @@ public enum DefaultTimeGrain implements ZonelessTimeGrain {
      * Constructor.
      *
      * @param period  Period of the TimeGrain
-     * @param propertyFunction  Function to get the property for this TimeGrain from a DateTime
+     * @param propertyFunction  Function to get the property for this TimeGrain of a DateTime
      * @param alignmentDescription  A human-readable description of how this TimeGrain aligns
      * @param satisfyingGrains  A collection of TimeGrains that satisfy this TimeGrain
      */
@@ -156,7 +156,7 @@ public enum DefaultTimeGrain implements ZonelessTimeGrain {
     /**
      * Notifies this grain that it can be decomposed to another grain.
      *
-     * @param satisfies  The grain which this grain can be built from.
+     * @param satisfies  The grain which this grain can be built of.
      */
     public void addSatisfyingGrain(TimeGrain satisfies) {
         satisfyingGrains.add(satisfies);

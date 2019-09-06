@@ -176,7 +176,7 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         // We don't want to store the result in the PreResponseStore unless the query is asynchronous. The query is
         // asynchronous iff the asynchronousPayload emits at least one item.
         return preResponseEmitter
-                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // Using zip as a gate. We don't let the preResponse of the preResponse emitter continue down the
                 // chain until and unless the asynchronousPayload emits an item.
                 .zipWith(asynchronousPayload, (preResponse, ignored) -> preResponse)
                 .flatMap(preResponse -> preResponseStore.save(jobRow.getId(), preResponse));
@@ -208,10 +208,10 @@ public class DefaultAsynchronousWorkflowsBuilder implements AsynchronousWorkflow
         // The job status should not be updated until both the PreResponse has been stored, and the storage of the
         // original Job ticket has been attempted.
         return preResponseEmitter
-                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // Using zip as a gate. We don't let the preResponse of the preResponse emitter continue down the
                 // chain until and unless the jobRowStoredNotification emits an item.
                 .zipWith(jobRowStoredNotification, (preResponse, ignored) -> preResponse)
-                // Using zip as a gate. We don't let the preResponse from the preResponse emitter continue down the
+                // Using zip as a gate. We don't let the preResponse of the preResponse emitter continue down the
                 // chain until and unless the preResponseStoredNotification emits an item.
                 .zipWith(preResponseStoredNotification, (preResponse, ignored) -> preResponse)
                 .map(PreResponse::getResponseContext)

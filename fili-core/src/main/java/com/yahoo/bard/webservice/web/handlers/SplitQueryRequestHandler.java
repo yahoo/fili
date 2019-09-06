@@ -82,7 +82,7 @@ public class SplitQueryRequestHandler implements DataRequestHandler {
             return true;
         }
 
-        // Currently this is the only place where we fork multiple queries from a single query.
+        // Currently this is the only place where we fork multiple queries of a single query.
         // Here we check that this is correct and we also save the number of sub-queries.
         if (
                 !context.getNumberOfIncoming().compareAndSet(1, numberOfIntervals) ||

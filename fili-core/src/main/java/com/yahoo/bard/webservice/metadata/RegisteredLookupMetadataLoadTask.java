@@ -144,14 +144,14 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
     }
 
     /**
-     * Returns a callback that has actions on lookup metadata from a successful Druid response.
+     * Returns a callback that has actions on lookup metadata of a successful Druid response.
      * <p>
-     * The callback obtains a complete list of configured lookups from Druid coordinator, compares this list against
+     * The callback obtains a complete list of configured lookups of Druid coordinator, compares this list against
      * the list of lookups configured in Fili, and finds all lookup namespace names that are either not loaded yet in
      * Druid or does not exist in Druid at all. These namespaces can be retrieved later by calling
      * {@link #getPendingLookups()}.
      *
-     * @return the callback that has actions on lookups from a successful Druid response
+     * @return the callback that has actions on lookups of a successful Druid response
      */
     protected SuccessCallback buildLookupSuccessCallback() {
         return rootNode -> {
@@ -179,7 +179,7 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
     }
 
     /**
-     * Returns a list of lookup tiers from a comma separated string.
+     * Returns a list of lookup tiers of a comma separated string.
      * <p>
      * For example, {@code "tier1,tier2,tier3"} becomes {@code ["tier1", "tier2", "tier3"]}.
      *

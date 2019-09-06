@@ -92,7 +92,7 @@ public interface Availability {
      * Availability can optionally specify a date that is expected (but not enforced) to be the last date the
      * the datasource on this availability contains data. An empty optional has no defined end date.
      *
-     * @param constraint  The constraint to determine this availability's expected end from
+     * @param constraint  The constraint to determine this availability's expected end of
      *
      * @return A optional string representing the end date if present.
      *

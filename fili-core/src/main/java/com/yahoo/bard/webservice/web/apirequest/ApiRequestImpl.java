@@ -248,10 +248,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     /**
-     * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension
+     * Extracts the list of dimension names of the url dimension path segments and generates a set of dimension
      * objects based on it.
      *
-     * @param apiDimensions  Dimension path segments from the URL.
+     * @param apiDimensions  Dimension path segments of the URL.
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
      *
      * @return Set of dimension objects.
@@ -332,7 +332,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     * Extracts the list of metrics of the url metric query string and generates a set of LogicalMetrics.
      * <p>
      * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
      * thrown.
@@ -381,12 +381,12 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
-        //get metric names from the logical table
+        //get metric names of the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()
                 .map(LogicalMetric::getName)
                 .collect(Collectors.toSet());
 
-        //get metric names from logicalMetrics and remove all the valid metrics
+        //get metric names of logicalMetrics and remove all the valid metrics
         Set<String> invalidMetricNames = logicalMetrics.stream()
                 .map(LogicalMetric::getName)
                 .filter(it -> !validMetricNames.contains(it))
@@ -402,7 +402,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     /**
-     * Extracts the set of intervals from the api request.
+     * Extracts the set of intervals of the api request.
      *
      * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
      * @param granularity  The granularity to generate the date based on period or macros.
@@ -421,7 +421,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
 
     /**
-     * Extracts the set of intervals from the api request.
+     * Extracts the set of intervals of the api request.
      *
      * @param now The 'now' for which time macros will be relatively calculated
      * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
@@ -510,7 +510,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     }
 
     /**
-     * Get datetime from the given input text based on granularity.
+     * Get datetime of the given input text based on granularity.
      *
      * @param now  current datetime to compute the floored date based on granularity
      * @param granularity  granularity to truncate the given date to.

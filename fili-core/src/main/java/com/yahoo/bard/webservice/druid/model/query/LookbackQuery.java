@@ -327,7 +327,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     // CHECKSTYLE:ON
 
     /**
-     * The function to get requestedIntervals from a LookbackQuery.
+     * The function to get requestedIntervals of a LookbackQuery.
      */
     public static class LookbackQueryRequestedIntervalsFunction implements RequestedIntervalsFunction {
 

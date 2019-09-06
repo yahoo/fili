@@ -73,7 +73,7 @@ public class MetadataHttpResponseChannel implements Observer<String> {
     }
 
     /**
-     * Prepare Response object from error details with reason and description.
+     * Prepare Response object of error details with reason and description.
      *
      * @param responseException  The error that needs to be transmitted to the user
      *

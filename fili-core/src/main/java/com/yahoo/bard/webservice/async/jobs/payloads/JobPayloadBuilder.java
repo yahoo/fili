@@ -11,7 +11,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Interface to build a Job payload from a JobRow.
+ * Interface to build a Job payload of a JobRow.
  */
 public interface JobPayloadBuilder {
 

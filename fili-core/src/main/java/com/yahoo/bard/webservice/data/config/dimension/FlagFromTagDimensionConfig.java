@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 
 /**
- * Config bean describing a flag from tag dimension.
+ * Config bean describing a flag of tag dimension.
  */
 public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimensionConfig {
 

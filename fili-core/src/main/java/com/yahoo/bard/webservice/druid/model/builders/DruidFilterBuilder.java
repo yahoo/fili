@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Builds druid query model objects from ApiFilters.
+ * Builds druid query model objects of ApiFilters.
  */
 @FunctionalInterface
 public interface DruidFilterBuilder {

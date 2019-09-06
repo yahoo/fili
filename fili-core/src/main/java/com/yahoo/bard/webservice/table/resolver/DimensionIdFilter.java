@@ -49,7 +49,7 @@ public class DimensionIdFilter implements DataSourceFilter {
      * This method should never be called with a dimension that isn't a key in {@link #dimensionKeySelectFilters}
      *
      * @param dimension  The dimension whose rows are being tested on.
-     * @param constraintFilters  The api filters from the constraint
+     * @param constraintFilters  The api filters of the constraint
      *
      * @return true if for this dimension there are rows matching the query filters AND the embedded filters.
      */
@@ -70,7 +70,7 @@ public class DimensionIdFilter implements DataSourceFilter {
      * Test whether constraints for a particular dimension are missing, empty or match rows.
      *
      * @param dimension  The dimension for filtering
-     * @param constraintMap  The map of filters from the constraint object
+     * @param constraintMap  The map of filters of the constraint object
      *
      * @return true if the constraintMap doesn't constraint this dimension or if the constraint returns rows
      */

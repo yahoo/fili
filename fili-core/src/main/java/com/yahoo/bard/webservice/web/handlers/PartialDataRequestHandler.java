@@ -40,7 +40,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
      * Wrap the response processor in a partial data check.
      *
      * @param next The next request handler to invoke
-     * @param partialDataHandler the service to calculate partial data from table availabilities
+     * @param partialDataHandler the service to calculate partial data of table availabilities
      */
     public PartialDataRequestHandler(
             DataRequestHandler next,
@@ -89,14 +89,14 @@ public class PartialDataRequestHandler implements DataRequestHandler {
     }
 
     /**
-     * Return the missing intervals from the context.
+     * Return the missing intervals of the context.
      * <p>
      * <b>WARNING</b>: A serialization issue may result in the context value being a list but not a
      * Simplified Interval List. See https://github.com/yahoo/fili/issues/657
      *
      * @param context  The map containing the missing intervals if any
      *
-     * @return the missing intervals from the request or an empty list
+     * @return the missing intervals of the request or an empty list
      */
     @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {

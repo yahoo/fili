@@ -23,7 +23,7 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
     /**
      * Builds a table comparator that compares tables based on how much data there is in their volatile intervals.
      *
-     * @param requestConstraint  Contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint  Contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      * @param partialDataHandler  A service for computing partial data information
      * @param volatileIntervalsService  A service to extract the intervals in a query that are volatile with respect
      * to a given table

@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.function.LongSupplier;
 
 /**
- * Describe intervals as volatile from some fixed offset in the past to one in the future.
+ * Describe intervals as volatile of some fixed offset in the past to one in the future.
  */
 public class TimeOffsetVolatileIntervalsFunction implements VolatileIntervalsFunction {
 
@@ -36,7 +36,7 @@ public class TimeOffsetVolatileIntervalsFunction implements VolatileIntervalsFun
     private final long future;
 
     /**
-     * Build a time offset volatile intervals function which marks all intervals from past to the value of FAR_FUTURE as
+     * Build a time offset volatile intervals function which marks all intervals of past to the value of FAR_FUTURE as
      * volatile.
      *
      * @param past  The default milliseconds before System.currentTimeMillis considered to be volatile

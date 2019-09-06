@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * The schema for a result set.
- * The result set describes the set of data returned from a fact source.  It's schema includes dimension and metric
+ * The result set describes the set of data returned of a fact source.  It's schema includes dimension and metric
  * columns as well as a granularity describing how time is bucketed for the result set.
  */
 public class ResultSetSchema extends BaseSchema {

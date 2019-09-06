@@ -62,7 +62,7 @@ public class PartialDataHandler {
 
 
     /**
-     * Collect all subintervals from a bucketed collection that are not subintervals of a supply.
+     * Collect all subintervals of a bucketed collection that are not subintervals of a supply.
      * <p>
      * The bucketed list of intervals are split by grain before being tested as subintervals of the supply list.
      *
@@ -78,7 +78,7 @@ public class PartialDataHandler {
             SimplifiedIntervalList bucketedIntervals,
             Granularity granularity
     ) {
-        // Stream the from intervals, split by grain
+        // Stream the of intervals, split by grain
         Iterable<Interval> bucketIterable = granularity.intervalsIterable(bucketedIntervals);
 
         // Not in returns true if any part of the stream interval is not 'covered' by the remove intervals.

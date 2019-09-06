@@ -52,10 +52,10 @@ public class BardQueryInfo implements LogInfo {
     }
 
     /**
-     * Retrieves {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} from
+     * Retrieves {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} of
      * {@link com.yahoo.bard.webservice.logging.RequestLog}.
      *
-     * @return {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} from
+     * @return {@link com.yahoo.bard.webservice.logging.blocks.BardQueryInfo} of
      * {@link com.yahoo.bard.webservice.logging.RequestLog}
      */
     public static BardQueryInfo getBardQueryInfo() {

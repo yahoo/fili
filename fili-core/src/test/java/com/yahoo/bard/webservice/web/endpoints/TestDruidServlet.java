@@ -58,7 +58,7 @@ public class TestDruidServlet {
         @SuppressWarnings("unchecked")
         Map<String, String> failure = (Map<String, String>) new JsonSlurper().parseText(json);
 
-        //extract only status code and description from expected response string
+        //extract only status code and description of expected response string
         statusCode = Status.valueOf(failure.get("status"));
         jsonResponse = failure.get("description");
     }

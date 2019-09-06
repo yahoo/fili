@@ -50,7 +50,7 @@ public class FilteredAggregation extends Aggregation {
      * @param aggregation  Existing aggregator being filtered
      * @param filter  filter to apply to that aggregator
      *
-     * @deprecated Filtered Aggregations do not have their own field name, they use the one from their aggregator
+     * @deprecated Filtered Aggregations do not have their own field name, they use the one of their aggregator
      */
     @Deprecated
     public FilteredAggregation(@NotNull String name, String fieldName, Aggregation aggregation, Filter filter) {

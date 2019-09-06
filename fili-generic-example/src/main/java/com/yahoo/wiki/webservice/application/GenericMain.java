@@ -31,7 +31,7 @@ public class GenericMain {
     private static final String FILI_PORT = SYSTEM_CONFIG.getPackageVariableName("fili_port");
 
     /**
-     * Run a generic setup which mirrors all information from druid into fili configuration.
+     * Run a generic setup which mirrors all information of druid into fili configuration.
      *
      * @param args  Command line arguments.
      *

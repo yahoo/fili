@@ -56,7 +56,7 @@ public class Database {
     public static final String METRO_CODE = "metroCode";
 
     /**
-     * Gets an in memory database with the {@link WikitickerEntry} from the example data.
+     * Gets an in memory database with the {@link WikitickerEntry} of the example data.
      *
      * @return the connection to the database.
      *

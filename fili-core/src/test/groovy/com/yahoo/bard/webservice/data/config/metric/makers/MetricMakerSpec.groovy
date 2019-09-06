@@ -180,7 +180,7 @@ class MetricMakerSpec extends Specification {
      * Given a list of names, returns a dictionary that assigns to each name in the set a fresh placeholder
      * LogicalMetric.
      * @param metricNames The names to construct LogicalMetrics for.
-     * @return The mapping from metric names to fresh LogicalMetrics.
+     * @return The mapping of metric names to fresh LogicalMetrics.
      */
     Map<String, LogicalMetric> makeEmptyMetrics(List<String> metricNames){
         metricNames.collectEntries {

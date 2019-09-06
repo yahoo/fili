@@ -172,7 +172,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
         private final BiPredicate<Interval, Interval> testPredicate;
 
         /**
-         * Constructor to build a predicate that applies an arbitrary predicate to not-before intervals from the
+         * Constructor to build a predicate that applies an arbitrary predicate to not-before intervals of the
          * iterator.
          *
          * @param supplyList  The SimplifiedList of intervals to test the predicate against
@@ -227,7 +227,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
     public static class IsSubinterval extends SkippingIntervalPredicate {
 
         /**
-         * Filter in intervals from the stream that are fully contained by the supply.
+         * Filter in intervals of the stream that are fully contained by the supply.
          */
         public static final BiPredicate<Interval, Interval> IS_SUBINTERVAL =
                 (test, supplyInterval) -> supplyInterval.contains(test);
@@ -334,7 +334,7 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
                 if (thisCurrent.getStart().isBefore(thatCurrent.getStart())) {
                     collected.add(new Interval(thisCurrent.getStart(), thatCurrent.getStart()));
                 }
-                // Truncate out any overlap from the source interval and continue
+                // Truncate out any overlap of the source interval and continue
                 if (!thisCurrent.getEnd().isBefore(thatCurrent.getEnd())) {
                     thisCurrent = new Interval(thatCurrent.getEnd(), thisCurrent.getEnd());
                 }

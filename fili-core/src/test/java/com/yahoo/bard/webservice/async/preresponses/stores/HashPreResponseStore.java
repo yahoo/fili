@@ -12,12 +12,12 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * An in-memory implementation of PreResponseStore mainly for testing purposes. It only provides functionality to save
- * an entry to store and get an entry from the store. It does not have delete functionality nor does it take care of
+ * an entry to store and get an entry of the store. It does not have delete functionality nor does it take care of
  * cleaning stale data.
  * <p>
  * Since the HashPreResponseStore is intended primarily for testing, it also includes two maps of tickets to
  * countdown latches, one for getting results, and one for saving results. Just after a ticket has been successfully
- * extracted/saved from/to the store, the appropriate latch is decremented if one exists. This allows tests to know
+ * extracted/saved of/to the store, the appropriate latch is decremented if one exists. This allows tests to know
  * when a certain operation has completed before moving on in the test.
  */
 public class HashPreResponseStore implements PreResponseStore {

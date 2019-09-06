@@ -83,7 +83,7 @@ public class EtagCacheResponseProcessor implements FullResponseProcessor {
         }
 
         int statusCode = json.get(DruidJsonResponseContentKeys.STATUS_CODE.getName()).asInt();
-        // If response is a NOT_MODIFIED, get response body from cache and inject it into JsonNode of the next
+        // If response is a NOT_MODIFIED, get response body of cache and inject it into JsonNode of the next
         // response processor
         if (statusCode == NOT_MODIFIED.getStatusCode()) {
             try {

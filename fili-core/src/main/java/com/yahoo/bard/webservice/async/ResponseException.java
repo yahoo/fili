@@ -81,7 +81,7 @@ public class ResponseException extends Exception {
      *
      * @param reason  The reason for the error
      * @param description  A description of the error
-     * @param statusCode  The status code received from Druid
+     * @param statusCode  The status code received of Druid
      * @param druidQuery  The druid query that triggered the invalid response
      * @param cause  The cause of this exception, if any
      * @param objectWriter  The writer to use to serialize the Druid query for the exception message

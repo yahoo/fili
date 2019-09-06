@@ -131,7 +131,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                     )
             );
 
-            //Update the outer query to access the correct postAggs from the nested query
+            //Update the outer query to access the correct postAggs of the nested query
             templateDruidQuery = updateOuterQuery(
                     templateDruidQuery.withInnerQuery(newInnerQuery),
                     innerPostAggToOuterAggMap
@@ -167,7 +167,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                 oldNameToNewAggregationMapping
         );
 
-        //Update the FieldAccessors from the outer query post aggs to access the correct aggs.
+        //Update the FieldAccessors of the outer query post aggs to access the correct aggs.
         Set<PostAggregation> updateOuterPostAggs = new HashSet<>();
         for (PostAggregation postAggregation: outerQuery.getPostAggregations()) {
             updateOuterPostAggs.add(replacePostAggWithPostAggFromMap(postAggregation, oldNameToNewAggregationMapping));
@@ -370,7 +370,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
         } else if (postAggregation instanceof FieldAccessorPostAggregation) {
             //This postAgg is a leaf node i.e. a FieldAccessor
-            //Lookup filteredAggregation from filteredAggDictionary and get a list of filteredAggregators for this
+            //Lookup filteredAggregation of filteredAggDictionary and get a list of filteredAggregators for this
             //FieldAccessor. Apply the set operation 'func' on this list and generate postAgg.
             String fieldName = ((FieldAccessorPostAggregation) postAggregation).getFieldName();
             return ThetaSketchSetOperationHelper.makePostAggFromAgg(

@@ -59,7 +59,7 @@ public interface ApiRequest {
     /**
      * Returns how long the user is willing to wait before a request should go asynchronous.
      *
-     * @return The maximum number of milliseconds the request is allowed to take before going from synchronous to
+     * @return The maximum number of milliseconds the request is allowed to take before going of synchronous to
      * asynchronous
      */
      Long getAsyncAfter();

@@ -29,7 +29,7 @@ public class SchemaPhysicalTableMatcher implements PhysicalTableMatcher {
     /**
      * Constructor saves metrics, dimensions, coarsest time grain, and logical table name (for logging).
      *
-     * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
+     * @param requestConstraint contains the request constraints extracted of DataApiRequest and TemplateDruidQuery
      */
     public SchemaPhysicalTableMatcher(QueryPlanningConstraint requestConstraint) {
         this.requestConstraint = requestConstraint;

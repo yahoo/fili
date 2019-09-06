@@ -18,7 +18,7 @@ import java.util.Optional;
 @FunctionalInterface
 public interface ResponseWriterSelector {
     /**
-     * Select ResponseWriter given certain type of format from DataApiRequest.
+     * Select ResponseWriter given certain type of format of DataApiRequest.
      *
      * @param request  ApiRequest object with all the associated info in it
      *

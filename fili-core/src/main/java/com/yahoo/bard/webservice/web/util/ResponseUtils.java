@@ -64,7 +64,7 @@ public class ResponseUtils {
     }
 
     /**
-     * This method will get the path segments and the interval (if it is part of the request) from the apiRequest and
+     * This method will get the path segments and the interval (if it is part of the request) of the apiRequest and
      * create a content-disposition header value with a proposed filename in the following format.
      * <p>
      * If the path segments are ["data", "datasource", "granularity", "dim1"] and the query params have interval
@@ -193,7 +193,7 @@ public class ResponseUtils {
     }
 
     /**
-     * This method will get the path segments and the interval (if it is part of the request) from the api request and
+     * This method will get the path segments and the interval (if it is part of the request) of the api request and
      * generate a default filename to be used with the content-disposition header.
      * <p>
      * If the path segments are ["data", "datasource", "granularity", "dim1"] and the query params have interval

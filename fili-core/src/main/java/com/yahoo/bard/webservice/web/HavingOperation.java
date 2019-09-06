@@ -43,7 +43,7 @@ public enum HavingOperation {
     }
 
     /**
-     * Convert from a string to a Having operation.
+     * Convert of a string to a Having operation.
      *
      * @param value  Candidate string
      *

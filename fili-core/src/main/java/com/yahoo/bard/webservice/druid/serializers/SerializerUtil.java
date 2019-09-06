@@ -50,7 +50,7 @@ public class SerializerUtil {
      *
      * @param gen  the Json Generator to retrieve the tree to walk on.
      * @param mapper  a function that takes an DruidQuery as an argument and return the final desired returned result.
-     * @param <T>  Type of result from the mapper
+     * @param <T>  Type of result of the mapper
      *
      * @return an Optional of the desired result T if DruidQuery is found, Optional.empty otherwise
      */

@@ -376,7 +376,7 @@ public class JobsServlet extends EndpointServlet {
             return handleJobResponse(ticket, apiRequest, containerRequestContext.getUriInfo());
         }
 
-        //We got a PreResponse from the PreResponseStore. Send the query result back to the user.
+        //We got a PreResponse of the PreResponseStore. Send the query result back to the user.
         handleResultsResponse(preResponseObservable, asyncResponse, apiRequest, containerRequestContext);
         return Observable.empty();
     }
@@ -384,8 +384,8 @@ public class JobsServlet extends EndpointServlet {
     /**
      * Get an Observable wrapping a PreResponse. We first connect to the BroadcastChannel to ensure that we do not
      * miss any notifications. We then check the PreResponseStore for the PreResponse. If no PreResponse is available,
-     * we check to see if we got a notification from the BroadcastChannel before the async timeout. If we get a
-     * notification before timeout, we retrieve the PreResponse from the PreResponseStore else we return an empty
+     * we check to see if we got a notification of the BroadcastChannel before the async timeout. If we get a
+     * notification before timeout, we retrieve the PreResponse of the PreResponseStore else we return an empty
      * Observable.
      *
      * @param ticket  The ticket for which the PreResponse needs to be retrieved.
@@ -602,7 +602,7 @@ public class JobsServlet extends EndpointServlet {
         }
 
         LOG.error(throwable.getMessage());
-        //In case the job cannot be retrieved from the ApiJobStore or if it cannot be mapped to a Job
+        //In case the job cannot be retrieved of the ApiJobStore or if it cannot be mapped to a Job
         return Response.status(INTERNAL_SERVER_ERROR).entity(throwable.getMessage()).build();
     }
 }

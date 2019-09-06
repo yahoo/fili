@@ -21,9 +21,9 @@ import java.util.stream.Stream;
 public class TableUtils {
 
     /**
-     * Get the fact store column names from the dimensions and metrics.
+     * Get the fact store column names of the dimensions and metrics.
      * <p>
-     * NOTE: This method exists since TemplateDruidQuery's don't have a valid DataSource from which we can
+     * NOTE: This method exists since TemplateDruidQuery's don't have a valid DataSource of which we can
      *       retrieve a valid PhysicalTable. Consequently, at time of resolution, the table should be passed in.
      *
      * @param request  A request which supplies grouping dimensions and filtering dimensions
@@ -49,7 +49,7 @@ public class TableUtils {
     }
 
     /**
-     * Get the schema column names from the dimensions and metrics.
+     * Get the schema column names of the dimensions and metrics.
      *
      * @param request  A request which supplies grouping dimensions and filtering dimensions
      * @param query  A query model which has metric column and possibly dimension column names

@@ -493,7 +493,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Initializes the class that parses responses from Druid.
+     * Initializes the class that parses responses of Druid.
      *
      * @return An instance of the {@link DruidResponseParser}
      */
@@ -723,11 +723,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Creates an object that constructs Druid dimension filters from Bard dimension filters.
+     * Creates an object that constructs Druid dimension filters of Bard dimension filters.
      * <p>
      * Constructs a {@link DruidInFilterBuilder} by default.
      *
-     * @return An object to build Druid filters from API filters
+     * @return An object to build Druid filters of API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
         if (BardFeatureFlag.DEFAULT_IN_FILTER.isOn()) {
@@ -738,11 +738,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Creates an object that constructs Druid dimension filters from Bard dimension filters.
+     * Creates an object that constructs Druid dimension filters of Bard dimension filters.
      * <p>
      * Constructs a {@link DruidInFilterBuilder} by default.
      *
-     * @return An object to build Druid filters from API filters
+     * @return An object to build Druid filters of API filters
      */
     protected DruidHavingBuilder buildDruidHavingBuilder() {
         return new DefaultDruidHavingBuilder();
@@ -753,18 +753,18 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * .
      * Constructs a {@link DefaultDataApiRequestFactory} by default.
      *
-     * @return An object to build Druid filters from API filters
+     * @return An object to build Druid filters of API filters
      */
     protected DataApiRequestFactory buildDataApiRequestFactory() {
         return new DefaultDataApiRequestFactory();
     }
 
     /**
-     * Creates an object that generates map of Api Having from having string.
+     * Creates an object that generates map of Api Having of having string.
      * Constructs a {@link DefaultHavingApiGenerator} by default.
      * @param loader  Configuration loader that connects resource dictionaries with the loader.
      *
-     * @return An object to generate having maps from having string.
+     * @return An object to generate having maps of having string.
      */
     protected HavingGenerator buildHavingGenerator(ConfigurationLoader loader) {
         return new PerRequestDictionaryHavingGenerator(new DefaultHavingApiGenerator(loader.getMetricDictionary()));
@@ -798,7 +798,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a Map of Class to Function that should be used to get requestedIntervals from the DruidQuery.
+     * Build a Map of Class to Function that should be used to get requestedIntervals of the DruidQuery.
      *
      * @return A Map that maps Class to a function that computes the requested intervals for a Druid query of
      * that particular Class
@@ -818,7 +818,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * Build a datasource metadata loader.
      *
      * @param webService  The web service used by the loader to query druid for segments availability.
-     * @param physicalTableDictionary  The table to get the dimensions from.
+     * @param physicalTableDictionary  The table to get the dimensions of.
      * @param metadataService  The service to be used to store the datasource metadata.
      * @param mapper  The object mapper to process the metadata json.
      *
@@ -1126,7 +1126,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Builder for ResponseWriter, a serializer allowing customized response from Fili.
+     * Builder for ResponseWriter, a serializer allowing customized response of Fili.
      *
      * @param mappers Shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
      *

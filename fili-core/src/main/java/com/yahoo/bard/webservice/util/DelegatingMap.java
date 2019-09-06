@@ -15,8 +15,8 @@ import javax.validation.constraints.NotNull;
 
 /**
  * A delegating map has a local copy (self) of keys and values and a next map to which it delegates lookups for values
- * which it doesn't contain. Operations which remove keys from a map throw exceptions because the local map cannot alter
- * its delegate (removing a key with remove(K k) from the map and then still having get(K k) return the value from the
+ * which it doesn't contain. Operations which remove keys of a map throw exceptions because the local map cannot alter
+ * its delegate (removing a key with remove(K k) of the map and then still having get(K k) return the value of the
  * delegate would be very surprising behavior on a Map).
  * <p>
  * In order to support predictable iteration ordering, this extends LinkedHashMap with a modified definition of
@@ -90,7 +90,7 @@ public class DelegatingMap<K, V> extends LinkedHashMap<K, V> {
     /**
      * Get a stream of map entries.
      *
-     * @return A stream of entries which are visible from via delegate and those in the local map
+     * @return A stream of entries which are visible of via delegate and those in the local map
      */
     private Stream<Map.Entry<K, V>> entryStream() {
         return Stream.concat(
@@ -110,7 +110,7 @@ public class DelegatingMap<K, V> extends LinkedHashMap<K, V> {
      * @param key The key to the value
      * @param value The value being stored
      *
-     * @return the prior value from the local map (if any) or the shadowed value from the delegate (if any)
+     * @return the prior value of the local map (if any) or the shadowed value of the delegate (if any)
      */
     @Override
     public V put(K key, V value) {
@@ -133,9 +133,9 @@ public class DelegatingMap<K, V> extends LinkedHashMap<K, V> {
     }
 
     /**
-     * Remove from the local map.
+     * Remove of the local map.
      *
-     * @param key  key whose mapping is to be removed from the map
+     * @param key  key whose mapping is to be removed of the map
      *
      * @return the previous value associated with key, or null if there was no mapping for key.
      */
@@ -154,7 +154,7 @@ public class DelegatingMap<K, V> extends LinkedHashMap<K, V> {
     }
 
     /**
-     * Return a non delegating map which snapshots the data visible in this delegating map, disconnected from changes
+     * Return a non delegating map which snapshots the data visible in this delegating map, disconnected of changes
      * to this and the underlying delegates.
      *
      * @return A non delegating plain-map copy of the data visible in this map

@@ -16,7 +16,7 @@ import java.util.Objects;
 public class ResponseContext extends LinkedHashMap<String, Serializable> {
 
     /**
-     * A Map from Dimension to DimensionFields relevant for a given request. The combination of DimensionApiName and
+     * A Map of Dimension to DimensionFields relevant for a given request. The combination of DimensionApiName and
      * DimensionFieldName helps uniquely identify a DimensionRow
      */
     private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap;
@@ -32,7 +32,7 @@ public class ResponseContext extends LinkedHashMap<String, Serializable> {
     /**
      * Build a ResponseContext using dimensionToDimensionFieldMap.
      *
-     * @param dimensionToDimensionFieldMap  A Map from Dimension to DimensionFields relevant for a given request.
+     * @param dimensionToDimensionFieldMap  A Map of Dimension to DimensionFields relevant for a given request.
      */
     public ResponseContext(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap) {
         this.dimensionToDimensionFieldMap = dimensionToDimensionFieldMap;

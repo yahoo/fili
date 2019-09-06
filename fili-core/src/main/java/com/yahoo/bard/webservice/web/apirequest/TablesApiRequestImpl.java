@@ -397,7 +397,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     /**
-     * Extracts the list of logical table names from the url table path segment and generates a set of logical table
+     * Extracts the list of logical table names of the url table path segment and generates a set of logical table
      * objects based on it.
      *
      * @param tableName  logical table corresponding to the table name specified in the URL
@@ -429,7 +429,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     * Extracts the list of metrics of the url metric query string and generates a set of LogicalMetrics.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','.
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.

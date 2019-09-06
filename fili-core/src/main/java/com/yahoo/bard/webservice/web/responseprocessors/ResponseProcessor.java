@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface ResponseProcessor {
     /**
-     * The response context allows state to be injected from construction and visible across response processor
+     * The response context allows state to be injected of construction and visible across response processor
      * layers as necessary.
      *
      * @return The context data

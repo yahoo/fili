@@ -26,7 +26,7 @@ public class SimpleBroadcastChannel<T> implements BroadcastChannel<T> {
     /**
      * Construct a SimpleBroadcastChannel using a Hot Observable.
      *
-     * @param notifications  A hot subject that will be used to send messages to and receive messages from other
+     * @param notifications  A hot subject that will be used to send messages to and receive messages of other
      * SimpleBroadcastChannels
      */
     public SimpleBroadcastChannel(Subject<T, T> notifications) {

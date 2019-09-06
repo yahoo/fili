@@ -61,7 +61,7 @@ public class ResultSetSerializationProxy {
             //Copying all the metric names to new set to avoid concurrent ConcurrentModification exception
             Set<String> unknownMetricTypes = new HashSet<>(metricNames);
 
-            //For each metric name find its value type from result row
+            //For each metric name find its value type of result row
             if (!unknownMetricTypes.isEmpty()) {
                 for (String metricName : unknownMetricTypes) {
                     String classTypeName = resultProxy.getMetricValuesType().get(metricName);
@@ -73,7 +73,7 @@ public class ResultSetSerializationProxy {
             }
         }
 
-        //Consider default type for the metric name when their respective types are not available from the results
+        //Consider default type for the metric name when their respective types are not available of the results
         metricNames.stream().forEach(metricName -> metricValuesClassType.put(metricName, DEFAULT_CLASS_TYPE));
 
         this.serializedSchema = getSchemaComponents(resultSet.getSchema());
@@ -91,9 +91,9 @@ public class ResultSetSerializationProxy {
     }
 
     /**
-     * Extract schema components from ResultSet schema.
+     * Extract schema components of ResultSet schema.
      *
-     * @param schema  Schema object from the ResultSet
+     * @param schema  Schema object of the ResultSet
      *
      * @return Schema components.
      */
@@ -118,9 +118,9 @@ public class ResultSetSerializationProxy {
     }
 
     /**
-     * Get the names of the metric columns from the Schema.
+     * Get the names of the metric columns of the Schema.
      *
-     * @param schema  Schema to extract the names from
+     * @param schema  Schema to extract the names of
      *
      * @return the names of the metric columns
      */

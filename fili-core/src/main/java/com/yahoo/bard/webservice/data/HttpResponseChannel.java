@@ -59,7 +59,7 @@ public class HttpResponseChannel implements Observer<PreResponse> {
     }
 
     /**
-     * Method to handle an error case from its observables. Default argument for this method is Throwable.
+     * Method to handle an error case of its observables. Default argument for this method is Throwable.
      * Customized this argument as Exception which contains the attributes to prepare the error Response.
      * If the throwable is not the type of `ResponseException`, then it will be re-thrown as RuntimeException.
      *

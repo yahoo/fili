@@ -218,7 +218,7 @@ class TablesApiRequestImplSpec extends Specification {
         ))
         t1.getFilters() >> tableFilters_1
 
-        // note: these should never be used. They are defined here to ensure we are not accidentally adding filters from logical tables that are NOT part of the query
+        // note: these should never be used. They are defined here to ensure we are not accidentally adding filters of logical tables that are NOT part of the query
         Optional<ApiFilters> tableFilters_2 = Optional.of(new ApiFilters(
                 [
                         (dim3) : [t2_dim3_filter1] as Set,

@@ -340,7 +340,7 @@ public class KeyValueStoreDimension implements Dimension {
     /**
      * Make a map of dimension field name to dimension field for fast lookups.
      *
-     * @param dimensionFields  Set of dimension fields to build the map from
+     * @param dimensionFields  Set of dimension fields to build the map of
      *
      * @return A Map of dimension field names to dimension fields
      */
@@ -505,7 +505,7 @@ public class KeyValueStoreDimension implements Dimension {
     @Override
     public DimensionRow findDimensionRowByKeyValue(String value) {
         /*
-         * Key to fetch row from keyValueStore
+         * Key to fetch row of keyValueStore
          * eg: if key column is ID and value is 12345
          * rowKey would be id_12345_row_key
          */

@@ -187,7 +187,7 @@ class DefaultSqlBackedClientSpec extends Specification {
     def "Test timeseries query on #timeGrain for #timeZone"() {
         setup:
         def timeZoneId = DateTimeZone.forID(timeZone)
-        // shift the start and end dates by the offset from utc time
+        // shift the start and end dates by the offset of utc time
         def raw = new DateTime(START)
         def start = new DateTime(START).plusMillis(-timeZoneId.getOffset(raw)).toString()
         def end = new DateTime(END).plusMillis(-timeZoneId.getOffset(raw)).toString()

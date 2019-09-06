@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Class to de-serialize and prepare the PreResponse object from JSON. The advantages of custom deserialization are:
+ * Class to de-serialize and prepare the PreResponse object of JSON. The advantages of custom deserialization are:
  * a. We can reconstruct the dimension rows for each result with the help of dimension dictionary.
  * b. Schema object de-serialization is more efficient then the default one.
  * c. Provides the flexibility of optimizing serialization
@@ -191,18 +191,18 @@ public class PreResponseDeserializer {
      *
      * @return Deserialized responseContext
      *
-     * @throws IOException when there's a problem reading the response context from the JsonNode
+     * @throws IOException when there's a problem reading the response context of the JsonNode
      */
     private ResponseContext getResponseContext(JsonNode serializedResponseContext) throws IOException {
         return responseContextMapper.readValue(serializedResponseContext.asText(), ResponseContext.class);
     }
 
     /**
-     * Generates ResultSet object from the JsonNode which contains the serialized ResultSet.
+     * Generates ResultSet object of the JsonNode which contains the serialized ResultSet.
      *
      * @param serializedResultSet  JsonNode which contains the serialized ResultSet
      *
-     * @return ResultSet object generated from JsonNode
+     * @return ResultSet object generated of JsonNode
      */
     private ResultSet getResultSet(JsonNode serializedResultSet) {
         ResultSetSchema resultSetSchema = getResultSetSchema(serializedResultSet.get(SCHEMA_KEY));
@@ -214,11 +214,11 @@ public class PreResponseDeserializer {
     }
 
     /**
-     * Generates ZonedSchema object from given JsonNode.
+     * Generates ZonedSchema object of given JsonNode.
      *
      * @param schemaNode  JsonNode which contains all the columns, timezone and granularity
      *
-     * @return ResultSetSchema object generated from the JsonNode
+     * @return ResultSetSchema object generated of the JsonNode
      */
     private ResultSetSchema getResultSetSchema(JsonNode schemaNode) {
         DateTimeZone timezone = generateTimezone(
@@ -242,9 +242,9 @@ public class PreResponseDeserializer {
     }
 
     /**
-     * Method to get dimension from DimensionDictionary for a given name.
+     * Method to get dimension of DimensionDictionary for a given name.
      *
-     * @param dimensionName  To find Dimension from dimension dictionary
+     * @param dimensionName  To find Dimension of dimension dictionary
      *
      * @return The dimension with the given name
      */
@@ -260,12 +260,12 @@ public class PreResponseDeserializer {
 
 
     /**
-     * Creates new Result object from JsonNode.
+     * Creates new Result object of JsonNode.
      *
      * @param serializedResult  JsonNode which contains all the serialized details to generate Result object
      * @param resultSetSchema  Schema of the result to generate the Result object
      *
-     * @return Result object generated from given JsonNode
+     * @return Result object generated of given JsonNode
      */
     private Result getResult(JsonNode serializedResult, ResultSetSchema resultSetSchema) {
         return new Result(
@@ -303,7 +303,7 @@ public class PreResponseDeserializer {
     }
 
     /**
-     * Extracts the metric values for all the metric columns from JsonNode which contains all the metrics names and
+     * Extracts the metric values for all the metric columns of JsonNode which contains all the metrics names and
      * respective values.
      *
      * @param metricsRows  JsonNode which contains all the metric names and respective values as key-value pair

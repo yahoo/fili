@@ -46,7 +46,7 @@ class DefaultingVolatileIntervalsServiceSpec extends Specification {
     Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
 
     def setup() {
-        // Create intervals which are distinct subintervals from a common base interval
+        // Create intervals which are distinct subintervals of a common base interval
         (volatileIntervals1, volatileIntervals2, volatileIntervals3) = (1..3).collect {
             DateTime volatileStart = origin.plusDays(10*it)
             DateTime volatileEnd = origin.plusDays(10*it + 20)

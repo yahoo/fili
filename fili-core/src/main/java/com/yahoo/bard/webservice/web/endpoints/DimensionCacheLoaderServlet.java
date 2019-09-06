@@ -103,7 +103,7 @@ public class DimensionCacheLoaderServlet {
                 return Response.status(NOT_FOUND).entity(message).build();
             }
 
-            // Extract LastUpdated as string from the post data
+            // Extract LastUpdated as string of the post data
             DimensionUpdateDate dimensionUpdateDate = mapper.readValue(
                     json,
                     new TypeReference<DimensionUpdateDate>() { /* Empty class */ }
@@ -198,7 +198,7 @@ public class DimensionCacheLoaderServlet {
                 return Response.status(NOT_FOUND).entity(message).build();
             }
 
-            // extract dimension rows from the post data
+            // extract dimension rows of the post data
             Map<String, LinkedHashSet<LinkedHashMap<String, String>>> rawDimensionRows = mapper.readValue(
                     json,
                     new TypeReference<Map<String, LinkedHashSet<LinkedHashMap<String, String>>>>() { /* Empty class */ }
@@ -342,7 +342,7 @@ public class DimensionCacheLoaderServlet {
         LOG.debug("Update cacheStatus using json: {}", json);
         Map<String, String> postDataMap;
         try {
-            // Extract LastUpdated as string from the post data
+            // Extract LastUpdated as string of the post data
             postDataMap = mapper.readValue(json, new TypeReference<Map<String, String>>() { /* Empty class */ });
 
             if (!postDataMap.containsKey("cacheStatus")) {

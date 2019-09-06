@@ -171,7 +171,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     /**
      * Returns a set of dimension names that contains either the requested dimension or all the available ones.
      *
-     * @param apiDimension  Dimension string from the URL.
+     * @param apiDimension  Dimension string of the URL.
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
      *
      * @return Set of dimension objects.

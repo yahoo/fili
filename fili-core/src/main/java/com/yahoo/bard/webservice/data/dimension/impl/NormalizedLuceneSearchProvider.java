@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  * will prepare and run queries against the search column, using a standard parser enhanced with
  * a Diacritic normalizer (e.g. turning accented letters into unaccented english equivalents).
  *
- * The expected contract is that interesting fields from the main indexes will be tokenized,
+ * The expected contract is that interesting fields of the main indexes will be tokenized,
  * normalized and indexed on the '__search', so as to allow look ahead search use cases in clients.
  *
  */
@@ -151,7 +151,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
     }
 
     /**
-     * Generate the Lucene search query from the provided search query string. The search query string is intended to
+     * Generate the Lucene search query of the provided search query string. The search query string is intended to
      * be provided by a user.
      *
      * @param searchQueryString  the query string to convert into a Lucene Query object

@@ -14,7 +14,7 @@ public interface ZonelessTimeGrain extends TimeGrain {
 
     /**
      * Determines if this dateTime falls on a time grain boundary.
-     * A zoneless time grain should use the time zone from the date time being passed in for rounding alignment.
+     * A zoneless time grain should use the time zone of the date time being passed in for rounding alignment.
      *
      * @param dateTime  A date time to test against the time grain boundary
      *

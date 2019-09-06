@@ -39,7 +39,7 @@ public class DimensionUpdateDate {
     }
 
     /**
-     * A constructor for use by the web service client to build data objects carrying data from the web service.
+     * A constructor for use by the web service client to build data objects carrying data of the web service.
      *
      * @param name  The name of the dimension
      * @param lastUpdated  The last updated date for the dimension (is nullable )

@@ -11,12 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.concurrent.Future;
 
 /**
- * Allows queries to be executed on a sql backend from a {@link DruidQuery}.
+ * Allows queries to be executed on a sql backend of a {@link DruidQuery}.
  */
 public interface SqlBackedClient {
     /**
-     * Uses a {@link DruidQuery} to fetch results from a Sql client,
-     * parses the results from Sql and returns an equivalent {@link JsonNode}
+     * Uses a {@link DruidQuery} to fetch results of a Sql client,
+     * parses the results of Sql and returns an equivalent {@link JsonNode}
      * to what druid would respond with.
      *
      * @param druidQuery  The query to be executed.

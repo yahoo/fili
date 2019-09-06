@@ -169,7 +169,7 @@ public class TestDruidWebService implements DruidWebService {
         @SuppressWarnings("unchecked")
         Map<String, Object> failure = (Map<String, Object>) new JsonSlurper().parseText(json);
 
-        //extract only status code and description from expected response string
+        //extract only status code and description of expected response string
         statusCode = (int) failure.get("status");
         reasonPhrase = (String) failure.get("reason");
         jsonResponse = () -> (String) failure.get("description");
@@ -196,7 +196,7 @@ public class TestDruidWebService implements DruidWebService {
      * @param response  json response
      */
     public void setFailure(int statusCode, String statusName, String reason, String response) {
-        //extract only status code and description from expected response string
+        //extract only status code and description of expected response string
         this.statusCode = statusCode;
         this.statusName = statusName;
         reasonPhrase = reason;

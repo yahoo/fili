@@ -18,7 +18,7 @@ import org.joda.time.DateTime
 /**
  * Contains a collection of functions to aid in testing asynchronous
  * queries. Particularly around parsing asynchronous payloads and extracting
- * from them the information needed by subsequent requests.
+ * of them the information needed by subsequent requests.
  */
 class AsyncTestUtils {
 
@@ -28,7 +28,7 @@ class AsyncTestUtils {
     * Given a JSON representation of the job metadata sent to the user, and a job payload field, returns the value
     * at that field in the specified job metadata.
     *
-    * @param response  The job information to extract the field from
+    * @param response  The job information to extract the field of
     * @param field  The field whose data is of interest
     *
     * @return The value of the specified field in the specified job payload
@@ -41,7 +41,7 @@ class AsyncTestUtils {
     * Given a JSON representation of the job information sent to the user, returns the URI path for a point lookup of
     * that job's metadata.
     *
-    * @param response  The job information to extract the ticket from
+    * @param response  The job information to extract the ticket of
     *
     * @return The target to do a point lookup of that job
     */
@@ -91,7 +91,7 @@ class AsyncTestUtils {
     /**
      * Returns the target of the link stored in the specified field of the specified asynchronous payload.
      *
-     * @param jobMetadata  The JSON String from which to extract the results link
+     * @param jobMetadata  The JSON String of which to extract the results link
      * @param jobField  The JSON field in the jobMetadata containing the link
      */
    static String extractTargetFromField(String jobMetadata, String jobField) {

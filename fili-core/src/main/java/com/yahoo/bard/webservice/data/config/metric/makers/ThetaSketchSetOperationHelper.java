@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 /**
  * A Helper class for ThetaSketchSetOperationMaker that builds a ThetaSketchSetOperationPostAggregation
- * from the intersection of filteredAggregators.
+ * of the intersection of filteredAggregators.
  */
 public class ThetaSketchSetOperationHelper {
 

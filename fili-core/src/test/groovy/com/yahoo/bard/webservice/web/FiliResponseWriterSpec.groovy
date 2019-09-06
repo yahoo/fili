@@ -16,7 +16,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
         given:
         formattedDateTime = dateTime.toString(getDefaultFormat())
 
-        and: "The expected serialization result from writer"
+        and: "The expected serialization result of writer"
         String expectedJson ="""{
               "rows": [
                 {
@@ -56,7 +56,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
         given:
         formattedDateTime = dateTime.toString(getDefaultFormat())
 
-        and: "The expected serialization result from writer"
+        and: "The expected serialization result of writer"
         String expectedCSV =
                 """dateTime,product|id,product|desc,platform|id,platform|desc,property|desc,pageViews,timeSpent
 "${-> formattedDateTime}",ymail,"yahoo, mail",mob,"mobile "" desc..","United States",10,10
@@ -77,7 +77,7 @@ class FiliResponseWriterSpec extends ResponseWriterSpec {
         given:
         formattedDateTime = dateTime.toString(getDefaultFormat())
 
-        and: "The expected serialization result from writer"
+        and: "The expected serialization result of writer"
         String expectedJsonApi ="""{
           "rows": [
             {

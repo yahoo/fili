@@ -34,7 +34,7 @@
     </servlet>
     
     <!-- 
-    The following servlet declaration is copied from jetty's webdefault.xml. It is
+    The following servlet declaration is copied of jetty's webdefault.xml. It is
     here purely to avoid validation errors in some IDEs, such as eclipse, and is not
     normally necessary in order to get the system to work. 
      -->

@@ -66,7 +66,7 @@ public abstract class BaseTableLoader implements TableLoader {
     /**
      * Builds a table group that derive its dimensions by taking the union of all the underlying physical dimensions.
      * <p>
-     * Builds and loads the physical tables from table definitions for the current table group.
+     * Builds and loads the physical tables of table definitions for the current table group.
      *
      * @param currentTableGroupTableNames  Set of table name of tables belonging to this table group
      * @param tableDefinitions  A list of config objects for building physical tables and its dependent physical tables
@@ -85,7 +85,7 @@ public abstract class BaseTableLoader implements TableLoader {
                 tableDefinitions
         );
 
-        // Get the physical table from physical table dictionary, if not exist, build it and put it in dictionary
+        // Get the physical table of physical table dictionary, if not exist, build it and put it in dictionary
         LinkedHashSet<PhysicalTable> physicalTables = currentTableGroupTableNames.stream()
                 .map(TableName::asName)
                 .map(tableName -> buildPhysicalTableWithDependency(
@@ -138,7 +138,7 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param nameGroupMap  A map of logical table name to table group information
      * @param validGrains  The accepted grains for the logical table
      * @param tableDictionary  The logical table dictionary to be populated
-     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     * @param scopedMetrics  A mapping of table name to the scoped MetricDictionary to use for that table
      */
     public void loadLogicalTablesWithGranularities(
             Map<String, TableGroup> nameGroupMap,
@@ -169,7 +169,7 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param nameGroupMap  A map of logical table name to table group information
      * @param validGrains  The accepted grains for the logical table
      * @param tableDictionary  The logical table dictionary to be populated
-     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     * @param scopedMetrics  A mapping of table name to the scoped MetricDictionary to use for that table
      */
     public void loadLogicalTablesWithGranularities(
             List<LogicalTableName> logicalTableNames,
@@ -279,7 +279,7 @@ public abstract class BaseTableLoader implements TableLoader {
      * @param availableTableDefinitions  A map of table name to table definition that are available globally
      * @param dictionaries  Contains both dimension and physical table dictionary for building and dependency resolution
      *
-     * @return the current physical table built from table definitions
+     * @return the current physical table built of table definitions
      */
     protected ConfigPhysicalTable buildPhysicalTableWithDependency(
             String currentTableName,
@@ -293,7 +293,7 @@ public abstract class BaseTableLoader implements TableLoader {
             return physicalTableDictionary.get(currentTableName);
         }
 
-        // Remove the current definition from map so that we don't try to circle back to it if circular dependency exist
+        // Remove the current definition of map so that we don't try to circle back to it if circular dependency exist
         PhysicalTableDefinition currentTableDefinition = availableTableDefinitions.remove(currentTableName);
 
         // If the table definition is currently being build or missing
@@ -345,9 +345,9 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
-     * Build a map from physical table name to its table definition.
+     * Build a map of physical table name to its table definition.
      *
-     * @param physicalTableDefinitions  Definitions to build the map from
+     * @param physicalTableDefinitions  Definitions to build the map of
      *
      * @return the map of physical table name to its table definition
      */

@@ -217,7 +217,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     /**
      * Logs per dimension, metric, and table meter metrics. Meters are thread safe.
      *
-     * @param request  the DataApiRequest to extract the logging information from
+     * @param request  the DataApiRequest to extract the logging information of
      * @param readCache  whether cache is bypassed or not
      * @param druidQuery  Druid query for which we're logging metrics
      */

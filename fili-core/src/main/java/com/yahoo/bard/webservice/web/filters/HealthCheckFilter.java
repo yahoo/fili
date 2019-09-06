@@ -68,7 +68,7 @@ public class HealthCheckFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Gathers some interesting data from the request and builds a string out of it.
+     * Gathers some interesting data of the request and builds a string out of it.
      *
      * @param requestContext The request context. Contains info we want to log
      * @return the StringBuilder containing our logging info

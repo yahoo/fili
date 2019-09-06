@@ -45,7 +45,7 @@ public enum BardDimensionField implements DimensionField {
     }
 
     /**
-     * Make test DimensionRow using ID and DESC fields from provided Dimension.
+     * Make test DimensionRow using ID and DESC fields of provided Dimension.
      *
      * @param dimension  provided dimension
      * @param values  Values for dimension fields

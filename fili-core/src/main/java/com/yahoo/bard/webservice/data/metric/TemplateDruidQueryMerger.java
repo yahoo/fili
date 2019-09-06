@@ -24,9 +24,9 @@ public class TemplateDruidQueryMerger {
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 
     /**
-     * Merge all of the TemplateDruidQueries from all of the Metrics in an DataApiRequest together.
+     * Merge all of the TemplateDruidQueries of all of the Metrics in an DataApiRequest together.
      *
-     * @param request  DataApiRequest to get the metrics from
+     * @param request  DataApiRequest to get the metrics of
      *
      * @return The merged TemplateDruidQuery
      */

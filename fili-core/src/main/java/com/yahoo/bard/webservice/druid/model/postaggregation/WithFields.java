@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * An Interface to getFields from a PostAggregation and return a PosAggregation constructed from the given fields.
+ * An Interface to getFields of a PostAggregation and return a PosAggregation constructed of the given fields.
  *
  * @param <T> a PostAggregation
  */
@@ -26,16 +26,16 @@ public interface WithFields<T extends PostAggregation> extends MetricField {
      List<PostAggregation> getFields();
 
     /**
-     * withFields provides new instance of respective class created from fields.
+     * withFields provides new instance of respective class created of fields.
      *
      * @param fields  List of post aggregation fields
      *
-     * @return new instance of implemented class created from the list of post aggregation fields
+     * @return new instance of implemented class created of the list of post aggregation fields
      */
      T withFields(List<PostAggregation> fields);
 
     /**
-     * Get the dimensions from all child postAggregations.
+     * Get the dimensions of all child postAggregations.
      *
      * @return   The set of dimensions required to satisfy the fields of all child post aggregations
      */

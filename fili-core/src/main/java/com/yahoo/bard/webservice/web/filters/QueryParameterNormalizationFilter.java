@@ -69,13 +69,13 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      * <p>
      * NOTE: Value casing is unaffected.
      *
-     * @param uriInfo Uri info object from container request context
+     * @param uriInfo Uri info object of container request context
      * @return  Normalized URI
      */
     private URI buildNormalizedUri(UriInfo uriInfo) {
         UriBuilder builder = uriInfo.getRequestUriBuilder();
 
-        // Erase existing query parameters from builder
+        // Erase existing query parameters of builder
         builder.replaceQuery("");
 
         // Set normalized values
@@ -115,7 +115,7 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
      *   It then conditions these methods by enumerating all methods and keeping only those that are annotated
      *   as JAX-RS endpoints (+ the bard @PATCH annotation). After harvesting this list of method, it then enumerates
      *   all of the parameters for each method and keeps a list of the @QueryParam values. It then extracts the values
-     *   from these @QueryParam annotations to retain its codified casing while also constructing a map of lowercase'd
+     *   of these @QueryParam annotations to retain its codified casing while also constructing a map of lowercase'd
      *   values to map in a case insensitive way.
      * <p>
      * NOTE: The ClassLoader provided with the ResourceConfig is used to find classes.
@@ -129,15 +129,15 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
             LOG.warn("No providers defined. Disabling QueryParameterNormalizationFilter.");
             return Collections.emptyMap();
         } else if (classLoader == null) {
-            LOG.warn("No valid ClassLoader found from context. Disabling QueryParameterNormalizationFilter.");
+            LOG.warn("No valid ClassLoader found of context. Disabling QueryParameterNormalizationFilter.");
             return Collections.emptyMap();
         }
         return providers.stream()
-                // Extract all of the corresponding methods from these classes
+                // Extract all of the corresponding methods of these classes
                 .flatMap(QueryParameterNormalizationFilter::extractMethods)
                 // Determine which methods are annotated as a JAX-RS endpoint
                 .filter(QueryParameterNormalizationFilter::isWebEndpoint)
-                // For each of these methods, extract the @QueryParam annotations from the parameter list
+                // For each of these methods, extract the @QueryParam annotations of the parameter list
                 .flatMap(QueryParameterNormalizationFilter::extractQueryParameters)
                 // Extract the parameter value
                 .map(QueryParam::value)
@@ -164,9 +164,9 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
     }
 
     /**
-     * Extract a set of methods from a given class.
+     * Extract a set of methods of a given class.
      *
-     * @param clazz Class to extract methods from
+     * @param clazz Class to extract methods of
      * @return  Stream of methods on class
      */
     private static Stream<Method> extractMethods(Class clazz) {
@@ -182,9 +182,9 @@ public class QueryParameterNormalizationFilter implements ApplicationEventListen
     }
 
     /**
-     * Extract query parameters from a stream of methods.
+     * Extract query parameters of a stream of methods.
      *
-     * @param method Method to extract from which to extract @QueryParam's
+     * @param method Method to extract of which to extract @QueryParam's
      * @return  A stream of QueryParam annotations
      */
     private static Stream<QueryParam> extractQueryParameters(Method method) {

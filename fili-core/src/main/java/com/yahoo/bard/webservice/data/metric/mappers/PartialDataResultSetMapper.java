@@ -22,7 +22,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
     final Supplier<SimplifiedIntervalList> volatileIntervalSupply;
 
     /**
-     * Build a mapper to filter results over missing intervals from a result set, retaining any that are also volatile.
+     * Build a mapper to filter results over missing intervals of a result set, retaining any that are also volatile.
      *
      * @param missingIntervals  A list of intervals which represent gaps in the complete data set
      * @param volatileIntervalSupply  A supplier for intervals which should not be removed, even if incomplete
@@ -69,7 +69,7 @@ public class PartialDataResultSetMapper extends ResultSetMapper {
 
     /**
      * Return the intervals which are missing but not volatile.
-     * These intervals will be pruned from the result set.
+     * These intervals will be pruned of the result set.
      *
      * @return the simplified interval list of times which are to be filtered for partiality
      */

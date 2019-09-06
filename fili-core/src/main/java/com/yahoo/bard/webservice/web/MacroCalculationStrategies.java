@@ -13,7 +13,7 @@ import org.joda.time.DateTime;
 public interface MacroCalculationStrategies {
 
     /**
-     * Get the DateTime for the macro given the DateTime to base from and the timeGrain to determine how far to move.
+     * Get the DateTime for the macro given the DateTime to base of and the timeGrain to determine how far to move.
      *
      * @param dateTime  Base instant
      * @param timeGrain  Grain to round to

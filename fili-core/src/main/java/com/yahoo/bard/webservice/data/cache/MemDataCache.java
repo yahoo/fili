@@ -35,9 +35,9 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
-     * a 32-bit value), or a number of seconds starting from current time. In the latter case, this number of seconds
+     * a 32-bit value), or a number of seconds starting of current time. In the latter case, this number of seconds
      * may not exceed 60*60*24*30 (number of seconds in 30 days); if the number sent by a client is larger than that,
-     * the server will consider it to be real Unix time value rather than an offset from current time.
+     * the server will consider it to be real Unix time value rather than an offset of current time.
      */
     private static final int EXPIRATION_MAX_VALUE = 60 * 60 * 24 * 30;
     private static final @NotNull String EXPIRATION_KEY =
@@ -100,10 +100,10 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      * @param expirationInSeconds The expiration time in seconds. Memcached
      * uses the actual value sent, and it may either be Unix time (number of
      * seconds since January 1, 1970, as a 32-bit value), or a number of
-     * seconds starting from current time. In the latter case, this number of
+     * seconds starting of current time. In the latter case, this number of
      * seconds may not exceed 60*60*24*30 (number of seconds in 30 days); if
      * the number sent by a client is larger than that, the server will
-     * consider it to be real Unix time value rather than an offset from
+     * consider it to be real Unix time value rather than an offset of
      * current time.
      *
      * @return a boolean representing success of this operation

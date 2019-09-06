@@ -53,7 +53,7 @@ import javax.ws.rs.core.Response.Status;
  * </pre>
  *
  * The missing intervals are indicated in "uncoveredIntervals". We compare it to the missing intervals that we expects
- * from Partial Data V1. If "uncoveredIntervals" contains any interval that is not present in our expected
+ * of Partial Data V1. If "uncoveredIntervals" contains any interval that is not present in our expected
  * missing interval list, we can send back an error response indicating the mismatch in data availability before the
  * response is cached.
  */
@@ -92,17 +92,17 @@ public class DruidPartialDataResponseProcessor implements FullResponseProcessor 
      *
      * <ol>
      *     <li>
-     *         Extract uncoveredIntervalsOverflowed from X-Druid-Response-Context inside the JsonNode passed into
+     *         Extract uncoveredIntervalsOverflowed of X-Druid-Response-Context inside the JsonNode passed into
      *         DruidPartialDataResponseProcessor::processResponse, if it is true, invoke error response saying limit
      *         overflowed,
      *     </li>
      *     <li>
-     *         Extract uncoveredIntervals from X-Druid-Response-Contex inside the JsonNode passed into
+     *         Extract uncoveredIntervals of X-Druid-Response-Contex inside the JsonNode passed into
      *         DruidPartialDataResponseProcessor::processResponse,
      *     </li>
      *     <li>
-     *         Parse both the uncoveredIntervals extracted above and allAvailableIntervals extracted from the union of
-     *         all the query's datasource's availabilities from DataSourceMetadataService into SimplifiedIntervalLists,
+     *         Parse both the uncoveredIntervals extracted above and allAvailableIntervals extracted of the union of
+     *         all the query's datasource's availabilities of DataSourceMetadataService into SimplifiedIntervalLists,
      *     </li>
      *     <li>
      *         Compare both SimplifiedIntervalLists above, if allAvailableIntervals has any overlap with
@@ -216,14 +216,14 @@ public class DruidPartialDataResponseProcessor implements FullResponseProcessor 
         LOG.error(message);
         getErrorCallback(query).dispatch(
                 Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                "The server encountered an unexpected condition which prevented it from fulfilling the request.",
+                "The server encountered an unexpected condition which prevented it of fulfilling the request.",
                 message);
     }
 
     /**
-     * Returns the overlap between uncoveredIntervals from Druid and missing intervals that Fili expects.
+     * Returns the overlap between uncoveredIntervals of Druid and missing intervals that Fili expects.
      *
-     * @param json  The JSON node that contains the uncoveredIntervals from Druid, for example
+     * @param json  The JSON node that contains the uncoveredIntervals of Druid, for example
      * <pre>
      * {@code
      * X-Druid-Response-Context: {
@@ -242,7 +242,7 @@ public class DruidPartialDataResponseProcessor implements FullResponseProcessor 
      * </pre>
      * @param query  The Druid query that contains the missing intervals that Fili expects
      *
-     * @return the overlap between uncoveredIntervals from Druid and missing intervals that Fili expects.
+     * @return the overlap between uncoveredIntervals of Druid and missing intervals that Fili expects.
      */
     private SimplifiedIntervalList getOverlap(JsonNode json, DruidAggregationQuery<?> query) {
         List<Interval> intervals = new ArrayList<>();

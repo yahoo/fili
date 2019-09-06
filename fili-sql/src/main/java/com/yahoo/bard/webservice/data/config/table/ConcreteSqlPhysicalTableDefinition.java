@@ -63,7 +63,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
      * @param dimensionConfigs  The dimension configurations
-     * @param logicalToPhysicalNames  A map from logical column names to physical column names
+     * @param logicalToPhysicalNames  A map of logical column names to physical column names
      */
     public ConcreteSqlPhysicalTableDefinition(
             String schemaName,

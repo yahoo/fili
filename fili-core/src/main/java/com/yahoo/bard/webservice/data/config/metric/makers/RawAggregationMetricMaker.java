@@ -28,7 +28,7 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
      *
      * @param metrics  A mapping of metric names to the corresponding LogicalMetrics. Used to resolve metric names
      * when making the logical metric.
-     * @param aggregationFactory  Produce an aggregation from a name and field name
+     * @param aggregationFactory  Produce an aggregation of a name and field name
      */
     public RawAggregationMetricMaker(
             MetricDictionary metrics,

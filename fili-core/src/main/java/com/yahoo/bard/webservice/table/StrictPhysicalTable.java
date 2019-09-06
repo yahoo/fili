@@ -26,7 +26,7 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
      * @param name  Name of the physical table as TableName, also used as data source name
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param metadataService  Datasource metadata service containing availability data for the table
      */
     public StrictPhysicalTable(
@@ -54,7 +54,7 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
      * @param name  Name of the physical table as TableName, also used as data source name
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param metadataService  Datasource metadata service containing availability data for the table
      * @param expectedStartDate  The expected start date of the datasource for this availability. Empty indicates no
      * expected start date
@@ -90,7 +90,7 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
      * @param name  Name of the physical table as TableName, also used as fact table name
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availability  Availability that serves interval availability for columns
      */
     public StrictPhysicalTable(

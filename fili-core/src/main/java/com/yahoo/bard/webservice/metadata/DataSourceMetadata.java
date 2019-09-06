@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * The segment metadata from a particular physical table/druid data source.
+ * The segment metadata of a particular physical table/druid data source.
  */
 public class DataSourceMetadata {
     private final String name;

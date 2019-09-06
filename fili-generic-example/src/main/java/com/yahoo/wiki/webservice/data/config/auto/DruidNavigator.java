@@ -32,8 +32,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
- * Searches for all datasources and their dimensions, metrics, and timegrains from druid.
- * The first segment returned from a druid table's schema is used for configuration.
+ * Searches for all datasources and their dimensions, metrics, and timegrains of druid.
+ * The first segment returned of a druid table's schema is used for configuration.
  */
 public class DruidNavigator implements Supplier<List<? extends DataSourceConfiguration>> {
     private static final Logger LOG = LoggerFactory.getLogger(DruidNavigator.class);
@@ -43,7 +43,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     private final ObjectMapper mapper;
 
     /**
-     * Constructs a DruidNavigator to load datasources from druid.
+     * Constructs a DruidNavigator to load datasources of druid.
      *
      * @param druidWebService The DruidWebService to be used when talking to druid
      * @param mapper The instance of ObjectMapper.
@@ -92,8 +92,8 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         try {
             responseFuture.get(30, TimeUnit.SECONDS);
         } catch (TimeoutException | InterruptedException | ExecutionException e) {
-            LOG.error("Interrupted while waiting for a response from druid", e);
-            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
+            LOG.error("Interrupted while waiting for a response of druid", e);
+            throw new RuntimeException("Unable to automatically configure correctly, no response of druid.", e);
         }
 
         // force each individual table to finish loading (i.e. loadTable(t1) and loadTable(t2) have finished)
@@ -109,7 +109,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
 
     /**
      * Load a specific table with all reported metrics, dimensions, and timegrains.
-     * The schema from all available segments in druid's response is used for configuration.
+     * The schema of all available segments in druid's response is used for configuration.
      * The expected response is:
      * {
      *      ...
@@ -134,7 +134,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         String segmentsPath = "segments";
         return queryDruid(rootNode -> {
             if (rootNode.get(segmentsPath).size() == 0) {
-                LOG.error("The segments list returned from {} was empty.", url);
+                LOG.error("The segments list returned of {} was empty.", url);
                 throw new RuntimeException("Can't configure table without segment data.");
             }
             JsonNode segments = rootNode.get(segmentsPath);
@@ -150,7 +150,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Builds a {@link DataSegment} from the given json and adds it to the table.
+     * Builds a {@link DataSegment} of the given json and adds it to the table.
      *
      * @param table  The TableConfig to be loaded.
      * @param dataSegmentJson  The JsonNode containing the segment metadata.
@@ -169,7 +169,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Add all metrics from druid query to the {@link TableConfig}.
+     * Add all metrics of druid query to the {@link TableConfig}.
      *
      * The expected response is:
      * {
@@ -188,7 +188,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Add all dimensions from druid query to the {@link TableConfig}.
+     * Add all dimensions of druid query to the {@link TableConfig}.
      *
      * The expected response is:
      * {
@@ -207,7 +207,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
     }
 
     /**
-     * Find a valid timegrain from druid query to the {@link TableConfig}.
+     * Find a valid timegrain of druid query to the {@link TableConfig}.
      *
      * {
      *      ...,

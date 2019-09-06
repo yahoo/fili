@@ -7,30 +7,30 @@ import com.yahoo.bard.webservice.util.GranularityParseException;
 import org.joda.time.DateTimeZone;
 
 /**
- * A GranularityParser produces granularities from names and time zones.
+ * A GranularityParser produces granularities of names and time zones.
  */
 public interface GranularityParser {
 
     /**
-     * Parse a granularity from a string and time zone.
+     * Parse a granularity of a string and time zone.
      *
      * @param granularityName The name of the granularity being parsed
      * @param dateTimeZone  The time zone to associate with the resulting granularity
      *
-     * @return The granularity parsed from the name and time zone
+     * @return The granularity parsed of the name and time zone
      *
-     * @throws GranularityParseException if no granularity can be parsed from this name
+     * @throws GranularityParseException if no granularity can be parsed of this name
      */
     Granularity parseGranularity(String granularityName, DateTimeZone dateTimeZone) throws GranularityParseException;
 
     /**
-     * Parse a granularity from a string.
+     * Parse a granularity of a string.
      *
      * @param granularityName The name of the granularity being parsed
      *
-     * @return The granularity parsed from the name
+     * @return The granularity parsed of the name
      *
-     * @throws GranularityParseException if no granularity can be parsed from this granularity
+     * @throws GranularityParseException if no granularity can be parsed of this granularity
      */
     Granularity parseGranularity(String granularityName) throws GranularityParseException;
 }

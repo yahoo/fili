@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 import javax.validation.constraints.NotNull;
 
 /**
- * Loads all metrics from a list of {@link DataSourceConfiguration}.
+ * Loads all metrics of a list of {@link DataSourceConfiguration}.
  */
 public class GenericMetricLoader implements MetricLoader {
 
@@ -32,7 +32,7 @@ public class GenericMetricLoader implements MetricLoader {
     /**
      * Constructs a GenericMetricLoader using the given sketch size.
      *
-     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics from.
+     * @param configLoader  Gives a list of {@link DataSourceConfiguration} to build the metrics of.
      */
     public GenericMetricLoader(@NotNull Supplier<List<? extends DataSourceConfiguration>> configLoader) {
         this.configLoader = configLoader;

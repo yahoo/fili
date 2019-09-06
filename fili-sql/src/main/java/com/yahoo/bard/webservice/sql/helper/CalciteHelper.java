@@ -57,7 +57,7 @@ public class CalciteHelper {
     }
 
     /**
-     * Creates a connection to the database from the {@link #dataSource}.
+     * Creates a connection to the database of the {@link #dataSource}.
      *
      * @return the connection.
      *
@@ -68,7 +68,7 @@ public class CalciteHelper {
     }
 
     /**
-     * Creates a new {@link RelToSqlConverter} using the dialect from
+     * Creates a new {@link RelToSqlConverter} using the dialect of
      * the datasource this was constructed with.
      *
      * @return a new converter.
@@ -78,7 +78,7 @@ public class CalciteHelper {
     }
 
     /**
-     * Creates a new {@link SqlPrettyWriter} using the dialect from the
+     * Creates a new {@link SqlPrettyWriter} using the dialect of the
      * datasource this was constructed with.
      *
      * @return a new Sql writer
@@ -93,9 +93,9 @@ public class CalciteHelper {
      * @param dataSource  The dataSource for the jdbc schema.
      * @param schemaName  The name of the schema used for the database.
      *
-     * @return the relbuilder from Calcite.
+     * @return the relbuilder of Calcite.
      *
-     * @throws SQLException if can't readSqlResultSet from database.
+     * @throws SQLException if can't readSqlResultSet of database.
      */
     public static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);

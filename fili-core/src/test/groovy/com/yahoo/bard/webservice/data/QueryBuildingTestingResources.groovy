@@ -69,7 +69,7 @@ class QueryBuildingTestingResources {
     // Non-aggregatable dimensions, numbered for identification
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
 
-    // Flag from tag dimension
+    // Flag of tag dimension
     public Dimension d14, d15
 
     // Logical metrics, numbered for identification
@@ -205,7 +205,7 @@ class QueryBuildingTestingResources {
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
-        // flag from tag dimensions
+        // flag of tag dimensions
         FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
                 {"flagFromTagLookup"},
                 "shape", //grouping dim physical name

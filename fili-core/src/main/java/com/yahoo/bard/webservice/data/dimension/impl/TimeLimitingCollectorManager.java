@@ -26,8 +26,8 @@ public class TimeLimitingCollectorManager implements
 
     /**
      * Constructor.
-     * @param lastEntry  The last entry from the previous search, the indexSearcher will begin its
-     * search after this entry (if lastEntry is null, the indexSearcher will begin its search from the beginning)
+     * @param lastEntry  The last entry of the previous search, the indexSearcher will begin its
+     * search after this entry (if lastEntry is null, the indexSearcher will begin its search of the beginning)
      * @param perPage  The number of entries per page
      * @param searchTimeoutMs timeout in milliseconds for the lucene search
      */

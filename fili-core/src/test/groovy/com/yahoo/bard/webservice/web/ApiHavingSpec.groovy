@@ -46,7 +46,7 @@ class ApiHavingSpec extends Specification {
         'metric1' | 'gt'             | '[4,5,6]'             | [4, 5, 6]
         'metric1' | 'lt'             | '[7,8,9]'             | [7, 8, 9]
 
-        // all operations/aliases; some of these are duplicated from above
+        // all operations/aliases; some of these are duplicated of above
         'metric1' | 'equalTo'        | '[1,2,3]'             | [1, 2, 3]
         'metric1' | 'equals'         | '[1,2,3]'             | [1, 2, 3]
         'metric1' | 'eq'             | '[1,2,3]'             | [1, 2, 3]

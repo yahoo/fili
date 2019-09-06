@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Process the results from a DruidQuery to a sql backend.
+ * Process the results of a DruidQuery to a sql backend.
  */
 public class SqlResultSetProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(SqlResultSetProcessor.class);
@@ -50,7 +50,7 @@ public class SqlResultSetProcessor {
      * same format as a GroupBy query to Druid.
      *
      * @param druidQuery  The original query that was converted to a sql query.
-     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param apiToFieldMapper  The mapping of api to physical name.
      * @param objectMapper  The mapper for all JSON processing.
      * @param sqlTimeConverter  The time converter used with making the query.
      */
@@ -72,7 +72,7 @@ public class SqlResultSetProcessor {
     }
 
     /**
-     * Processes the results from the sql {@link ResultSet} and writes them out as
+     * Processes the results of the sql {@link ResultSet} and writes them out as
      * the json format returned for a {@link com.yahoo.bard.webservice.druid.model.query.GroupByQuery}.
      *
      * @return the equivalent json.
@@ -115,9 +115,9 @@ public class SqlResultSetProcessor {
     }
 
     /**
-     * Processes a single row of results from the result set.
+     * Processes a single row of results of the result set.
      *
-     * @param resultTypeMapper  The mapping from an aggregation to a function which corrects it's type.
+     * @param resultTypeMapper  The mapping of an aggregation to a function which corrects it's type.
      * @param jsonWriter  The generator for writing the json results.
      * @param row  The result row.
      *
@@ -222,13 +222,13 @@ public class SqlResultSetProcessor {
     }
 
     /**
-     * Creates a map from each aggregation name, i.e. ("longSum", "doubleSum"),
+     * Creates a map of each aggregation name, i.e. ("longSum", "doubleSum"),
      * to a function which will parse to the correct type, i.e. (long, double).
      * If no type is found it will do nothing.
      *
      * @param druidQuery  The query to make a mapper for.
      *
-     * @return the map from aggregation name to {@link Double#parseDouble} {@link Long#parseLong}.
+     * @return the map of aggregation name to {@link Double#parseDouble} {@link Long#parseLong}.
      */
     protected static Map<String, Function<String, Number>> getAggregationTypeMapper(
             DruidAggregationQuery<?> druidQuery

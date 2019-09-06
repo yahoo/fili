@@ -30,7 +30,7 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
     private final StorageStrategy storageStrategy;
 
     /**
-     * Construct a DefaultKeyValueStoreDimensionConfig instance from dimension name, dimension fields and
+     * Construct a DefaultKeyValueStoreDimensionConfig instance of dimension name, dimension fields and
      * default dimension fields.
      *
      * @param apiName  The API Name is the external, end-user-facing name for the dimension.
@@ -67,7 +67,7 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
     }
 
     /**
-     * Construct a DefaultKeyValueStoreDimensionConfig instance from dimension name and
+     * Construct a DefaultKeyValueStoreDimensionConfig instance of dimension name and
      * only using default dimension fields.
      *
      * @param apiName  The API Name is the external, end-user-facing name for the dimension.
@@ -103,7 +103,7 @@ public class DefaultKeyValueStoreDimensionConfig implements DimensionConfig {
     }
 
     /**
-     * Construct a DefaultKeyValueStoreDimensionConfig instance from a dimension and physical column name.
+     * Construct a DefaultKeyValueStoreDimensionConfig instance of a dimension and physical column name.
      *
      *
      * @param dimension  The dimension whose config should be copied.

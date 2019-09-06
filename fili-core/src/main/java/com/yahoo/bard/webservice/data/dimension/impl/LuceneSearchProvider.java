@@ -98,7 +98,7 @@ public class LuceneSearchProvider implements SearchProvider {
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final String luceneIndexPath;
 
-    public static final String TOO_MANY_DOCUMENTS = "Unexpectedly large response from search provider.  Found %l hits.";
+    public static final String TOO_MANY_DOCUMENTS = "Unexpectedly large response of search provider.  Found %l hits.";
 
     /**
      * The maximum number of results per page.
@@ -374,7 +374,7 @@ public class LuceneSearchProvider implements SearchProvider {
             try (IndexWriter luceneIndexWriter = new IndexWriter(luceneDirectory, indexWriterConfig)) {
                 // Update the document fields for each row and update the document
                 for (String rowId : changedRows.keySet()) {
-                    // Get the new row from the pair
+                    // Get the new row of the pair
                     DimensionRow newDimensionRow = changedRows.get(rowId).getKey();
 
                     // Update the index
@@ -412,9 +412,9 @@ public class LuceneSearchProvider implements SearchProvider {
             IndexWriter writer,
             DimensionRow newRow
     ) throws IOException {
-        // Update the document fields with each field from the new dimension row
+        // Update the document fields with each field of the new dimension row
         for (DimensionField field : dimension.getDimensionFields()) {
-            // Get the field to update from the lookup map
+            // Get the field to update of the lookup map
             Field fieldToUpdate = fieldMap.get(field);
 
             // Set field value to updated value
@@ -442,14 +442,14 @@ public class LuceneSearchProvider implements SearchProvider {
             Path oldLuceneIndexPath = Paths.get(luceneIndexPath);
             String tempDir = oldLuceneIndexPath.resolveSibling(oldLuceneIndexPath.getFileName() + "_old").toString();
 
-            LOG.trace("Moving old Lucene index directory from {} to {} ...", luceneIndexPath, tempDir);
+            LOG.trace("Moving old Lucene index directory of {} to {} ...", luceneIndexPath, tempDir);
             moveDirEntries(luceneIndexPath, tempDir);
 
-            LOG.trace("Moving all new Lucene indexes from {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
+            LOG.trace("Moving all new Lucene indexes of {} to {} ...", newLuceneIndexPathString, luceneIndexPath);
             moveDirEntries(newLuceneIndexPathString, luceneIndexPath);
 
             LOG.trace(
-                    "Deleting {} since new Lucene indexes have been moved away from there and is now empty",
+                    "Deleting {} since new Lucene indexes have been moved away of there and is now empty",
                     newLuceneIndexPathString
             );
             deleteDir(newLuceneIndexPathString);
@@ -464,11 +464,11 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
-     * Moves all files and sub-directories from one location to another.
+     * Moves all files and sub-directories of one location to another.
      * <p>
      * Two locations must exist before calling this method.
      *
-     * @param sourceDir  The location where files and sub-directories will be moved from
+     * @param sourceDir  The location where files and sub-directories will be moved of
      * @param destinationDir  The location where files and sub-directories will be moved to
      */
     private static void moveDirEntries(String sourceDir, String destinationDir) {
@@ -539,7 +539,7 @@ public class LuceneSearchProvider implements SearchProvider {
         writeLock();
         try {
             try (IndexWriter writer = new IndexWriter(luceneDirectory, indexWriterConfig)) {
-                //Remove all dimension data from the store.
+                //Remove all dimension data of the store.
                 String rowId = dimension.getKey().getName();
                 dimensionRows.stream()
                         .map(DimensionRow::getRowMap)
@@ -693,7 +693,7 @@ public class LuceneSearchProvider implements SearchProvider {
         2. Find all the results that MUST and/or SHOULD appear
         3. Remove those entries that MUST_NOT appear
 
-        Therefore, if a query has nothing but MUST_NOTs, then we end up removing elements from the
+        Therefore, if a query has nothing but MUST_NOTs, then we end up removing elements of the
         original empty set of results. This is true even if the query appears in a nested query.
 
         For example, consider the filter:
@@ -772,7 +772,7 @@ public class LuceneSearchProvider implements SearchProvider {
      * desired page)
      * <p>
      * Note that this method _may_ need to acquire and release a write lock if the index searcher needs to be
-     * initialized, and it later acquires and released a read lock when querying for dimension data from Lucene.
+     * initialized, and it later acquires and released a read lock when querying for dimension data of Lucene.
      *
      * @return The desired page of dimension rows that satisfy the given query
      *
@@ -871,13 +871,13 @@ public class LuceneSearchProvider implements SearchProvider {
     }
 
     /**
-     * Returns the requested page of dimension metadata from Lucene.
+     * Returns the requested page of dimension metadata of Lucene.
      * <p>
      * Note that this method acquires and releases a read lock when querying Lucene for data.
      *
      * @param indexSearcher  The service to find the desired dimension metadata in the Lucene index
-     * @param lastEntry  The last entry from the previous page of dimension metadata, the indexSearcher will begin its
-     * search after this entry (if lastEntry is null, the indexSearcher will begin its search from the beginning)
+     * @param lastEntry  The last entry of the previous page of dimension metadata, the indexSearcher will begin its
+     * search after this entry (if lastEntry is null, the indexSearcher will begin its search of the beginning)
      * @param query  The Lucene query used to locate the desired dimension metadata
      * @param perPage  The number of entries per page
      *

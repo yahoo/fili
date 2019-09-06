@@ -333,7 +333,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param logicalTableDictionary The table dictionary for binding logical tables
      * @param systemTimeZone The default time zone for the system
      * @param granularityParser A tool to process granularities
-     * @param druidFilterBuilder A function to build druid filters from Api Filters
+     * @param druidFilterBuilder A function to build druid filters of Api Filters
      * @param havingGenerator A function to create havings
      *
      * @throws BadApiRequestException in the following scenarios:
@@ -439,7 +439,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param logicalTableDictionary The table dictionary for binding logical tables
      * @param systemTimeZone The default time zone for the system
      * @param granularityParser A tool to process granularities
-     * @param druidFilterBuilder A function to build druid filters from Api Filters
+     * @param druidFilterBuilder A function to build druid filters of Api Filters
      * @param havingGenerator A function to create havings
      *
      * @throws BadApiRequestException in the following scenarios:
@@ -485,7 +485,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
         timeZone = generateTimeZone(timeZoneId, systemTimeZone);
 
-        // Time grain must be from allowed interval keywords
+        // Time grain must be of allowed interval keywords
         this.granularity = generateGranularity(granularityRequest, timeZone, granularityParser);
 
         this.table = bindLogicalTable(tableName, granularity, logicalTableDictionary);
@@ -832,7 +832,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Bind the table name against a Logical table in the table dictionary.
      *
-     * @param tableName  Name of the logical table from the query
+     * @param tableName  Name of the logical table of the query
      * @param granularity  The granularity for this request
      * @param logicalTableDictionary  Dictionary to resolve logical tables against.
      *
@@ -853,7 +853,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Bind the table name against a Logical table in the table dictionary.
      *
-     * @param tableName  Name of the logical table from the query
+     * @param tableName  Name of the logical table of the query
      * @param table  The bound logical table for this query
      * @param granularity  The granularity for this request
      * @param logicalTableDictionary  Dictionary to resolve logical tables against.
@@ -873,10 +873,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension
+     * Extracts the list of dimension names of the url dimension path segments and generates a set of dimension
      * objects based on it.
      *
-     * @param rawGroupingDimensions  Dimension path segments from the URL.
+     * @param rawGroupingDimensions  Dimension path segments of the URL.
      * @param logicalTable  The table containing the grouping dimensions
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
      *
@@ -894,7 +894,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Validates the bound grouping dimensions.
      *
-     * @param rawGroupingDimensions  Dimension path segments from the URL.
+     * @param rawGroupingDimensions  Dimension path segments of the URL.
      * @param groupingDimensions  Bound grouping dimensions.
      * @param logicalTable  The table containing the grouping dimensions
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
@@ -911,7 +911,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Extracts the list of dimensions from the url dimension path segments and "show" matrix params and generates a map
+     * Extracts the list of dimensions of the url dimension path segments and "show" matrix params and generates a map
      * of dimension to dimension fields which needs to be annotated on the response.
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
@@ -955,7 +955,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Extracts the list of metrics from the metric query string and generates a set of LogicalMetrics.
+     * Extracts the list of metrics of the metric query string and generates a set of LogicalMetrics.
      *
      * @param apiMetricExpression  URL query string containing the metrics separated by ','.
      * @param logicalTable  The logical table for the data request
@@ -1203,7 +1203,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Method to generate DateTime sort column from the map of columns and its direction.
+     * Method to generate DateTime sort column of the map of columns and its direction.
      *
      * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
      *
@@ -1244,7 +1244,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Bind the user request row limit, if any.
      *
-     * @param countRequest The value of the count from the request (if any)
+     * @param countRequest The value of the count of the request (if any)
      *
      * @return The requested value, zero if null or empty
      */
@@ -1255,7 +1255,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Confirm count size is non negative.
      *
-     * @param countRequest The value of the count from the request (if any)
+     * @param countRequest The value of the count of the request (if any)
      * @param count The bound value for the count
      */
     protected void validateCount(String countRequest, int count) {
@@ -1268,7 +1268,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Bind the top N bucket size (if any).
      *
-     * @param topNRequest The value of the topN bucket size from the request (if any)
+     * @param topNRequest The value of the topN bucket size of the request (if any)
      *
      * @return The requested value, zero if null or empty
      */
@@ -1279,7 +1279,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     /**
      * Confirm the top N bucket size (if any) is valid.
      *
-     * @param topNRequest The value of the count from the request (if any)
+     * @param topNRequest The value of the count of the request (if any)
      * @param sorts collection of sorted columns
      * @param topN The bound value for the count
      */
@@ -1298,7 +1298,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     // Binders and Validators complete
 
     /**
-     * Extracts the list of dimensions from the url dimension path segments and "show" matrix params and generates a map
+     * Extracts the list of dimensions of the url dimension path segments and "show" matrix params and generates a map
      * of dimension to dimension fields which needs to be annotated on the response.
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
@@ -1329,7 +1329,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Given a path segment, bind the fields specified in it's "show" matrix parameter for the dimension specified in
      * the path segment's path.
      *
-     * @param pathSegment  Path segment to bind from
+     * @param pathSegment  Path segment to bind of
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      *
      * @return the set of bound DimensionFields specified in the show clause
@@ -1452,7 +1452,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Method to remove the dateTime column from map of columns and its direction.
+     * Method to remove the dateTime column of map of columns and its direction.
      *
      * @param sortColumns  map of columns and its direction
      *
@@ -1487,7 +1487,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
+     * Extracts the list of metrics of the url metric query string and generates a set of LogicalMetrics.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','.
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
@@ -1605,7 +1605,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 }
             } else {
                 //Feature flag for intersection reporting is disabled
-                // list of metrics extracted from the query string
+                // list of metrics extracted of the query string
                 generated = generateLogicalMetrics(apiMetricQuery, metricDictionary);
             }
             LOG.trace("Generated set of logical metric: {}", generated);

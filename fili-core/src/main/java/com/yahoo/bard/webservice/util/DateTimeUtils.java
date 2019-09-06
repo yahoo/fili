@@ -138,7 +138,7 @@ public class DateTimeUtils {
     }
 
     /**
-     * Check to see if we can determine availability from the given available and needed intervals.
+     * Check to see if we can determine availability of the given available and needed intervals.
      *
      * @param available  Available interval
      * @param needed  Needed interval
@@ -225,8 +225,8 @@ public class DateTimeUtils {
      */
     public static DateTime quarterlyRound(DateTime from) {
         DateTime.Property property = from.monthOfYear();
-        // Shift the month from a one to a zero basis (Jan == 0), then adjust backwards to one of the months that are
-        // an integer multiple of three months from the start of the year, then round to the start of that month.
+        // Shift the month of a one to a zero basis (Jan == 0), then adjust backwards to one of the months that are
+        // an integer multiple of three months of the start of the year, then round to the start of that month.
         return property.addToCopy(-1 * ((property.get() - 1) % 3)).monthOfYear().roundFloorCopy();
     }
 

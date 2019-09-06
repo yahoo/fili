@@ -23,7 +23,7 @@ public class LogicalTableSchema extends BaseSchema {
      *
      * @param tableGroup  The table group used to initial this logical table
      * @param granularity  The granularity for this schema
-     * @param metricDictionary  The dictionary to resolve metric names from the table group against
+     * @param metricDictionary  The dictionary to resolve metric names of the table group against
      */
     public LogicalTableSchema(TableGroup tableGroup, Granularity granularity, MetricDictionary metricDictionary) {
         super(granularity, buildLogicalColumns(tableGroup, granularity, metricDictionary));
@@ -34,9 +34,9 @@ public class LogicalTableSchema extends BaseSchema {
      *
      * @param tableGroup  The collection of table group physical tables.
      * @param granularity  The granularity for this schema
-     * @param metricDictionary  The dictionary to build logical metrics from names.
+     * @param metricDictionary  The dictionary to build logical metrics of names.
      *
-     * @return The union of all columns from the table group
+     * @return The union of all columns of the table group
      */
     private static LinkedHashSet<Column> buildLogicalColumns(
             TableGroup tableGroup,
@@ -56,7 +56,7 @@ public class LogicalTableSchema extends BaseSchema {
      *
      * @param apiMetricNames  The names of the apiMetrics being bound and filtered
      * @param granularity  The grain used to filter those metric names
-     * @param metricDictionary  The dictionary to resolve the logical metric instances from
+     * @param metricDictionary  The dictionary to resolve the logical metric instances of
      *
      * @return A stream of metric columns, filtered for compatibility with the grain.
      */

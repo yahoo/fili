@@ -35,7 +35,7 @@ abstract class ApiJobStoreSpec extends Specification {
     abstract ApiJobStore getStore()
 
     /**
-     * A map of test data from numeric ids (as Strings) to JobRows used in the subsequent tests.
+     * A map of test data of numeric ids (as Strings) to JobRows used in the subsequent tests.
      */
     static final Map<String, JobRow> ROW_DATA = [
             "1": JobTestUtils.buildJobRow(1),

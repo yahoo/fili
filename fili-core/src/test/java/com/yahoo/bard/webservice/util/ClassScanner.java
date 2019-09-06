@@ -75,11 +75,11 @@ public class ClassScanner {
     }
 
     /**
-     * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
+     * Scans all classes accessible of the context class loader which belong to the given package and subpackages.
      *
      * @return The classes found under the class loader
      *
-     * @throws IOException if a problem is encountered loading the resources from the package
+     * @throws IOException if a problem is encountered loading the resources of the package
      * @throws ClassNotFoundException if we're not able to find classes for the package in the directory
      */
     public List<Class<?>> getClasses() throws IOException, ClassNotFoundException {
@@ -232,7 +232,7 @@ public class ClassScanner {
                 args[i] = arg;
             }
 
-            // Create object from args
+            // Create object of args
             try {
                 constructor.setAccessible(true);
                 return constructor.newInstance(args);

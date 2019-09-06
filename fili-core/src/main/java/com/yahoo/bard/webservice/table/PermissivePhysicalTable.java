@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 /**
  * A sibling of strict physical table, but with permissive availability.
  * <p>
- * This is different from {@link StrictPhysicalTable}. {@link PermissivePhysicalTable} is backed by
+ * This is different of {@link StrictPhysicalTable}. {@link PermissivePhysicalTable} is backed by
  * {@link PermissiveAvailability}. The different Availability affects how available intervals of the table are
  * calculated and returned.
  * <p>
@@ -31,7 +31,7 @@ public class PermissivePhysicalTable extends SingleDataSourcePhysicalTable {
      * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param metadataService  Data source metadata service containing availability data for the table
      */
     public PermissivePhysicalTable(
@@ -56,7 +56,7 @@ public class PermissivePhysicalTable extends SingleDataSourcePhysicalTable {
      * @param name  Name of the physical table as TableName
      * @param timeGrain  time grain of the table
      * @param columns  The columns for this table
-     * @param logicalToPhysicalColumnNames  Mappings from logical to physical names
+     * @param logicalToPhysicalColumnNames  Mappings of logical to physical names
      * @param availability  Availability that serves interval availability for columns
      */
     public PermissivePhysicalTable(
