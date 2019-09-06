@@ -104,7 +104,7 @@
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
         <version.netty>4.1.31.Final</version.netty>
-        <version.jetty>9.3.27.v20190418</version.jetty>
+        <version.jetty>9.4.20.v20190813</version.jetty>
 
 
         <version.spring>5.1.9.RELEASE</version.spring>
@@ -770,6 +770,19 @@
 
         <plugins>
             <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>5.2.1</version>
+                <configuration>
+                    <failBuildOnCVSS>8</failBuildOnCVSS>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipDependencyManagement>false</skipDependencyManagement>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
@@ -879,25 +892,6 @@
 
     <reporting>
         <plugins>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>5.2.1</version>
-                <configuration>
-                    <failBuildOnCVSS>8</failBuildOnCVSS>
-                    <skipProvidedScope>true</skipProvidedScope>
-                    <skipRuntimeScope>true</skipRuntimeScope>
-                    <skipDependencyManagement>false</skipDependencyManagement>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>aggregate</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
             <plugin>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <reportSets>

@@ -282,7 +282,7 @@ Current
 - [CVSS vulernability resolution](https://github.com/yahoo/fili/issues/963)
     * Upversion druid-api to 0.12 to stop bringing in vulnerable versions of apache and avro
     * Upversion jetty for emedded examples to resolve transitive vulneratibilities
-    * 
+    * Upversion calcite to resolve protobuf vulnerabilities
     
 - [Disabled erroring javadoc reports](https://github.com/yahoo/fili/issues/956)
     * Disabled link following during javadoc processing that was creating many false positive warnings.
