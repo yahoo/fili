@@ -146,7 +146,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 "2014-09-01/2014-09-29",
                 null, //filters
                 null, //havings
-                null, //sorts
+                null, //allSorts
                 null, //counts
                 null, //topN
                 null, //format
@@ -200,7 +200,7 @@ class WeightEvaluationQuerySpec extends Specification {
                 "2014-09-01/2014-09-29",
                 null, //filters
                 null, //havings
-                "users", //sorts
+                "users", //allSorts
                 null, //counts
                 null, //topN
                 null, //format

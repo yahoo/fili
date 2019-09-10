@@ -1,5 +1,6 @@
 package com.yahoo.bard.webservice.web.apirequest.rfc;
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
@@ -33,6 +34,7 @@ public class DataApiRequestBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestBuilder.class);
 
+    // TODO wrap this in a feature flag.
     private enum BuildPhase {
         LOGICAL_TABLE,
         GRANULARITY,
@@ -202,18 +204,20 @@ public class DataApiRequestBuilder {
     public DataApiRequest build() {
 
         // validate that ALL build phases have been called
-        Set<BuildPhase> uninitializedLifecycles = built.entrySet().stream()
-                .filter(Map.Entry::getValue)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-        if (!uninitializedLifecycles.isEmpty()) {
-            String msg = String.format(
-                    "Attempted to build DataApiRequest without attempting to build %s",
-                    uninitializedLifecycles.stream()
-                        .map(phase -> phase.name().toLowerCase(Locale.ENGLISH))
-                        .collect(Collectors.joining(", "))
-            );
-            throw new IllegalStateException(msg);
+        if (BardFeatureFlag.POJO_DARI_REQUIRE_ALL_STAGES_CALLED.isOn()) {
+            Set<BuildPhase> uninitializedLifecycles = built.entrySet().stream()
+                    .filter(Map.Entry::getValue)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+            if (!uninitializedLifecycles.isEmpty()) {
+                String msg = String.format(
+                        "Attempted to build DataApiRequest without attempting to build %s",
+                        uninitializedLifecycles.stream()
+                            .map(phase -> phase.name().toLowerCase(Locale.ENGLISH))
+                            .collect(Collectors.joining(", "))
+                );
+                throw new IllegalStateException(msg);
+            }
         }
 
         return new com.yahoo.bard.webservice.web.apirequest.rfc.DataApiRequestImpl(

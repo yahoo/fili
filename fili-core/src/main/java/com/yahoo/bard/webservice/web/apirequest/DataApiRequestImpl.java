@@ -77,7 +77,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -1861,13 +1860,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    public OptionalInt getCount() {
-        return count == 0 ? OptionalInt.empty() : OptionalInt.of(count);
+    public Optional<Integer> getCount() {
+        return count == 0 ? Optional.empty() : Optional.of(count);
     }
 
     @Override
-    public OptionalInt getTopN() {
-        return topN == 0 ? OptionalInt.empty() : OptionalInt.of(topN);
+    public Optional<Integer> getTopN() {
+        return topN == 0 ? Optional.empty() : Optional.of(topN);
     }
 
     @Override

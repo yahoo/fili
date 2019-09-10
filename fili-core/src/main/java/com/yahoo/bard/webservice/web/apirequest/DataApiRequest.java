@@ -117,7 +117,7 @@ public interface DataApiRequest extends ApiRequest {
     // Row sequence constraints
 
     /**
-     * The list of sorting predicates for this query.
+     * The list of sorting predicates for this query. These sorts do NOT include the time sort.
      *
      * @return The sorting columns
      */
@@ -129,6 +129,18 @@ public interface DataApiRequest extends ApiRequest {
      * @return The sort direction
      */
     Optional<OrderByColumn> getDateTimeSort();
+
+    /**
+     * Returns the combined set of standard sorts and date time sort.
+     *
+     * @return all sorts in the request
+     */
+    default LinkedHashSet<OrderByColumn> getAllSorts() {
+        LinkedHashSet<OrderByColumn> allSorts = new LinkedHashSet<>();
+        getDateTimeSort().ifPresent(allSorts::add);
+        allSorts.addAll(getSorts());
+        return allSorts;
+    }
 
     /**
      * The date time zone to apply to the dateTime parameter and to express the response and granularity in.
@@ -144,14 +156,14 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @return The number of values per bucket.
      */
-    OptionalInt getTopN();
+    Optional<Integer> getTopN();
 
     /**
      * An optional limit of records returned.
      *
      * @return An optional integer.
      */
-    OptionalInt getCount();
+    Optional<Integer> getCount();
 
     // Query model objects
 
@@ -196,6 +208,7 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @deprecated Use {@link #getQueryHaving()}
      */
+    @Deprecated
     default Having getHaving() {
         return getQueryHaving();
     }
