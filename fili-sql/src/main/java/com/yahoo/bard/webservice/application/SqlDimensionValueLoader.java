@@ -32,6 +32,7 @@ import org.joda.time.Years;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -90,7 +91,7 @@ public class SqlDimensionValueLoader implements DimensionValueLoader {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.singletonList(INTERVAL),
-                new LimitSpec(Utils.asLinkedHashSet(), OptionalInt.of(ROW_LIMIT))
+                new LimitSpec(Utils.asLinkedHashSet(), Optional.of(ROW_LIMIT))
         );
 
         sqlBackedClient.executeQuery(groupByQuery, successCallback, failureCallback);

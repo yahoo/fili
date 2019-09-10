@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.web.apirequest;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -114,7 +113,7 @@ public interface DataApiRequest extends ApiRequest {
     // Row sequence constraints
 
     /**
-     * The list of sorting predicates for this query.
+     * The list of sorting predicates for this query. These sorts do NOT include the time sort.
      *
      * @return The sorting columns
      */
@@ -126,6 +125,18 @@ public interface DataApiRequest extends ApiRequest {
      * @return The sort direction
      */
     Optional<OrderByColumn> getDateTimeSort();
+
+    /**
+     * Returns the combined set of standard sorts and date time sort.
+     *
+     * @return all sorts in the request
+     */
+    default LinkedHashSet<OrderByColumn> getAllSorts() {
+        LinkedHashSet<OrderByColumn> allSorts = new LinkedHashSet<>();
+        getDateTimeSort().ifPresent(allSorts::add);
+        allSorts.addAll(getSorts());
+        return allSorts;
+    }
 
     /**
      * The date time zone to apply to the dateTime parameter and to express the response and granularity in.
@@ -141,14 +152,14 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @return The number of values per bucket.
      */
-    OptionalInt getTopN();
+    Optional<Integer> getTopN();
 
     /**
      * An optional limit of records returned.
      *
      * @return An optional integer.
      */
-    OptionalInt getCount();
+    Optional<Integer> getCount();
 
     // Query model objects
 
@@ -193,6 +204,7 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @deprecated Use {@link #getQueryHaving()}
      */
+    @Deprecated
     default Having getHaving() {
         return getQueryHaving();
     }

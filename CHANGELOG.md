@@ -422,7 +422,7 @@ select filters)
 ### Added:
 
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
-    * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
+    * Added `canonicalize` method in `Utils` class which allSorts the `JSON` objects of druid query before hashing so that
       hash values are consistent.
     * `canonicalize` takes a boolean parameter `preserveContext` which determines if context has to be omitted.
     * Deprecated `omitField` method in `Utils` class.

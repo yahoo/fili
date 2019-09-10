@@ -634,7 +634,7 @@ comma:
 There are, however, a few catches to this:
 
 - Only the Data resource supports sorting
-- Records are always sorted by `dateTime` first, and then by any sorts specified in the query, so records are always
+- Records are always sorted by `dateTime` first, and then by any allSorts specified in the query, so records are always
   sorted _within_ a timestamp
 - Sort is only supported on Metrics
 - Sorting is only applied at the Druid level. Therefore, the results of a sort are not guaranteed to be accurate if Fili 
