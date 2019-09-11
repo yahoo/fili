@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.rfc;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -35,6 +37,12 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+/**
+ * And immutable POJO implementation of {@link DataApiRequest} contract. All data is provided through the constructor
+ * and set, with very minor or no transformations occurring on the data. Unlike the old implementation
+ * ({@link com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl}), this implementation does not build any of
+ * tis components and all components must be fully built at creation time.
+ */
 public class DataApiRequestImpl implements DataApiRequest {
 
     private final LogicalTable table;
@@ -56,6 +64,29 @@ public class DataApiRequestImpl implements DataApiRequest {
     private final Long asyncAfter;
     private final PaginationParameters paginationParameters;
 
+    /**
+     * Constructor.
+     *
+     * @param table  Logical table the query should run against
+     * @param granularity  Granularity of the query
+     * @param dimensions  The grouping dimensions for the query
+     * @param perDimensionFields  The mapping of dimension to fields for that dimension that must be present in the
+     *                            response
+     * @param metrics  The metrics of the query
+     * @param intervals  The time intervals this query reports on
+     * @param apiFilters  The dimension filters for this query
+     * @param havings  The metric filters for this query
+     * @param allSorts  The sorts for this query, include the sort on dateTime if present
+     * @param count  The count for this query
+     * @param topN  The topN for this query
+     * @param format  The data format the response should be returned as (e.g. JSON, CSV, ...)
+     * @param downloadFilename  The name of the file the response should be downloaded as. The presence of this
+     *                          parameter indicates the response must be returned as a file for download by the client
+     * @param timeZone  The timezone this query should run for
+     * @param asyncAfter  The time limit after which the results must be returned asynchronously
+     * @param paginationParameters  The parameters specifying the length of a response page and which response page to
+     *                              return
+     */
     public DataApiRequestImpl(
             LogicalTable table,
             Granularity granularity,
@@ -82,8 +113,8 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
         this.apiFilters = UnmodifiableApiFilters.of(new ApiFilters(apiFilters));
         this.havings = UnmodifiableLinkedHashMap.of(havings);
-        this.dateTimeSort = extractDateTimeSort(allSorts);
-        this.standardSorts = UnmodifiableLinkedHashSet.of(extractStandardSorts(allSorts));
+        this.dateTimeSort = DataApiRequest.extractDateTimeSort(allSorts);
+        this.standardSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.extractStandardSorts(allSorts));
         this.allSorts = UnmodifiableLinkedHashSet.of(allSorts);
         this.count = Optional.ofNullable(count);
         this.topN = Optional.ofNullable(topN);
@@ -96,25 +127,29 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     /**
      * Constructor for handling a date time sort and standard allSorts separately. The public constructor assumes they
-     * are together in the {@code allSorts} parameter. This is simply a convenience constructor that is made available to
-     * subclasses. This is mostly intended to back the {@code withTimeSort(Optional<OrderByColumn>)} implementation.
+     * are together in the {@code allSorts} parameter. This is simply a convenience constructor that is made available
+     * to subclasses. This is mostly intended to back the {@code withTimeSort(Optional<OrderByColumn>)} implementation.
      *
-     * @param table
-     * @param granularity
-     * @param dimensions
-     * @param perDimensionFields
-     * @param metrics
-     * @param intervals
-     * @param apiFilters
-     * @param havings
-     * @param standardSorts sorts WITHOUT datetime sort.
-     * @param count
-     * @param topN
-     * @param format
-     * @param downloadFilename
-     * @param timeZone
-     * @param asyncAfter
-     * @param paginationParameters
+     * @param table  Logical table the query should run against
+     * @param granularity  Granularity of the query
+     * @param dimensions  The grouping dimensions for the query
+     * @param perDimensionFields  The mapping of dimension to fields for that dimension that must be present in the
+     *                            response
+     * @param metrics  The metrics of the query
+     * @param intervals  The time intervals this query reports on
+     * @param apiFilters  The dimension filters for this query
+     * @param havings  The metric filters for this query
+     * @param dateTimeSort  The sort on the dateTime column.
+     * @param standardSorts Sorts WITHOUT datetime sort.
+     * @param count  The count for this query
+     * @param topN  The topN for this query
+     * @param format  The data format the response should be returned as (e.g. JSON, CSV, ...)
+     * @param downloadFilename  The name of the file the response should be downloaded as. The presence of this
+     *                          parameter indicates the response must be returned as a file for download by the client
+     * @param timeZone  The timezone this query should run for
+     * @param asyncAfter  The time limit after which the results must be returned asynchronously
+     * @param paginationParameters  The parameters specifying the length of a response page and which response page to
+     *                              return
      */
     protected DataApiRequestImpl(
             LogicalTable table,
@@ -146,7 +181,7 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.dateTimeSort = dateTimeSort;
         this.standardSorts = UnmodifiableLinkedHashSet.of(standardSorts);
-        this.allSorts = UnmodifiableLinkedHashSet.of(combineSorts(dateTimeSort, standardSorts));
+        this.allSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.combineSorts(dateTimeSort, standardSorts));
         this.count = count;
         this.topN = topN;
         this.format = format;
@@ -155,31 +190,6 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
 
-    }
-
-    protected static Optional<OrderByColumn> extractDateTimeSort(LinkedHashSet<OrderByColumn> sorts) {
-        return sorts.stream()
-                .filter(orderBy -> orderBy.getDimension().equalsIgnoreCase(DataApiRequest.DATE_TIME_STRING))
-                .findFirst();
-    }
-
-    protected static LinkedHashSet<OrderByColumn> extractStandardSorts(LinkedHashSet<OrderByColumn> sorts) {
-        return sorts == null ?
-                    null :
-                    sorts.stream()
-                            .filter(orderBy ->
-                                    !orderBy.getDimension().equalsIgnoreCase(DataApiRequest.DATE_TIME_STRING))
-                            .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    protected static LinkedHashSet<OrderByColumn> combineSorts(
-            Optional<OrderByColumn> dateTimeSort,
-            LinkedHashSet<OrderByColumn> standardSorts
-    ) {
-        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
-        dateTimeSort.ifPresent(result::add);
-        result.addAll(standardSorts);
-        return result;
     }
 
     // *******************************************
@@ -480,12 +490,6 @@ public class DataApiRequestImpl implements DataApiRequest {
         );
     }
 
-    /**
-     * This CAN include a time sort.
-     *
-     * @param sorts
-     * @return
-     */
     @Override
     public DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts) {
         return new DataApiRequestImpl(

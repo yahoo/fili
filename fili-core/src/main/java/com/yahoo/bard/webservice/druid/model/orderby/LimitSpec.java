@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * LimitSpec class.

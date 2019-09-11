@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.rfc;
 
 import java.util.List;
@@ -183,28 +185,54 @@ public class RequestParameters {
 
     /**
      * Getter for the response format.
-     * @return
+     *
+     * @return the response format
      */
     public Optional<String> getFormat() {
         return format;
     }
 
+    /**
+     * Getter for the download filename.
+     *
+     * @return the download filename
+     */
     public Optional<String> getDownloadFilename() {
         return downloadFilename;
     }
 
+    /**
+     * Getter for the timezone.
+     *
+     * @return the timezone
+     */
     public Optional<String> getTimeZone() {
         return timeZone;
     }
 
+    /**
+     * Getter for async after.
+     *
+     * @return async after
+     */
     public Optional<String> getAsyncAfter() {
         return asyncAfter;
     }
 
+    /**
+     * Getter for result per page.
+     *
+     * @return results per page
+     */
     public Optional<String> getPerPage() {
         return perPage;
     }
 
+    /**
+     * Getter for requested page number.
+     *
+     * @return the page number
+     */
     public Optional<String> getPage() {
         return page;
     }

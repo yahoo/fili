@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.rfc
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
@@ -43,7 +45,7 @@ class DataApiRequestBuilderSpec extends Specification {
     static class GranularityGenerator implements Generator<Granularity> {
 
         @Override
-        Granularity bind(DataApiRequestBuilder builder, RequestParameters params, BardConfigResources resource) {
+        Granularity bind(DataApiRequestBuilder builder, RequestParameters params, BardConfigResources resources) {
             return DefaultTimeGrain.DAY
         }
 
