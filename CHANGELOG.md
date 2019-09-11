@@ -421,6 +421,10 @@ select filters)
 
 ### Added:
 
+- [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
+    * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
+    * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added. 
+
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
     * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
       hash values are consistent.
