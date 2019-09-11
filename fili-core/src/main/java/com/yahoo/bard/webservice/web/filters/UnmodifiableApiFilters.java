@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -12,14 +14,28 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Immutable view of an {@link ApiFilters} object.
+ */
 public class UnmodifiableApiFilters extends ApiFilters {
 
     private final Map<Dimension, Set<ApiFilter>> target;
 
+    /**
+     * Constructor. Use static factory method for creation.
+     *
+     * @param filters ApiFilters this object will provide a view of.
+     */
     private UnmodifiableApiFilters(LinkedHashMap<Dimension, Set<ApiFilter>> filters) {
         this.target = Collections.unmodifiableMap(new ApiFilters(filters));
     }
 
+    /**
+     * Static factory.
+     *
+     * @param target ApiFilters object to provide the immutable view of
+     * @return an immutable view on the provided ApiFilters.
+     */
     public static UnmodifiableApiFilters of(ApiFilters target) {
         return new UnmodifiableApiFilters(target);
     }
@@ -40,7 +56,9 @@ public class UnmodifiableApiFilters extends ApiFilters {
         return target.get(key);
     }
 
-    @Override public Set<ApiFilter> put(Dimension key, Set<ApiFilter> value) {return target.put(key, value); }
+    @Override public Set<ApiFilter> put(Dimension key, Set<ApiFilter> value) {
+        return target.put(key, value);
+    }
     @Override public Set<ApiFilter> remove(Object key) {
         return target.remove(key);
     }
@@ -53,7 +71,7 @@ public class UnmodifiableApiFilters extends ApiFilters {
     @Override public Set<Dimension> keySet() {
         return target.keySet();
     }
-    @Override public Set<Map.Entry<Dimension,Set<ApiFilter>>> entrySet() {
+    @Override public Set<Map.Entry<Dimension, Set<ApiFilter>>> entrySet() {
         return target.entrySet();
     }
     @Override public Collection<Set<ApiFilter>> values() {
@@ -129,6 +147,14 @@ public class UnmodifiableApiFilters extends ApiFilters {
         return target.merge(key, value, remappingFunction);
     }
 
+    /**
+     * Union method that returns and Unmodifiable ApiFilters. Note that this object CAN take standard ApiFilters
+     * objects.
+     *
+     * @param filters1 first ApiFilters to union
+     * @param filters2 second ApiFilters to union
+     * @return the immutable view of the union of the provided filters
+     */
     public static UnmodifiableApiFilters immutableUnion(ApiFilters filters1, ApiFilters filters2) {
         return UnmodifiableApiFilters.of(ApiFilters.union(filters1, filters2));
     }

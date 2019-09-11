@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
 import java.util.Objects;
@@ -20,10 +22,9 @@ public class UnmodifiableLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     private final Map<K, V> target;
 
     /**
-     * Constructor. Not public because this class is expected to behave entirely as an immutable view on a
-     * LinkedHashMap, so it makes more sense to provide access through a factory instead.
+     * Constructor. Build through static factory method {@link UnmodifiableLinkedHashMap#of}.
      *
-     * @param target
+     * @param target  The underlying map that is being copied.
      */
     private UnmodifiableLinkedHashMap(LinkedHashMap<K, V> target) {
         this.target = Collections.unmodifiableMap(new LinkedHashMap<>(Objects.requireNonNull(target)));
@@ -57,7 +58,9 @@ public class UnmodifiableLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
         return target.get(key);
     }
 
-    @Override public V put(K key, V value) {return target.put(key, value); }
+    @Override public V put(K key, V value) {
+        return target.put(key, value);
+    }
     @Override public V remove(Object key) {
         return target.remove(key);
     }
@@ -70,7 +73,7 @@ public class UnmodifiableLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
     @Override public Set<K> keySet() {
         return target.keySet();
     }
-    @Override public Set<Map.Entry<K,V>> entrySet() {
+    @Override public Set<Map.Entry<K, V>> entrySet() {
         return target.entrySet();
     }
     @Override public Collection<V> values() {

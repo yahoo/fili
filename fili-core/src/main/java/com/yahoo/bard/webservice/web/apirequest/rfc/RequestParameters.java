@@ -5,11 +5,11 @@ import java.util.Optional;
 
 import javax.ws.rs.core.PathSegment;
 
+/**
+ * Data object all raw pieces of data in an api request.
+ */
 public class RequestParameters {
 
-    /**
-     * TODO document ALL of these parameters. What they are, the form they are expected in, etc.
-     */
     private final Optional<String> logicalTable;
     private final Optional<String> granularity;
     private final List<PathSegment> dimensions;
@@ -27,6 +27,32 @@ public class RequestParameters {
     private final Optional<String> perPage;
     private final Optional<String> page;
 
+    /**
+     * Constructor. All parameters are unparsed at this point and likely require extra processing, likely by a
+     * {@link Generator} implementation.
+     *
+     * @param logicalTable  The name of the logical table for this query to run against.
+     * @param granularity  The granularity of the query (e.g. day, month, etc.)
+     * @param dimensions  The grouping dimensions and the set of requested fields for each. The dimension api name is
+     *                    the path element, and the fields should be in the multimap, in the form
+     *                    {@code show => fieldNames, ...} if requested fields are present.
+     * @param logicalMetrics  The names of the desired metrics.
+     * @param intervals  The interval the query should go over (e.g. 2019-01-01/2019-01-02)
+     * @param apiFilters  The set of filters for this query
+     * @param havings  The set of havings (filters on metrics) for this query
+     * @param sorts  The sorts for this query (e.g. sort on revenue descending)
+     * @param count  The the count of the query (????? what does count do)
+     * @param topN  The limit on the sort (e.g. sort by revenue descending, give me top 3 results)
+     * @param format  The format of the response should be in
+     * @param downloadFilename  The filename of the response. The presence of this parameter indicated the result
+     *                          should be returned as a file to be downloaded by the client.
+     * @param timeZone  The time zone this query should use. Affects aggregation and time macros in intervals
+     * @param asyncAfter  If the query takes longer that this time the result should be prepared as a file
+     *                    asynchronously, and a link to download the file when it is ready should be provided to the
+     *                    client.
+     * @param perPage  Pagination parameter, how many results per page.
+     * @param page  Pagination parameter, which page of the result to get.
+     */
     public RequestParameters(
             String logicalTable,
             String granularity,
@@ -65,46 +91,100 @@ public class RequestParameters {
         this.page = Optional.ofNullable(page);
     }
 
+    /**
+     * Getter for the logical table.
+     *
+     * @return the logical table
+     */
     public Optional<String> getLogicalTable() {
         return logicalTable;
     }
 
+    /**
+     * Getter for the granularity.
+     *
+     * @return the granularity
+     */
     public Optional<String> getGranularity() {
         return granularity;
     }
 
+    /**
+     * Getter for the list of dimensions and their requested fields.
+     *
+     * @return the dimensions
+     */
     public List<PathSegment> getDimensions() {
         return dimensions;
     }
 
+    /**
+     * Getter for the logical metrics.
+     *
+     * @return the logical metrics
+     */
     public Optional<String> getLogicalMetrics() {
         return logicalMetrics;
     }
 
+    /**
+     * Getter for the intervals.
+     *
+     * @return the intervals
+     */
     public Optional<String> getIntervals() {
         return intervals;
     }
 
+    /**
+     * Getter for the filters.
+     *
+     * @return the filters
+     */
     public Optional<String> getFilters() {
         return apiFilters;
     }
 
+    /**
+     * Getter for the havings.
+     *
+     * @return the havings
+     */
     public Optional<String> getHavings() {
         return havings;
     }
 
+    /**
+     * Getter for the sorts.
+     *
+     * @return the sorts
+     */
     public Optional<String> getSorts() {
         return sorts;
     }
 
+    /**
+     * Getter for topN.
+     *
+     * @return topN
+     */
     public Optional<String> topN() {
         return topN;
     }
 
+    /**
+     * Getter for the count.
+     *
+     * @return count
+     */
     public Optional<String> getCount() {
         return count;
     }
 
+    /**
+     * Getter for the response format.
+     * @return
+     */
     public Optional<String> getFormat() {
         return format;
     }
