@@ -269,7 +269,14 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withFilters(ApiFilters filters);
 
-    DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
+    @Deprecated
+    default DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+        return withHavings(new LinkedHashMap<>(havings));
+    }
+
+    default DataApiRequest withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
+        throw new UnsupportedOperationException("this method has not been implemented");
+    }
 
     DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
 
