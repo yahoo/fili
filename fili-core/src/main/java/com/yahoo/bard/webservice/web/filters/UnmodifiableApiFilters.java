@@ -128,4 +128,8 @@ public class UnmodifiableApiFilters extends ApiFilters {
     ) {
         return target.merge(key, value, remappingFunction);
     }
+
+    public static UnmodifiableApiFilters immutableUnion(ApiFilters filters1, ApiFilters filters2) {
+        return UnmodifiableApiFilters.of(ApiFilters.union(filters1, filters2));
+    }
 }

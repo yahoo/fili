@@ -39,4 +39,23 @@ class DataApiRequestImplSpec extends Specification {
                 new OrderByColumn("other3", SortDirection.ASC),
         ] as LinkedHashSet
     }
+
+    def "DateTime and Standard sorts are combined correctly"() {
+        given:
+        OrderByColumn dateTimeSort = new OrderByColumn(DataApiRequest.DATE_TIME_STRING, SortDirection.DESC)
+
+        LinkedHashSet<OrderByColumn> standardSorts = [
+                new OrderByColumn("other1", SortDirection.DESC),
+                new OrderByColumn("other2", SortDirection.ASC)
+        ] as LinkedHashSet
+
+        LinkedHashSet<OrderByColumn> allSorts = [dateTimeSort] as LinkedHashSet
+        allSorts.addAll(standardSorts)
+
+        expect:
+        DataApiRequestImpl.combineSorts(Optional.of(dateTimeSort), standardSorts) == allSorts
+
+        and:
+        DataApiRequestImpl.combineSorts(Optional.empty(), standardSorts) == standardSorts
+    }
 }

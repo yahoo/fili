@@ -206,7 +206,7 @@ public class DataApiRequestBuilder {
         // validate that ALL build phases have been called
         if (BardFeatureFlag.POJO_DARI_REQUIRE_ALL_STAGES_CALLED.isOn()) {
             Set<BuildPhase> uninitializedLifecycles = built.entrySet().stream()
-                    .filter(Map.Entry::getValue)
+                    .filter(entry -> !entry.getValue())
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toSet());
             if (!uninitializedLifecycles.isEmpty()) {

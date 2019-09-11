@@ -314,11 +314,11 @@ class DefaultSqlBackedClientSpec extends Specification {
 
         where:
         grain    | dims                                    | metrics          | metricDirections | limit                | expectedSize
-        DAY      | [METRO_CODE]                            | [ADDED]          | [DESC]           | OptionalInt.of(10)   | 10
-        DAY      | []                                      | [ADDED, DELETED] | [DESC, ASC]      | OptionalInt.of(10)   | 1
-        DAY      | [METRO_CODE, IS_ROBOT, REGION_ISO_CODE] | [ADDED]          | [DESC]           | OptionalInt.of(100) | 100
-        YEAR     | [METRO_CODE]                            | []               | []               | OptionalInt.of(1)    | 1
-        MONTH    | [USER]                                  | []               | []               | OptionalInt.of(49)   | 49
-        INSTANCE | [COUNTRY_ISO_CODE]                      | []               | []               | OptionalInt.of(25)   | 25
+        DAY      | [METRO_CODE]                            | [ADDED]          | [DESC]           | Optional.of(10)   | 10
+        DAY      | []                                      | [ADDED, DELETED] | [DESC, ASC]      | Optional.of(10)   | 1
+        DAY      | [METRO_CODE, IS_ROBOT, REGION_ISO_CODE] | [ADDED]          | [DESC]           | Optional.of(100) | 100
+        YEAR     | [METRO_CODE]                            | []               | []               | Optional.of(1)    | 1
+        MONTH    | [USER]                                  | []               | []               | Optional.of(49)   | 49
+        INSTANCE | [COUNTRY_ISO_CODE]                      | []               | []               | Optional.of(25)   | 25
     }
 }
