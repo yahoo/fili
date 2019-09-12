@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 /**
  * Builder for {@link DataApiRequestImpl} objects.
  */
-// TODO this class needs getters on all fields
-// TODO look into making the type signatures extendable by subclasses
 public class DataApiRequestBuilder {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestBuilder.class);
@@ -338,6 +336,150 @@ public class DataApiRequestBuilder {
         built.put(BuildPhase.PAGINATION, Boolean.TRUE);
         this.paginationParameters = bindAndValidate(params, generator);
         return this;
+    }
+
+    /**
+     * Getter for logical table.
+     *
+     * @return the logical table
+     */
+    public LogicalTable getLogicalTable() {
+        return logicalTable;
+    }
+
+    /**
+     * Getter for granularity.
+     *
+     * @return the granularity
+     */
+    public Granularity getGranularity() {
+        return granularity;
+    }
+
+    /**
+     * Getter for dimension.
+     *
+     * @return the dimensions
+     */
+    public LinkedHashSet<Dimension> getDimensions() {
+        return dimensions;
+    }
+
+    /**
+     * Getter for mapping between grouping dimensions and their requested fields.
+     *
+     * @return the mapping between grouping and their requested fields
+     */
+    public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getPerDimensionFields() {
+        return perDimensionFields;
+    }
+
+    /**
+     * Getter for logical metrics.
+     *
+     * @return the logical metrics
+     */
+    public LinkedHashSet<LogicalMetric> getLogicalMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Getter for the request intervals.
+     *
+     * @return the request intervals
+     */
+    public List<Interval> getIntervals() {
+        return intervals;
+    }
+
+    /**
+     * Getter for the ApiFilters.
+     *
+     * @return the ApiFilters
+     */
+    public ApiFilters getApiFilters() {
+        return apiFilters;
+    }
+
+    /**
+     * Getter for the havings.
+     *
+     * @return the havings
+     */
+    public LinkedHashMap<LogicalMetric, Set<ApiHaving>> getHavings() {
+        return havings;
+    }
+
+    /**
+     * Getter for the sorts.
+     *
+     * @return the sorts
+     */
+    public LinkedHashSet<OrderByColumn> getSorts() {
+        return sorts;
+    }
+
+    /**
+     * Getter for the count.
+     *
+     * @return the count
+     */
+    public Integer getCount() {
+        return count;
+    }
+
+    /**
+     * Getter for the topN.
+     *
+     * @return the topN
+     */
+    public Integer getTopN() {
+        return topN;
+    }
+
+    /**
+     * Getter for the response format.
+     *
+     * @return the response format
+     */
+    public ResponseFormatType getFormat() {
+        return format;
+    }
+
+    /**
+     * Getter for the download filename.
+     *
+     * @return the download filename
+     */
+    public String getDownloadFilname() {
+        return downloadFilename;
+    }
+
+    /**
+     * Getter for the timezone.
+     *
+     * @return the timezone
+     */
+    public DateTimeZone getTimeZone() {
+        return timeZone;
+    }
+
+    /**
+     * Getter for the async after.
+     *
+     * @return the async after
+     */
+    public long getAsyncAfter() {
+        return asyncAfter;
+    }
+
+    /**
+     * Getter for the pagination parameters.
+     *
+     * @return the pagination parameters
+     */
+    public PaginationParameters getPaginationParameters() {
+        return paginationParameters;
     }
 
     /**
