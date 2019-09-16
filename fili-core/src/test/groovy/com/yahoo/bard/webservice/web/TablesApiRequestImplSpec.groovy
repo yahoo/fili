@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
+import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -115,7 +116,7 @@ class TablesApiRequestImplSpec extends Specification {
         new TablesApiRequestImpl(
                 null, // ResponseFormatType
                 null, // downloadFilename
-                pagination, // Optional<PaginationParameters>
+                (PaginationParameters) pagination,
                 tables, // LinkedHashSet<LogicalTable> tables
                 null, // LogicalTable
                 null, // Granularity
@@ -129,7 +130,7 @@ class TablesApiRequestImplSpec extends Specification {
         noExceptionThrown()
 
         where:
-        pagination << [null, Optional.empty()]
+        pagination << [null, PaginationParameters.EVERYTHING_IN_ONE_PAGE]
         filters << [null, new ApiFilters()]
         tables << [null, new LinkedHashSet<>()]
         dimensions << [null, new LinkedHashSet<>()]

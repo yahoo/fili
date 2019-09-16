@@ -66,24 +66,6 @@ public interface DataApiRequest extends ApiRequest {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    /**
-     * If present inserts a date time sort into the beginning of the provided set of sorts.
-     *
-     * @param dateTimeSort  An optional which may contain a date time sort to insert.
-     * @param standardSorts  The set of sorts to be inserting into.
-     * @return the combined sorts.
-     */
-    static LinkedHashSet<OrderByColumn> combineSorts(
-            Optional<OrderByColumn> dateTimeSort,
-            LinkedHashSet<OrderByColumn> standardSorts
-    ) {
-        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
-        dateTimeSort.ifPresent(result::add);
-        result.addAll(standardSorts);
-        return result;
-    }
-
-
     // Schema fields
 
     /**
@@ -351,17 +333,33 @@ public interface DataApiRequest extends ApiRequest {
      * @param timeSort the sort to replace the current date time sort
      * @return  a copy of DataApiRequest with the date time sort replaced and the standard sorts remaining untouched
      */
-    DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
+    DataApiRequest withTimeSort(OrderByColumn timeSort);
+
+    /**
+     * Replaces the existing date time sort with the provided sort.
+     *
+     * @param timeSort the sort to replace the current date time sort
+     * @return  a copy of DataApiRequest with the date time sort replaced and the standard sorts remaining untouched
+     */
+    @Deprecated
+    default DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort) {
+        return withTimeSort(timeSort.orElse(null));
+    }
 
     DataApiRequest withTimeZone(DateTimeZone timeZone);
 
     // Result Set Truncations
 
-    DataApiRequest withTopN(int topN);
+    DataApiRequest withTopN(Integer topN);
 
-    DataApiRequest withCount(int count);
+    DataApiRequest withCount(Integer count);
 
-    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    @Deprecated
+    default DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+        return withPaginationParameters(paginationParameters.orElse(null));
+    };
+
+    DataApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     // Presentation
 
