@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.util.UnmodifiableLinkedHashSet;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.filters.UnmodifiableApiFilters;
@@ -181,7 +182,7 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.dateTimeSort = dateTimeSort;
         this.standardSorts = UnmodifiableLinkedHashSet.of(standardSorts);
-        this.allSorts = UnmodifiableLinkedHashSet.of(DataApiRequestImpl.combineSorts(dateTimeSort, standardSorts));
+        this.allSorts = UnmodifiableLinkedHashSet.of(ApiRequest.combineSorts(dateTimeSort, standardSorts));
         this.count = count;
         this.topN = topN;
         this.format = format;
@@ -770,25 +771,5 @@ public class DataApiRequestImpl implements DataApiRequest {
     @Override
     public DataApiRequest withFilterBuilder(final DruidFilterBuilder filterBuilder) {
         throw new UnsupportedOperationException("Druid specific logic is being removed from the api request model");
-    }
-
-
-    /**
-     * If present inserts a date time sort into the beginning of the provided set of sorts.
-     *
-     * @param dateTimeSort  An optional which may contain a date time sort to insert.
-     * @param standardSorts  The set of sorts to be inserting into.
-     * @return the combined sorts.
-     */
-    static LinkedHashSet<OrderByColumn> combineSorts(
-            OrderByColumn dateTimeSort,
-            LinkedHashSet<OrderByColumn> standardSorts
-    ) {
-        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
-        if (dateTimeSort != null) {
-            result.add(dateTimeSort);
-        }
-        result.addAll(standardSorts);
-        return result;
     }
 }

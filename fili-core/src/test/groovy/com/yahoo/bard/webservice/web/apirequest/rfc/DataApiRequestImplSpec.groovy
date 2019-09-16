@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest.rfc
 
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Specification
@@ -55,9 +56,9 @@ class DataApiRequestImplSpec extends Specification {
         allSorts.addAll(standardSorts)
 
         expect:
-        DataApiRequestImpl.combineSorts(dateTimeSort, standardSorts) == allSorts
+        ApiRequest.combineSorts(dateTimeSort, standardSorts) == allSorts
 
         and:
-        DataApiRequestImpl.combineSorts(null, standardSorts) == standardSorts
+        ApiRequest.combineSorts(null, standardSorts) == standardSorts
     }
 }

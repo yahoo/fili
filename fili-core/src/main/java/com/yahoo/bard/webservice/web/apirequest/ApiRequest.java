@@ -4,12 +4,14 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.LinkedHashSet;
 import java.util.Optional;
 
 /**
@@ -18,6 +20,25 @@ import java.util.Optional;
 public interface ApiRequest {
     long SYNCHRONOUS_ASYNC_AFTER_VALUE = Long.MAX_VALUE;
     long ASYNCHRONOUS_ASYNC_AFTER_VALUE = -1;
+
+    /**
+     * If present inserts a date time sort into the beginning of the provided set of sorts.
+     *
+     * @param dateTimeSort  An optional which may contain a date time sort to insert.
+     * @param standardSorts  The set of sorts to be inserting into.
+     * @return the combined sorts.
+     */
+    static LinkedHashSet<OrderByColumn> combineSorts(
+            OrderByColumn dateTimeSort,
+            LinkedHashSet<OrderByColumn> standardSorts
+    ) {
+        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
+        if (dateTimeSort != null) {
+            result.add(dateTimeSort);
+        }
+        result.addAll(standardSorts);
+        return result;
+    }
 
     /**
      * Get the DateTimeFormatter shifted to the given time zone.
