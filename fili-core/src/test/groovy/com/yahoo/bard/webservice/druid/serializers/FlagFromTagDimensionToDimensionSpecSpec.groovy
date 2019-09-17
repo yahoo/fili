@@ -56,9 +56,9 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
         apiRequest.getLogicalMetrics() >> ([lm1])
         apiRequest.getIntervals() >> [new Interval(new DateTime("2015"), Hours.ONE)]
         apiRequest.getFilterDimensions() >> []
-        apiRequest.getTopN() >> OptionalInt.empty()
+        apiRequest.getTopN() >> Optional.empty()
         apiRequest.getSorts() >> ([])
-        apiRequest.getCount() >> OptionalInt.empty()
+        apiRequest.getCount() >> Optional.empty()
         apiRequest.getApiFilters() >> []
 
         apiRequest.withFilters(_) >> {apiRequest}

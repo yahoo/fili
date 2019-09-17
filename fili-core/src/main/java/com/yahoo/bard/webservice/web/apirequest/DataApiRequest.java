@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.web.apirequest;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
@@ -26,8 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
@@ -38,6 +38,53 @@ public interface DataApiRequest extends ApiRequest {
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
     String RATIO_METRIC_CATEGORY = "Ratios";
     String DATE_TIME_STRING = "dateTime";
+
+    // utility methods
+
+    /**
+     * Utility method which extracts the date time for from the provided set of sorts.
+     *
+     * @param sorts  The sorts to extract the date time sort from
+     * @return an optional containing the date time sort if one was present in the set of sorts.
+     */
+    static Optional<OrderByColumn> extractDateTimeSort(LinkedHashSet<OrderByColumn> sorts) {
+        return sorts.stream()
+                .filter(orderBy -> orderBy.getDimension().equalsIgnoreCase(DataApiRequest.DATE_TIME_STRING))
+                .findFirst();
+    }
+
+    /**
+     * Utility method which removes the date time sort from a set of sorts if a date time sort is present.
+     *
+     * @param sorts  The sorts to remove the date time sort from.
+     * @return a copy of the input sorts without any date time sorts.
+     */
+    static LinkedHashSet<OrderByColumn> extractStandardSorts(LinkedHashSet<OrderByColumn> sorts) {
+        return sorts.stream()
+                .filter(orderBy ->
+                        !orderBy.getDimension().equalsIgnoreCase(DataApiRequest.DATE_TIME_STRING))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * If present inserts a date time sort into the beginning of the provided set of sorts.
+     *
+     * @param dateTimeSort  An optional which may contain a date time sort to insert.
+     * @param standardSorts  The set of sorts to be inserting into.
+     * @return the combined sorts.
+     */
+    static LinkedHashSet<OrderByColumn> combineSorts(
+            OrderByColumn dateTimeSort,
+            LinkedHashSet<OrderByColumn> standardSorts
+    ) {
+        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
+        if (dateTimeSort != null) {
+            result.add(dateTimeSort);
+        }
+        result.addAll(standardSorts);
+        return result;
+    }
+
 
     // Schema fields
 
@@ -114,7 +161,7 @@ public interface DataApiRequest extends ApiRequest {
     // Row sequence constraints
 
     /**
-     * The list of sorting predicates for this query.
+     * The list of sorting predicates for this query. These sorts do NOT include the time sort.
      *
      * @return The sorting columns
      */
@@ -126,6 +173,18 @@ public interface DataApiRequest extends ApiRequest {
      * @return The sort direction
      */
     Optional<OrderByColumn> getDateTimeSort();
+
+    /**
+     * Returns the combined set of standard sorts and date time sort.
+     *
+     * @return all sorts in the request
+     */
+    default LinkedHashSet<OrderByColumn> getAllSorts() {
+        LinkedHashSet<OrderByColumn> allSorts = new LinkedHashSet<>();
+        getDateTimeSort().ifPresent(allSorts::add);
+        allSorts.addAll(getSorts());
+        return allSorts;
+    }
 
     /**
      * The date time zone to apply to the dateTime parameter and to express the response and granularity in.
@@ -141,14 +200,14 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @return The number of values per bucket.
      */
-    OptionalInt getTopN();
+    Optional<Integer> getTopN();
 
     /**
      * An optional limit of records returned.
      *
      * @return An optional integer.
      */
-    OptionalInt getCount();
+    Optional<Integer> getCount();
 
     // Query model objects
 
@@ -193,6 +252,7 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @deprecated Use {@link #getQueryHaving()}
      */
+    @Deprecated
     default Having getHaving() {
         return getQueryHaving();
     }
@@ -257,21 +317,69 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withFilters(ApiFilters filters);
 
-    DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings);
+    @Deprecated
+    default DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+        return withHavings(new LinkedHashMap<>(havings));
+    }
 
+    default DataApiRequest withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
+        throw new UnsupportedOperationException("this method has not been implemented");
+    }
+
+    /**
+     * Replaces the existing date time sort and standard sorts with sorts from this set.
+     *
+     * @param allSorts  A set of sorts that can contain both standard sorts and a single date time sort.
+     * @return  a copy of DataApiRequest with the sorts replaced.
+     */
+    default DataApiRequest withAllSorts(LinkedHashSet<OrderByColumn> allSorts) {
+        Optional<OrderByColumn> dateTimeSort = extractDateTimeSort(allSorts);
+        LinkedHashSet<OrderByColumn> standardSorts = extractStandardSorts(allSorts);
+        DataApiRequest withDateTimeSort = withTimeSort(dateTimeSort);
+        return withDateTimeSort.withSorts(standardSorts);
+    }
+
+    /**
+     * Replaces the existing standard sorts the provided sorts.
+     *
+     * @param sorts the set of sorts to replace the current standard sorts
+     * @return  a copy of DataApiRequest with the standard sorts replaced but the date time sort remaining untouched
+     */
     DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts);
 
-    DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort);
+    /**
+     * Replaces the existing date time sort with the provided sort.
+     *
+     * @param timeSort the sort to replace the current date time sort
+     * @return  a copy of DataApiRequest with the date time sort replaced and the standard sorts remaining untouched
+     */
+    DataApiRequest withTimeSort(OrderByColumn timeSort);
+
+    /**
+     * Replaces the existing date time sort with the provided sort.
+     *
+     * @param timeSort the sort to replace the current date time sort
+     * @return  a copy of DataApiRequest with the date time sort replaced and the standard sorts remaining untouched
+     */
+    @Deprecated
+    default DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort) {
+        return withTimeSort(timeSort.orElse(null));
+    }
 
     DataApiRequest withTimeZone(DateTimeZone timeZone);
 
     // Result Set Truncations
 
-    DataApiRequest withTopN(int topN);
+    DataApiRequest withTopN(Integer topN);
 
-    DataApiRequest withCount(int count);
+    DataApiRequest withCount(Integer count);
 
-    DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    @Deprecated
+    default DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+        return withPaginationParameters(paginationParameters.orElse(null));
+    };
+
+    DataApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     // Presentation
 

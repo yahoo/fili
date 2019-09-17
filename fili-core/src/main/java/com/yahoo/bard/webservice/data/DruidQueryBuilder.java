@@ -154,7 +154,7 @@ public class DruidQueryBuilder {
                     filter,
                     tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
-                    tableFilteredRequest.getTopN().getAsInt()
+                    tableFilteredRequest.getTopN().get()
             ) :
              canOptimizeTimeSeries(tableFilteredRequest, template) ?
                 buildTimeSeriesQuery(

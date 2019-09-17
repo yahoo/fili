@@ -87,7 +87,12 @@ public interface TablesApiRequest extends ApiRequest {
     // CHECKSTYLE:OFF
     TablesApiRequest withFormat(ResponseFormatType format);
 
-    TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    @Deprecated
+    default TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+        return withPaginationParameters(paginationParameters.orElse(null));
+    }
+
+    TablesApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     TablesApiRequest withBuilder(Response.ResponseBuilder builder);
 
