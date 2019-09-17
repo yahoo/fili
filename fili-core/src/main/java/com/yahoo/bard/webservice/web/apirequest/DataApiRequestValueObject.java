@@ -1,6 +1,6 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.rfc;
+package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -17,7 +17,6 @@ import com.yahoo.bard.webservice.util.UnmodifiableLinkedHashSet;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.filters.UnmodifiableApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -43,7 +42,7 @@ import javax.ws.rs.core.Response;
  * ({@link com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl}), this implementation does not build any of
  * tis components and all components must be fully built at creation time.
  */
-public class DataApiRequestImpl implements DataApiRequest {
+public class DataApiRequestValueObject implements DataApiRequest {
 
     private final LogicalTable table;
     private final Granularity granularity;
@@ -87,7 +86,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @param paginationParameters  The parameters specifying the length of a response page and which response page to
      *                              return
      */
-    public DataApiRequestImpl(
+    public DataApiRequestValueObject(
             LogicalTable table,
             Granularity granularity,
             LinkedHashSet<Dimension> dimensions,
@@ -151,7 +150,7 @@ public class DataApiRequestImpl implements DataApiRequest {
      * @param paginationParameters  The parameters specifying the length of a response page and which response page to
      *                              return
      */
-    protected DataApiRequestImpl(
+    protected DataApiRequestValueObject(
             LogicalTable table,
             Granularity granularity,
             LinkedHashSet<Dimension> dimensions,
@@ -291,7 +290,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withTable(LogicalTable table) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -313,7 +312,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withGranularity(Granularity granularity) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -335,7 +334,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -359,7 +358,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     public DataApiRequest withPerDimensionFields(
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields
     ) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -381,7 +380,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -403,7 +402,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withIntervals(List<Interval> intervals) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -425,7 +424,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withIntervals(Set<Interval> intervals) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -447,7 +446,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withFilters(ApiFilters filters) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -469,7 +468,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -491,7 +490,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withSorts(LinkedHashSet<OrderByColumn> sorts) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -514,7 +513,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withTimeSort(OrderByColumn timeSort) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -537,7 +536,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withTimeZone(DateTimeZone timeZone) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -559,7 +558,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withTopN(Integer topN) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -581,7 +580,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withCount(Integer count) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -603,7 +602,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -625,7 +624,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withFormat(ResponseFormatType format) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -647,7 +646,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withDownloadFilename(String downloadFilename) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,
@@ -669,7 +668,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public DataApiRequest withAsyncAfter(long asyncAfter) {
-        return new DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 table,
                 granularity,
                 dimensions,

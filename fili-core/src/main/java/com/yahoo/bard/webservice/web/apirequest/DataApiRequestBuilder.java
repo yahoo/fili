@@ -1,6 +1,6 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.rfc;
+package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Builder for {@link DataApiRequestImpl} objects.
+ * Builder for {@link DataApiRequestValueObject} objects.
  */
 public class DataApiRequestBuilder {
 
@@ -95,7 +95,8 @@ public class DataApiRequestBuilder {
     /**
      * Constructor.
      *
-     * @param resources set of resources generators can use while building pieces of the {@link DataApiRequestImpl}
+     * @param resources set of resources generators can use while building pieces of the
+     * {@link DataApiRequestValueObject}
      */
     public DataApiRequestBuilder(BardConfigResources resources) {
         this.resources = resources;
@@ -510,7 +511,7 @@ public class DataApiRequestBuilder {
             }
         }
 
-        return new com.yahoo.bard.webservice.web.apirequest.rfc.DataApiRequestImpl(
+        return new DataApiRequestValueObject(
                 logicalTable,
                 granularity,
                 dimensions,
