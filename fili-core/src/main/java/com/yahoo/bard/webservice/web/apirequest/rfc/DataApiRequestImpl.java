@@ -17,7 +17,6 @@ import com.yahoo.bard.webservice.util.UnmodifiableLinkedHashSet;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.filters.UnmodifiableApiFilters;
@@ -177,7 +176,6 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.perDimensionFields = UnmodifiableLinkedHashMap.of(perDimensionFields);
         this.metrics = UnmodifiableLinkedHashSet.of(metrics);
         this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
-        // TODO should we make an immutable version of ApiFilters?
         this.apiFilters = new ApiFilters(apiFilters);
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.dateTimeSort = dateTimeSort;
