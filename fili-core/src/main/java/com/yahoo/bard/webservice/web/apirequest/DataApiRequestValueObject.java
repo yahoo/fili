@@ -52,8 +52,6 @@ public class DataApiRequestValueObject implements DataApiRequest {
     private final List<Interval> intervals;
     private final ApiFilters apiFilters;
     private final LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
-    private final OrderByColumn dateTimeSort;
-    private final LinkedHashSet<OrderByColumn> standardSorts;
     private final LinkedHashSet<OrderByColumn> allSorts;
     private final Integer count;
     private final Integer topN;
@@ -112,8 +110,6 @@ public class DataApiRequestValueObject implements DataApiRequest {
         this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
         this.apiFilters = UnmodifiableApiFilters.of(new ApiFilters(apiFilters));
         this.havings = UnmodifiableLinkedHashMap.of(havings);
-        this.dateTimeSort = DataApiRequest.extractDateTimeSort(allSorts).orElse(null);
-        this.standardSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.extractStandardSorts(allSorts));
         this.allSorts = UnmodifiableLinkedHashSet.of(allSorts);
         this.count = count;
         this.topN = topN;
@@ -122,72 +118,6 @@ public class DataApiRequestValueObject implements DataApiRequest {
         this.timeZone = timeZone;
         this.asyncAfter = asyncAfter;
         this.paginationParameters = paginationParameters;
-    }
-
-    /**
-     * Constructor for handling a date time sort and standard allSorts separately. The public constructor assumes they
-     * are together in the {@code allSorts} parameter. This is simply a convenience constructor that is made available
-     * to subclasses. This is mostly intended to back the {@code withTimeSort(Optional<OrderByColumn>)} implementation.
-     *
-     * @param table  Logical table the query should run against
-     * @param granularity  Granularity of the query
-     * @param dimensions  The grouping dimensions for the query
-     * @param perDimensionFields  The mapping of dimension to fields for that dimension that must be present in the
-     *                            response
-     * @param metrics  The metrics of the query
-     * @param intervals  The time intervals this query reports on
-     * @param apiFilters  The dimension filters for this query
-     * @param havings  The metric filters for this query
-     * @param dateTimeSort  The sort on the dateTime column.
-     * @param standardSorts Sorts WITHOUT datetime sort.
-     * @param count  The count for this query
-     * @param topN  The topN for this query
-     * @param format  The data format the response should be returned as (e.g. JSON, CSV, ...)
-     * @param downloadFilename  The name of the file the response should be downloaded as. The presence of this
-     *                          parameter indicates the response must be returned as a file for download by the client
-     * @param timeZone  The timezone this query should run for
-     * @param asyncAfter  The time limit after which the results must be returned asynchronously
-     * @param paginationParameters  The parameters specifying the length of a response page and which response page to
-     *                              return
-     */
-    protected DataApiRequestValueObject(
-            LogicalTable table,
-            Granularity granularity,
-            LinkedHashSet<Dimension> dimensions,
-            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
-            LinkedHashSet<LogicalMetric> metrics,
-            List<Interval> intervals,
-            ApiFilters apiFilters,
-            LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings,
-            OrderByColumn dateTimeSort,
-            LinkedHashSet<OrderByColumn> standardSorts,
-            Integer count,
-            Integer topN,
-            ResponseFormatType format,
-            String downloadFilename,
-            DateTimeZone timeZone,
-            Long asyncAfter,
-            PaginationParameters paginationParameters
-    ) {
-        this.table = table;
-        this.granularity = granularity;
-        this.dimensions = UnmodifiableLinkedHashSet.of(dimensions);
-        this.perDimensionFields = UnmodifiableLinkedHashMap.of(perDimensionFields);
-        this.metrics = UnmodifiableLinkedHashSet.of(metrics);
-        this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
-        this.apiFilters = new ApiFilters(apiFilters);
-        this.havings = UnmodifiableLinkedHashMap.of(havings);
-        this.dateTimeSort = dateTimeSort;
-        this.standardSorts = UnmodifiableLinkedHashSet.of(standardSorts);
-        this.allSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.combineSorts(dateTimeSort, standardSorts));
-        this.count = count;
-        this.topN = topN;
-        this.format = format;
-        this.downloadFilename = downloadFilename;
-        this.timeZone = timeZone;
-        this.asyncAfter = asyncAfter;
-        this.paginationParameters = paginationParameters;
-
     }
 
     // *******************************************
@@ -235,12 +165,12 @@ public class DataApiRequestValueObject implements DataApiRequest {
 
     @Override
     public LinkedHashSet<OrderByColumn> getSorts() {
-        return standardSorts;
+        return DataApiRequest.extractStandardSorts(getAllSorts());
     }
 
     @Override
     public Optional<OrderByColumn> getDateTimeSort() {
-        return Optional.ofNullable(dateTimeSort);
+        return DataApiRequest.extractDateTimeSort(getAllSorts());
     }
 
     @Override
@@ -499,8 +429,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 intervals,
                 apiFilters,
                 havings,
-                dateTimeSort,
-                sorts,
+                DataApiRequest.combineSorts(getDateTimeSort().orElse(null), sorts),
                 count,
                 topN,
                 format,
@@ -522,7 +451,28 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 intervals,
                 apiFilters,
                 havings,
-                timeSort,
+                DataApiRequest.combineSorts(timeSort, getSorts()),
+                count,
+                topN,
+                format,
+                downloadFilename,
+                timeZone,
+                asyncAfter,
+                paginationParameters
+        );
+    }
+
+    @Override
+    public DataApiRequest withAllSorts(LinkedHashSet<OrderByColumn> allSorts) {
+        return new DataApiRequestValueObject(
+                table,
+                granularity,
+                dimensions,
+                perDimensionFields,
+                metrics,
+                intervals,
+                apiFilters,
+                havings,
                 allSorts,
                 count,
                 topN,
