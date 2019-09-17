@@ -182,7 +182,7 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.dateTimeSort = dateTimeSort;
         this.standardSorts = UnmodifiableLinkedHashSet.of(standardSorts);
-        this.allSorts = UnmodifiableLinkedHashSet.of(ApiRequest.combineSorts(dateTimeSort, standardSorts));
+        this.allSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.combineSorts(dateTimeSort, standardSorts));
         this.count = count;
         this.topN = topN;
         this.format = format;

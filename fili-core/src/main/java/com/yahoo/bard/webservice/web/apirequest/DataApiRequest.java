@@ -66,6 +66,26 @@ public interface DataApiRequest extends ApiRequest {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
+    /**
+     * If present inserts a date time sort into the beginning of the provided set of sorts.
+     *
+     * @param dateTimeSort  An optional which may contain a date time sort to insert.
+     * @param standardSorts  The set of sorts to be inserting into.
+     * @return the combined sorts.
+     */
+    static LinkedHashSet<OrderByColumn> combineSorts(
+            OrderByColumn dateTimeSort,
+            LinkedHashSet<OrderByColumn> standardSorts
+    ) {
+        LinkedHashSet<OrderByColumn> result = new LinkedHashSet<>();
+        if (dateTimeSort != null) {
+            result.add(dateTimeSort);
+        }
+        result.addAll(standardSorts);
+        return result;
+    }
+
+
     // Schema fields
 
     /**

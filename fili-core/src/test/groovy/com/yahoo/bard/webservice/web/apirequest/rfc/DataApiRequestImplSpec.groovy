@@ -56,9 +56,9 @@ class DataApiRequestImplSpec extends Specification {
         allSorts.addAll(standardSorts)
 
         expect:
-        ApiRequest.combineSorts(dateTimeSort, standardSorts) == allSorts
+        DataApiRequest.combineSorts(dateTimeSort, standardSorts) == allSorts
 
         and:
-        ApiRequest.combineSorts(null, standardSorts) == standardSorts
+        DataApiRequest.combineSorts(null, standardSorts) == standardSorts
     }
 }
