@@ -159,7 +159,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     private DimensionsApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters,
+            PaginationParameters paginationParameters,
             Iterable<Dimension> dimensions,
             Iterable<ApiFilter> filters
     ) {
@@ -264,7 +264,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
     }
 
     @Override
-    public DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+    public DimensionsApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
         return new DimensionsApiRequestImpl(format, downloadFilename, paginationParameters, dimensions, filters);
     }
 

@@ -53,11 +53,11 @@ public class DataApiRequestImpl implements DataApiRequest {
     private final List<Interval> intervals;
     private final ApiFilters apiFilters;
     private final LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
-    private final Optional<OrderByColumn> dateTimeSort;
+    private final OrderByColumn dateTimeSort;
     private final LinkedHashSet<OrderByColumn> standardSorts;
     private final LinkedHashSet<OrderByColumn> allSorts;
-    private final Optional<Integer> count;
-    private final Optional<Integer> topN;
+    private final Integer count;
+    private final Integer topN;
     private final ResponseFormatType format;
     private final String downloadFilename;
     private final DateTimeZone timeZone;
@@ -113,11 +113,11 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
         this.apiFilters = UnmodifiableApiFilters.of(new ApiFilters(apiFilters));
         this.havings = UnmodifiableLinkedHashMap.of(havings);
-        this.dateTimeSort = DataApiRequest.extractDateTimeSort(allSorts);
+        this.dateTimeSort = DataApiRequest.extractDateTimeSort(allSorts).orElse(null);
         this.standardSorts = UnmodifiableLinkedHashSet.of(DataApiRequest.extractStandardSorts(allSorts));
         this.allSorts = UnmodifiableLinkedHashSet.of(allSorts);
-        this.count = Optional.ofNullable(count);
-        this.topN = Optional.ofNullable(topN);
+        this.count = count;
+        this.topN = topN;
         this.format = format;
         this.downloadFilename = downloadFilename;
         this.timeZone = timeZone;
@@ -160,10 +160,10 @@ public class DataApiRequestImpl implements DataApiRequest {
             List<Interval> intervals,
             ApiFilters apiFilters,
             LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings,
-            Optional<OrderByColumn> dateTimeSort,
+            OrderByColumn dateTimeSort,
             LinkedHashSet<OrderByColumn> standardSorts,
-            Optional<Integer> count,
-            Optional<Integer> topN,
+            Integer count,
+            Integer topN,
             ResponseFormatType format,
             String downloadFilename,
             DateTimeZone timeZone,
@@ -176,7 +176,6 @@ public class DataApiRequestImpl implements DataApiRequest {
         this.perDimensionFields = UnmodifiableLinkedHashMap.of(perDimensionFields);
         this.metrics = UnmodifiableLinkedHashSet.of(metrics);
         this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
-        // TODO should we make an immutable version of ApiFilters?
         this.apiFilters = new ApiFilters(apiFilters);
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.dateTimeSort = dateTimeSort;
@@ -242,7 +241,7 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public Optional<OrderByColumn> getDateTimeSort() {
-        return dateTimeSort;
+        return Optional.ofNullable(dateTimeSort);
     }
 
     @Override
@@ -252,13 +251,13 @@ public class DataApiRequestImpl implements DataApiRequest {
 
     @Override
     public Optional<Integer> getCount() {
-        return count;
+        return Optional.ofNullable(count);
     }
 
 
     @Override
     public Optional<Integer> getTopN() {
-        return topN;
+        return Optional.ofNullable(topN);
     }
 
     @Override
@@ -302,8 +301,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -324,8 +323,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -346,8 +345,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -370,8 +369,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -392,8 +391,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -414,8 +413,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -436,8 +435,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -458,8 +457,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 filters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -480,8 +479,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -514,7 +513,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     }
 
     @Override
-    public DataApiRequest withTimeSort(Optional<OrderByColumn> timeSort) {
+    public DataApiRequest withTimeSort(OrderByColumn timeSort) {
         return new DataApiRequestImpl(
                 table,
                 granularity,
@@ -548,29 +547,7 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
-                format,
-                downloadFilename,
-                timeZone,
-                asyncAfter,
-                paginationParameters
-        );
-    }
-
-    @Override
-    public DataApiRequest withTopN(int topN) {
-        return new DataApiRequestImpl(
-                table,
-                granularity,
-                dimensions,
-                perDimensionFields,
-                metrics,
-                intervals,
-                apiFilters,
-                havings,
-                allSorts,
-                count.orElse(null),
+                count,
                 topN,
                 format,
                 downloadFilename,
@@ -581,7 +558,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     }
 
     @Override
-    public DataApiRequest withCount(int count) {
+    public DataApiRequest withTopN(Integer topN) {
         return new DataApiRequestImpl(
                 table,
                 granularity,
@@ -593,7 +570,7 @@ public class DataApiRequestImpl implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
-                topN.orElse(null),
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -603,7 +580,7 @@ public class DataApiRequestImpl implements DataApiRequest {
     }
 
     @Override
-    public DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+    public DataApiRequest withCount(Integer count) {
         return new DataApiRequestImpl(
                 table,
                 granularity,
@@ -614,13 +591,35 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
                 asyncAfter,
-                paginationParameters.orElse(null)
+                paginationParameters
+        );
+    }
+
+    @Override
+    public DataApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
+        return new DataApiRequestImpl(
+                table,
+                granularity,
+                dimensions,
+                perDimensionFields,
+                metrics,
+                intervals,
+                apiFilters,
+                havings,
+                allSorts,
+                count,
+                topN,
+                format,
+                downloadFilename,
+                timeZone,
+                asyncAfter,
+                paginationParameters
         );
     }
 
@@ -636,8 +635,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -658,8 +657,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,
@@ -680,8 +679,8 @@ public class DataApiRequestImpl implements DataApiRequest {
                 apiFilters,
                 havings,
                 allSorts,
-                count.orElse(null),
-                topN.orElse(null),
+                count,
+                topN,
                 format,
                 downloadFilename,
                 timeZone,

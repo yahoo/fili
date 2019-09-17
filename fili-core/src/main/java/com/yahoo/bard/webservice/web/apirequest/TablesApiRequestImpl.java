@@ -354,7 +354,18 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             List<Interval> intervals,
             ApiFilters filters
     ) {
-        this(format, null, paginationParameters, tables, table, granularity, dimensions, metrics, intervals, filters);
+        this(
+                format,
+                null,
+                paginationParameters.orElse(null),
+                tables,
+                table,
+                granularity,
+                dimensions,
+                metrics,
+                intervals,
+                filters
+        );
     }
 
     /**
@@ -375,7 +386,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     private TablesApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
-            Optional<PaginationParameters> paginationParameters, // TODO should this be refactored to not be optional?
+            PaginationParameters paginationParameters,
             LinkedHashSet<LogicalTable> tables,
             LogicalTable table,
             Granularity granularity,
@@ -530,7 +541,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
     }
 
     @Override
-    public TablesApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+    public TablesApiRequest withPaginationParameters(PaginationParameters paginationParameters) {
         return new TablesApiRequestImpl(
                 format,
                 downloadFilename,

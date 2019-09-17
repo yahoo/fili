@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest.utils
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
@@ -24,14 +25,14 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 (ApiFilters) null,
                 [:], // Havings
                 null, // sorts
-                Optional.empty(),
-                (DateTimeZone) null,
+                (OrderByColumn) null,  //dateTimeSort
+                (DateTimeZone) DateTimeZone.UTC,
                 0, // topN
                 0,  // count
-                (Optional<PaginationParameters>) null,
+                (PaginationParameters) null,
                 (ResponseFormatType) null,
-                Long.MAX_VALUE, // asynchAfter
-                new DruidOrFilterBuilder()
+                "",
+                Long.MAX_VALUE // asynchAfter
         )
     }
 }
