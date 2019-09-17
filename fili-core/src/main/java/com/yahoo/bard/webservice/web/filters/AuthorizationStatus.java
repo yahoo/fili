@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Authorization status code
+ * Authorization status code.
  */
 public enum AuthorizationStatus {
     ACCESS_DENIED(-1, "Access Denied", "Request access denied."),
