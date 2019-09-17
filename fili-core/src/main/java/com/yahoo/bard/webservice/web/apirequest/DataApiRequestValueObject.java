@@ -40,7 +40,7 @@ import javax.ws.rs.core.Response;
  * And immutable POJO implementation of {@link DataApiRequest} contract. All data is provided through the constructor
  * and set, with very minor or no transformations occurring on the data. Unlike the old implementation
  * ({@link com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl}), this implementation does not build any of
- * tis components and all components must be fully built at creation time.
+ * its components and all components must be fully built at creation time.
  */
 public class DataApiRequestValueObject implements DataApiRequest {
 
