@@ -153,10 +153,10 @@ class SimpleDruidQueryBuilder {
     }
 
     public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections) {
-        return getSort(columns, sortDirections, OptionalInt.empty())
+        return getSort(columns, sortDirections, Optional.empty())
     }
 
-    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, OptionalInt limit) {
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, Optional<Integer> limit) {
         LinkedHashSet<OrderByColumn> sorts = []
         for (int i = 0; i < columns.size(); i++) {
             sorts.add(

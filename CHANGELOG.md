@@ -421,6 +421,10 @@ select filters)
 
 ### Added:
 
+- [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
+    * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
+    * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added. 
+
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
     * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
       hash values are consistent.
@@ -498,6 +502,15 @@ select filters)
     * Added `BoundFilter` class to support Druid Bound-filter
 
 ### Changed:
+
+- [Deprecated optionals on constructors for DataApiRequest implementations and related objects](https://github.com/yahoo/fili/pull/913)
+    * Some objects related to `DataApiRequest` were taking optionals as construction parameters or storing optionals 
+    internally. This behvaior has been changed to more closely align with accept guidelines for using optionals
+    
+- [OptionalInt has been removed from some interfaces relating to DataApiRequest and replaced with Optional<Integer>](https://github.com/yahoo/fili/pull/913)
+    * While `OptionalInt` is considered to be preferable to `Optional<Integer>` for performance reasons, it does not have 
+    the same rich set of utility methods as `Optional`. The relevant code was not in a performance critical location so
+    `OptionalInt` was replaced with `Optional<Integer>` for improved usability.
 
 - [Made In Filter use sorted Set to support reliable equality](https://github.com/yahoo/fili/issues/780)
     * In filter tested in unstable ways.  Since order doesn't matter, switched to a canonically ordered set.

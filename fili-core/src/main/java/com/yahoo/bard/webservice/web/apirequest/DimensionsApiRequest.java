@@ -24,7 +24,12 @@ public interface DimensionsApiRequest extends ApiRequest {
     // CHECKSTYLE:OFF
     DimensionsApiRequest withFormat(ResponseFormatType format);
 
-    DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters);
+    @Deprecated
+    default DimensionsApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
+        return withPaginationParameters(paginationParameters.orElse(null));
+    }
+
+    DimensionsApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
     DimensionsApiRequest withBuilder(Response.ResponseBuilder builder);
 

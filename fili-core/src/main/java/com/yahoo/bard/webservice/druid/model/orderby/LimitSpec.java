@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.OptionalInt;
+import java.util.Optional;
 
 /**
  * LimitSpec class.
@@ -14,7 +14,7 @@ import java.util.OptionalInt;
 public class LimitSpec {
 
     private final String type;
-    private final OptionalInt limit;
+    private final Optional<Integer> limit;
     private final LinkedHashSet<OrderByColumn> columns;
 
     /**
@@ -23,7 +23,7 @@ public class LimitSpec {
      * @param sortColumns  The set of columns
      */
     public LimitSpec(LinkedHashSet<OrderByColumn> sortColumns) {
-        this(sortColumns, OptionalInt.empty());
+        this(sortColumns, Optional.empty());
     }
 
     /**
@@ -32,7 +32,7 @@ public class LimitSpec {
      * @param sortColumns  The set of columns
      * @param limit  The number of result rows
      */
-    public LimitSpec(LinkedHashSet<OrderByColumn> sortColumns, OptionalInt limit) {
+    public LimitSpec(LinkedHashSet<OrderByColumn> sortColumns, Optional<Integer> limit) {
         //As of Jul 2014, druid supports only "default" limitSpec, we may have other types in future
         this.type = "default";
         this.columns = sortColumns;
@@ -54,7 +54,7 @@ public class LimitSpec {
      * @return limit
      */
     @JsonInclude(JsonInclude.Include.NON_ABSENT)
-    public OptionalInt getLimit() {
+    public Optional<Integer> getLimit() {
         return limit;
     }
 
@@ -72,7 +72,7 @@ public class LimitSpec {
         return new LimitSpec(sortColumns, limit);
     }
 
-    public LimitSpec withLimit(OptionalInt limit) {
+    public LimitSpec withLimit(Optional<Integer> limit) {
         return new LimitSpec(columns, limit);
     }
     // CHECKSTYLE:ON

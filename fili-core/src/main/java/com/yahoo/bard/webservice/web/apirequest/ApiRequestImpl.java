@@ -85,7 +85,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
 
     protected final ResponseFormatType format;
-    protected final Optional<PaginationParameters> paginationParameters;
+    protected final PaginationParameters paginationParameters;
     protected final long asyncAfter;
     protected final String downloadFilename;
 
@@ -136,13 +136,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull String page
     ) throws BadApiRequestException {
         this.format = generateAcceptFormat(format);
-        this.paginationParameters = generatePaginationParameters(perPage, page);
+        this.downloadFilename = downloadFilename;
         this.asyncAfter = generateAsyncAfter(
                 asyncAfter == null ?
                         SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("default_asyncAfter")) :
                         asyncAfter
         );
-        this.downloadFilename = downloadFilename;
+        this.paginationParameters = generatePaginationParameters(perPage, page).orElse(null);
     }
 
     /**
@@ -170,7 +170,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param format  The format of the response
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
-     * @deprecated prefer constructor with downloadFilename
+     *
+     * @deprecated Use {@link #ApiRequestImpl(ResponseFormatType, String, long, PaginationParameters)}
      */
     @Deprecated
     protected ApiRequestImpl(
@@ -178,10 +179,28 @@ public abstract class ApiRequestImpl implements ApiRequest {
             long asyncAfter,
             Optional<PaginationParameters> paginationParameters
     ) {
-        this.format = format;
-        this.asyncAfter = asyncAfter;
-        this.paginationParameters = paginationParameters;
-        this.downloadFilename = null;
+        this(format, null, asyncAfter, paginationParameters.orElse(null));
+    }
+
+    /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  The format of the response
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
+     * @param paginationParameters  The parameters used to describe pagination
+     *
+     * @deprecated Use {@link #ApiRequestImpl(ResponseFormatType, String, long, PaginationParameters)}
+     */
+    @Deprecated
+    protected ApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            long asyncAfter,
+            Optional<PaginationParameters> paginationParameters
+    ) {
+        this(format, downloadFilename, asyncAfter, paginationParameters.orElse(null));
     }
 
     /**
@@ -197,7 +216,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             ResponseFormatType format,
             String downloadFilename,
             long asyncAfter,
-            Optional<PaginationParameters> paginationParameters
+            PaginationParameters paginationParameters
     ) {
         this.format = format;
         this.downloadFilename = downloadFilename;
@@ -660,7 +679,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
     @Override
     public Optional<PaginationParameters> getPaginationParameters() {
-        return paginationParameters;
+        return Optional.ofNullable(paginationParameters);
     }
 
     @Override
