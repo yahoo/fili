@@ -138,6 +138,9 @@ Current
 
 ### Changed:
 
+- [Removed references to yahoo internal authorization system](https://github.com/yahoo/fili/issues/972)
+   * Renamed bouncer code to 'status code' and references to 'Bouncer' in class name and fields.
+
 - [Deprecated optionals on constructors for DataApiRequest implementations and related objects](https://github.com/yahoo/fili/pull/913)
     * Some objects related to `DataApiRequest` were taking optionals as construction parameters or storing optionals
     internally. This behvaior has been changed to more closely align with accept guidelines for using optionals
