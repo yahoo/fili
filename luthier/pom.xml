@@ -5,7 +5,7 @@
     <parent>
         <artifactId>fili-parent-pom</artifactId>
         <groupId>com.yahoo.fili</groupId>
-        <version>0.11-SNAPSHOT</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,6 +21,7 @@
         <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
         <skipLuthierTests>true</skipLuthierTests>
+        <version.fili>0.12-SNAPSHOT</version.fili>
     </properties>
 
     <profiles>
