@@ -70,7 +70,7 @@ public class TestRateLimitFilter extends RateLimitFilter {
     }
 
     /**
-     * Creates request wrapper to inject bouncer user passed in as USER_PARAM.
+     * Creates request wrapper to inject user name passed in as USER_PARAM.
      */
     static class MockContext implements ContainerRequestContext, SecurityContext, Principal {
 
