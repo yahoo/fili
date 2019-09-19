@@ -4,7 +4,7 @@
 --- a module provides default strategies, including constants and variables, in a centralized way.
 -- @module Utils
 
-local misc = require 'lib/misc'
+local misc = require 'lib.misc'
 
 local M = {}
 

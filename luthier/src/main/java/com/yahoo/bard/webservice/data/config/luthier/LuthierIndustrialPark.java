@@ -8,10 +8,10 @@ import com.yahoo.bard.webservice.data.config.luthier.factories.AggregationAverag
 import com.yahoo.bard.webservice.data.config.luthier.factories.ArithmeticMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.CountMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.DefaultLogicalTableGroupFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.DefaultMetricFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.DoubleSumMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.KeyValueStoreDimensionFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.LongSumMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.DefaultMetricFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.MapKeyValueStoreFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.NoOpSearchProviderFactory;
@@ -127,7 +127,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
         Map<String, Factory<T>> factories = (Map<String, Factory<T>>) conceptFactoryMap.get(concept);
 
         return new FactoryPark<>(
-                new ResourceNodeSupplier(concept.getResourceName()),
+                new LuaJNodeSupplier(concept.getResourceName()),
                 factories
         );
     }
@@ -142,7 +142,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public Dimension getDimension(String dimensionName) {
         DimensionDictionary dimensionDictionary = resourceDictionaries.getDimensionDictionary();
         if (dimensionDictionary.findByApiName(dimensionName) == null) {
-            Dimension dimension = dimensionFactoryPark.buildEntity(dimensionName, this);
+            Dimension dimension = dimensionFactoryPark.buildEntity(dimensionName, this, ConceptType.DIMENSION);
             dimensionDictionary.add(dimension);
         }
         return dimensionDictionary.findByApiName(dimensionName);
@@ -160,7 +160,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public SearchProvider getSearchProvider(String domain) {
         Map<String, SearchProvider> searchProviderDictionary = resourceDictionaries.getSearchProviderDictionary();
         if (!searchProviderDictionary.containsKey(domain)) {
-            SearchProvider searchProvider = searchProviderFactoryPark.buildEntity(domain, this);
+            SearchProvider searchProvider = searchProviderFactoryPark.buildEntity(
+                    domain,
+                    this,
+                    ConceptType.SEARCH_PROVIDER
+            );
             searchProviderDictionary.put(domain, searchProvider);
         }
         return searchProviderDictionary.get(domain);
@@ -176,7 +180,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public KeyValueStore getKeyValueStore(String domain) {
         Map<String, KeyValueStore> keyValueStoreDictionary = resourceDictionaries.getKeyValueStoreDictionary();
         if (! keyValueStoreDictionary.containsKey(domain)) {
-            KeyValueStore keyValueStore = keyValueStoreFactoryPark.buildEntity(domain, this);
+            KeyValueStore keyValueStore = keyValueStoreFactoryPark.buildEntity(
+                    domain,
+                    this,
+                    ConceptType.KEY_VALUE_STORE
+            );
             keyValueStoreDictionary.put(domain, keyValueStore);
         }
         return keyValueStoreDictionary.get(domain);
@@ -192,7 +200,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public ConfigPhysicalTable getPhysicalTable(String tableName) {
         PhysicalTableDictionary physicalTableDictionary = resourceDictionaries.getPhysicalDictionary();
         if (!physicalTableDictionary.containsKey(tableName)) {
-            ConfigPhysicalTable physicalTable = physicalTableFactoryPark.buildEntity(tableName, this);
+            ConfigPhysicalTable physicalTable = physicalTableFactoryPark.buildEntity(
+                    tableName,
+                    this,
+                    ConceptType.PHYSICAL_TABLE
+            );
             physicalTableDictionary.put(tableName, physicalTable);
             // registers each table we build in the metadataService
             metadataService.update(
@@ -226,7 +238,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public LogicalMetric getMetric(String metricName) {
         Map<String, LogicalMetric> metricDictionary = resourceDictionaries.getMetricDictionary();
         if (metricDictionary.get(metricName) == null) {
-            LogicalMetric metric = metricFactoryPark.buildEntity(metricName, this);
+            LogicalMetric metric = metricFactoryPark.buildEntity(metricName, this, ConceptType.METRIC);
             metricDictionary.put(metricName, metric);
         }
         return metricDictionary.get(metricName);
@@ -242,7 +254,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public MetricMaker getMetricMaker(String metricMakerName) {
         Map<String, MetricMaker> metricMakerDictionary = resourceDictionaries.getMetricMakerDictionary();
         if (metricMakerDictionary.get(metricMakerName) == null) {
-            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(metricMakerName, this);
+            MetricMaker metricMaker = metricMakerFactoryPark.buildEntity(
+                    metricMakerName,
+                    this,
+                    ConceptType.METRIC_MAKER
+            );
             metricMakerDictionary.put(metricMakerName, metricMaker);
         }
         return metricMakerDictionary.get(metricMakerName);
@@ -258,7 +274,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
     public LogicalTable getLogicalTable(TableIdentifier tableId) {
         LogicalTableDictionary logicalTableDictionary = resourceDictionaries.getLogicalDictionary();
         if (! logicalTableDictionary.containsKey(tableId)) {
-            LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(tableId.getKey(), this);
+            LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(
+                    tableId.getKey(),
+                    this,
+                    ConceptType.LOGICAL_TABLE_GROUP
+            );
             logicalTableDictionary.putAll(logicalTableGroup);
         }
         return logicalTableDictionary.get(tableId);
@@ -271,7 +291,11 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
      */
     private void putLogicalTableByGroup(String tableKey) {
         LogicalTableDictionary logicalTableDictionary = resourceDictionaries.getLogicalDictionary();
-        LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(tableKey, this);
+        LogicalTableGroup logicalTableGroup = logicalTableGroupFactoryPark.buildEntity(
+                tableKey,
+                this,
+                ConceptType.LOGICAL_TABLE_GROUP
+        );
         logicalTableDictionary.putAll(logicalTableGroup);
     }
 

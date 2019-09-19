@@ -2,11 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
@@ -27,7 +26,11 @@ public class PermissivePhysicalTableFactory extends SingleDataSourcePhysicalTabl
      * @return  A newly constructed config instance for the name and config provided
      */
     @Override
-    public ConfigPhysicalTable build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public ConfigPhysicalTable build(
+            String name,
+            LuthierConfigNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
         LuthierPhysicalTableParams params = buildParams(name, configTable, resourceFactories);
         return new PermissivePhysicalTable(
                 params.tableName,

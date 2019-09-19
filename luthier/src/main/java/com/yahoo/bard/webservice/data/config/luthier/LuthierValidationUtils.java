@@ -2,8 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 
 import java.util.Arrays;
@@ -24,7 +23,7 @@ public final class LuthierValidationUtils {
      * @param fieldName  The name of the field whose value we're validating
      */
     public static void validateField(
-            JsonNode fieldValue,
+            LuthierConfigNode fieldValue,
             String configEntityType,
             String configEntityName,
             String fieldName
@@ -45,7 +44,7 @@ public final class LuthierValidationUtils {
      * @param fieldName  The name of the field whose value we're validating
      */
     public static void validateField(
-            JsonNode fieldValue,
+            LuthierConfigNode fieldValue,
             ConceptType configEntityType,
             String configEntityName,
             String fieldName
@@ -57,24 +56,19 @@ public final class LuthierValidationUtils {
      * Validates that the given fieldNames exist in the configTable.
      * If any of them doesn't exist, throws a useful error message.
      *
-     * @param configTable  The source of JsonNodes where we extract fields from
+     * @param configTable  The source of LuthierConfigNodes where we extract fields from
      * @param configEntityType  The type of the config entity whose field we're validating
      * @param configEntityName The name of the config entity we're currently building
      * @param fieldNames  The names of the field whose value we're validating
      */
     public static void validateFields(
-            ObjectNode configTable,
+            LuthierConfigNode configTable,
             String configEntityType,
             String configEntityName,
             String ... fieldNames
     ) {
         Arrays.stream(fieldNames).forEach(
-                fieldName -> validateField(
-                        configTable.get(fieldName),
-                        configEntityType,
-                        configEntityName,
-                        fieldName
-                )
+                fieldName -> validateField(configTable.get(fieldName), configEntityType, configEntityName, fieldName)
         );
     }
 

@@ -2,25 +2,23 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.luthier.factories;
 
+import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
-import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
-import com.yahoo.bard.webservice.data.config.luthier.table.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.luthier.names.LuthierApiMetricName;
+import com.yahoo.bard.webservice.data.config.luthier.table.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.exceptions.LuthierFactoryException;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.GranularityParseException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -67,7 +65,11 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
      * @return  A newly constructed config instance for the name and config provided
      */
     @Override
-    public LogicalTableGroup build(String name, ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    public LogicalTableGroup build(
+            String name,
+            LuthierConfigNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
         if (resourceFactories.getGranularityParser() == null) {
             throw new LuthierFactoryException(String.format(GRANULARITY_DICTIONARY_MISSING, name));
         }
@@ -120,14 +122,17 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     /**
      * Build a set of Dimensions.
      *
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param configTable  LuthierConfigNode that points to the value of corresponding table entry in config file
      * @param resourceFactories  the source for locating dependent objects
      *
      * @return set of Dimensions built according to the configTable
      */
-    private LinkedHashSet<Dimension> buildDimensions(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    private LinkedHashSet<Dimension> buildDimensions(
+            LuthierConfigNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
         return StreamSupport.stream(configTable.get(DIMENSIONS).spliterator(), false)
-                .map(JsonNode::textValue)
+                .map(LuthierConfigNode::textValue)
                 .map(resourceFactories::getDimension)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -135,20 +140,20 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     /**
      * Build a set of PhysicalTables.
      *
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param configTable  LuthierConfigNode that points to the value of corresponding table entry in config file
      * @param resourceFactories  the source for locating dependent objects
      *
      * @return set of PhysicalTables built according to the configTable
      */
     private LinkedHashSet<PhysicalTable> buildPhysicalTables(
-            ObjectNode configTable,
+            LuthierConfigNode configTable,
             LuthierIndustrialPark resourceFactories
     ) {
         return StreamSupport.stream(
                 configTable.get(PHYSICAL_TABLES).spliterator(),
                 false
         )
-                .map(JsonNode::textValue)
+                .map(LuthierConfigNode::textValue)
                 .map(resourceFactories::getPhysicalTable)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -156,19 +161,19 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     /**
      * Build a set of metric names.
      *
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param configTable  LuthierConfigNode that points to the value of corresponding table entry in config file
      * @param resourceFactories  the source for locating dependent objects
      * @param granularities  list of granularities the metric supports
      *
      * @return set of ApiMetricName built according to the configTable
      */
     private LinkedHashSet<ApiMetricName> buildMetricNames(
-            ObjectNode configTable,
+            LuthierConfigNode configTable,
             LuthierIndustrialPark resourceFactories,
             List<Granularity> granularities
     ) {
         return StreamSupport.stream(configTable.get(METRICS).spliterator(), false)
-                .map(JsonNode::textValue)
+                .map(LuthierConfigNode::textValue)
                 .peek(resourceFactories::getMetric)
                 .map(metricName -> new LuthierApiMetricName(metricName, granularities))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -177,16 +182,19 @@ public class DefaultLogicalTableGroupFactory implements Factory<LogicalTableGrou
     /**
      * Build a set of Granularities.
      *
-     * @param configTable  ObjectNode that points to the value of corresponding table entry in config file
+     * @param configTable  LuthierConfigNode that points to the value of corresponding table entry in config file
      * @param resourceFactories  the source for locating dependent objects
      *
      * @return set of Granularities built according to the configTable
      */
-    private List<Granularity> buildGranularities(ObjectNode configTable, LuthierIndustrialPark resourceFactories) {
+    private List<Granularity> buildGranularities(
+            LuthierConfigNode configTable,
+            LuthierIndustrialPark resourceFactories
+    ) {
         GranularityParser parser = resourceFactories.getGranularityParser();
         DateTimeZone dateTimeZone = DateTimeZone.forID(configTable.get(DATE_TIME_ZONE).textValue());
         return StreamSupport.stream(configTable.get(GRANULARITIES).spliterator(), false)
-                .map(JsonNode::textValue)
+                .map(LuthierConfigNode::textValue)
                 .map(grainName -> {
                     try {
                         return parser.parseGranularity(grainName, dateTimeZone);

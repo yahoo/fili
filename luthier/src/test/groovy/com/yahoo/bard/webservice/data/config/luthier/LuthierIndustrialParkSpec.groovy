@@ -38,14 +38,16 @@ class LuthierIndustrialParkSpec extends Specification {
             LuthierIndustrialPark industrialPark = new LuthierIndustrialPark.Builder(resourceDictionaries)
                 .withFactories(ConceptType.DIMENSION, dimensionFactoriesMap)
                 .build()
+            assert industrialPark
         when:
             Dimension testDimension = defaultIndustrialPark.getDimension("testDimension")
         then:
             testDimension != null
             testDimension.getApiName() == "testDimension"
-            testDimension.getFieldByName("testPk") == new LuthierDimensionField(
-                    "testPk",
-                    "TEST_PK",
+            println("Dimension fields for testDimension: " + testDimension.getDimensionFields())
+            testDimension.getFieldByName("id") == new LuthierDimensionField(
+                    "id",
+                    "id",
                     ["primaryKey"]
             )
     }

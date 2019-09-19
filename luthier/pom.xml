@@ -24,43 +24,6 @@
         <version.fili>0.12-SNAPSHOT</version.fili>
     </properties>
 
-    <profiles>
-        <profile>
-            <!--      run tests and generate-test-resources if Lua is installed to /usr/local/bin/lua      -->
-            <id>lua-installed-local-bin</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>/usr/local/bin/lua</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                </plugins>
-            </build>
-            <properties>
-                <skipLuthierTests>false</skipLuthierTests>
-            </properties>
-        </profile>
-        <profile>
-            <!--      run tests and generate-test-resources if Lua is installed to /usr/bin/lua      -->
-            <id>lua-installed-bin</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>/usr/bin/lua</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                </plugins>
-            </build>
-            <properties>
-                <skipLuthierTests>false</skipLuthierTests>
-            </properties>
-        </profile>
-    </profiles>
-
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -69,8 +32,13 @@
         </license>
     </licenses>
 
-
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.luaj/luaj-jse -->
+        <dependency>
+            <groupId>org.luaj</groupId>
+            <artifactId>luaj-jse</artifactId>
+            <version>3.0.1</version>
+        </dependency>
         <dependency>
             <groupId>com.yahoo.fili</groupId>
             <artifactId>fili</artifactId>
@@ -110,13 +78,6 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${version.lombok}</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -138,29 +99,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1</version>
-                <executions>
-                    <execution>
-                        <id>prepare-luthier-test-resources</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipLuthierTests}</skip>
-                            <executable>${basedir}/scripts/luthierTestTargetPrep.sh</executable>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skipTests>${skipLuthierTests}</skipTests>
-                </configuration>
             </plugin>
         </plugins>
     </build>
