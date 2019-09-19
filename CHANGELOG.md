@@ -10,6 +10,67 @@ Current
 
 ### Added:
 
+### Changed:
+
+### Removed:
+
+### Deprecated:
+
+### Known Issues:
+
+## Contract changes:
+
+
+v0.11.79 - 2019/09/17
+=====
+
+0.11 Highlights
+-------------
+
+### Configuration - Luthier
+
+We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools). 
+Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc. 
+See (https://github.com/yahoo/fili/tree/master/luthier)
+
+### Configuration and Extensibility
+
+Partial data devolved into distinct features.
+
+Added custom response handling.
+
+The CURRENT macro can now be configured to resolve relative to a timezone other than UTC.
+
+### Code style
+
+We added SONARQ code quality checking and addressed discovered issues.
+
+We removed inappropriate use of Optionals from constructors and parameter types on interfaces.
+
+### Security patches
+
+We added OWASP vulnerability checking and addressed identified issues. 
+(https://www.owasp.org/index.php/OWASP_Dependency_Check)  Enhancements included jackson version upgrades to address
+injection vulnerabilities.
+
+### DataApiRequest
+
+We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory 
+objects to other parts of the application.  These factories are now being injected by Dependecy Injection (HK2).
+
+The corresponding methods have been deprecated and will be removed very soon.
+
+A Pojo DataApiRequest has been built as well as a Generator interface and a Builder.  These will form the basis of a
+complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to 
+produce an immutable value object.
+
+### Extensibility
+
+Injectable custom response handling.
+
+
+### Added:
+
 - [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
     * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
     * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added.
