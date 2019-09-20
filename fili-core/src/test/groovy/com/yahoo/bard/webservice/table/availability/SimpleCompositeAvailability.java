@@ -1,4 +1,4 @@
-// Copyright 2019 Verizon Media Group.
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability;
 
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 
 /**
- * Simple class extending BaseCompositeAvailability to allow for testing of its methods
+ * Simple class extending BaseCompositeAvailability to allow for testing of its methods.
  */
 class SimpleCompositeAvailability extends BaseCompositeAvailability {
 
