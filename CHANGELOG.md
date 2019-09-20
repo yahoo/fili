@@ -10,13 +10,35 @@ Current
 
 ### Added:
 
+- [Add additional availability views](https://github.com/yahoo/fili/issues/892)
+    * `LeftPureUnion` attaches data from another table to a representative table (resembles left join)
+    * `PureUnion` combines all data from multiple tables, merging away missing data
+    * `TimeFiltered' shows only data within a filtered window of time as available
+
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
+
 ### Changed:
+
+- [Refactored packaging on physical table implementations](https://github.com/yahoo/fili/issues/892)
+    * Put implementations of physical table into their own package.
+
+- [Resolved some test problems](https://github.com/yahoo/fili/pull/891)
+    * Added Retry to flaky tests
+    * Tweaked jacoco variable substitution to unbreak intellij unit testing
+    * Pegged DateTimeZone used in test dates to avoid interactions between tests
 
 ### Removed:
 
 ### Deprecated:
 
 ### Known Issues:
+
+## Fixed:
+
+- [Fixed missing data source name constraint filtering on MetricsUnionAvailability](https://github.com/yahoo/fili/issues/892)
+    * Added implementation of getDataSourceNames(Constraint)
+
 
 ## Contract changes:
 
@@ -71,9 +93,6 @@ Injectable custom response handling.
 
 ### Added:
 
-- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
-   * Made dimension config loading into a protected feature of the GenericMetricLoader
-
 - [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
     * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
     * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added.
@@ -121,11 +140,6 @@ Injectable custom response handling.
     * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed.
     * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
     * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
-
-- [Add additional availability views](https://github.com/yahoo/fili/issues/892)
-    * `LeftPureUnion` attaches data from another table to a representative table (resembles left join)
-    * `PureUnion` combines all data from multiple tables, merging away missing data
-    * `TimeFiltered' shows only data within a filtered window of time as available
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
@@ -232,14 +246,6 @@ Injectable custom response handling.
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
-
-- [Refactored packaging on physical table implementations](https://github.com/yahoo/fili/issues/892)
-    * Put implementations of physical table into their own package.
-
-- [Resolved some test problems](https://github.com/yahoo/fili/pull/891)
-    * Added Retry to flaky tests
-    * Tweaked jacoco variable substitution to unbreak intellij unit testing
-    * Pegged DateTimeZone used in test dates to avoid interactions between tests
 
 - [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
     * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
@@ -402,9 +408,6 @@ Injectable custom response handling.
     * Unstuck lookback so that the window slides forward rather than stopping at static load time.
 
 - [Reverted addition of Verizon Media Group to copyright]()
-
-- [Fixed missing data source name constraint filtering on MetricsUnionAvailability](https://github.com/yahoo/fili/issues/892)
-    * Added implementation of getDataSourceNames(Constraint)
 
 - [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
     * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
