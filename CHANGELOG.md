@@ -71,6 +71,9 @@ Injectable custom response handling.
 
 ### Added:
 
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
+
 - [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
     * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
     * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added.
