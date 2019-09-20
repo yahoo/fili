@@ -2,19 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -32,13 +28,15 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
-import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.BadPaginationException;
-import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.TimeMacro;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultGranularityGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -81,8 +79,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DEFAULT_PER_PAGE,
             DEFAULT_PAGE
     );
-    protected static final String SYNCHRONOUS_REQUEST_FLAG = "never";
-    protected static final String ASYNCHRONOUS_REQUEST_FLAG = "always";
+    protected static final String SYNCHRONOUS_REQUEST_FLAG = ApiRequest.SYNCHRONOUS_REQUEST_FLAG;
+    protected static final String ASYNCHRONOUS_REQUEST_FLAG = ApiRequest.ASYNCHRONOUS_REQUEST_FLAG;
 
     protected final ResponseFormatType format;
     protected final PaginationParameters paginationParameters;
@@ -239,12 +237,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
     ) throws BadApiRequestException {
-        try {
-            return granularityParser.parseGranularity(granularity, dateTimeZone);
-        } catch (GranularityParseException e) {
-            LOG.error(UNKNOWN_GRANULARITY.logFormat(granularity), granularity);
-            throw new BadApiRequestException(e.getMessage());
-        }
+        return DefaultGranularityGenerator.generateGranularity(granularity, dateTimeZone, granularityParser);
     }
 
     /**
@@ -258,12 +251,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected Granularity generateGranularity(String granularity, GranularityParser granularityParser)
             throws BadApiRequestException {
-        try {
-            return granularityParser.parseGranularity(granularity);
-        } catch (GranularityParseException e) {
-            LOG.error(UNKNOWN_GRANULARITY.logFormat(granularity), granularity);
-            throw new BadApiRequestException(e.getMessage(), e);
-        }
+        return DefaultGranularityGenerator.generateGranularity(granularity, granularityParser);
     }
 
     /**
@@ -280,40 +268,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensions")) {
-            // Dimensions are optional hence check if dimensions are requested.
-            if (apiDimensions == null || apiDimensions.isEmpty()) {
-                return new LinkedHashSet<>();
-            }
-
-            // set of dimension names (strings)
-            List<String> dimApiNames = apiDimensions.stream()
-                    .map(PathSegment::getPath)
-                    .filter(s -> !s.isEmpty())
-                    .collect(Collectors.toList());
-
-            // set of dimension objects
-            LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
-            List<String> invalidDimensions = new ArrayList<>();
-            for (String dimApiName : dimApiNames) {
-                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
-
-                // If dimension dictionary returns a null, it means the requested dimension is not found.
-                if (dimension == null) {
-                    invalidDimensions.add(dimApiName);
-                } else {
-                    generated.add(dimension);
-                }
-            }
-
-            if (!invalidDimensions.isEmpty()) {
-                LOG.debug(DIMENSIONS_UNDEFINED.logFormat(invalidDimensions.toString()));
-                throw new BadApiRequestException(DIMENSIONS_UNDEFINED.format(invalidDimensions.toString()));
-            }
-
-            LOG.trace("Generated set of dimension: {}", generated);
-            return generated;
-        }
+        return DefaultDimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);
     }
 
     /**
@@ -326,17 +281,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
-        // Requested dimensions must lie in the logical table
-        requestDimensions = new HashSet<>(requestDimensions);
-        requestDimensions.removeAll(table.getDimensions());
-
-        if (!requestDimensions.isEmpty()) {
-            List<String> dimensionNames = requestDimensions.stream()
-                    .map(Dimension::getApiName)
-                    .collect(Collectors.toList());
-            LOG.debug(DIMENSIONS_NOT_IN_TABLE.logFormat(dimensionNames, table.getName()));
-            throw new BadApiRequestException(DIMENSIONS_NOT_IN_TABLE.format(dimensionNames, table.getName()));
-        }
+       DefaultDimensionGenerator.validateRequestDimensions(requestDimensions, table);
     }
 
     /**
@@ -608,14 +553,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if the requested format is not found.
      */
     protected ResponseFormatType generateAcceptFormat(String format) throws BadApiRequestException {
-        try {
-            return format == null ?
-                    DefaultResponseFormatType.JSON :
-                    DefaultResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
-        } catch (IllegalArgumentException e) {
-            LOG.error(ACCEPT_FORMAT_INVALID.logFormat(format), e);
-            throw new BadApiRequestException(ACCEPT_FORMAT_INVALID.format(format));
-        }
+        return DefaultResponseFormatGenerator.generateResponseFormat(format);
     }
 
     /**
@@ -630,13 +568,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected Optional<PaginationParameters> generatePaginationParameters(String perPage, String page)
             throws BadApiRequestException {
-        try {
-            return "".equals(perPage) && "".equals(page) ?
-                    Optional.empty() :
-                    Optional.of(new PaginationParameters(perPage, page));
-        } catch (BadPaginationException invalidParameters) {
-            throw new BadApiRequestException(invalidParameters.getMessage());
-        }
+        return DefaultPaginationGenerator.generatePaginationParameters(perPage, page);
     }
 
     /**
@@ -719,15 +651,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * {@code never}
      */
     protected long generateAsyncAfter(String asyncAfterString) throws BadApiRequestException {
-        try {
-            return asyncAfterString.equals(SYNCHRONOUS_REQUEST_FLAG) ?
-                    SYNCHRONOUS_ASYNC_AFTER_VALUE :
-                    asyncAfterString.equals(ASYNCHRONOUS_REQUEST_FLAG) ?
-                            ASYNCHRONOUS_ASYNC_AFTER_VALUE :
-                            Long.parseLong(asyncAfterString);
-        } catch (NumberFormatException e) {
-            LOG.debug(INVALID_ASYNC_AFTER.logFormat(asyncAfterString), e);
-            throw new BadApiRequestException(INVALID_ASYNC_AFTER.format(asyncAfterString), e);
-        }
+        return DefaultAsyncAfterGenerator.generateAsyncAfter(asyncAfterString);
     }
 }

@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,7 +64,6 @@ public class DataApiRequestBuilder {
 
     private static final Map<BuildPhase, Boolean> INITIALIZED_BUILT_MAPPING;
 
-
     static {
         EnumMap<BuildPhase, Boolean> phaseMap = new EnumMap<>(BuildPhase.class);
         for (BuildPhase phase : BuildPhase.values()) {
@@ -81,12 +81,12 @@ public class DataApiRequestBuilder {
     private ApiFilters apiFilters;
     private LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
     private LinkedHashSet<OrderByColumn> sorts;
-    private int count;
-    private int topN;
+    private Integer count;
+    private Integer topN;
     private ResponseFormatType format;
     private String downloadFilename;
     private DateTimeZone timeZone;
-    private long asyncAfter;
+    private Long asyncAfter;
     private PaginationParameters paginationParameters;
 
     private final BardConfigResources resources;
@@ -339,13 +339,18 @@ public class DataApiRequestBuilder {
         return this;
     }
 
+    // TODO update the documentation to indicate this CAN return null if it was not properly initialized.
+
     /**
      * Getter for logical table.
      *
      * @return the logical table
      */
-    public LogicalTable getLogicalTable() {
-        return logicalTable;
+    public Optional<LogicalTable> getLogicalTable() {
+        if (!built.get(BuildPhase.LOGICAL_TABLE)) {
+            return null;
+        }
+        return Optional.ofNullable(logicalTable);
     }
 
     /**
@@ -353,8 +358,11 @@ public class DataApiRequestBuilder {
      *
      * @return the granularity
      */
-    public Granularity getGranularity() {
-        return granularity;
+    public Optional<Granularity> getGranularity() {
+        if (!built.get(BuildPhase.GRANULARITY)) {
+            return null;
+        }
+        return Optional.ofNullable(granularity);
     }
 
     /**
@@ -425,8 +433,11 @@ public class DataApiRequestBuilder {
      *
      * @return the count
      */
-    public Integer getCount() {
-        return count;
+    public Optional<Integer> getCount() {
+        if (!built.get(BuildPhase.COUNT)) {
+            return null;
+        }
+        return Optional.ofNullable(count);
     }
 
     /**
@@ -434,8 +445,11 @@ public class DataApiRequestBuilder {
      *
      * @return the topN
      */
-    public Integer getTopN() {
-        return topN;
+    public Optional<Integer> getTopN() {
+        if (!built.get(BuildPhase.TOP_N)) {
+            return null;
+        }
+        return Optional.ofNullable(topN);
     }
 
     /**
@@ -443,8 +457,11 @@ public class DataApiRequestBuilder {
      *
      * @return the response format
      */
-    public ResponseFormatType getFormat() {
-        return format;
+    public Optional<ResponseFormatType> getFormat() {
+        if (!built.get(BuildPhase.FORMAT)) {
+            return null;
+        }
+        return Optional.ofNullable(format);
     }
 
     /**
@@ -452,8 +469,11 @@ public class DataApiRequestBuilder {
      *
      * @return the download filename
      */
-    public String getDownloadFilname() {
-        return downloadFilename;
+    public Optional<String> getDownloadFilname() {
+        if (!built.get(BuildPhase.FILENAME)) {
+            return null;
+        }
+        return Optional.ofNullable(downloadFilename);
     }
 
     /**
@@ -461,8 +481,11 @@ public class DataApiRequestBuilder {
      *
      * @return the timezone
      */
-    public DateTimeZone getTimeZone() {
-        return timeZone;
+    public Optional<DateTimeZone> getTimeZone() {
+        if (!built.get(BuildPhase.TIMEZONE)) {
+            return null;
+        }
+        return Optional.ofNullable(timeZone);
     }
 
     /**
@@ -470,8 +493,11 @@ public class DataApiRequestBuilder {
      *
      * @return the async after
      */
-    public long getAsyncAfter() {
-        return asyncAfter;
+    public Optional<Long> getAsyncAfter() {
+        if (!built.get(BuildPhase.ASYNC_AFTER)) {
+            return null;
+        }
+        return Optional.ofNullable(asyncAfter);
     }
 
     /**
@@ -479,8 +505,11 @@ public class DataApiRequestBuilder {
      *
      * @return the pagination parameters
      */
-    public PaginationParameters getPaginationParameters() {
-        return paginationParameters;
+    public Optional<PaginationParameters> getPaginationParameters() {
+        if (!built.get(BuildPhase.PAGINATION)) {
+            return null;
+        }
+        return Optional.ofNullable(paginationParameters);
     }
 
     /**

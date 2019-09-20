@@ -1,12 +1,13 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.generator
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
