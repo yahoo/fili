@@ -20,6 +20,8 @@ import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultGranularityGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -121,7 +123,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             @NotNull String page,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG , perPage, page);
 
         this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
 
@@ -249,7 +251,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             String filters,
             String timeZoneId
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         if (granularity == null || tableName == null) {
             throw new BadApiRequestException("Logical table and granularity cannot be null");

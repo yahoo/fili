@@ -87,7 +87,7 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
             @NotNull String page,
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         this.metrics = generateMetrics(metricName, metricDictionary);
 
