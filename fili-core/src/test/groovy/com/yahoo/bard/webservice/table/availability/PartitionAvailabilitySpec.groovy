@@ -2,6 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
+import static org.joda.time.DateTimeZone.UTC
+import static org.joda.time.DateTimeZone.getDefault
+import static org.joda.time.DateTimeZone.setDefault
+
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.table.Column
@@ -23,7 +27,7 @@ import spock.lang.Unroll
 /**
  * Test for partition availability behavior.
  */
-class PartitionAvailabilitySpec extends Specification{
+class PartitionAvailabilitySpec extends Specification {
 
     static DateTimeZone originalTimeZone
     static {
@@ -33,12 +37,19 @@ class PartitionAvailabilitySpec extends Specification{
 
     public static final String DISTANT_PAST_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.DISTANT_PAST)
     public static final String FAR_FUTURE_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.FAR_FUTURE)
+
     public static final String SOURCE1 = 'source1'
     public static final String SOURCE2 = 'source2'
     PartitionAvailability partitionAvailability
 
     Availability availability1
     Availability availability2
+
+    static DateTimeZone dateTimeZone
+    {
+        dateTimeZone = getDefault();
+        setDefault(UTC)
+    }
 
     @Shared SimplifiedIntervalList midInterval = new SimplifiedIntervalList([new Interval('2012/2015')])
     @Shared SimplifiedIntervalList earlyInterval = new SimplifiedIntervalList([new Interval('2010/2014')])

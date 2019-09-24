@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,6 +123,16 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
         return constructSubConstraint(constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
                 .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+    }
+
+    @Override
+    public Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+        return availabilitiesToMetricNames.entrySet().stream()
+                .filter(entry -> ! Sets.intersection(entry.getValue(), constraint.getAllColumnNames()).isEmpty())
+                .map(Map.Entry::getKey)
+                .map(availability -> availability.getDataSourceNames(constraint))
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
     }
 
     /**

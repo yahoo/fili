@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.availability.Availability
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability
+import com.yahoo.bard.webservice.table.physicaltables.BaseCompositePhysicalTable
 
 import spock.lang.Shared
 import spock.lang.Specification

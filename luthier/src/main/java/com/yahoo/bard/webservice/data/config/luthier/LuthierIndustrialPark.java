@@ -46,10 +46,10 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.StrictPhysicalTable;
 import com.yahoo.bard.webservice.table.TableIdentifier;
+import com.yahoo.bard.webservice.table.physicaltables.PermissivePhysicalTable;
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable;
 
 import java.util.Arrays;
 import java.util.Collections;

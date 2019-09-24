@@ -19,7 +19,7 @@ import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 

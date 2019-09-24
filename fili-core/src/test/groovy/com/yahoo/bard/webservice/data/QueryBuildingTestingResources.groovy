@@ -52,7 +52,7 @@ import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.table.availability.StrictAvailability

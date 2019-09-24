@@ -20,7 +20,7 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable
 
 import com.fasterxml.jackson.databind.InjectableValues
 

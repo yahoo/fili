@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.table.availability
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
 
@@ -16,26 +15,6 @@ import spock.lang.Unroll
 import java.util.stream.Stream
 
 class BaseCompositeAvailabilitySpec extends Specification {
-
-    /**
-     * Simple class extending BaseCompositeAvailability to allow for testing of its methods
-     */
-    class SimpleCompositeAvailability extends BaseCompositeAvailability {
-
-        /**
-         * Constructor.
-         *
-         * @param availabilityStream A potentially ordered stream of availabilities which supply this composite view
-         */
-        protected SimpleCompositeAvailability(Stream<Availability> availabilityStream) {
-            super(availabilityStream)
-        }
-
-        @Override
-        SimplifiedIntervalList getAvailableIntervals(final DataSourceConstraint constraint) {
-            return getAvailableIntervals()
-        }
-    }
 
     Availability availability1
     Availability availability2

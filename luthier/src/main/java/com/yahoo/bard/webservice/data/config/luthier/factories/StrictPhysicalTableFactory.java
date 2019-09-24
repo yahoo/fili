@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.luthier.factories;
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.StrictPhysicalTable;
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.

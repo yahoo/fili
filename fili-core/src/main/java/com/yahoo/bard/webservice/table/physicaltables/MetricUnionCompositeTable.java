@@ -1,9 +1,12 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.table;
+package com.yahoo.bard.webservice.table.physicaltables;
 
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.availability.MetricUnionAvailability;
 

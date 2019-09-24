@@ -154,6 +154,43 @@ class MetricUnionAvailabilitySpec extends Specification {
         outerMetricUnionAvailability.dataSourceNames == [DataSourceName.of('source1'), DataSourceName.of('source2')] as Set
     }
 
+
+    def "getDataSourceNames(constraint) returns names only on interacting tables"() {
+        given:
+        DataSourceConstraint constraint = new DataSourceConstraint(
+                [] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1] as Set,
+                [] as Set,
+                [] as Set,
+                [metric1] as Set,
+                apiFilters
+        )
+
+        availability1.getAllAvailableIntervals() >> [:]
+        availability2.getAllAvailableIntervals() >> [:]
+
+        DataSourceName source1 = DataSourceName.of('source1')
+        DataSourceName source2 = DataSourceName.of('source2')
+        availability1.getDataSourceNames(_) >> ([source1] as Set)
+        availability2.getDataSourceNames(_) >> ([source2] as Set)
+
+        availabilitiesToMetricNames.put(availability1, [metric1] as Set)
+        availabilitiesToMetricNames.put(availability2, [metric2] as Set)
+
+        metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
+
+        ConfigPhysicalTable physicalTable3 = Mock(ConfigPhysicalTable)
+        physicalTable3.getAvailability() >> metricUnionAvailability
+        MetricUnionAvailability outerMetricUnionAvailability = new MetricUnionAvailability(
+                [physicalTable3.availability] as Set,
+                availabilitiesToMetricNames
+        )
+
+        expect:
+        outerMetricUnionAvailability.getDataSourceNames(constraint) == [source1] as Set
+    }
     def "getAllAvailableIntervals returns the combined intervals of all columns of all availabilities"() {
         given:
         availability1.getAllAvailableIntervals() >> [

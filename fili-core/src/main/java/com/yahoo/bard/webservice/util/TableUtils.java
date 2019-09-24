@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 /**
  * Methods to support table operations and table resolution.
  */
-public class TableUtils {
+public final class TableUtils {
 
     /**
      * Get the fact store column names from the dimensions and metrics.

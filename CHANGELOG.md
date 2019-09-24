@@ -10,7 +10,20 @@ Current
 
 ### Added:
 
+- [Add additional availability views](https://github.com/yahoo/fili/issues/892)
+    * `LeftPureUnion` attaches data from another table to a representative table (resembles left join)
+    * `PureUnion` combines all data from multiple tables, merging away missing data
+    * `TimeFiltered' shows only data within a filtered window of time as available
+
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
+
 ### Changed:
+
+- [Resolved some test problems](https://github.com/yahoo/fili/pull/891)
+    * Added Retry to flaky tests
+    * Tweaked jacoco variable substitution to unbreak intellij unit testing
+    * Pegged DateTimeZone used in test dates to avoid interactions between tests
 
 - [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
    * Split luthier into a library package and a sample application
@@ -27,6 +40,12 @@ Current
 ### Deprecated:
 
 ### Known Issues:
+
+## Fixed:
+
+- [Fixed missing data source name constraint filtering on MetricsUnionAvailability](https://github.com/yahoo/fili/issues/892)
+    * Added implementation of getDataSourceNames(Constraint)
+
 
 ## Contract changes:
 
@@ -80,9 +99,6 @@ Injectable custom response handling.
 
 
 ### Added:
-
-- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
-   * Made dimension config loading into a protected feature of the GenericMetricLoader
 
 - [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
     * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
@@ -164,8 +180,7 @@ Injectable custom response handling.
     * Filename parameter is currently only available to data queries.
 
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
-    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
-    the Dimension
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for the Dimension
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date

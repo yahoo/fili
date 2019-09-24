@@ -1,10 +1,15 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.table;
+package com.yahoo.bard.webservice.table.physicaltables;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.table.Column;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.ConstrainedTable;
+import com.yahoo.bard.webservice.table.PhysicalTableSchema;
+import com.yahoo.bard.webservice.table.SchemaConstraintValidator;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
@@ -54,6 +59,25 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
         this.tableName = name;
         this.availability = availability;
         this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
+    }
+
+
+    /**
+     * Create a physical table.
+     *
+     * @param name  Fili name of the physical table
+     * @param schema  The PhysicalTableSchema desribing this table
+     * @param availability  The availability of columns in this table
+     */
+    public BasePhysicalTable(
+            @NotNull TableName name,
+            @NotNull PhysicalTableSchema schema,
+            @NotNull Availability availability
+    ) {
+        this.name = name.asName();
+        this.tableName = name;
+        this.availability = availability;
+        this.schema = schema;
     }
 
     @Override
@@ -141,12 +165,21 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
      * @param constraint  The dataSourceConstraint which narrows the view of the underlying availability
      *
      * @return a constrained table whose availability and serialization are narrowed by this constraint
-     */
+
     @Override
     public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
         validateConstraintSchema(constraint);
         return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
+    }*/
+
+    @Override
+    public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
+        if (!SchemaConstraintValidator.validateConstraintSchema(constraint, getSchema())) {
+            SchemaConstraintValidator.logAndThrowConstraintError(LOG, this, constraint);
+        }
+        return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
+
 
     /**
      * Ensure that the schema of the constraint is consistent with what the table supports.

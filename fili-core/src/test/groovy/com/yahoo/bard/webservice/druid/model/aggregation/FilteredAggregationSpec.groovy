@@ -25,7 +25,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.table.physicaltables.StrictPhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
