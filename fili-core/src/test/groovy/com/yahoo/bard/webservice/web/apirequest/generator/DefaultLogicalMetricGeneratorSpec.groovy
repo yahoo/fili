@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -17,7 +19,7 @@ class DefaultLogicalMetricGeneratorSpec extends Specification {
         gen = new DefaultLogicalMetricGenerator()
     }
 
-    def "generateLogicalMetrics() returns existing LogicalMetrics"() {
+    def "bind() returns existing LogicalMetrics"() {
         setup: "prepare generator params"
         BardConfigResources resources = Mock(BardConfigResources)
 
@@ -39,7 +41,7 @@ class DefaultLogicalMetricGeneratorSpec extends Specification {
         gen.bind(builder, params, resources) == [logicalMetric1, logicalMetric2] as LinkedHashSet
     }
 
-    def "generateLogicalMetrics() throws BadApiRequestException on non-existing LogicalMetric"() {
+    def "bind() throws BadApiRequestException on non-existing LogicalMetric"() {
         setup:
         BardConfigResources resources = Mock(BardConfigResources)
 
@@ -60,5 +62,18 @@ class DefaultLogicalMetricGeneratorSpec extends Specification {
         then: "BadApiRequestException is thrown"
         BadApiRequestException exception = thrown()
         exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
+    }
+
+    def "validate() throws BadApiRequestException on non-existing LogicalMetric"() {
+        setup:
+        BardConfigResources resources = Mock(BardConfigResources)
+        DataApiRequestBuilder builder = new DataApiRequestBuilder(resources)
+        TestRequestParameters params = new TestRequestParameters()
+
+        when:
+        gen.validate([] as LinkedHashSet<LogicalMetric>, builder, params, resources)
+
+        then:
+        thrown(UnsatisfiedApiRequestConstraintsException)
     }
 }

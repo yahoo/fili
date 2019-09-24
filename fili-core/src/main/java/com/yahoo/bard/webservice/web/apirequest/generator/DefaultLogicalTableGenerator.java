@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
@@ -7,6 +9,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
@@ -14,9 +17,27 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default generator implementation for {@link LogicalTable}. Logical table binding is dependent on {@link Granularity},
+ * so ensure that the query granularity has already been bound before attempting to bind the logical table using this
+ * generator.
+ */
 public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLogicalTableGenerator.class);
 
+    /**
+     * Binds the logical table for this query.
+     *
+     * Throws {@link UnsatisfiedApiRequestConstraintsException} if the granularity has not yet been bound.
+     * Throws {@link BadApiRequestException} if no granularity was specified in the query.
+     *
+     * @param builder  The builder object representing the in progress {@link DataApiRequest}. Previously constructed
+     *                 resources are available through this object.
+     * @param params  The request parameters sent by the client.
+     * @param resources  Resources used to build the request, such as the
+     *                   {@link com.yahoo.bard.webservice.data.config.ResourceDictionaries}.
+     * @return the bound logical table
+     */
     @Override
     public LogicalTable bind(
             DataApiRequestBuilder builder,
@@ -24,7 +45,6 @@ public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
             BardConfigResources resources
     ) {
         if (builder.getGranularity() == null) {
-            // TODO standardize this error message inside the exception and have exception only consume the dependency names
             throw new UnsatisfiedApiRequestConstraintsException("Intervals depends on Granularity, but granularity " +
                     "has not been generated yet. Ensure the granularity generation stage always runs before the " +
                     "interval generation stage");
@@ -53,6 +73,9 @@ public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
 
     /**
      * Extracts a specific logical table object given a valid table name and a valid granularity.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param tableName  logical table corresponding to the table name specified in the URL
      * @param granularity  logical table corresponding to the table name specified in the URL

@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
@@ -18,22 +20,27 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.NotNull;
 
 /**
- * Dependent on Timezone
+ * Default generator implementation for binding {@link Granularity}. Granularity is dependent on {@link DateTimeZone}
+ * already being bound. Ensure the generator for DateTimeZone is called before attempting to bind granularity with this
+ * generator.
  */
 public class DefaultGranularityGenerator implements Generator<Granularity> {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultGranularityGenerator.class);
 
     /**
+     * Binds request granularity into a {@link Granularity} object.
+     *
+     * Throws BadApiRequestException if granularity is not present. Granularity is required in all data queries. Also
+     * is thrown if an invalid granularity is provided.
+     * Throws UnsatisfiedApiRequestConstraintsException if timeZone was not built before this generator runs. Timezone
+     * CAN be empty, which implies using the default timezone. A NULL timezone indicates timezone has not been
+     * generated yet.
+     *
      * @param builder  The builder object representing the in progress {@link DataApiRequest}. Previously constructed
      *        resources are available through this object.
      * @param params  The request parameters sent by the client.
      * @param resources  Resources used to build the request, such as the
      *        {@link com.yahoo.bard.webservice.data.config.ResourceDictionaries}.
-     * @throws BadApiRequestException if granularity is not present. Granularity is required in all data queries. Also
-     *         is thrown if an invalid granularity is provided.
-     * @throws UnsatisfiedApiRequestConstraintsException if timeZone was not built before this generator runs. Timezone
-     *         CAN be empty, which implies using the default timezone. A NULL timezone indicates timezone has not been
-     *         generated yet.
      * @return the generated granularity.
      */
     @Override
@@ -74,6 +81,9 @@ public class DefaultGranularityGenerator implements Generator<Granularity> {
     /**
      * Generate a Granularity instance based on a path element.
      *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
      * @param granularity  A string representation of the granularity
      * @param dateTimeZone  The time zone to use for this granularity
      * @param granularityParser  The parser for granularity
@@ -96,6 +106,9 @@ public class DefaultGranularityGenerator implements Generator<Granularity> {
 
     /**
      * Generate a Granularity instance based on a path element.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param granularity  A string representation of the granularity
      * @param granularityParser  The parser for granularity

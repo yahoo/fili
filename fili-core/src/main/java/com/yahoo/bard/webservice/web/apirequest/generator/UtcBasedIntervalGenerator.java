@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
@@ -30,8 +32,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-//TODO depends on granularity. Must document this
-public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
+/**
+ * Default generator implementation for {@link Interval}s. Intervals are always generated using the UTC timezone.
+ * Intervals are dependent on {@link Granularity}, so ensure the granularity generator has bound the query granularity
+ * before using this generator to bind the Intervals.
+ *
+ * Throws {@link UnsatisfiedApiRequestConstraintsException} if the granularity has not yet been bound.
+ * Throws {@link BadApiRequestException} if no granularity was specified in the query.
+ */
+public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
 
     private static final Logger LOG = LoggerFactory.getLogger(UtcBasedIntervalGenerator.class);
 
@@ -62,9 +71,13 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
         validateTimeAlignment(builder.getGranularity().get(), entity);
     }
 
+    /**
+     * Validates that the granularity has been bound and is present.
+     *
+     * @param builder The builder which contains all of the
+     */
     private void validateGranularityPresent(DataApiRequestBuilder builder) {
         if (builder.getGranularity() == null) {
-            // TODO standardize this error message inside the exception and have exception only consume the dependency names
             throw new UnsatisfiedApiRequestConstraintsException("Intervals depends on Granularity, but granularity " +
                     "has not been generated yet. Ensure the granularity generation stage always runs before the " +
                     "interval generation stage");
@@ -77,6 +90,9 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
 
     /**
      * Extracts the set of intervals from the api request.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param now The 'now' for which time macros will be relatively calculated
      * @param apiIntervalQuery  API string containing the intervals in ISO 8601 format, values separated by ','.
@@ -167,6 +183,9 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
     /**
      * Get datetime from the given input text based on granularity.
      *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
      * @param now  current datetime to compute the floored date based on granularity
      * @param granularity  granularity to truncate the given date to.
      * @param dateText  start/end date text which could be actual date or macros
@@ -198,6 +217,9 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
     /**
      * Throw an exception if any of the intervals are not accepted by this granularity.
      *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
      * @param granularity  The granularity whose alignment is being tested.
      * @param intervals  The intervals being tested.
      *
@@ -213,5 +235,4 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>>{
             throw new BadApiRequestException(TIME_ALIGNMENT.format(intervals, granularity, alignmentDescription));
         }
     }
-
 }

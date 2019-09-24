@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
@@ -20,7 +22,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// TODO DEPENDENT ON LOGICAL TABLE!!!! MUST BE DOCUMENTED.
+/**
+ * Default generator implementation for binding logical metrics. Binding logical metrics is dependent on the logical
+ * table being queried. Ensure the logical table has been bound before using this class to generate logical metrics.
+ */
 public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<LogicalMetric>> {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLogicalMetricGenerator.class);
 
@@ -36,6 +41,19 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
         );
     }
 
+    /**
+     * Validates that the bound logical metrics are valid for the table being queried.
+     *
+     * Throws {@link UnsatisfiedApiRequestConstraintsException} if logical metrics are bound before the queried logical
+     * table has been bound.
+     *
+     * @param entity  The resource constructed by the {@code bind}} method
+     * @param builder  The builder object representing the in progress DataApiRequest
+     * @param params  The request parameters sent by the client
+     * @param resources  Resources used to build the request
+     *
+     *
+     */
     @Override
     public void validate(
             LinkedHashSet<LogicalMetric> entity,
@@ -58,6 +76,9 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
      * <p>
      * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
      * thrown.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
@@ -95,6 +116,9 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
 
     /**
      * Validate that all metrics are part of the logical table.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param logicalMetrics  The set of metrics being validated
      * @param table  The logical table for the request

@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE;
@@ -14,6 +16,9 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default generator implementation for {@link DateTimeZone}.
+ */
 public class DefaultTimezoneGenerator implements Generator<DateTimeZone> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
@@ -39,6 +44,9 @@ public class DefaultTimezoneGenerator implements Generator<DateTimeZone> {
 
     /**
      * Get the timezone for the request.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param timeZoneId  String of the TimeZone ID
      * @param systemTimeZone  TimeZone of the system to use if there is no timeZoneId

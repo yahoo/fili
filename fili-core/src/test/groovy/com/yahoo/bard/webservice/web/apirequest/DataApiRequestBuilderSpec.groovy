@@ -66,7 +66,7 @@ class DataApiRequestBuilderSpec extends Specification {
         builder.granularity(simpleRequestParameters, granularityGenerator)
 
         then: "granularity is properly set from generator"
-        builder.granularity == DefaultTimeGrain.DAY
+        builder.granularity.get() == DefaultTimeGrain.DAY
 
         and: "granularity is marked as having been built"
         builder.built.get(DataApiRequestBuilder.BuildPhase.GRANULARITY)

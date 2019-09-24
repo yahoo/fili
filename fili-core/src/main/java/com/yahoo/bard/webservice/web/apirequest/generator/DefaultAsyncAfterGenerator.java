@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
@@ -12,6 +14,9 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default generator implementation for async after.
+ */
 public class DefaultAsyncAfterGenerator implements Generator<Long> {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultAsyncAfterGenerator.class);
 
@@ -39,6 +44,9 @@ public class DefaultAsyncAfterGenerator implements Generator<Long> {
      * results of a synchronous request before the request should become asynchronous. Null values are replaced with
      * the default async after values. This value is specified by the system config parameter
      * "bard__default_asyncAfter".
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
      *
      * @param asyncAfterString  asyncAfter should be null, or a string representation of either a long, or the
      *                          String never

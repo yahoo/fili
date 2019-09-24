@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
  * DataApiRequest has been violated. This dependency graph can be found at TODO link the graph.
  *
  */
+// TODO standardize this error message inside the exception and have exception only consume the dependency names
 public class UnsatisfiedApiRequestConstraintsException extends RuntimeException {
 
     /**

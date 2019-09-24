@@ -1,3 +1,5 @@
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
@@ -14,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
+/**
+ * Default generator implementation for binding {@link ResponseFormatType}. Only recognizes response formats from the
+ * {@link DefaultResponseFormatType} enum.
+ */
 public class DefaultResponseFormatGenerator implements Generator<ResponseFormatType> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultResponseFormatType.class);
@@ -41,11 +47,14 @@ public class DefaultResponseFormatGenerator implements Generator<ResponseFormatT
      * Resolves the {@code format} request parameter into one of the response formats specified in
      * {@link DefaultResponseFormatType}. Defaults to {@link DefaultResponseFormatType#JSON} if {@code format} is null.
      *
+     * Throws BadApiRequestException if the response format cannot be resolved to any of the supported response formats
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
      * @param format  The string representation of the desired {@link ResponseFormatType} to be parsed. Null values are
      *                accepted and {@link DefaultResponseFormatType#JSON} will be returned if a null value is provided.
      *
-     * @throws BadApiRequestException if the response format cannot be resolved to any of the supported response
-     *                                formats.
      * @return the response format.
      */
     public static ResponseFormatType generateResponseFormat(String format) {

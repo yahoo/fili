@@ -27,6 +27,7 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.codahale.metrics.annotation.Timed;
 
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,6 +74,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     private final GranularityParser granularityParser;
     private final ResponseFormatResolver formatResolver;
     private final MetadataExceptionHandler exceptionHandler;
+    private final DateTimeFormatter dateTimeFormatter;
 
     /**
      * Constructor.
@@ -83,6 +85,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param granularityParser  Helper for parsing granularities
      * @param formatResolver  The formatResolver for determining correct response format
      * @param exceptionHandler  Injection point for handling response exceptions
+     * @param dateTimeFormatter  date time formatter
      */
     @Inject
     public TablesServlet(
@@ -91,7 +94,8 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             ObjectMappersSuite objectMappers,
             GranularityParser granularityParser,
             ResponseFormatResolver formatResolver,
-            @Named(TablesApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
+            @Named(TablesApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler,
+            DateTimeFormatter dateTimeFormatter
     ) {
         super(objectMappers);
         this.resourceDictionaries = resourceDictionaries;
@@ -99,6 +103,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         this.granularityParser = granularityParser;
         this.formatResolver = formatResolver;
         this.exceptionHandler = exceptionHandler;
+        this.dateTimeFormatter = dateTimeFormatter;
     }
 
     /**
@@ -640,5 +645,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     @Override
     public LogicalTableDictionary getLogicalTableDictionary() {
         return resourceDictionaries.getLogicalDictionary();
+    }
+
+    @Override
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 }
