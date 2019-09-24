@@ -17,6 +17,8 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -53,8 +55,7 @@ public class DefaultGranularityGenerator implements Generator<Granularity> {
                 .orElseThrow(() -> new BadApiRequestException(UNKNOWN_GRANULARITY.logFormat("null")));
 
         if (builder.getTimeZone() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Attempting to generate granularity, but timezone " +
-                    "has not yet been bound.");
+            throw new UnsatisfiedApiRequestConstraintsException("Granularity", Collections.singleton("Timezone"));
         }
 
         if (builder.getTimeZone().isPresent()) {

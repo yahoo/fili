@@ -17,6 +17,8 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+
 /**
  * Default generator implementation for {@link LogicalTable}. Logical table binding is dependent on {@link Granularity},
  * so ensure that the query granularity has already been bound before attempting to bind the logical table using this
@@ -45,9 +47,7 @@ public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
             BardConfigResources resources
     ) {
         if (builder.getGranularity() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Intervals depends on Granularity, but granularity " +
-                    "has not been generated yet. Ensure the granularity generation stage always runs before the " +
-                    "interval generation stage");
+            throw new UnsatisfiedApiRequestConstraintsException("Intervals", Collections.singleton("Granularity"));
         }
         if (!builder.getGranularity().isPresent()) {
             throw new BadApiRequestException("Granularity is required for all data queries, but was not present in" +

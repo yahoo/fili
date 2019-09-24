@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,8 +63,10 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
             BardConfigResources resources
     ) {
         if (builder.getLogicalTable() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Logical metrics require the queried Logical Table " +
-                    "to be constructed first, but no Logical Table has been built");
+            throw new UnsatisfiedApiRequestConstraintsException(
+                    "Logical Metric",
+                    Collections.singleton("Logical Table")
+            );
         }
         if (!builder.getLogicalTable().isPresent()) {
             throw new BadApiRequestException("A logical table is required for all data queries");

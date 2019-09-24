@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -64,8 +65,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             BardConfigResources resources
     ) {
         if (builder.getLogicalTable() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Attempted to build data request Dimensions, " +
-                    "but LogicalTable has not yet been generated. Dimensions depend on LogicalTable");
+            throw new UnsatisfiedApiRequestConstraintsException("Dimensions", Collections.singleton("Logical Table"));
         }
 
         if (!builder.getLogicalTable().isPresent()) {

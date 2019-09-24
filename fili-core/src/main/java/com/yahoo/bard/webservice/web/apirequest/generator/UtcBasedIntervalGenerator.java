@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,9 +79,7 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
      */
     private void validateGranularityPresent(DataApiRequestBuilder builder) {
         if (builder.getGranularity() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Intervals depends on Granularity, but granularity " +
-                    "has not been generated yet. Ensure the granularity generation stage always runs before the " +
-                    "interval generation stage");
+            throw new UnsatisfiedApiRequestConstraintsException("Intervals", Collections.singleton("Granularity"));
         }
         if (!builder.getGranularity().isPresent()) {
             throw new BadApiRequestException("Granularity is required for all data queries, but was not present in" +
