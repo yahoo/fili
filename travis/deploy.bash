@@ -39,6 +39,8 @@ fi
 # Set environment variable for testing purposes
 export FILI_TEST_LIST=a,2,bc,234
 
+mvn -version
+
 # We're not on a release tag, so build and test the code
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build
 MAVEN_RETURN_CODE=$?

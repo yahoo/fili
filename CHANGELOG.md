@@ -20,15 +20,22 @@ Current
 
 ### Changed:
 
-- [Refactored packaging on physical table implementations](https://github.com/yahoo/fili/issues/892)
-    * Put implementations of physical table into their own package.
-
 - [Resolved some test problems](https://github.com/yahoo/fili/pull/891)
     * Added Retry to flaky tests
     * Tweaked jacoco variable substitution to unbreak intellij unit testing
     * Pegged DateTimeZone used in test dates to avoid interactions between tests
 
+- [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
+   * Split luthier into a library package and a sample application
+   * Nested all sample applications
+   * Resolved dependecy issues around where properties files were sourced
+   * Rationalized dependencies for sample applications
+   
 ### Removed:
+
+### Fixed:
+
+- [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
 
 ### Deprecated:
 

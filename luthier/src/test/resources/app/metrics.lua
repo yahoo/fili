@@ -63,16 +63,43 @@ So the metric "difference" is the (rather silly) formula:
 local M = {}
 
 local metrics = {
-    testMetric = {
-        maker = "doubleSum",
-        druidMetric="test_metric"
+    longSumCO = {
+        maker = "longSum",
+        druidMetric = "CO"
     },
     count = {
         maker = "count"
     },
+    added = {
+        maker = "doubleSum",
+        druidMetric="added"
+    },
+    delta = {
+        maker = "doubleSum",
+        druidMetric="delta"
+    },
+    deleted = {
+        maker = "doubleSum",
+        druidMetric= "deleted"
+    },
+    COM = {
+        maker = "doubleSum",
+        druidMetric = "CO"
+    },
+    NO2M = {
+        maker = "doubleSum",
+        druidMetric = "NO2"
+    },
+    averageCOPerDay = {
+        maker = "aggregateAverageByDay",
+        dependencies = {"COM"}
+    },
+    averageNO2PerDay = {
+        maker = "aggregateAverageByDay",
+        dependencies = {"NO2M"}
+    }
 }
 
---- set every metric's type to default
 for metric_name, metric_content in pairs(metrics) do
     metric_content.type = "default"
     M[metric_name] = metric_content
