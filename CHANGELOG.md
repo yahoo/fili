@@ -20,6 +20,10 @@ Current
    
 ### Removed:
 
+### Fixed:
+
+- [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
+
 ### Deprecated:
 
 ### Known Issues:
