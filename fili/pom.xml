@@ -6,11 +6,10 @@
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.11-SNAPSHOT</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili</artifactId>
-    <packaging>jar</packaging>
     <name>Fili: Packaging Module</name>
     <description>Module to package the Fili application platform via its key modules</description>
 

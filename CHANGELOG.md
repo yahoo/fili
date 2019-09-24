@@ -10,36 +10,119 @@ Current
 
 ### Added:
 
+- [Add custom ssl context support to druid AsyncHttp requests](https://github.com/yahoo/fili/pull/943)
+  * Added new Constructors in `AsyncDruidWebServiceImpl` class that accept custom `SslContext` as additional argument. 
+   This custom SslContext if not null, replaces the default ssl context while making the request to druid. 
+  * Added `getSSLContext()` method in `AbstractBinderFactory` class that returns null as default. Custom Ssl Context is passed by overriding this method. 
+    
+### Changed:
+
+- [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
+   * Split luthier into a library package and a sample application
+   * Nested all sample applications
+   * Resolved dependecy issues around where properties files were sourced
+   * Rationalized dependencies for sample applications
+   
+### Removed:
+
+### Fixed:
+
+- [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
+
+### Deprecated:
+
+### Known Issues:
+
+## Contract changes:
+
+
+v0.11.79 - 2019/09/17
+=====
+
+0.11 Highlights
+-------------
+
+### Configuration - Luthier
+
+We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools). 
+Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc. 
+See (https://github.com/yahoo/fili/tree/master/luthier)
+
+### Configuration and Extensibility
+
+Partial data devolved into distinct features.
+
+Added custom response handling.
+
+The CURRENT macro can now be configured to resolve relative to a timezone other than UTC.
+
+### Code style
+
+We added SONARQ code quality checking and addressed discovered issues.
+
+We removed inappropriate use of Optionals from constructors and parameter types on interfaces.
+
+### Security patches
+
+We added OWASP vulnerability checking and addressed identified issues. 
+(https://www.owasp.org/index.php/OWASP_Dependency_Check)  Enhancements included jackson version upgrades to address
+injection vulnerabilities.
+
+### DataApiRequest
+
+We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory 
+objects to other parts of the application.  These factories are now being injected by Dependecy Injection (HK2).
+
+The corresponding methods have been deprecated and will be removed very soon.
+
+A Pojo DataApiRequest has been built as well as a Generator interface and a Builder.  These will form the basis of a
+complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to 
+produce an immutable value object.
+
+### Extensibility
+
+Injectable custom response handling.
+
+
+### Added:
+
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
+
+- [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
+    * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
+    * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added.
+
 - [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
     * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
     based on the presence or absence of a tag value in an underlying multivalued dimension.
-    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently 
+    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently
     filtered against using the default druid filter serialization, and a grouping dimension containing a comma separated
-    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the 
+    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the
     appropriate truth value.
     * The filtering behavior is supported through the new `FilterOptimizable` interface and associated request mapper.
-    
+
 - [Add FilterOptimizable interface](https://github.com/yahoo/fili/pull/913)
     * Adds the `FilterOptimizable` interface, which indicates that the implementing object has the ability to optimize
     a `Collection` of `ApiFilter` objects.
-    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their 
+    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their
     filters and performs the optimizations.
 
 - [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
     * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
     implementation is immutable.
     * Adds `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
-    
+
 - [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
     * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
     to set the expiration date for a key when it is being added to the cache.
     * The default implementation delegates to `boolean set(String key, T value)` (so throwing away the
     expiration), so this won't affect any customers who have their own `DataCache`.
     * The memcache-backed implementation implements the new `set`, and the old `set` delegates to it,
-    passing in the configured `EXPIRATION` constant. 
+    passing in the configured `EXPIRATION` constant.
 
 - [Add config parameter to control lookback on druid dimension loader](https://github.com/yahoo/fili/issues/908)
-    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading. 
+    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading.
 
 - [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
     * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
@@ -50,18 +133,18 @@ Current
     * Second small patch: Fix null pointer errors with TablesApiRequestImpl
 
 - [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
-    * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed. 
+    * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed.
     * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
     * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
 
 - [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
     * Create an extraction function to transform a comma list of values into a boolean dimension value.
-  
+
 - [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
     * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
     * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
     * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
-    * If any of these flags are active partial data answers are included in responses. 
+    * If any of these flags are active partial data answers are included in responses.
 
 - [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
     * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in queries
@@ -82,40 +165,40 @@ Current
     * Filter ops now have aliases that match the relevant ops and aliases for havings.
 
 - [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
-    * If the filename parameter is present in the request the response is assumed to be downloaded with the provided filename. The download format depends on the format provided to the format parameter. 
+    * If the filename parameter is present in the request the response is assumed to be downloaded with the provided filename. The download format depends on the format provided to the format parameter.
     * Filename parameter is currently only available to data queries.
-  
+
 - [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
     * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
     the Dimension
 
 - [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
     * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
-    * New public getters on `PhysicalTableDefinition` for expected start and end date 
+    * New public getters on `PhysicalTableDefinition` for expected start and end date
 
 - [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
     * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
         - start and end dates are optional, with an empty optional indicating no expected start or end date.
         - the new methods default to returning an empty optional.
-    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those 
+    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those
     intervals are NOT suppressed.
     * `BaseCompositeAvailability` reports its expected start and end dates as the earliest start date and latest end date
     of its composed availabilities.
         -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
         has no start or end date, and empty optional is reported.
-    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration 
+    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration
     of expected start and end dates.  
-        
+
 - [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
     * This allows customers to put Fili in front of multiple Druid clusters, and
         then use custom logic to decide which cluster to query for each request.
-    * We introduce a new interface `DruidWebServiceSelector` that wraps the 
+    * We introduce a new interface `DruidWebServiceSelector` that wraps the
         routing logic, and pass an instance to the AsyncWebServiceRequestHandler
         for it to use.
-        
+
 - [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
     * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
-    
+
 - [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
     * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
         Bound filters.
@@ -134,13 +217,25 @@ Current
 
 ### Changed:
 
+- [Removed references to yahoo internal authorization system](https://github.com/yahoo/fili/issues/972)
+   * Renamed bouncer code to 'status code' and references to 'Bouncer' in class name and fields.
+
+- [Deprecated optionals on constructors for DataApiRequest implementations and related objects](https://github.com/yahoo/fili/pull/913)
+    * Some objects related to `DataApiRequest` were taking optionals as construction parameters or storing optionals
+    internally. This behvaior has been changed to more closely align with accept guidelines for using optionals
+
+- [OptionalInt has been removed from some interfaces relating to DataApiRequest and replaced with Optional<Integer>](https://github.com/yahoo/fili/pull/913)
+    * While `OptionalInt` is considered to be preferable to `Optional<Integer>` for performance reasons, it does not have
+    the same rich set of utility methods as `Optional`. The relevant code was not in a performance critical location so
+    `OptionalInt` was replaced with `Optional<Integer>` for improved usability.
+
 - [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
     * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
     that file extension is removed.
     * Some other small refactors where do on the `ResponseUtils` class
 
 - [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
-    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind. 
+    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind.
 
 - [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
     * Changed FilterBinder.INSTANCE from final to static with accessors
@@ -157,43 +252,43 @@ Current
 - [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
     * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
     dimension field, and filter operation.
-    * The values in each constructed `ApiFilter` are sorted. 
+    * The values in each constructed `ApiFilter` are sorted.
 
 - [Better expose lucene analyzer LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
   * Continue to make LuceneSearchProvider internals protected over private so extending classes have an easier time
   extending behavior.
-  * removed protected getter and setter on `LuceneSearchProvider.analyzer` field in favor of just making the field 
+  * removed protected getter and setter on `LuceneSearchProvider.analyzer` field in favor of just making the field
   protected
 
 - [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
-  * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the 
+  * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the
   lock is erroneously never released the requesting thread will hang forever.
   * The new behavior is to timeout after some amount of time, throw an error, and fail the query.
 
 - [Strict Availability no longer returns no availability when queried with constraint with no columns](https://github.com/yahoo/fili/issues/862)
   * Currently, `StrictAvailability.getAvailableIntervals(Constraint)` returns an empty interval list when called with
-  a constraint with an empty column list. This behavior is now changed to defer the call to 
+  a constraint with an empty column list. This behavior is now changed to defer the call to
   `StrictAvailability.getAvailableIntervals()`
-  * This behavior change is only relevant to StrictAvailability, all other default availability implementations are 
-  composite availabilities and defer this call to their underlying availabilities. 
+  * This behavior change is only relevant to StrictAvailability, all other default availability implementations are
+  composite availabilities and defer this call to their underlying availabilities.
 
 - [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
-  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level 
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level
   log for the entire query response. Change log level to trace to avoid log spamming.
 
 - [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
-  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer` 
+  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer`
   * some previously private fields and methods are now either protected or public.
-  
+
 - [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
   * Changed `DimensionsServlet.getDescriptionKey` to `protected`
 
 - [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
-  * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which 
+  * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which
   provide information used to build response headers
-  
+
 - [ApiRequest interfaces exposes getDownloadFilename method](https://github.com/yahoo/fili/issues/709)
-  * `ApiRequestImpl` and other classes relating to the construction of `DataApiRequest` implementations have had 
+  * `ApiRequestImpl` and other classes relating to the construction of `DataApiRequest` implementations have had
   new constructors added to handle the filename.
   * Constructors that don't handle filename are now deprecated.
 
@@ -204,7 +299,7 @@ Current
     * Moved asynch-http-client to current 2.6.0
 
 - [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
-    ~~* Set a max size to file name for a downloaded csv report.~~ 
+    ~~* Set a max size to file name for a downloaded csv report.~~
         ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
 
 - [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
@@ -219,7 +314,7 @@ Current
     * Created configuration parameter 'download_file_max_name_length' to truncate filename lengths
         - Default truncation is no truncation (0)
         - truncation happens before applying file extension
-    
+
 - [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
     * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
 
@@ -233,11 +328,11 @@ Current
 - [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
     * Add `LogicalMetricInfo` conversion method on ApiMetricField class
     * Moved all tests and internal uses onto LMI based construction
-    
+
 - [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
     * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
     * Added `getValueList()` to return the original ordered filter values.
-    
+
 - [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
     * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
 
@@ -279,18 +374,32 @@ Current
 
 ### Fixed:
 
+- [CVSS vulernability resolution](https://github.com/yahoo/fili/issues/963)
+    * Upversion druid-api to 0.12 to stop bringing in vulnerable versions of apache and avro
+    * Upversion jetty for emedded examples to resolve transitive vulneratibilities
+    * Upversion calcite to resolve protobuf vulnerabilities
+
+- [Disabled erroring javadoc reports](https://github.com/yahoo/fili/issues/956)
+    * Disabled link following during javadoc processing that was creating many false positive warnings.
+
+- [Hardened the regex generated by `TagExtractionFunctionFactory` to fail partial matches](https://github.com/yahoo/fili/issues/961)
+    * Problem: Previously, the regex for the FlagFromTag dimension did not use start and end line characters. This means
+    that regex engines can partial match on incorrect strings (eg: desired flag value "1" can match "2,3,12").
+    * Druid uses a matching strategy that avoids this, but itis changed to always fail, even with engines that will match
+    on partial matches (which is common).
+
 - [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
-    * Problem: Previously, if an unexpected behaviour happens in the Class build time in 
-    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build, 
+    * Problem: Previously, if an unexpected behaviour happens in the Class build time in
+    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build,
     where we suspect only Exceptions are logged.
-    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its 
-    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by 
-    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged. 
-    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead. 
-    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught. 
+    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its
+    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by
+    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged.
+    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead.
+    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught.
 
 - [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
-    * table api filters where not being used in query planning, moving the merge above query planning fixes this. 
+    * table api filters where not being used in query planning, moving the merge above query planning fixes this.
 
 - [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
     * Unstuck lookback so that the window slides forward rather than stopping at static load time.
@@ -308,29 +417,29 @@ Current
 - [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
     * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
     be wrapped with the filter and the outer query won't
-    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The 
-    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer 
+    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The
+    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer
     query of the `nest` call
 
 - [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
     * Switched to ensure security and request filters don't merge but instead intersect
 
 - [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/865)
-    * Bumped dependency version to 2.9.8 
+    * Bumped dependency version to 2.9.8
 
 - [Bump Jackson version again to patch vulnerability](https://github.com/yahoo/fili/issues/770)
-    * Bumped dependency version to 2.9.5 
+    * Bumped dependency version to 2.9.5
     * Made serialization order more specific in several classes
     * Fixed bad format in error message
     * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
 
 - [Bump lucene version to patch vulnerability](https://github.com/yahoo/fili/issues/819)
-    * Bumped dependency version to 7.5.0 
-    * Added error in case of greater than maxint hits from Lucene 
+    * Bumped dependency version to 7.5.0
+    * Added error in case of greater than maxint hits from Lucene
 
 - [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
-    * Bumped dependency version to [5.1.2,) 
-    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts 
+    * Bumped dependency version to [5.1.2,)
+    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts
 
 - [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
 
@@ -350,7 +459,7 @@ Current
 - [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
   * Changed the return type of `nest` method in `Aggreagtion` class.
   * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
-  
+
 - [ResponseUtils is now responsible for generating response headers](https://github.com/yahoo/fili/issues/709)
   * `ResponseUtils` now generates the Content-Type header and the Content-Disposition header if relevant.
   * `ResponseUtils` handles all format types instead of just building the Content-Disposition header value for CSV
@@ -366,7 +475,7 @@ Current
   * `DataApiRequest` getHaving -> getQueryHaving
   * `DataApiRequest` getDruidFilter -> getQueryFilter
   * Deprecate old paths
-  
+
 - [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
   * Added user, request url, and timestamp to healthcheck error message on data request.
 
@@ -385,8 +494,8 @@ Response building, extraction functions, Web logging and Exception handling in D
 ### Extensive deprecation cleanup
 
 A lot of tech debt has been paid down in the form of removing deprecated code and moving code off deprecated methods.
-Old sketch support has been retired in favor of the official community open source version: 
-(https://datasketches.github.io/docs/Theta/ThetaSketchFramework.html) 
+Old sketch support has been retired in favor of the official community open source version:
+(https://datasketches.github.io/docs/Theta/ThetaSketchFramework.html)
 
 Some deprecations have been removed because the migration path off of those deprecated methods seemed less useful
 than simply supporting the older (simpler) contract.
@@ -397,12 +506,12 @@ Some packages have been rationalized together or apart.  Some concrete classes b
 
 ### Externalizing filter building code
 
-Generating `ApiFilters` and Druid `Filter`s has been externalized to make it easier to reimplement with non-Regular 
+Generating `ApiFilters` and Druid `Filter`s has been externalized to make it easier to reimplement with non-Regular
 Expression solutions.
 
 ### Supporting Druid in-filters
 
-A general performance improvement by implementing the in filter in druid (as opposed to long chains of single value 
+A general performance improvement by implementing the in filter in druid (as opposed to long chains of single value
 select filters)
 
 ### Added:
@@ -627,7 +736,7 @@ select filters)
     * If path does not exist, do not run deletion on that path
 
 
-v0.9.137 - 2018/04/13 
+v0.9.137 - 2018/04/13
 =====
 
 0.9 Highlights
@@ -2236,9 +2345,3 @@ Jobs resource. Here are the highlights of what's in this release:
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
 
 ### Added:
-
-- [Add custom ssl context support to druid AsyncHttp requests](https://github.com/yahoo/fili/pull/943)
-  * Added new Constructors in `AsyncDruidWebServiceImpl` class that accept custom `SslContext` as additional argument. 
-   This custom SslContext if not null, replaces the default ssl context while making the request to druid. 
-  * Added `getSSLContext()` method in `AbstractBinderFactory` class that returns null as default. Custom Ssl Context is passed by overriding this method. 
-    

@@ -23,33 +23,33 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 // TODO Make an interface for this
 public class ConceptType<T> {
 
-    public static final ConceptType<Dimension> DIMENSION = new ConceptType<>("dimension", "DimensionConfig.json");
+    public static final ConceptType<Dimension> DIMENSION = new ConceptType<>("dimension", "DimensionConfig");
 
     public static final ConceptType<SearchProvider> SEARCH_PROVIDER = new ConceptType<>(
             "searchProvider",
-            "SearchProviderConfig.json"
+            "SearchProviderConfig"
     );
 
     public static final ConceptType<KeyValueStore> KEY_VALUE_STORE = new ConceptType<>(
             "keyValueStore",
-            "KeyValueStoreConfig.json"
+            "KeyValueStoreConfig"
     );
 
-    public static final ConceptType<LogicalMetric> METRIC = new ConceptType<>("metric", "MetricConfig.json");
+    public static final ConceptType<LogicalMetric> METRIC = new ConceptType<>("metric", "MetricConfig");
 
     public static final ConceptType<MetricMaker> METRIC_MAKER = new ConceptType<>(
             "metricMaker",
-            "MetricMakerConfig.json"
+            "MetricMakerConfig"
     );
 
     public static final ConceptType<ConfigPhysicalTable> PHYSICAL_TABLE = new ConceptType<>(
             "physicalTable",
-            "PhysicalTableConfig.json"
+            "PhysicalTableConfig"
     );
 
     public static final ConceptType<LogicalTableGroup> LOGICAL_TABLE_GROUP = new ConceptType<>(
             "logicalTableGroup",
-            "LogicalTableConfig.json"
+            "LogicalTableConfig"
     );
 
     String conceptKey;

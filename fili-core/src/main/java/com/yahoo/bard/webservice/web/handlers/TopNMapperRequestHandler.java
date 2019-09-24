@@ -36,7 +36,7 @@ public class TopNMapperRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         if (request.getTopN().isPresent() && !(druidQuery instanceof TopNQuery)) {
-            TopNResultSetMapper mapper = new TopNResultSetMapper(request.getTopN().getAsInt());
+            TopNResultSetMapper mapper = new TopNResultSetMapper(request.getTopN().get());
             // Add topN mapper after partial data mapper and before any other mapper
             try {
                 // Index is 1 because we assume that partial data result set mapper has been injected already

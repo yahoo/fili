@@ -29,7 +29,7 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
         testDimension = park.getDimension("testDimension")
     }
 
-    def "The spec content of a specific test dimension matches with the JSON config file and defaults"() {
+    def "The spec content of a specific test dimension matches with the Lua config file and defaults"() {
         when:
             // set up for: fields content correctness
             LinkedHashSet<DimensionField> dimensionFields = testDimension.getDimensionFields()
@@ -46,13 +46,11 @@ class KeyValueStoreDimensionFactorySpec extends Specification {
             //testDimension.isAggregatable() == false
 
             // Fields content correctness
-            List expectedCamelNames = ["testPk", "testField1", "testField2", "testField3"]
-            List expectedDescriptions = ["TEST_PK", "TEST_FIELD_1", "TEST_FIELD_2", "TEST_FIELD_3"]
+            List expectedNames = ["id", "testField1", "testField2", "testField3"]
+            List expectedDescriptions = ["id", "testField1", "testField2", "testField3"]
             List expectedFieldTags = [ ["primaryKey"], [], [], [] ]
-            // next line is to be uncommented after we implemented the description correctly
-            // List expectedFieldDescriptions = [ "", "", "", "" ]
             for (int i = 0; i < dimensionFields.size(); i++) {
-                assert dimensionFields[i].getName() == expectedCamelNames[i]
+                assert dimensionFields[i].getName() == expectedNames[i]
                 assert dimensionFields[i].getTags() == expectedFieldTags[i]
                 assert dimensionFields[i].getDescription() == expectedDescriptions[i]
             }

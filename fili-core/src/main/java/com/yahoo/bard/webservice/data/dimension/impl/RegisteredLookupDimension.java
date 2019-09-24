@@ -7,9 +7,9 @@ import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.Cascad
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.serializers.LookupDimensionToDimensionSpec;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Collections;
 import java.util.List;

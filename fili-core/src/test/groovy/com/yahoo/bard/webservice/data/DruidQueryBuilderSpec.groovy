@@ -150,9 +150,9 @@ class DruidQueryBuilderSpec extends Specification {
         }
         apiRequest.getLogicalMetrics() >> ([lm1] as Set)
         apiRequest.getIntervals() >> intervals
-        apiRequest.getTopN() >> OptionalInt.empty()
+        apiRequest.getTopN() >> Optional.empty()
         apiRequest.getSorts() >> ([] as Set)
-        apiRequest.getCount() >> OptionalInt.empty()
+        apiRequest.getCount() >> Optional.empty()
     }
 
     def "Test recursive buildQueryMethods"() {
@@ -355,7 +355,7 @@ class DruidQueryBuilderSpec extends Specification {
         setup:
         apiRequest = Mock(DataApiRequest)
 
-        apiRequest.getTopN() >> OptionalInt.of(5)
+        apiRequest.getTopN() >> Optional.of(5)
         apiRequest.getSorts() >> ([new OrderByColumn(
                 new LogicalMetric(null, null, lmi1),
                 SortDirection.DESC
@@ -381,7 +381,7 @@ class DruidQueryBuilderSpec extends Specification {
         setup:
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
-        apiRequest.topN >> OptionalInt.of(5)
+        apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> ([new OrderByColumn(
                 new LogicalMetric(null, null, (LogicalMetricInfo) lmi1),
                 SortDirection.DESC
@@ -399,7 +399,7 @@ class DruidQueryBuilderSpec extends Specification {
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
         setup:
         apiRequest = Mock(DataApiRequest)
-        apiRequest.topN >> OptionalInt.of(5)
+        apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> ([
                 new OrderByColumn(
                         new LogicalMetric(
@@ -432,7 +432,7 @@ class DruidQueryBuilderSpec extends Specification {
         setup:
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
-        apiRequest.topN >> OptionalInt.of(5)
+        apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> ([
                 new OrderByColumn(new LogicalMetric(tdq, null, lmi1), SortDirection.ASC),
                 new OrderByColumn(new LogicalMetric(tdq, null, lmi2), SortDirection.DESC)
@@ -476,7 +476,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
 
         apiRequest.dimensions >> { nDims > 1 ? ([resources.d1, resources.d2] as Set) : [resources.d1] as Set }
-        apiRequest.topN >> OptionalInt.of(5)
+        apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> {
             nSorts > 1 ?
                     [

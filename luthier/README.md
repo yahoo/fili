@@ -9,65 +9,33 @@ Users of Luthier goes through a four-step-process before launching an applicatio
  Let us take the lifecycle of a bare-bone [`app`](luthier/src/main/lua/app) as an example:
  (for a more comprehensive example, see [LUTHIER_WIKI_README.md](luthier/LUTHIER_WIKI_README.md))
  
-## Setup and Launching
-> Note: at the current stage, Luthier will build regardless whether you have Lua installed on your machine or not.
-> However, if you have written custom tests, mvn will skip it unless you have lua installed at `/usr/bin/lua` or 
-> `/usr/local/bin/lua`. To determine this, you can run `which lua`.
->
-> you need to have Lua to take full advantage of extending from the existing architecture. To do this, run 
->
-> `yum install epel-release && yum install lua` if you are on RHEL or CentOS
->
-> `sudo dnf install lua` if you are on Fedora
->
-> `sudo apt-get install lua` if you are on Debian/Ubuntu
-> 
-> `brew install lua` if you are on MacOS
->
-> The pre-existing system is tested on both Lua 5.3 and 5.2
+## Setup
+Luthier uses the [LuaJ](http://www.luaj.org/luaj/3.0/README.html) library to execute the Lua configuration, so 
+no manual setup needs to be performed. However, 
+it is recommended that you install Lua on your dev machine to speed your development cycle when writing your 
+configuration. To do so, run one of the following commands based on your architecture:
 
- 
-### Automatically
-You can use the following script which fully automates configuration generation, installation, and java execution:
-```bash
-git clone git@github.com:yahoo/fili.git
-cd fili
-luthier/scripts/buildApp.sh
+    * RHEL or CentOS: `yum install epel-release && yum install lua`
+
+    * Fedora: `sudo dnf install lua`
+
+    *Debian: `sudo apt-get install lua`
+
+    *Homebrew on Mac OS X: `brew install lua`
+
+The pre-existing system is tested on both Lua 5.3 and 5.2
+
+## Running
+To run a local Fili that uses a sample configuration:
+
 ```
-
----
-
-### Manually
-1. Build `*Config.json` into `luthier/target/classes/`.
-    > This is done by running a [Lua](https://www.lua.org/) script:
-    > ```bash
-    > cd luthier/src/main/lua/
-    > lua config.lua app
-    > ```
-    > The `config.lua` will trigger more Lua files to build respective configuration concepts, e.g. dimensions,
-    > logicalTables, metrics, etc. They can be found in the default [`app`](luthier/src/main/lua/app)
-2. Supply necessary Factories to handle each type of configuration concepts in
- [`luthier/src/main/java/com/yahoo/bard/webservice/data/config/luthier/factories`](luthier/src/main/java/com/yahoo/bard/webservice/data/config/luthier/factories). 
-    > We have already supplied the common ones, as you can see in the above link.
-3. Install Luthier using mvn
-4. Run the Fili webservice by executing the [LuthierMain](luthier/src/main/java/com/yahoo/bard/webservice/applicatoin/LuthierMain) file
-    > ```bash 
-    > # cd to the project base directory and 
-    > mvn -pl luthier exec:java@run-luthier-main
-    > ```
-    > or 
-    > ```bash 
-    > # cd to this directory
-    > mvn -pl exec:java@run-luthier-main
-    > ```
-
-From another window, run a test query against the default druid data.
-
-## Example Queries
+~> cd luthier
+~> ./scripts/runApp.sh
+```
+ 
+### Example Queries
 
 Here are some sample queries that you can run to verify your server:
-
-### Any Server
 
 - List [tables](http://localhost:9012/v1/tables):
   
@@ -83,7 +51,8 @@ Here are some sample queries that you can run to verify your server:
 
 ## How to extend Luthier
 We have provided a working example that takes advantage of Luthier's base app and extend it to build REST Api for
- some public data. Please see the set-up in [LUTHIER_WIKI_README.md](LUTHIER_WIKI_README.md) for details.
+some public data. The configuration can be found in `luthier/src/main/resources/`. `config.lua` is the entry point
+for the configuration. The configuration itself can be found in `luthier/src/main/resources/app/`.
 
 ## Notable Restrictions
 - Using this is great for testing out fili and druid, but it can't do interesting things with metrics.

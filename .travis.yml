@@ -33,6 +33,7 @@ before_script:
 
 script:
 - travis/deploy.bash
+- mvn -B org.owasp:dependency-check-maven:check
 - ssh-agent -k || true
 
 before_cache:
