@@ -37,7 +37,16 @@ public class GenericBinderFactory extends AbstractBinderFactory {
     public GenericBinderFactory() {
         DruidWebService druidWebService = buildMetadataDruidWebService(getMappers().getMapper());
         configLoader = new DruidNavigator(druidWebService, getMapper());
-        genericDimensionConfigs = new GenericDimensionConfigs(configLoader);
+        genericDimensionConfigs = buildDimensionConfigs();
+    }
+
+    /**
+     * Method to create the dimension config source for generic dimension loading.
+     *
+     * @return An instance of GenericDimensionConfigurations (collection wrapper and dimension metadata tools)
+     */
+    protected GenericDimensionConfigs buildDimensionConfigs() {
+        return new GenericDimensionConfigs(configLoader);
     }
 
     @Override

@@ -12,7 +12,17 @@ Current
 
 ### Changed:
 
+- [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
+   * Split luthier into a library package and a sample application
+   * Nested all sample applications
+   * Resolved dependecy issues around where properties files were sourced
+   * Rationalized dependencies for sample applications
+   
 ### Removed:
+
+### Fixed:
+
+- [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
 
 ### Deprecated:
 
@@ -70,6 +80,9 @@ Injectable custom response handling.
 
 
 ### Added:
+
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
 
 - [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
     * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
