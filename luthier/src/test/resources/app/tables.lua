@@ -26,9 +26,9 @@ local M = {}
             * strict - strict single data source physical table:
                 A physical table backed up by one druid table. When querying a strict table with
                 partial data turned on, the data is considered "complete" if and only if there
-                is no missing data in any of the queried columns. 
+                is no missing data in any of the queried columns.
             * permissive - permissive single data source physical table:
-                A physical table backed up by one druid table. When querying a permissive table 
+                A physical table backed up by one druid table. When querying a permissive table
                 with partial data turned on, the data is considered "complete" if at least one
                 of the queried columns has no missing data.
     * dateTimeZone - A case sensitive name according to joda's dateTimeZone to indicate the
@@ -68,22 +68,65 @@ local M = {}
 ]]
 -------------------------------------------------------------------------------
 
-local test_dimensions = {
-    "testDimension"
+local wikipedia_dimensions = {
+    "comment",
+    "countryIsoCode",
+    "regionIsoCode",
+    "page",
+    "user",
+    "isUnpatrolled",
+    "isNew",
+    "isRobot",
+    "isAnonymous",
+    "isMinor",
+    "namespace",
+    "channel",
+    "countryName",
+    "regionName",
+    "metroCode",
+    "cityName"
+}
+
+local air_quality_dimensions = {
+    "PT08.S2(NMHC)",
+    "PT08.S4(NO2)",
+    "PT08.S4(NO2)",
+    "C6H6(GT)",
+    "PT08.S1(CO)",
+    "NOx(GT)",
+    "RH",
+    "AH",
+    "NMHC(GT)",
+    "T",
+    "PT08.S3(NOx)",
+    "PT08.S5(O3)",
+    "CO(GT)"
 }
 
 M.physical = {
-    TEST_PHYSICAL_TABLE = {
+    wikiticker = {
         dateTimeZone = "UTC",
         type = "strict",
         metrics = {
-            "testMetric"
+            "added",
+            "delta",
+            "deleted"
         },
-        dimensions = test_dimensions,
+        dimensions = wikipedia_dimensions,
         granularity = "hour",
         logicalToPhysicalColumnNames = {
-            testDimension = "druid_test_dimension"
+            testDimension = "testDimensionPhysicalName"
         }
+    },
+    air = {
+        type = "permissive",
+        dateTimeZone = "UTC",
+        metrics = {
+            "COM",
+            "NO2M"
+        },
+        dimensions = air_quality_dimensions,
+        granularity = "hour"
     }
 }
 
@@ -142,7 +185,7 @@ M.physical = {
     Logical tables serve two purposes:
         1. They provide a logical grouping of metrics and dimensions for people
             to query against.
-        2. They serve as a means of grouping a physical table and its 
+        2. They serve as a means of grouping a physical table and its
             performance slices together. A performance slice is a druid
             table that is intended to be a subtable of another druid table.
             Typically this table has fewer dimensions or preaggregated to a
@@ -156,22 +199,34 @@ M.physical = {
 -------------------------------------------------------------------------------
 
 M.logical = {
-    testLogicalTable = {
-        category = "testCategory",
-        longName = "testLongName",
-        description = "testDescription",
+    wikipedia = {
+        category = "wikipedia category",
+        longName = "wikipedia logical table",
+        description = "wikipedia description",
         retention = "P2Y",
         metrics =  {
-            "testMetric"
+            "count", "added", "delta", "deleted"
         },
-        dimensions = test_dimensions,
+        dimensions = wikipedia_dimensions,
         granularities = {
             "all",
             "hour",
             "day"
         },
-        physicalTables = {"TEST_PHYSICAL_TABLE"},
+        physicalTables = {"wikiticker"},
         dateTimeZone = "UTC"
+    },
+    air_quality = {
+        metrics = {
+            "averageCOPerDay", "averageNO2PerDay"
+        },
+        dimensions = air_quality_dimensions,
+        granularities = {
+            "all",
+            "hour",
+            "day"
+        },
+        physicalTables = {"air"}
     }
 }
 

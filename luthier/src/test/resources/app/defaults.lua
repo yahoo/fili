@@ -87,8 +87,8 @@ function M.metric_defaulting(metric_name, metric)
     metric_config.category = metric_config.category or M.DEFAULT_METRIC_CATEGORY
     metric_config.dependencyMetricNames = metric_config.druidMetric and {metric_config.druidMetric}
             or metric_config.dependencies           -- if druidMetric exists: use {druidMetric}
-            or M.DEFAULT_METRIC_DEPENDENCY_NAMES    -- else if dependencies exists: use dependencies
-                                                    --      else use an empty table {}
+            or M.DEFAULT_METRIC_DEPENDENCY_NAMES    -- else: if dependencies exists: use dependencies
+                                                    --       else: use an empty table {}
     return metric_config
 end
 return M
