@@ -296,4 +296,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
     public SqlTimeConverter getTimeConverter() {
         return sqlTimeConverter;
     }
+
+    protected boolean isValidQuery(DruidQuery<?> druidQuery) {
+        return super.isValidQuery(druidQuery);
+    }
 }
