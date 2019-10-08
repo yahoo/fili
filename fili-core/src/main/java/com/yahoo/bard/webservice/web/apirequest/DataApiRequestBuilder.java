@@ -36,31 +36,30 @@ import java.util.stream.Collectors;
 /**
  * Builder for {@link DataApiRequestValueObject} objects.
  *
- * Construction and validation of some resources will depend on some other request resource. For example, some
- * dimensions may only be accessible on specific logical tables. In this case, the dimension generator needs to ensure
- * that all grouping dimensions are against a logical table that supports them, and thus has a dependency on the
- * LogicalTable resource. The LogicalTable resource must be generated before the dimension generator runs.
+ * Construction and validation of some resources may depend on some other request resources. For example, some
+ * {@link Dimension}s may only be accessible on specific {@link LogicalTable}s. In this case, the dimension generator
+ * needs to ensure that all grouping dimensions are against a logical table that supports them, and thus it has a
+ * dependency on the LogicalTable resource. The LogicalTable resource must be generated before the dimension generator
+ * runs.
  *
  * To support this, this builder uses {@code isResourceInitialized()} and {@code getResourceIfInitialized()} semantics.
  * {@code isResourceInitialized()} should ALWAYS be called before attempting to access a resource using
  * {@code getResourceIfInitialized()} to ensure that the generator for that resource has been called.
  *
- * A {@link UninitializedRequestResourceException} is thrown if {@code getResourceIfInitialized()} is called before the
+ * An {@link UninitializedRequestResourceException} is thrown if {@code getResourceIfInitialized()} is called before the
  * resource has been set using the appropriate setter.
  *
  * Resources that are not grouped into collections are returned as {@link Optional}. This is because the resource may
  * not have been specified in the query. Specific generator implementations may throw an error if a resource is empty,
- * but this is an implementation detail and this {@link DataApiRequest} construction API does not enforce this.
+ * but this is an implementation detail and the {@link DataApiRequest} construction API does not enforce this.
  *
  * Whether or not the resource has been initialized it completely separate from the Optional contract on the get
- * methods.
+ * methods. {@code isResourceInitialized} and the {@code Optional} return value are separate contracts.
  */
 public class DataApiRequestBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestBuilder.class);
-
     /**
-     * Enum representing the phases of building a data api request. A a setter for each of these phases MUST be called
+     * Enum representing the phases of building a data api request. A setter for each of these phases MUST be called
      * at least once before the build method is called.
      */
     public enum RequestResource {
@@ -83,6 +82,9 @@ public class DataApiRequestBuilder {
 
         private String resourceName;
 
+        /**
+         * Constructor.
+         */
         RequestResource() {
             this.resourceName = EnumUtils.camelCase(this.name());
         }
@@ -130,7 +132,7 @@ public class DataApiRequestBuilder {
     /**
      * Constructor.
      *
-     * @param resources set of resources generators can use while building pieces of the
+     * @param resources set of config resources generators can use while building pieces of the
      * {@link DataApiRequestValueObject}
      */
     public DataApiRequestBuilder(BardConfigResources resources) {
