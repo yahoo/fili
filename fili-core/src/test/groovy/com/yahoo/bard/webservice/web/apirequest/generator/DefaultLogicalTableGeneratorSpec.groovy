@@ -39,7 +39,7 @@ class DefaultLogicalTableGeneratorSpec extends Specification {
 
         and: "build the granularity"
         DataApiRequestBuilder builder = new DataApiRequestBuilder(resources)
-        builder.granularity(params, new TestGenerator<Granularity>(granularity))
+        builder.setGranularity(params, new TestGenerator<Granularity>(granularity))
 
         expect: "we can fetch the LogicalTable from it"
         gen.bind(builder, params, resources) == logicalTable
@@ -63,7 +63,7 @@ class DefaultLogicalTableGeneratorSpec extends Specification {
 
         and: "built the granularity"
         DataApiRequestBuilder builder = new DataApiRequestBuilder(resources)
-        builder.granularity(params, new TestGenerator<Granularity>(granularity))
+        builder.setGranularity(params, new TestGenerator<Granularity>(granularity))
 
         when: "we try to fetch a non-existing LogicalTable"
         gen.bind(builder, params, resources)

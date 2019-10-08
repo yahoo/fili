@@ -7,6 +7,8 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.GRANULARITY;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.INTERVALS;
 
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
@@ -56,7 +58,7 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
         return generateIntervals(
                 new DateTime(),
                 params.getIntervals().orElse(""),
-                builder.getGranularity().get(),
+                builder.getGranularityIfInitialized().get(),
                 resources.getDateTimeFormatter()
         );
     }
@@ -69,7 +71,7 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
             BardConfigResources resources
     ) {
         validateGranularityPresent(builder);
-        validateTimeAlignment(builder.getGranularity().get(), entity);
+        validateTimeAlignment(builder.getGranularityIfInitialized().get(), entity);
     }
 
     /**
@@ -78,10 +80,13 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
      * @param builder The builder which contains all of the
      */
     private void validateGranularityPresent(DataApiRequestBuilder builder) {
-        if (builder.getGranularity() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Intervals", Collections.singleton("Granularity"));
+        if (!builder.isGranularityInitialized()) {
+            throw new UnsatisfiedApiRequestConstraintsException(
+                    INTERVALS.getResourceName(),
+                    Collections.singleton(GRANULARITY.getResourceName())
+            );
         }
-        if (!builder.getGranularity().isPresent()) {
+        if (!builder.getGranularityIfInitialized().isPresent()) {
             throw new BadApiRequestException("Granularity is required for all data queries, but was not present in" +
                     "the request. Please add granularity to your query and try again.");
         }

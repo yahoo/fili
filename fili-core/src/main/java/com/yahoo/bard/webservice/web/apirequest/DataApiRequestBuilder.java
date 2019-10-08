@@ -19,8 +19,6 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -189,7 +187,10 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for Dimensions
      * @return the builder
      */
-    public DataApiRequestBuilder setDimensions(RequestParameters params, Generator<LinkedHashSet<Dimension>> generator) {
+    public DataApiRequestBuilder setDimensions(
+            RequestParameters params,
+            Generator<LinkedHashSet<Dimension>> generator
+    ) {
         built.put(RequestResource.DIMENSIONS, Boolean.TRUE);
         this.dimensions = bindAndValidate(params, generator);
         return this;
@@ -219,7 +220,10 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for logical metrics
      * @return the builder
      */
-    public DataApiRequestBuilder setMetrics(RequestParameters params, Generator<LinkedHashSet<LogicalMetric>> generator) {
+    public DataApiRequestBuilder setMetrics(
+            RequestParameters params,
+            Generator<LinkedHashSet<LogicalMetric>> generator
+    ) {
         built.put(RequestResource.LOGICAL_METRICS, Boolean.TRUE);
         this.metrics = bindAndValidate(params, generator);
         return this;
