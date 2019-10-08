@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.GRANULARITY;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.TIMEZONE;
 
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
@@ -54,14 +56,17 @@ public class DefaultGranularityGenerator implements Generator<Granularity> {
         String granularity = params.getGranularity()
                 .orElseThrow(() -> new BadApiRequestException(UNKNOWN_GRANULARITY.logFormat("null")));
 
-        if (builder.getTimeZone() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Granularity", Collections.singleton("Timezone"));
+        if (!builder.isTimeZoneInitialized()) {
+            throw new UnsatisfiedApiRequestConstraintsException(
+                    GRANULARITY.getResourceName(),
+                    Collections.singleton(TIMEZONE.getResourceName())
+            );
         }
 
-        if (builder.getTimeZone().isPresent()) {
+        if (builder.getTimeZoneIfInitialized().isPresent()) {
             return generateGranularity(
                     granularity,
-                    builder.getTimeZone().get(),
+                    builder.getTimeZoneIfInitialized().get(),
                     resources.getGranularityParser()
             );
         }

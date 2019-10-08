@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.GRANULARITY;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.INTERVALS;
 
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -46,17 +48,21 @@ public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
             RequestParameters params,
             BardConfigResources resources
     ) {
-        if (builder.getGranularity() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Intervals", Collections.singleton("Granularity"));
+        if (!builder.isGranularityInitialized()) {
+            throw new UnsatisfiedApiRequestConstraintsException(
+                    INTERVALS.getResourceName(),
+                    Collections.singleton(GRANULARITY.getResourceName())
+            );
         }
-        if (!builder.getGranularity().isPresent()) {
-            throw new BadApiRequestException("Granularity is required for all data queries, but was not present in" +
+
+        if (!builder.getGranularityIfInitialized().isPresent()) {
+            throw new BadApiRequestException("Granularity is required for all data queries, but was not present in " +
                     "the request. Please add granularity to your query and try again.");
         }
 
         return generateTable(
                 params.getLogicalTable().orElse(""),
-                builder.getGranularity().get(),
+                builder.getGranularityIfInitialized().get(),
                 resources.getLogicalTableDictionary()
         );
     }

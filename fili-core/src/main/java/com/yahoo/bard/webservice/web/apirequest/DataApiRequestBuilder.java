@@ -36,8 +36,24 @@ import java.util.stream.Collectors;
 /**
  * Builder for {@link DataApiRequestValueObject} objects.
  *
- * TODO document the isResourceInitialized and the getResourceIfInitialized semantics and proper usage, including
- * exceptions thrown
+ * Construction and validation of some resources will depend on some other request resource. For example, some
+ * dimensions may only be accessible on specific logical tables. In this case, the dimension generator needs to ensure
+ * that all grouping dimensions are against a logical table that supports them, and thus has a dependency on the
+ * LogicalTable resource. The LogicalTable resource must be generated before the dimension generator runs.
+ *
+ * To support this, this builder uses {@code isResourceInitialized()} and {@code getResourceIfInitialized()} semantics.
+ * {@code isResourceInitialized()} should ALWAYS be called before attempting to access a resource using
+ * {@code getResourceIfInitialized()} to ensure that the generator for that resource has been called.
+ *
+ * A {@link UninitializedRequestResourceException} is thrown if {@code getResourceIfInitialized()} is called before the
+ * resource has been set using the appropriate setter.
+ *
+ * Resources that are not grouped into collections are returned as {@link Optional}. This is because the resource may
+ * not have been specified in the query. Specific generator implementations may throw an error if a resource is empty,
+ * but this is an implementation detail and this {@link DataApiRequest} construction API does not enforce this.
+ *
+ * Whether or not the resource has been initialized it completely separate from the Optional contract on the get
+ * methods.
  */
 public class DataApiRequestBuilder {
 
@@ -63,7 +79,7 @@ public class DataApiRequestBuilder {
         DOWNLOAD_FILENAME,
         TIMEZONE,
         ASYNC_AFTER,
-        PAGINATION;
+        PAGINATION_PARAMETERS;
 
         private String resourceName;
 
@@ -145,7 +161,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for LogicalTable
      * @return the builder
      */
-    public DataApiRequestBuilder logicalTable(RequestParameters params, Generator<LogicalTable> generator) {
+    public DataApiRequestBuilder setLogicalTable(RequestParameters params, Generator<LogicalTable> generator) {
         built.put(RequestResource.LOGICAL_TABLE, Boolean.TRUE);
         this.logicalTable = bindAndValidate(params, generator);
         return this;
@@ -158,7 +174,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for Granularity
      * @return the builder
      */
-    public DataApiRequestBuilder granularity(RequestParameters params, Generator<Granularity> generator) {
+    public DataApiRequestBuilder setGranularity(RequestParameters params, Generator<Granularity> generator) {
         built.put(RequestResource.GRANULARITY, Boolean.TRUE);
         this.granularity = bindAndValidate(params, generator);
         return this;
@@ -171,7 +187,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for Dimensions
      * @return the builder
      */
-    public DataApiRequestBuilder dimensions(RequestParameters params, Generator<LinkedHashSet<Dimension>> generator) {
+    public DataApiRequestBuilder setDimensions(RequestParameters params, Generator<LinkedHashSet<Dimension>> generator) {
         built.put(RequestResource.DIMENSIONS, Boolean.TRUE);
         this.dimensions = bindAndValidate(params, generator);
         return this;
@@ -185,7 +201,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for mapping of dimension to request dimension fields
      * @return the builder
      */
-    public DataApiRequestBuilder dimensionFields(
+    public DataApiRequestBuilder setDimensionFields(
             RequestParameters params,
             Generator<LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>> generator
     ) {
@@ -201,7 +217,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for logical metrics
      * @return the builder
      */
-    public DataApiRequestBuilder metrics(RequestParameters params, Generator<LinkedHashSet<LogicalMetric>> generator) {
+    public DataApiRequestBuilder setMetrics(RequestParameters params, Generator<LinkedHashSet<LogicalMetric>> generator) {
         built.put(RequestResource.LOGICAL_METRICS, Boolean.TRUE);
         this.metrics = bindAndValidate(params, generator);
         return this;
@@ -214,7 +230,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for list of Intervals
      * @return the builder
      */
-    public DataApiRequestBuilder intervals(RequestParameters params, Generator<List<Interval>> generator) {
+    public DataApiRequestBuilder setIntervals(RequestParameters params, Generator<List<Interval>> generator) {
         built.put(RequestResource.INTERVALS, Boolean.TRUE);
         this.intervals = bindAndValidate(params, generator);
         return this;
@@ -227,7 +243,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for ApiFilters
      * @return the builder
      */
-    public DataApiRequestBuilder apiFilters(RequestParameters params, Generator<ApiFilters> generator) {
+    public DataApiRequestBuilder setApiFilters(RequestParameters params, Generator<ApiFilters> generator) {
         built.put(RequestResource.API_FILTERS, Boolean.TRUE);
         this.apiFilters = bindAndValidate(params, generator);
         return this;
@@ -241,7 +257,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for mapping og logical metric to api havings
      * @return the builder
      */
-    public DataApiRequestBuilder havings(
+    public DataApiRequestBuilder setHavings(
             RequestParameters params,
             Generator<LinkedHashMap<LogicalMetric, Set<ApiHaving>>> generator
     ) {
@@ -257,7 +273,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for set of sorts
      * @return the builder
      */
-    public DataApiRequestBuilder sorts(
+    public DataApiRequestBuilder setSorts(
             RequestParameters params,
             Generator<LinkedHashSet<OrderByColumn>> generator
     ) {
@@ -273,7 +289,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for count
      * @return the builder
      */
-    public DataApiRequestBuilder count(RequestParameters params, Generator<Integer> generator) {
+    public DataApiRequestBuilder setCount(RequestParameters params, Generator<Integer> generator) {
         built.put(RequestResource.COUNT, Boolean.TRUE);
         this.count = bindAndValidate(params, generator);
         return this;
@@ -286,7 +302,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for topN
      * @return the builder
      */
-    public DataApiRequestBuilder topN(RequestParameters params, Generator<Integer> generator) {
+    public DataApiRequestBuilder setTopN(RequestParameters params, Generator<Integer> generator) {
         built.put(RequestResource.TOP_N, Boolean.TRUE);
         this.topN = bindAndValidate(params, generator);
         return this;
@@ -299,7 +315,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for ResponseFormatType
      * @return the builder
      */
-    public DataApiRequestBuilder format(RequestParameters params, Generator<ResponseFormatType> generator) {
+    public DataApiRequestBuilder setFormat(RequestParameters params, Generator<ResponseFormatType> generator) {
         built.put(RequestResource.FORMAT, Boolean.TRUE);
         this.format = bindAndValidate(params, generator);
         return this;
@@ -312,7 +328,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for the download filename
      * @return the builder
      */
-    public DataApiRequestBuilder downloadFilename(RequestParameters params, Generator<String> generator) {
+    public DataApiRequestBuilder setDownloadFilename(RequestParameters params, Generator<String> generator) {
         built.put(RequestResource.DOWNLOAD_FILENAME, Boolean.TRUE);
         this.downloadFilename = bindAndValidate(params, generator);
         return this;
@@ -325,7 +341,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for DateTimeZone
      * @return the builder
      */
-    public DataApiRequestBuilder timeZone(RequestParameters params, Generator<DateTimeZone> generator) {
+    public DataApiRequestBuilder setTimeZone(RequestParameters params, Generator<DateTimeZone> generator) {
         built.put(RequestResource.TIMEZONE, Boolean.TRUE);
         this.timeZone = bindAndValidate(params, generator);
         return this;
@@ -338,7 +354,7 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for async after timeout
      * @return the builder
      */
-    public DataApiRequestBuilder asyncAfter(RequestParameters params, Generator<Long> generator) {
+    public DataApiRequestBuilder setAsyncAfter(RequestParameters params, Generator<Long> generator) {
         built.put(RequestResource.ASYNC_AFTER, Boolean.TRUE);
         this.asyncAfter = bindAndValidate(params, generator);
         return this;
@@ -351,11 +367,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for PaginationParameters
      * @return the builder
      */
-    public DataApiRequestBuilder paginationParameters(
+    public DataApiRequestBuilder setPaginationParameters(
             RequestParameters params,
             Generator<PaginationParameters> generator
     ) {
-        built.put(RequestResource.PAGINATION, Boolean.TRUE);
+        built.put(RequestResource.PAGINATION_PARAMETERS, Boolean.TRUE);
         this.paginationParameters = bindAndValidate(params, generator);
         return this;
     }
@@ -655,10 +671,9 @@ public class DataApiRequestBuilder {
         }
         return Optional.ofNullable(timeZone);
     }
-    // TODO convert these getters to the new format
 
     /**
-     * Returns if async after is initialized
+     * Returns if async after is initialized.
      *
      * @return if async after is initialized
      */
@@ -679,13 +694,22 @@ public class DataApiRequestBuilder {
     }
 
     /**
+     * Returns if pagination parameters are initialized.
+     *
+     * @return if pagination parameters are initialized
+     */
+    public boolean isPaginationParametersInitialized() {
+        return built.get(RequestResource.PAGINATION_PARAMETERS);
+    }
+
+    /**
      * Getter for the pagination parameters.
      *
      * @return the pagination parameters
      */
-    public Optional<PaginationParameters> getPaginationParameters() {
-        if (!built.get(RequestResource.PAGINATION)) {
-            return null;
+    public Optional<PaginationParameters> getPaginationParametersIfInitialized() {
+        if (!isPaginationParametersInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.PAGINATION_PARAMETERS);
         }
         return Optional.ofNullable(paginationParameters);
     }
@@ -745,6 +769,7 @@ public class DataApiRequestBuilder {
      * been parsed is always an error case.
      */
     public static class UninitializedRequestResourceException extends RuntimeException {
+
         private static final String UNINITIALIZED_REQUEST_RESOURCE_MESSAGE = "Resource %s was requested but has not " +
                 "been initialized. Ensure the generator for resource %s has been used to generate the resource AND " +
                 "the resource has been added to the builder.";

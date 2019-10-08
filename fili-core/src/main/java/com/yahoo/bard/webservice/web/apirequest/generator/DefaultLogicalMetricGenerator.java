@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_METRICS;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_TABLE;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -62,16 +64,18 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
             RequestParameters params,
             BardConfigResources resources
     ) {
-        if (builder.getLogicalTable() == null) {
+        if (!builder.isLogicalTableInitialized()) {
             throw new UnsatisfiedApiRequestConstraintsException(
-                    "Logical Metric",
-                    Collections.singleton("Logical Table")
+                    LOGICAL_METRICS.getResourceName(),
+                    Collections.singleton(LOGICAL_TABLE.getResourceName())
             );
         }
-        if (!builder.getLogicalTable().isPresent()) {
+
+        if (!builder.getLogicalTableIfInitialized().isPresent()) {
             throw new BadApiRequestException("A logical table is required for all data queries");
         }
-        validateMetrics(entity, builder.getLogicalTable().get());
+
+        validateMetrics(entity, builder.getLogicalTableIfInitialized().get());
     }
 
     /**

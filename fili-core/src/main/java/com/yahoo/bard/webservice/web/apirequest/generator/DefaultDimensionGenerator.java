@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.DIMENSIONS;
+import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_TABLE;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
@@ -64,16 +66,19 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             RequestParameters params,
             BardConfigResources resources
     ) {
-        if (builder.getLogicalTable() == null) {
-            throw new UnsatisfiedApiRequestConstraintsException("Dimensions", Collections.singleton("Logical Table"));
+        if (!builder.isLogicalTableInitialized()) {
+            throw new UnsatisfiedApiRequestConstraintsException(
+                    DIMENSIONS.getResourceName(),
+                    Collections.singleton(LOGICAL_TABLE.getResourceName())
+            );
         }
 
-        if (!builder.getLogicalTable().isPresent()) {
+        if (!builder.getLogicalTableIfInitialized().isPresent()) {
             throw new BadApiRequestException("No logical table specified. Data requests require exactly one logical" +
                     "table to be queried");
         }
 
-        validateRequestDimensions(entity, builder.getLogicalTable().get());
+        validateRequestDimensions(entity, builder.getLogicalTableIfInitialized().get());
     }
 
     /**
