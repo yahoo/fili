@@ -54,7 +54,7 @@ public class DefaultGranularityGenerator implements Generator<Granularity> {
             BardConfigResources resources
     ) {
         String granularity = params.getGranularity()
-                .orElseThrow(() -> new BadApiRequestException(UNKNOWN_GRANULARITY.logFormat("null")));
+                .orElseThrow(() -> new BadApiRequestException("Granularity is missing from the query."));
 
         if (!builder.isTimeZoneInitialized()) {
             throw new UnsatisfiedApiRequestConstraintsException(
