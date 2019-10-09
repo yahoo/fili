@@ -1,6 +1,5 @@
-/*
- * Copyright (c) 2019 Yahoo! Inc. All rights reserved.
- */
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.presto;
 
 import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY;
@@ -263,6 +262,14 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Returns the post-aggregations of the query.
+     *
+     * @param builder the RelBuilder
+     * @param druidQuery the source druid query
+     * @param apiToFieldMapper api column to logic column name mapping
+     * @return a list of RexNode representing the post aggregation
+     */
     private List<RexNode> getPostAggregations(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
@@ -297,6 +304,14 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
         return sqlTimeConverter;
     }
 
+    /**
+     * Determines whether or not a query is able to be processed using
+     * the Sql backend.
+     *
+     * @param druidQuery  The query to check if is able to be processed.
+     *
+     * @return true if a valid query, else false.
+     */
     protected boolean isValidQuery(DruidQuery<?> druidQuery) {
         return super.isValidQuery(druidQuery);
     }

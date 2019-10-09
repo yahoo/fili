@@ -1,6 +1,5 @@
-/*
- * Copyright (c) 2019 Yahoo! Inc. All rights reserved.
- */
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.presto;
 
 
@@ -33,24 +32,33 @@ public class PrestoDataSource implements DataSource {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PrestoDataSource.class);
 
     /**
-     * Constructor
+     * Constructor.
      * Follow https://docs.google.com/presentation/d/17QfH9uF6JzTkbA8SSVhS-xwqKfpEEtgDxqYqMlK3B4s/edit#slide=id.p
      *
      * TODO: change user to headless
      */
     public PrestoDataSource() {
         properties = new Properties();
-        properties.setProperty("user", "ymao");
-        properties.setProperty("KerberosPrincipal", "ymao@Y.CORP.YAHOO.COM");
-        properties.setProperty("KerberosUseCanonicalHostname", "false");
-        properties.setProperty("KerberosRemoteServiceName", "HTTP");
+//        properties.setProperty("user", "mzhao50");
+//        properties.setProperty("KerberosPrincipal", "mzhao50@Y.CORP.YAHOO.COM");
+//        properties.setProperty("KerberosUseCanonicalHostname", "false");
+//        properties.setProperty("KerberosRemoteServiceName", "HTTP");
+//        properties.setProperty("SSL", "true");
+//        properties.setProperty("SessionProperties", "distributed_join=false,query_max_execution_time=15m");
+
+        properties.setProperty("user", "p_parrot");
         properties.setProperty("SSL", "true");
-        properties.setProperty("SessionProperties", "distributed_join=false,query_max_execution_time=15m");
+        properties.setProperty("KerberosRemoteServiceName", "HTTP");
+        properties.setProperty("KerberosUseCanonicalHostname", "false");
+        properties.setProperty("KerberosConfigPath", "/etc/krb5.conf");
+        properties.setProperty("KerberosPrincipal", "p_parrot");
+        properties.setProperty("KerberosKeytabPath", "/home/p_parrot/p_parrot.prod.headless.keytab");
     }
 
     @Override
     public Connection getConnection() throws SQLException {
         DriverManager.registerDriver(new PrestoDriver());
+        LOG.info("getConnection with properties: {}", properties);
         return DriverManager.getConnection(DATABASE_URL, properties);
     }
 

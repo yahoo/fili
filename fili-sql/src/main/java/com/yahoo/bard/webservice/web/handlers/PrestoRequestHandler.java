@@ -1,15 +1,14 @@
-/*
- * Copyright (c) 2017 Yahoo! Inc. All rights reserved.
- */
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.sql.presto.PrestoDataSource;
 import com.yahoo.bard.webservice.sql.SqlAggregationQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
+import com.yahoo.bard.webservice.sql.presto.PrestoDataSource;
 import com.yahoo.bard.webservice.sql.presto.PrestoSqlBackedClient;
 import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
@@ -55,7 +54,7 @@ public class PrestoRequestHandler implements DataRequestHandler {
             PrestoDataSource dataSource = new PrestoDataSource();
             sqlConverter = new PrestoSqlBackedClient(dataSource, mapper);
         } catch (SQLException e) {
-            LOG.warn("Failed to initialize Presto backend", e);
+            LOG.error("Failed to initialize Presto backend", e);
         }
     }
 
@@ -79,6 +78,7 @@ public class PrestoRequestHandler implements DataRequestHandler {
         boolean isSqlBacked = druidQuery.getDataSource()
                 .getPhysicalTable()
                 .getSourceTable() instanceof SqlPhysicalTable;
+        LOG.info("isSqlBacked {}", isSqlBacked);
         if (sqlConverter != null && isSqlBacked) {
             LoggingContext copy = new LoggingContext(RequestLog.copy());
             SuccessCallback success = rootNode -> {

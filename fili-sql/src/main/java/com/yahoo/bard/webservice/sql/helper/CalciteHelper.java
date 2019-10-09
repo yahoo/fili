@@ -15,6 +15,8 @@ import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.Programs;
 import org.apache.calcite.tools.RelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -34,6 +36,9 @@ public class CalciteHelper {
             SYSTEM_CONFIG.getPackageVariableName("database_catalog"),
             null
     );
+    private static SchemaPlus schemaPlus = null;
+    private static final Logger LOG = LoggerFactory.getLogger(CalciteHelper.class);
+
     /**
      * Initialize the helper with a datasource and it's schema.
      *
@@ -44,6 +49,7 @@ public class CalciteHelper {
     public CalciteHelper(DataSource dataSource) throws SQLException {
         this.dataSource = dataSource;
 
+        LOG.info("getConnection in CalciteHelper constructor");
         try (Connection connection = getConnection()) {
             this.dialect = SqlDialect.create(connection.getMetaData());
         }
@@ -123,32 +129,25 @@ public class CalciteHelper {
      * @param rootSchema  The calcite schema for the database.
      * @param dataSource  The dataSource for the jdbc schema.
      * @param schemaName  The name of the schema used for the database.
-     *
-     * @return the schema.
-     */
-    private static SchemaPlus addSchema(SchemaPlus rootSchema, DataSource dataSource, String schemaName) {
-        // todo look into https://github.com/yahoo/fili/issues/509
-        return rootSchema.add(// avg tests run at ~75-100ms
-                schemaName,
-                JdbcSchema.create(rootSchema, null, dataSource, null, null)
-        );
-    }
-
-    /**
-     * Adds the schema name to the rootSchema.
-     *
-     * @param rootSchema  The calcite schema for the database.
-     * @param dataSource  The dataSource for the jdbc schema.
-     * @param schemaName  The name of the schema used for the database.
      * @param catalog The name of the catalog used for the database.
      *
      * @return the schema.
      */
-    private static SchemaPlus addSchema(SchemaPlus rootSchema, DataSource dataSource, String schemaName, String catalog) {
+    private static SchemaPlus addSchema(
+            SchemaPlus rootSchema,
+            DataSource dataSource,
+            String schemaName,
+            String catalog
+    ) {
         // todo look into https://github.com/yahoo/fili/issues/509
-        return rootSchema.add(// avg tests run at ~75-100ms
-                schemaName,
-                JdbcSchema.create(rootSchema, null, dataSource, catalog, schemaName)
-        );
+        if (schemaPlus == null) {
+            schemaPlus = rootSchema.add(// avg tests run at ~75-100ms
+                    schemaName,
+                    JdbcSchema.create(rootSchema, null, dataSource, catalog, schemaName)
+            );
+            return schemaPlus;
+        } else {
+            return schemaPlus;
+        }
     }
 }

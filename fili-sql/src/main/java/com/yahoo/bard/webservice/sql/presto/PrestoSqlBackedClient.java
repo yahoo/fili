@@ -1,6 +1,5 @@
-/*
- * Copyright (c) 2019 Yahoo! Inc. All rights reserved.
- */
+// Copyright 2019 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.presto;
 
 
@@ -98,6 +97,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
         String sqlQuery = druidQueryToPrestoConverter.buildSqlQuery(druidQuery, aliasMaker);
 
+        LOG.info("sqlQuery: {}", sqlQuery);
         sqlQuery = sqlQueryToPrestoQuery(sqlQuery);
 
         PrestoResultSetProcessor resultSetProcessor = new PrestoResultSetProcessor(
@@ -107,6 +107,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 druidQueryToPrestoConverter.getTimeConverter()
         );
 
+        LOG.info("getConnection in PrestoSqlBackedClient");
         try (Connection connection = calciteHelper.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
@@ -138,6 +139,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * @return a presto compatible sql dialect.
      * */
     private static String sqlQueryToPrestoQuery(String sqlQuery) {
+
         String fixTimePrestoQuery = sqlQuery
                 .replace("DAYOFYEAR(\"datestamp\")", "DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),\'%Y%m%d%H\'))")
                 .replace(" YEAR(\"datestamp\")", " SUBSTRING(datestamp,1,4)")
@@ -164,8 +166,10 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
 
-        String fixCatalogPrestoQuery = fixTimePrestoQuery
-                .replace("\"spotlight_hive\"", "\"dilithiumblue\".\"spotlight_hive\"");
+//        String fixCatalogPrestoQuery = fixTimePrestoQuery
+//                .replace("\"spotlight_hive\"", "\"dilithiumblue\".\"spotlight_hive\"");
+
+        String fixCatalogPrestoQuery = fixTimePrestoQuery;
 
         int orderbyIndex = fixCatalogPrestoQuery.indexOf("ORDER BY");
         final int orderByClauseLength = 9;
@@ -182,6 +186,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         }
 
         String limitPrestoQuery = fetchToLimitHelper(fixQuotePrestoQuery);
+        LOG.info("In sqlQueryToPrestoQuery processed sqlQuery: {}", limitPrestoQuery);
         return limitPrestoQuery;
     }
 
