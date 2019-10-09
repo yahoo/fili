@@ -1,12 +1,13 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.generator
+package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
@@ -59,16 +60,17 @@ class DataApiRequestBuilderSpec extends Specification {
 
     def "Calling any of the setters will set the generated value in the builder, and mark that stage as done"() {
         expect: "built map initializes granularity to not yet built"
-        !builder.built.get(DataApiRequestBuilder.BuildPhase.GRANULARITY)
+        !builder.built.get(DataApiRequestBuilder.RequestResource.GRANULARITY)
 
         when: "builder builds granularity"
-        builder.granularity(simpleRequestParameters, granularityGenerator)
+        builder.setGranularity(simpleRequestParameters, granularityGenerator)
 
-        then: "granularity is properly set from generator"
-        builder.granularity == DefaultTimeGrain.DAY
+        then: "granularity is initialized"
+        builder.isGranularityInitialized()
 
-        and: "granularity is marked as having been built"
-        builder.built.get(DataApiRequestBuilder.BuildPhase.GRANULARITY)
+        and: "granularity is properly set"
+        builder.getGranularityIfInitialized().get() == DefaultTimeGrain.DAY
+
     }
 
     def "Building DataApiRequest throws an error unless all build phases have been completed"() {
@@ -90,7 +92,7 @@ class DataApiRequestBuilderSpec extends Specification {
         thrown(IllegalStateException)
 
         when:
-        DataApiRequestBuilder.BuildPhase.values().each {
+        DataApiRequestBuilder.RequestResource.values().each {
             builder.built.put(it, Boolean.TRUE)
         }
         builder.build()

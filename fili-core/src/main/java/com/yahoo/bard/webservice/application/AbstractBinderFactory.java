@@ -139,6 +139,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.DateTimeParser;
+import org.joda.time.format.DateTimePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -357,6 +363,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getDataExceptionHandler()).to(DataExceptionHandler.class);
 
                 bindExceptionHandlers(this);
+
+                bind(buildDateTimeFormatter()).to(DateTimeFormatter.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
@@ -1315,6 +1323,31 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected RateLimiter buildRateLimiter() {
         return new DefaultRateLimiter();
+    }
+
+    /**
+     * Builds a default DateTimeFormatter for the UTC timezone.
+     *
+     * @return the formatter
+     */
+    protected DateTimeFormatter buildDateTimeFormatter() {
+        return new DateTimeFormatterBuilder()
+                .append(
+                        (DateTimePrinter) null,
+                        new DateTimeParser[] {
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss.SSS").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM").getParser(),
+                                DateTimeFormat.forPattern("yyyy").getParser()
+                        }
+                ).toFormatter().withZone(DateTimeZone.forID("UTC"));
     }
 
     @Override

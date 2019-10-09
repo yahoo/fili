@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
@@ -18,8 +19,6 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -28,26 +27,45 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Builder for {@link DataApiRequestValueObject} objects.
+ *
+ * Construction and validation of some resources may depend on some other request resources. For example, some
+ * {@link Dimension}s may only be accessible on specific {@link LogicalTable}s. In this case, the dimension generator
+ * needs to ensure that all grouping dimensions are against a logical table that supports them, and thus it has a
+ * dependency on the LogicalTable resource. The LogicalTable resource must be generated before the dimension generator
+ * runs.
+ *
+ * To support this, this builder uses {@code isResourceInitialized()} and {@code getResourceIfInitialized()} semantics.
+ * {@code isResourceInitialized()} should ALWAYS be called before attempting to access a resource using
+ * {@code getResourceIfInitialized()} to ensure that the generator for that resource has been called.
+ *
+ * An {@link UninitializedRequestResourceException} is thrown if {@code getResourceIfInitialized()} is called before the
+ * resource has been set using the appropriate setter.
+ *
+ * Resources that are not grouped into collections are returned as {@link Optional}. This is because the resource may
+ * not have been specified in the query. Specific generator implementations may throw an error if a resource is empty,
+ * but this is an implementation detail and the {@link DataApiRequest} construction API does not enforce this.
+ *
+ * Whether or not the resource has been initialized it completely separate from the Optional contract on the get
+ * methods. {@code isResourceInitialized} and the {@code Optional} return value are separate contracts.
  */
 public class DataApiRequestBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestBuilder.class);
-
     /**
-     * Enum representing the phases of building a data api request. A a setter for each of these phases MUST be called
+     * Enum representing the phases of building a data api request. A setter for each of these phases MUST be called
      * at least once before the build method is called.
      */
-    private enum BuildPhase {
+    public enum RequestResource {
         LOGICAL_TABLE,
         GRANULARITY,
         DIMENSIONS,
         DIMENSION_FIELDS,
-        METRICS,
+        LOGICAL_METRICS,
         INTERVALS,
         API_FILTERS,
         HAVINGS,
@@ -55,18 +73,35 @@ public class DataApiRequestBuilder {
         COUNT,
         TOP_N,
         FORMAT,
-        FILENAME,
+        DOWNLOAD_FILENAME,
         TIMEZONE,
         ASYNC_AFTER,
-        PAGINATION
+        PAGINATION_PARAMETERS;
+
+        private String resourceName;
+
+        /**
+         * Constructor.
+         */
+        RequestResource() {
+            this.resourceName = EnumUtils.camelCase(this.name());
+        }
+
+        /**
+         * Gets the name of the resource this enum represents.
+         *
+         * @return the resource name
+         */
+        public String getResourceName() {
+            return resourceName;
+        }
     }
 
-    private static final Map<BuildPhase, Boolean> INITIALIZED_BUILT_MAPPING;
-
+    private static final Map<RequestResource, Boolean> INITIALIZED_BUILT_MAPPING;
 
     static {
-        EnumMap<BuildPhase, Boolean> phaseMap = new EnumMap<>(BuildPhase.class);
-        for (BuildPhase phase : BuildPhase.values()) {
+        EnumMap<RequestResource, Boolean> phaseMap = new EnumMap<>(RequestResource.class);
+        for (RequestResource phase : RequestResource.values()) {
             phaseMap.put(phase, Boolean.FALSE);
         }
         INITIALIZED_BUILT_MAPPING = Collections.unmodifiableMap(phaseMap);
@@ -81,26 +116,26 @@ public class DataApiRequestBuilder {
     private ApiFilters apiFilters;
     private LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
     private LinkedHashSet<OrderByColumn> sorts;
-    private int count;
-    private int topN;
+    private Integer count;
+    private Integer topN;
     private ResponseFormatType format;
     private String downloadFilename;
     private DateTimeZone timeZone;
-    private long asyncAfter;
+    private Long asyncAfter;
     private PaginationParameters paginationParameters;
 
     private final BardConfigResources resources;
-    private final Map<BuildPhase, Boolean> built;
+    private final Map<RequestResource, Boolean> built;
 
     /**
      * Constructor.
      *
-     * @param resources set of resources generators can use while building pieces of the
+     * @param resources set of config resources generators can use while building pieces of the
      * {@link DataApiRequestValueObject}
      */
     public DataApiRequestBuilder(BardConfigResources resources) {
         this.resources = resources;
-        built = new EnumMap<>(INITIALIZED_BUILT_MAPPING);
+        this.built = new EnumMap<>(INITIALIZED_BUILT_MAPPING);
     }
 
     /**
@@ -117,6 +152,8 @@ public class DataApiRequestBuilder {
         return bound;
     }
 
+    // SETTERS
+
     /**
      * Generates and sets the requested {@link LogicalTable}.
      *
@@ -124,8 +161,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for LogicalTable
      * @return the builder
      */
-    public DataApiRequestBuilder logicalTable(RequestParameters params, Generator<LogicalTable> generator) {
-        built.put(BuildPhase.LOGICAL_TABLE, Boolean.TRUE);
+    public DataApiRequestBuilder setLogicalTable(RequestParameters params, Generator<LogicalTable> generator) {
+        built.put(RequestResource.LOGICAL_TABLE, Boolean.TRUE);
         this.logicalTable = bindAndValidate(params, generator);
         return this;
     }
@@ -137,8 +174,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for Granularity
      * @return the builder
      */
-    public DataApiRequestBuilder granularity(RequestParameters params, Generator<Granularity> generator) {
-        built.put(BuildPhase.GRANULARITY, Boolean.TRUE);
+    public DataApiRequestBuilder setGranularity(RequestParameters params, Generator<Granularity> generator) {
+        built.put(RequestResource.GRANULARITY, Boolean.TRUE);
         this.granularity = bindAndValidate(params, generator);
         return this;
     }
@@ -150,8 +187,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for Dimensions
      * @return the builder
      */
-    public DataApiRequestBuilder dimensions(RequestParameters params, Generator<LinkedHashSet<Dimension>> generator) {
-        built.put(BuildPhase.DIMENSIONS, Boolean.TRUE);
+    public DataApiRequestBuilder setDimensions(
+            RequestParameters params,
+            Generator<LinkedHashSet<Dimension>> generator
+    ) {
+        built.put(RequestResource.DIMENSIONS, Boolean.TRUE);
         this.dimensions = bindAndValidate(params, generator);
         return this;
     }
@@ -164,11 +204,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for mapping of dimension to request dimension fields
      * @return the builder
      */
-    public DataApiRequestBuilder dimensionFields(
+    public DataApiRequestBuilder setDimensionFields(
             RequestParameters params,
             Generator<LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>> generator
     ) {
-        built.put(BuildPhase.DIMENSION_FIELDS, Boolean.TRUE);
+        built.put(RequestResource.DIMENSION_FIELDS, Boolean.TRUE);
         this.perDimensionFields = bindAndValidate(params, generator);
         return this;
     }
@@ -180,8 +220,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for logical metrics
      * @return the builder
      */
-    public DataApiRequestBuilder metrics(RequestParameters params, Generator<LinkedHashSet<LogicalMetric>> generator) {
-        built.put(BuildPhase.METRICS, Boolean.TRUE);
+    public DataApiRequestBuilder setMetrics(
+            RequestParameters params,
+            Generator<LinkedHashSet<LogicalMetric>> generator
+    ) {
+        built.put(RequestResource.LOGICAL_METRICS, Boolean.TRUE);
         this.metrics = bindAndValidate(params, generator);
         return this;
     }
@@ -193,8 +236,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for list of Intervals
      * @return the builder
      */
-    public DataApiRequestBuilder intervals(RequestParameters params, Generator<List<Interval>> generator) {
-        built.put(BuildPhase.INTERVALS, Boolean.TRUE);
+    public DataApiRequestBuilder setIntervals(RequestParameters params, Generator<List<Interval>> generator) {
+        built.put(RequestResource.INTERVALS, Boolean.TRUE);
         this.intervals = bindAndValidate(params, generator);
         return this;
     }
@@ -206,8 +249,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for ApiFilters
      * @return the builder
      */
-    public DataApiRequestBuilder apiFilters(RequestParameters params, Generator<ApiFilters> generator) {
-        built.put(BuildPhase.API_FILTERS, Boolean.TRUE);
+    public DataApiRequestBuilder setApiFilters(RequestParameters params, Generator<ApiFilters> generator) {
+        built.put(RequestResource.API_FILTERS, Boolean.TRUE);
         this.apiFilters = bindAndValidate(params, generator);
         return this;
     }
@@ -220,11 +263,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for mapping og logical metric to api havings
      * @return the builder
      */
-    public DataApiRequestBuilder havings(
+    public DataApiRequestBuilder setHavings(
             RequestParameters params,
             Generator<LinkedHashMap<LogicalMetric, Set<ApiHaving>>> generator
     ) {
-        built.put(BuildPhase.HAVINGS, Boolean.TRUE);
+        built.put(RequestResource.HAVINGS, Boolean.TRUE);
         this.havings = bindAndValidate(params, generator);
         return this;
     }
@@ -236,11 +279,11 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for set of sorts
      * @return the builder
      */
-    public DataApiRequestBuilder sorts(
+    public DataApiRequestBuilder setSorts(
             RequestParameters params,
             Generator<LinkedHashSet<OrderByColumn>> generator
     ) {
-        built.put(BuildPhase.SORTS, Boolean.TRUE);
+        built.put(RequestResource.SORTS, Boolean.TRUE);
         this.sorts = bindAndValidate(params, generator);
         return this;
     }
@@ -252,8 +295,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for count
      * @return the builder
      */
-    public DataApiRequestBuilder count(RequestParameters params, Generator<Integer> generator) {
-        built.put(BuildPhase.COUNT, Boolean.TRUE);
+    public DataApiRequestBuilder setCount(RequestParameters params, Generator<Integer> generator) {
+        built.put(RequestResource.COUNT, Boolean.TRUE);
         this.count = bindAndValidate(params, generator);
         return this;
     }
@@ -265,8 +308,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for topN
      * @return the builder
      */
-    public DataApiRequestBuilder topN(RequestParameters params, Generator<Integer> generator) {
-        built.put(BuildPhase.TOP_N, Boolean.TRUE);
+    public DataApiRequestBuilder setTopN(RequestParameters params, Generator<Integer> generator) {
+        built.put(RequestResource.TOP_N, Boolean.TRUE);
         this.topN = bindAndValidate(params, generator);
         return this;
     }
@@ -278,8 +321,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for ResponseFormatType
      * @return the builder
      */
-    public DataApiRequestBuilder format(RequestParameters params, Generator<ResponseFormatType> generator) {
-        built.put(BuildPhase.FORMAT, Boolean.TRUE);
+    public DataApiRequestBuilder setFormat(RequestParameters params, Generator<ResponseFormatType> generator) {
+        built.put(RequestResource.FORMAT, Boolean.TRUE);
         this.format = bindAndValidate(params, generator);
         return this;
     }
@@ -291,8 +334,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for the download filename
      * @return the builder
      */
-    public DataApiRequestBuilder downloadFilename(RequestParameters params, Generator<String> generator) {
-        built.put(BuildPhase.FILENAME, Boolean.TRUE);
+    public DataApiRequestBuilder setDownloadFilename(RequestParameters params, Generator<String> generator) {
+        built.put(RequestResource.DOWNLOAD_FILENAME, Boolean.TRUE);
         this.downloadFilename = bindAndValidate(params, generator);
         return this;
     }
@@ -304,8 +347,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for DateTimeZone
      * @return the builder
      */
-    public DataApiRequestBuilder timeZone(RequestParameters params, Generator<DateTimeZone> generator) {
-        built.put(BuildPhase.TIMEZONE, Boolean.TRUE);
+    public DataApiRequestBuilder setTimeZone(RequestParameters params, Generator<DateTimeZone> generator) {
+        built.put(RequestResource.TIMEZONE, Boolean.TRUE);
         this.timeZone = bindAndValidate(params, generator);
         return this;
     }
@@ -317,8 +360,8 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for async after timeout
      * @return the builder
      */
-    public DataApiRequestBuilder asyncAfter(RequestParameters params, Generator<Long> generator) {
-        built.put(BuildPhase.ASYNC_AFTER, Boolean.TRUE);
+    public DataApiRequestBuilder setAsyncAfter(RequestParameters params, Generator<Long> generator) {
+        built.put(RequestResource.ASYNC_AFTER, Boolean.TRUE);
         this.asyncAfter = bindAndValidate(params, generator);
         return this;
     }
@@ -330,13 +373,24 @@ public class DataApiRequestBuilder {
      * @param generator  Generator for PaginationParameters
      * @return the builder
      */
-    public DataApiRequestBuilder paginationParameters(
+    public DataApiRequestBuilder setPaginationParameters(
             RequestParameters params,
             Generator<PaginationParameters> generator
     ) {
-        built.put(BuildPhase.PAGINATION, Boolean.TRUE);
+        built.put(RequestResource.PAGINATION_PARAMETERS, Boolean.TRUE);
         this.paginationParameters = bindAndValidate(params, generator);
         return this;
+    }
+
+    // GETTERS
+
+    /**
+     * Returns if the logical table has been initialized or not.
+     *
+     * @return if the logical table has been initialized or not
+     */
+    public boolean isLogicalTableInitialized() {
+        return built.get(RequestResource.LOGICAL_TABLE);
     }
 
     /**
@@ -344,8 +398,20 @@ public class DataApiRequestBuilder {
      *
      * @return the logical table
      */
-    public LogicalTable getLogicalTable() {
-        return logicalTable;
+    public Optional<LogicalTable> getLogicalTableIfInitialized() {
+        if (!isLogicalTableInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.LOGICAL_TABLE);
+        }
+        return Optional.ofNullable(logicalTable);
+    }
+
+    /**
+     * Returns if the granularity has been initialized or not.
+     *
+     * @return if the granularity has been initialized or not
+     */
+    public boolean isGranularityInitialized() {
+        return built.get(RequestResource.GRANULARITY);
     }
 
     /**
@@ -353,8 +419,20 @@ public class DataApiRequestBuilder {
      *
      * @return the granularity
      */
-    public Granularity getGranularity() {
-        return granularity;
+    public Optional<Granularity> getGranularityIfInitialized() {
+        if (!isGranularityInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.GRANULARITY);
+        }
+        return Optional.ofNullable(granularity);
+    }
+
+    /**
+     * Returns if the dimensions have been initialized.
+     *
+     * @return if the dimensions have been initialized
+     */
+    public boolean isDimensionsInitialized() {
+        return built.get(RequestResource.DIMENSIONS);
     }
 
     /**
@@ -362,8 +440,20 @@ public class DataApiRequestBuilder {
      *
      * @return the dimensions
      */
-    public LinkedHashSet<Dimension> getDimensions() {
+    public LinkedHashSet<Dimension> getDimensionsIfInitialized() {
+        if (!isDimensionsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.DIMENSIONS);
+        }
         return dimensions;
+    }
+
+    /**
+     * Returns if the dimension fields have been initialized.
+     *
+     * @return if the dimension fields have been initialized
+     */
+    public boolean isPerDimensionFieldsInitialized() {
+        return built.get(RequestResource.DIMENSION_FIELDS);
     }
 
     /**
@@ -371,8 +461,20 @@ public class DataApiRequestBuilder {
      *
      * @return the mapping between grouping and their requested fields
      */
-    public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getPerDimensionFields() {
+    public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getPerDimensionFieldsIfInitialized() {
+        if (!isPerDimensionFieldsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.DIMENSION_FIELDS);
+        }
         return perDimensionFields;
+    }
+
+    /**
+     * Returns if the logical metrics have been initialized.
+     *
+     * @return if the logical metrics have been initialized
+     */
+    public boolean isLogicalMetricsInitialized() {
+        return built.get(RequestResource.LOGICAL_METRICS);
     }
 
     /**
@@ -380,8 +482,20 @@ public class DataApiRequestBuilder {
      *
      * @return the logical metrics
      */
-    public LinkedHashSet<LogicalMetric> getLogicalMetrics() {
+    public LinkedHashSet<LogicalMetric> getLogicalMetricsIfInitialized() {
+        if (!isLogicalMetricsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.LOGICAL_METRICS);
+        }
         return metrics;
+    }
+
+    /**
+     * Returns if the intervals have been initialized.
+     *
+     * @return if the intervals have been initialized
+     */
+    public boolean isIntervalsInitialized() {
+        return built.get(RequestResource.INTERVALS);
     }
 
     /**
@@ -389,8 +503,20 @@ public class DataApiRequestBuilder {
      *
      * @return the request intervals
      */
-    public List<Interval> getIntervals() {
+    public List<Interval> getIntervalsIfInitialized() {
+        if (!isIntervalsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.INTERVALS);
+        }
         return intervals;
+    }
+
+    /**
+     * Returns if the ApiFilters are initialized.
+     *
+     * @return if the ApiFilters are initialized
+     */
+    public boolean isApiFiltersInitialized() {
+        return built.get(RequestResource.API_FILTERS);
     }
 
     /**
@@ -398,8 +524,20 @@ public class DataApiRequestBuilder {
      *
      * @return the ApiFilters
      */
-    public ApiFilters getApiFilters() {
+    public ApiFilters getApiFiltersIfInitialized() {
+        if (!isApiFiltersInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.API_FILTERS);
+        }
         return apiFilters;
+    }
+
+    /**
+     * Returns if the havings are initialized.
+     *
+     * @return if the havings are initialized
+     */
+    public boolean isHavingsInitialized() {
+        return built.get(RequestResource.HAVINGS);
     }
 
     /**
@@ -407,8 +545,20 @@ public class DataApiRequestBuilder {
      *
      * @return the havings
      */
-    public LinkedHashMap<LogicalMetric, Set<ApiHaving>> getHavings() {
+    public LinkedHashMap<LogicalMetric, Set<ApiHaving>> getHavingsIfInitialized() {
+        if (!isHavingsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.HAVINGS);
+        }
         return havings;
+    }
+
+    /**
+     * Returns if the sorts are initialized.
+     *
+     * @return if the sorts are initialized
+     */
+    public boolean isSortsInitialized() {
+        return built.get(RequestResource.SORTS);
     }
 
     /**
@@ -416,8 +566,20 @@ public class DataApiRequestBuilder {
      *
      * @return the sorts
      */
-    public LinkedHashSet<OrderByColumn> getSorts() {
+    public LinkedHashSet<OrderByColumn> getSortsIfInitialized() {
+        if (!isSortsInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.SORTS);
+        }
         return sorts;
+    }
+
+    /**
+     * Returns if the count is initialized.
+     *
+     * @return if the count is initialized
+     */
+    public boolean isCountInitialized() {
+        return built.get(RequestResource.COUNT);
     }
 
     /**
@@ -425,8 +587,20 @@ public class DataApiRequestBuilder {
      *
      * @return the count
      */
-    public Integer getCount() {
-        return count;
+    public Optional<Integer> getCountIfInitialized() {
+        if (!isCountInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.COUNT);
+        }
+        return Optional.ofNullable(count);
+    }
+
+    /**
+     * Returns if top n is initialized.
+     *
+     * @return if top n is initialized
+     */
+    public boolean isTopNInitialized() {
+        return built.get(RequestResource.TOP_N);
     }
 
     /**
@@ -434,8 +608,20 @@ public class DataApiRequestBuilder {
      *
      * @return the topN
      */
-    public Integer getTopN() {
-        return topN;
+    public Optional<Integer> getTopNIfInitialized() {
+        if (!isTopNInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.TOP_N);
+        }
+        return Optional.ofNullable(topN);
+    }
+
+    /**
+     * Returns if format was initialized.
+     *
+     * @return if format was initialized
+     */
+    public boolean isFormatInitialized() {
+        return built.get(RequestResource.FORMAT);
     }
 
     /**
@@ -443,8 +629,20 @@ public class DataApiRequestBuilder {
      *
      * @return the response format
      */
-    public ResponseFormatType getFormat() {
-        return format;
+    public Optional<ResponseFormatType> getFormatIfInitialized() {
+        if (!isFormatInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.FORMAT);
+        }
+        return Optional.ofNullable(format);
+    }
+
+    /**
+     * Returns if the download filename is initialized.
+     *
+     * @return if the download filename has been initialized
+     */
+    public boolean isDownloadFilenameInitialized() {
+        return built.get(RequestResource.DOWNLOAD_FILENAME);
     }
 
     /**
@@ -452,8 +650,20 @@ public class DataApiRequestBuilder {
      *
      * @return the download filename
      */
-    public String getDownloadFilname() {
-        return downloadFilename;
+    public Optional<String> getDownloadFilenameIfInitialized() {
+        if (!isDownloadFilenameInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.DOWNLOAD_FILENAME);
+        }
+        return Optional.ofNullable(downloadFilename);
+    }
+
+    /**
+     * Returns if timezone is initialized.
+     *
+     * @return if timezone is initialized
+     */
+    public boolean isTimeZoneInitialized() {
+        return built.get(RequestResource.TIMEZONE);
     }
 
     /**
@@ -461,8 +671,20 @@ public class DataApiRequestBuilder {
      *
      * @return the timezone
      */
-    public DateTimeZone getTimeZone() {
-        return timeZone;
+    public Optional<DateTimeZone> getTimeZoneIfInitialized() {
+        if (!isTimeZoneInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.TIMEZONE);
+        }
+        return Optional.ofNullable(timeZone);
+    }
+
+    /**
+     * Returns if async after is initialized.
+     *
+     * @return if async after is initialized
+     */
+    public boolean isAsyncAfterInitialized() {
+        return built.get(RequestResource.ASYNC_AFTER);
     }
 
     /**
@@ -470,8 +692,20 @@ public class DataApiRequestBuilder {
      *
      * @return the async after
      */
-    public long getAsyncAfter() {
-        return asyncAfter;
+    public Optional<Long> getAsyncAfterIfInitialized() {
+        if (!isAsyncAfterInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.ASYNC_AFTER);
+        }
+        return Optional.ofNullable(asyncAfter);
+    }
+
+    /**
+     * Returns if pagination parameters are initialized.
+     *
+     * @return if pagination parameters are initialized
+     */
+    public boolean isPaginationParametersInitialized() {
+        return built.get(RequestResource.PAGINATION_PARAMETERS);
     }
 
     /**
@@ -479,8 +713,11 @@ public class DataApiRequestBuilder {
      *
      * @return the pagination parameters
      */
-    public PaginationParameters getPaginationParameters() {
-        return paginationParameters;
+    public Optional<PaginationParameters> getPaginationParametersIfInitialized() {
+        if (!isPaginationParametersInitialized()) {
+            throw new UninitializedRequestResourceException(RequestResource.PAGINATION_PARAMETERS);
+        }
+        return Optional.ofNullable(paginationParameters);
     }
 
     /**
@@ -496,7 +733,7 @@ public class DataApiRequestBuilder {
 
         // validate that ALL build phases have been called
         if (BardFeatureFlag.POJO_DARI_REQUIRE_ALL_STAGES_CALLED.isOn()) {
-            Set<BuildPhase> uninitializedLifecycles = built.entrySet().stream()
+            Set<RequestResource> uninitializedLifecycles = built.entrySet().stream()
                     .filter(entry -> !entry.getValue())
                     .map(Map.Entry::getKey)
                     .collect(Collectors.toSet());
@@ -504,8 +741,8 @@ public class DataApiRequestBuilder {
                 String msg = String.format(
                         "Attempted to build DataApiRequest without attempting to build %s",
                         uninitializedLifecycles.stream()
-                            .map(phase -> phase.name().toLowerCase(Locale.ENGLISH))
-                            .collect(Collectors.joining(", "))
+                                .map(phase -> phase.name().toLowerCase(Locale.ENGLISH))
+                                .collect(Collectors.joining(", "))
                 );
                 throw new IllegalStateException(msg);
             }
@@ -529,5 +766,64 @@ public class DataApiRequestBuilder {
                 asyncAfter,
                 paginationParameters
         );
+    }
+
+    /**
+     * Exception indicating that the requested resource has not been initialized. Resources may be initialized to an
+     * empty optional or an empty collection, but the request parameters for a resource MUST be parsed and an initial
+     * value set in the builder before they can be accessed. Accessing a resource whose request parameters have not yet
+     * been parsed is always an error case.
+     */
+    public static class UninitializedRequestResourceException extends RuntimeException {
+
+        private static final String UNINITIALIZED_REQUEST_RESOURCE_MESSAGE = "Resource %s was requested but has not " +
+                "been initialized. Ensure the generator for resource %s has been used to generate the resource AND " +
+                "the resource has been added to the builder.";
+
+        private final RequestResource resource;
+
+        /**
+         * Constructor.
+         *
+         * @param resource  The name of the resource that was requested.
+         */
+        public UninitializedRequestResourceException(RequestResource resource) {
+            super(generateExceptionMessage(resource));
+            this.resource = resource;
+        }
+
+        /**
+         * Constructor.
+         *
+         * @param resource  The name of the resource that was requested.
+         * @param throwable  An underlying exception that caused this exception to be thrown.
+         */
+        public UninitializedRequestResourceException(RequestResource resource, Throwable throwable) {
+            super(generateExceptionMessage(resource), throwable);
+            this.resource = resource;
+        }
+
+        /**
+         * Generates the exception message using the resource name.
+         *
+         * @param resource  The name of the resource that was requested.
+         * @return the formatted error message.
+         */
+        private static String generateExceptionMessage(RequestResource resource) {
+            return String.format(
+                    UNINITIALIZED_REQUEST_RESOURCE_MESSAGE,
+                    resource.getResourceName(),
+                    resource.getResourceName()
+            );
+        }
+
+        /**
+         * Getter.
+         *
+         * @return the name of the resource that was requested.
+         */
+        public RequestResource getResource() {
+            return resource;
+        }
     }
 }

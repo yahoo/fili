@@ -28,6 +28,8 @@ public interface Generator<T> {
     /**
      * Generates the resource.
      *
+     * TODO: document standard exceptions this CAN throw (not necessarily caught exceptions)
+     *
      * @param builder  The builder object representing the in progress {@link DataApiRequest}. Previously constructed
      *                 resources are available through this object.
      * @param params  The request parameters sent by the client.
@@ -41,6 +43,8 @@ public interface Generator<T> {
      * Validates the generated resource (which means it runs AFTER the {@code bind} method. This is intended to check
      * that the client request is formatted correctly. For example, ensuring that the client requested a positive page
      * number. This method is intended to help reduce parameter checking in the building section.
+     *
+     * TODO: document standard exceptions this CAN throw (not necessarily caught exceptions)
      *
      * @param entity  The resource constructed by the {@code bind}} method
      * @param builder  The builder object representing the in progress DataApiRequest
