@@ -66,20 +66,16 @@ public class PrestoResultSetProcessor extends SqlResultSetProcessor {
                 continue;
             }
             String columnName = columnToColumnName.get(i);
-            Boolean containsUnderscore = columnName.contains("_");
-            String tmpcolumnName = "";
-            if (containsUnderscore) {
-                tmpcolumnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName);
-            } else {
-                tmpcolumnName = columnName;
-            }
+            String tmpcolumnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName);
             if (resultTypeMapper.containsKey(columnName)) {
-                String elementAti = row[i] == null ? "0" : row[i];
-                Number result = resultTypeMapper
-                        .get(columnName)
-                        .apply(elementAti);
-
-                writeNumberField(jsonWriter, tmpcolumnName, result);
+                if (row[i] == null) {
+                    jsonWriter.writeNullField(tmpcolumnName);
+                } else {
+                    Number result = resultTypeMapper
+                            .get(columnName)
+                            .apply(row[i]);
+                    writeNumberField(jsonWriter, tmpcolumnName, result);
+                }
             } else {
                 jsonWriter.writeStringField(tmpcolumnName, row[i]);
             }

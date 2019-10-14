@@ -6,6 +6,7 @@ package com.yahoo.bard.webservice.sql.presto;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
+import com.facebook.presto.jdbc.NotImplementedException;
 import com.facebook.presto.jdbc.PrestoDriver;
 
 import org.slf4j.LoggerFactory;
@@ -29,30 +30,30 @@ public class PrestoDataSource implements DataSource {
     public static final String DATABASE_URL = SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("database_url")
     );
+    public static final String USER = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("database_user")
+    );
+    public static final String KERBEROS_PRINCIPAL = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("database_kerberos_principal")
+    );
+    public static final String KERBEROS_KEYTAB_PATH = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("database_kerberos_keytab_path")
+    );
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PrestoDataSource.class);
 
     /**
      * Constructor.
      * Follow https://docs.google.com/presentation/d/17QfH9uF6JzTkbA8SSVhS-xwqKfpEEtgDxqYqMlK3B4s/edit#slide=id.p
-     *
-     * TODO: change user to headless
      */
     public PrestoDataSource() {
         properties = new Properties();
-//        properties.setProperty("user", "mzhao50");
-//        properties.setProperty("KerberosPrincipal", "mzhao50@Y.CORP.YAHOO.COM");
-//        properties.setProperty("KerberosUseCanonicalHostname", "false");
-//        properties.setProperty("KerberosRemoteServiceName", "HTTP");
-//        properties.setProperty("SSL", "true");
-//        properties.setProperty("SessionProperties", "distributed_join=false,query_max_execution_time=15m");
-
-        properties.setProperty("user", "p_parrot");
+        properties.setProperty("user", USER);
         properties.setProperty("SSL", "true");
         properties.setProperty("KerberosRemoteServiceName", "HTTP");
         properties.setProperty("KerberosUseCanonicalHostname", "false");
         properties.setProperty("KerberosConfigPath", "/etc/krb5.conf");
-        properties.setProperty("KerberosPrincipal", "p_parrot");
-        properties.setProperty("KerberosKeytabPath", "/home/p_parrot/p_parrot.prod.headless.keytab");
+        properties.setProperty("KerberosPrincipal", KERBEROS_PRINCIPAL);
+        properties.setProperty("KerberosKeytabPath", KERBEROS_KEYTAB_PATH);
     }
 
     @Override
@@ -64,41 +65,41 @@ public class PrestoDataSource implements DataSource {
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        return null;
+        throw new NotImplementedException("PrestoDataSource", "getConnection");
     }
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        return null;
+        throw new NotImplementedException("PrestoDataSource", "unwrap");
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
+        throw new NotImplementedException("PrestoDataSource", "isWrapperFor");
     }
 
     @Override
     public PrintWriter getLogWriter() throws SQLException {
-        return null;
+        throw new NotImplementedException("PrestoDataSource", "getLogWriter");
     }
 
     @Override
     public void setLogWriter(PrintWriter out) throws SQLException {
-
+        throw new NotImplementedException("PrestoDataSource", "setLogWriter");
     }
 
     @Override
     public void setLoginTimeout(int seconds) throws SQLException {
-
+        throw new NotImplementedException("PrestoDataSource", "setLoginTimeout");
     }
 
     @Override
     public int getLoginTimeout() throws SQLException {
-        return 0;
+        throw new NotImplementedException("PrestoDataSource", "getLoginTimeout");
     }
 
     @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 }

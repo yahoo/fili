@@ -107,12 +107,12 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 druidQueryToPrestoConverter.getTimeConverter()
         );
 
-        LOG.info("getConnection in PrestoSqlBackedClient");
         try (Connection connection = calciteHelper.getConnection()) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             resultSetProcessor.process(resultSet);
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
+            LOG.info("Created response: {}", jsonNode);
             return jsonNode;
         } catch (SQLException e) {
             LOG.warn("Failed while processing {}", druidQuery);
@@ -166,9 +166,6 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
 
-//        String fixCatalogPrestoQuery = fixTimePrestoQuery
-//                .replace("\"spotlight_hive\"", "\"dilithiumblue\".\"spotlight_hive\"");
-
         String fixCatalogPrestoQuery = fixTimePrestoQuery;
 
         int orderbyIndex = fixCatalogPrestoQuery.indexOf("ORDER BY");
@@ -186,7 +183,6 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         }
 
         String limitPrestoQuery = fetchToLimitHelper(fixQuotePrestoQuery);
-        LOG.info("In sqlQueryToPrestoQuery processed sqlQuery: {}", limitPrestoQuery);
         return limitPrestoQuery;
     }
 

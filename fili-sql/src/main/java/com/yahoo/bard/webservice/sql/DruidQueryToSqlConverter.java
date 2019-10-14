@@ -151,13 +151,14 @@ public class DruidQueryToSqlConverter {
      *
      * @return the sql equivalent of the query.
      */
-    private RelNode convertDruidQueryToRelNode(
+    protected RelNode convertDruidQueryToRelNode(
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
         RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName());
-        return builder.scan(sqlTable.getName())
+        builder = builder.scan(sqlTable.getName());
+        return builder
                 .filter(
                         getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
                 )

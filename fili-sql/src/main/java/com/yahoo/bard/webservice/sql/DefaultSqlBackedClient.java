@@ -127,7 +127,6 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
                 druidQueryToSqlConverter.getTimeConverter()
         );
 
-        LOG.info("getConnection in executeAndProcessQuery");
         try (Connection connection = calciteHelper.getConnection();
                 PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
                 ResultSet resultSet = preparedStatement.executeQuery()) {

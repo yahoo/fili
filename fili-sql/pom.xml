@@ -29,8 +29,7 @@
 
         <version.h2>1.4.195</version.h2>
         <version.calcite>1.20.0</version.calcite>
-        <presto.version>0.204.2.4.1909232158</presto.version>
-        <!--<presto.version>0.0.1</presto.version>-->
+        <presto.version>0.204.2.3.1908121846</presto.version>
     </properties>
 
     <dependencies>
@@ -52,11 +51,6 @@
             <version>${version.h2}</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.facebook.presto.jdbc</groupId>-->
-            <!--<artifactId>presto-jdbc</artifactId>-->
-            <!--<version>${presto.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>yahoo.yinst.presto_client</groupId>
             <artifactId>presto-jdbc</artifactId>

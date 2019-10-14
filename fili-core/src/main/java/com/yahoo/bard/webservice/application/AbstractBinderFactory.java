@@ -134,6 +134,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.RatioGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.glassfish.hk2.api.TypeLiteral;
@@ -142,6 +143,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.druid.timeline.DataSegment;
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
@@ -830,6 +832,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             DataSourceMetadataService metadataService,
             ObjectMapper mapper
     ) {
+        InjectableValues.Std injectableValues = new InjectableValues.Std();
+        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
+        mapper.setInjectableValues(injectableValues);
         return new DataSourceMetadataLoadTask(
                 physicalTableDictionary,
                 metadataService,
@@ -1206,7 +1211,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A map where the key is the name of the requestMapper for binding, and value is the requestMapper
      */
-    protected @NotNull Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
+    protected @NotNull
+    Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
         return new HashMap<>(0);
     }
 
@@ -1224,13 +1230,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
         return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
                 ? new AsyncDruidWebServiceImpl(
-                        druidServiceConfig,
-                        mapper,
-                        supplier,
-                        new HeaderNestingJsonBuilderStrategy(
-                                AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
-                        )
+                druidServiceConfig,
+                mapper,
+                supplier,
+                new HeaderNestingJsonBuilderStrategy(
+                        AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
                 )
+        )
                 : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
 

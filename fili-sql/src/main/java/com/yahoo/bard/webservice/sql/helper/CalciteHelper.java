@@ -49,7 +49,6 @@ public class CalciteHelper {
     public CalciteHelper(DataSource dataSource) throws SQLException {
         this.dataSource = dataSource;
 
-        LOG.info("getConnection in CalciteHelper constructor");
         try (Connection connection = getConnection()) {
             this.dialect = SqlDialect.create(connection.getMetaData());
         }

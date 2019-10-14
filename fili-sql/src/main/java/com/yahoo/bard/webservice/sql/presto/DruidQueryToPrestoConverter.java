@@ -25,11 +25,8 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableList;
 
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.pretty.SqlPrettyWriter;
 import org.apache.calcite.tools.RelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +89,7 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
 
     /**
      * Converts the druid query to a {@link RelNode}.
+     * Additional project step compare to methid in base class.
      *
      * @param druidQuery  The query to convert to sql.
      * @param apiToFieldMapper  The mapping between api and physical names for the query.
@@ -99,15 +97,14 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
      *
      * @return the sql equivalent of the query.
      */
-    private RelNode convertDruidQueryToRelNode(
+    @Override
+    protected RelNode convertDruidQueryToRelNode(
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
         RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName());
-
         builder = builder.scan(sqlTable.getName());
-
         return builder
                 .filter(
                         getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
@@ -172,7 +169,7 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                         .map(orderByColumn -> {
                             String orderByField = apiToFieldMapper.unApply(orderByColumn.getDimension());
                             limitSpecColumns.add(orderByField);
-                            RexNode sort = builder.literal(orderByField); //presto fix
+                            RexNode sort = builder.literal(orderByField);
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
                             }
@@ -228,7 +225,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
 
     /**
      * Find all druid aggregations and convert them to {@link org.apache.calcite.tools.RelBuilder.AggCall}.
-     *
+     * Difference between this and the base class is the special column lower underscore to lower camel case conversion
+     * for Druid column names
      * @param builder  The RelBuilder created with Calcite.
      * @param druidQuery  The druid query to get the aggregations of.
      * @param apiToFieldMapper  The mapping from api to physical name.
@@ -276,32 +274,12 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper
     ) {
         DruidPostAggregationToPresto druidPostAggregationToSql = new DruidPostAggregationToPresto();
-        List<RexNode> fields = new ArrayList<>();
+        List<RexNode> postAggregationFields = new ArrayList<>();
         druidQuery.getPostAggregations().stream()
                 .map(postAggregation -> druidPostAggregationToSql
                         .evaluatePostAggregation(postAggregation, builder, apiToFieldMapper))
-                .forEach(fields::add);
-        return fields;
-    }
-
-    /**
-     * Converts a RelBuilder into a sql string.
-     *
-     * @param sqlWriter  The writer to be used when translating the {@link org.apache.calcite.rel.RelNode} to sql.
-     * @param relToSql  The converter from {@link org.apache.calcite.rel.RelNode} to
-     * {@link org.apache.calcite.sql.SqlNode}.
-     * @param query  The RelNode representing the query.
-     *
-     * @return the sql string built by the RelBuilder.
-     */
-    protected String writeSql(SqlPrettyWriter sqlWriter, RelToSqlConverter relToSql, RelNode query) {
-        sqlWriter.reset();
-        SqlSelect select = relToSql.visitChild(0, query).asSelect();
-        return sqlWriter.format(select);
-    }
-
-    public SqlTimeConverter getTimeConverter() {
-        return sqlTimeConverter;
+                .forEach(postAggregationFields::add);
+        return postAggregationFields;
     }
 
     /**

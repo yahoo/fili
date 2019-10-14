@@ -78,7 +78,6 @@ public class PrestoRequestHandler implements DataRequestHandler {
         boolean isSqlBacked = druidQuery.getDataSource()
                 .getPhysicalTable()
                 .getSourceTable() instanceof SqlPhysicalTable;
-        LOG.info("isSqlBacked {}", isSqlBacked);
         if (sqlConverter != null && isSqlBacked) {
             LoggingContext copy = new LoggingContext(RequestLog.copy());
             SuccessCallback success = rootNode -> {
