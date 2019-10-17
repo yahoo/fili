@@ -37,13 +37,13 @@ import java.util.stream.Collectors;
  */
 public class SqlResultSetProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(SqlResultSetProcessor.class);
-    private final DruidAggregationQuery<?> druidQuery;
-    private final ApiToFieldMapper apiToFieldMapper;
-    private BiMap<Integer, String> columnToColumnName;
-    private List<String[]> sqlResults;
-    private final ObjectMapper objectMapper;
-    private final int groupByDimensionsCount;
-    private final SqlTimeConverter sqlTimeConverter;
+    protected final DruidAggregationQuery<?> druidQuery;
+    protected final ApiToFieldMapper apiToFieldMapper;
+    protected BiMap<Integer, String> columnToColumnName;
+    protected List<String[]> sqlResults;
+    protected final ObjectMapper objectMapper;
+    protected final int groupByDimensionsCount;
+    protected final SqlTimeConverter sqlTimeConverter;
 
     /**
      * Builds something to process a set of sql results and return them as the
@@ -165,7 +165,7 @@ public class SqlResultSetProcessor {
      *
      * @return true if the current index is of an exploded date time column.
      */
-    private boolean isTimeColumn(int lastTimeIndex, int currentIndex) {
+    protected boolean isTimeColumn(int lastTimeIndex, int currentIndex) {
         return currentIndex >= groupByDimensionsCount && currentIndex < groupByDimensionsCount + lastTimeIndex;
     }
 
