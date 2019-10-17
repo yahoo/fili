@@ -57,6 +57,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,6 +114,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
     private final JobPayloadBuilder jobPayloadBuilder;
     private final BroadcastChannel<String> preResponseStoredNotifications;
+    private final DateTimeFormatter dateTimeFormatter;
 
     private final GranularityParser granularityParser;
 
@@ -156,6 +158,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
+     * @param dateTimeFormatter  date time formatter
      */
     @Inject
     public DataServlet(
@@ -177,7 +180,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             ResponseFormatResolver formatResolver,
             DataApiRequestFactory dataApiRequestFactory,
             ResponseProcessorFactory responseProcessorFactory,
-            DataExceptionHandler exceptionHandler
+            DataExceptionHandler exceptionHandler,
+            DateTimeFormatter dateTimeFormatter
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -199,6 +203,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.dataApiRequestFactory = dataApiRequestFactory;
         this.responseProcessorFactory = responseProcessorFactory;
         this.exceptionHandler = exceptionHandler;
+        this.dateTimeFormatter = dateTimeFormatter;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -625,6 +630,11 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public DateTimeZone getSystemTimeZone() {
         return systemTimeZone;
+    }
+
+    @Override
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 
     @Override

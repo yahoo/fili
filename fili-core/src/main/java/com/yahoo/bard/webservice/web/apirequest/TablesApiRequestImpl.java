@@ -121,7 +121,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             @NotNull String page,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG , perPage, page);
 
         this.tables = generateTables(tableName, bardConfigResources.getLogicalTableDictionary());
 
@@ -249,7 +249,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             String filters,
             String timeZoneId
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG, perPage, page);
 
         if (granularity == null || tableName == null) {
             throw new BadApiRequestException("Logical table and granularity cannot be null");

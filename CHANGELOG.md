@@ -14,14 +14,27 @@ Current
    * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
 
 
+- [Default implementations of new `Generator` interface](https://github.com/yahoo/fili/issues/769)
+   * All default implementations are based on the equivalent method from `ApiRequestImpl`. The
+   logic backing them is a direct copy and paste from the`ApiRequestImpl` implementation.
+   * The logic is implemented in public static methods for dependent code to use. DO NOT
+   WRITE NEW CODE REFERENCING THOSE METHODS unless you have a good reason to do so. Prefer
+   creating instances of the generator.
+   * Generators based on `DataApiRequestImpl` are not yet implemented.
+
 ### Changed:
+
+- [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
+   * No methods have been removed from `ApiRequestImpl`, but the implementation code has been
+   moved to the relevant default generator implementation for that resource, and the existing
+   methods now defer to public static methods on the generators.
 
 - [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
    * Split luthier into a library package and a sample application
    * Nested all sample applications
    * Resolved dependecy issues around where properties files were sourced
    * Rationalized dependencies for sample applications
-   
+
 ### Removed:
 
 ### Fixed:
@@ -43,8 +56,8 @@ v0.11.79 - 2019/09/17
 
 ### Configuration - Luthier
 
-We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools). 
-Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc. 
+We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools).
+Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc.
 See (https://github.com/yahoo/fili/tree/master/luthier)
 
 ### Configuration and Extensibility
@@ -63,19 +76,19 @@ We removed inappropriate use of Optionals from constructors and parameter types 
 
 ### Security patches
 
-We added OWASP vulnerability checking and addressed identified issues. 
+We added OWASP vulnerability checking and addressed identified issues.
 (https://www.owasp.org/index.php/OWASP_Dependency_Check)  Enhancements included jackson version upgrades to address
 injection vulnerabilities.
 
 ### DataApiRequest
 
-We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory 
+We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory
 objects to other parts of the application.  These factories are now being injected by Dependecy Injection (HK2).
 
 The corresponding methods have been deprecated and will be removed very soon.
 
 A Pojo DataApiRequest has been built as well as a Generator interface and a Builder.  These will form the basis of a
-complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to 
+complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to
 produce an immutable value object.
 
 ### Extensibility
