@@ -9,7 +9,6 @@ import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.CaseFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,18 +65,17 @@ public class PrestoResultSetProcessor extends SqlResultSetProcessor {
                 continue;
             }
             String columnName = columnToColumnName.get(i);
-            String tmpcolumnName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName);
             if (resultTypeMapper.containsKey(columnName)) {
                 if (row[i] == null) {
-                    jsonWriter.writeNullField(tmpcolumnName);
+                    jsonWriter.writeNullField(columnName);
                 } else {
                     Number result = resultTypeMapper
                             .get(columnName)
                             .apply(row[i]);
-                    writeNumberField(jsonWriter, tmpcolumnName, result);
+                    writeNumberField(jsonWriter, columnName, result);
                 }
             } else {
-                jsonWriter.writeStringField(tmpcolumnName, row[i]);
+                jsonWriter.writeStringField(columnName, row[i]);
             }
         }
     }
