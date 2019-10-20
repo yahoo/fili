@@ -1,3 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <suppress>
+        <notes><![CDATA[
+        test
+        ]]></notes>
+        <!--<packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty-server@.*$</packageUrl>-->
+        <vulnerabilityName>CVE-2019-16869</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        test
+        ]]></notes>
+        <!--<packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty-server@.*$</packageUrl>-->
+        <vulnerabilityName>CVE-2014-3488</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        test
+        ]]></notes>
+        <!--<packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty-server@.*$</packageUrl>-->
+        <vulnerabilityName>CVE-2015-2156</vulnerabilityName>
+    </suppress>
 </suppressions>
