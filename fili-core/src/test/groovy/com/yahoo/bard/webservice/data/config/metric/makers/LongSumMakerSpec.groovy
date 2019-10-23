@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -25,7 +25,7 @@ class LongSumMakerSpec extends Specification{
         Aggregation sumAggregation = new LongSumAggregation(METRIC_NAME, DEPENDENT_METRIC_NAME)
         Set<Aggregation> aggregations = [sumAggregation] as Set
         TemplateDruidQuery query = new TemplateDruidQuery(aggregations, [] as Set)
-        LogicalMetric expectedMetric = new LogicalMetric(query, new NoOpResultSetMapper(), METRIC_NAME)
+        LogicalMetricImpl expectedMetric = new LogicalMetricImpl(query, new NoOpResultSetMapper(), METRIC_NAME)
 
         expect:
         maker.make(new LogicalMetricInfo(METRIC_NAME), [DEPENDENT_METRIC_NAME]) == expectedMetric

@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.INTERSECTION_REPORTING
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
@@ -91,7 +91,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When the INTERSECTION_REPORTING flag is enabled and the query contains unfiltered metrics, the Logical Metrics returned are equal to the Logical Metrics from the Metric Dictionary"() {
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetricImpl> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "pageViews,foos",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -99,7 +99,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         )
         HashSet<Dimension> expected =
                 ["pageViews", "foos"].collect { String name ->
-                    LogicalMetric metric = resources.metricDict.get(name)
+                    LogicalMetricImpl metric = resources.metricDict.get(name)
                     assert metric?.name == name
                     metric
                 }
@@ -199,7 +199,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When API request contains filtered metrics, the Logical Metric returned by generateLogicalMetrics is filtered and therefore not equal to the Logical Metric from the Metric dictionary "(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -208,7 +208,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
         HashSet<Dimension> expected =
                 ["foos"].collect { String name ->
-                    LogicalMetric metric = resources.metricDict.get(name)
+                    LogicalMetricImpl metric = resources.metricDict.get(name)
                     assert metric?.name == name
                     metric
                 }
@@ -218,7 +218,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "An exception is thrown when validateMetrics is passed an intersection expression using invalid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -236,7 +236,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "No exception is thrown when validateMetrics is passed an intersection expression using valid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -251,7 +251,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "The dimensions returned from the filtered logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,

@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -148,7 +149,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             );
         }
         //build new LogicalMetric and return
-        return new LogicalMetric(
+        return new LogicalMetricImpl(
                 templateDruidQuery,
                 logicalMetric.getCalculation(),
                 new LogicalMetricInfo(logicalMetric.getName())

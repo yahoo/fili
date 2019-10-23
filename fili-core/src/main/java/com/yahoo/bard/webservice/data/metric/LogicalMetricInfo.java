@@ -16,8 +16,8 @@ public class LogicalMetricInfo {
 
     private final String name;
     private final String longName;
-    private final String category;
     private final String description;
+    private final String category;
     private final String type;
 
     /**
@@ -25,11 +25,11 @@ public class LogicalMetricInfo {
      *
      * @param name  Name of the metric
      * @param longName  Long name of the metric
-     * @param category  Category of the metric
      * @param description  Description of the metric
+     * @param category  Category of the metric
      * @param type  Type of metric
      */
-    public LogicalMetricInfo(String name, String longName, String category, String description, String type) {
+    public LogicalMetricInfo(String name, String longName, String description, String category, String type) {
         this.name = name;
         this.longName = longName;
         this.category = category;
@@ -42,11 +42,11 @@ public class LogicalMetricInfo {
      *
      * @param name  Name of the metric
      * @param longName  Long name of the metric
-     * @param category  Category of the metric
      * @param description  Description of the metric
+     * @param category  Category of the metric
      */
-    public LogicalMetricInfo(String name, String longName, String category, String description) {
-        this(name, longName, category, description, TYPE_DEFAULT);
+    public LogicalMetricInfo(String name, String longName, String description, String category) {
+        this(name, longName, description, category, TYPE_DEFAULT);
     }
 
     /**
@@ -56,7 +56,7 @@ public class LogicalMetricInfo {
      * @param name  Name of the metric
      */
     public LogicalMetricInfo(String name) {
-        this(name, name, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFAULT);
+        this(name, name, name, LogicalMetricImpl.DEFAULT_CATEGORY, TYPE_DEFAULT);
     }
 
     /**
@@ -67,7 +67,7 @@ public class LogicalMetricInfo {
      * @param longName  Long name of the metric
      */
     public LogicalMetricInfo(String name, String longName) {
-        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, name, TYPE_DEFAULT);
+        this(name, longName, longName, LogicalMetricImpl.DEFAULT_CATEGORY, TYPE_DEFAULT);
     }
 
     /**
@@ -79,7 +79,7 @@ public class LogicalMetricInfo {
      * @param description  Description for the metric
      */
     public LogicalMetricInfo(String name, String longName, String description) {
-        this(name, longName, LogicalMetric.DEFAULT_CATEGORY, description, TYPE_DEFAULT);
+        this(name, longName, description, LogicalMetricImpl.DEFAULT_CATEGORY, TYPE_DEFAULT);
     }
 
     /**

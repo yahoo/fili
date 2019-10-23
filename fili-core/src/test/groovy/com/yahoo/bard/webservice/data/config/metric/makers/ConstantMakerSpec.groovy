@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
@@ -22,7 +22,7 @@ class ConstantMakerSpec extends Specification {
             [] as Set,
             [postAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetricImpl expectedMetric = new LogicalMetricImpl(
             constantQuery,
             new NoOpResultSetMapper(),
             AGGREGATION_NAME

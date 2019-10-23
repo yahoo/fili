@@ -3,9 +3,14 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
@@ -62,18 +67,43 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
        metric can't be more accurate than this and the test primarily tests the subclasses integrating correctly.
      */
     def makeNumericMetric(Aggregation aggregation) {
-        new LogicalMetric(
+        new LogicalMetricImpl(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                MetricMaker.NO_OP_MAPPER,
+                NoOpResultSetMapper.INSTANCE,
                 aggregation.getName()
         );
     }
 
     def makeSketchMetric(Aggregation aggregation) {
-        new LogicalMetric(
+        new LogicalMetricImpl(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 new SketchRoundUpMapper(aggregation.getName()),
                 aggregation.getName()
         );
+    }
+
+    @Unroll
+    def "#makerClass.simpleName is valid is true for every standard grain including all"() {
+        setup:
+        RawAggregationMetricMaker maker = makerClass.newInstance()
+        LogicalMetric metric = maker.make(NAME, FIELD_NAME)
+
+
+        List<Granularity> grains = new ArrayList<>()
+        grains.addAll(Arrays.asList(DefaultTimeGrain.values()))
+        grains.add(AllGranularity.INSTANCE)
+
+        expect:
+        metric.validGrains != null
+        grains.stream().allMatch() {metric.isValidFor(it)}
+
+        where:
+        makerClass     | _
+        DoubleSumMaker | _
+        DoubleMaxMaker | _
+        DoubleMinMaker | _
+        LongSumMaker   | _
+        LongMaxMaker   | _
+        LongMinMaker   | _
     }
 }

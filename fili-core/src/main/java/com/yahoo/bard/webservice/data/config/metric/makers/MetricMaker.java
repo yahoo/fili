@@ -29,8 +29,7 @@ public abstract class MetricMaker {
 
     private static final Logger LOG = LoggerFactory.getLogger(MetricMaker.class);
 
-    public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
-    public static final Function<String, ResultSetMapper> NO_OP_MAP_PROVIDER = (ignore) -> NO_OP_MAPPER;
+    public static final Function<String, ResultSetMapper> NO_OP_MAP_PROVIDER = (ignore) -> NoOpResultSetMapper.INSTANCE;
 
     private static final String SKETCH_REQUIRED_FORMAT = "Field must be a sketch: %s but is: %s";
     static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";

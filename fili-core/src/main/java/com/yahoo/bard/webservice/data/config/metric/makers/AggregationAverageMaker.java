@@ -7,9 +7,11 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPo
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -83,7 +85,7 @@ public class AggregationAverageMaker extends MetricMaker {
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
         TemplateDruidQuery outerQuery = buildOuterQuery(logicalMetricInfo.getName(), sourceMetric, innerQuery);
 
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, logicalMetricInfo);
+        return new LogicalMetricImpl(outerQuery, NoOpResultSetMapper.INSTANCE, logicalMetricInfo);
     }
 
     /**

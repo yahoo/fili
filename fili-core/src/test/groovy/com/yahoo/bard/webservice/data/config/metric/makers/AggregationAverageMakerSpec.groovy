@@ -5,9 +5,14 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -22,6 +27,7 @@ import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class AggregationAverageMakerSpec extends Specification{
 
@@ -53,7 +59,7 @@ class AggregationAverageMakerSpec extends Specification{
                 [userSketchCount] as Set,
                 [] as Set
         )
-        LogicalMetric sketchCountMetric = buildDependentMetric(sketchQuery)
+        LogicalMetricImpl sketchCountMetric = buildDependentMetric(sketchQuery)
 
         and: """an AggregationAverageMaker. Note that the AggregationAverageMaker takes the _inner_ grain as an
                 argument not the _outer_ grain."""
@@ -83,7 +89,7 @@ class AggregationAverageMakerSpec extends Specification{
                 [sketchMerge] as Set,
                 [sketchEstimate] as Set
         )
-        LogicalMetric sketchMergeAndEstimateMetric = buildDependentMetric(sketchMergeAndEstimateQuery)
+        LogicalMetricImpl sketchMergeAndEstimateMetric = buildDependentMetric(sketchMergeAndEstimateQuery)
 
         and:
         MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
@@ -91,7 +97,7 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """The expected metric. Identical to the expected metric from the previous test, except that the
             sketchEstimate post aggregation is accessing a sketch merge, rather than a sketch count aggregation."""
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetricImpl expectedMetric = buildExpectedMetric(sketchEstimate)
 
         expect:
         maker.make(NAME, NAME).equals(expectedMetric)
@@ -104,7 +110,7 @@ class AggregationAverageMakerSpec extends Specification{
                 [sketchMerge] as Set,
                 [] as Set
         )
-        LogicalMetric sketchEstimateMetric = buildDependentMetric(sketchEstimateQuery)
+        LogicalMetricImpl sketchEstimateMetric = buildDependentMetric(sketchEstimateQuery)
 
         and:
         MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
@@ -116,14 +122,14 @@ class AggregationAverageMakerSpec extends Specification{
                 ESTIMATE_NAME,
                 new FieldAccessorPostAggregation(sketchMerge)
         )
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetricImpl expectedMetric = buildExpectedMetric(sketchEstimate)
 
         expect:
         maker.make(NAME, NAME).equals(expectedMetric)
     }
 
-    LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+    LogicalMetricImpl buildDependentMetric(TemplateDruidQuery dependentQuery){
+        return new LogicalMetricImpl(dependentQuery, new NoOpResultSetMapper(), new LogicalMetricInfo(NAME, DESCRIPTION))
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -151,7 +157,7 @@ class AggregationAverageMakerSpec extends Specification{
      * @param innerPostAggregation The test-specific post aggregation to be added to the inner query.
      * @return The LogicalMetric expected by the tests
      */
-    LogicalMetric buildExpectedMetric(PostAggregation innerPostAggregation){
+    LogicalMetricImpl buildExpectedMetric(PostAggregation innerPostAggregation){
         Set<Aggregation> innerAggregations = [sketchMerge] as LinkedHashSet
         Set<PostAggregation> innerPostAggregations = [innerPostAggregation, AggregationAverageMaker.COUNT_INNER]
         TemplateDruidQuery innerQueryTemplate = new TemplateDruidQuery(
@@ -173,6 +179,32 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new LogicalMetricImpl(outerQuery, new NoOpResultSetMapper(), new LogicalMetricInfo(NAME, DESCRIPTION))
+    }
+
+    @Unroll
+    def "Averaging on #innerGrain is valid for all grains that #innerGrain satisfies including all"() {
+        setup:
+        String innerName = "foo"
+        MetricMaker baseMaker = new LongSumMaker()
+        LogicalMetric fooSum = baseMaker.make(innerName, innerName)
+
+        MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), innerGrain)
+        maker.metrics.add(fooSum)
+
+
+        LogicalMetric metric = maker.make(NAME, innerName)
+
+
+        List<Granularity> grains = new ArrayList<>()
+        grains.addAll(Arrays.asList(DefaultTimeGrain.values()))
+        grains.add(AllGranularity.INSTANCE)
+
+        expect:
+        metric.validGrains != null
+        grains.stream().allMatch() {metric.isValidFor(it) || ! innerGrain.satisfies(it)}
+
+        where:
+        innerGrain << DefaultTimeGrain.values()
     }
 }

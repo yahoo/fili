@@ -10,6 +10,16 @@ import com.yahoo.bard.webservice.data.ResultSetSchema;
  * NoOp Result set mapper.
  */
 public class NoOpResultSetMapper extends ResultSetMapper {
+
+    public static final NoOpResultSetMapper INSTANCE = new NoOpResultSetMapper();
+
+    /**
+     * Private Constructor.
+     */
+    private NoOpResultSetMapper() {
+        ;
+    }
+
     @Override
     public ResultSet map(ResultSet resultSet) {
         return resultSet;

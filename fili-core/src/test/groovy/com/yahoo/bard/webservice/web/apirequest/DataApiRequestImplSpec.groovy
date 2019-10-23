@@ -4,9 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory
 import com.yahoo.bard.webservice.config.BardFeatureFlag
-import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -14,7 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
@@ -76,7 +74,7 @@ class DataApiRequestImplSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)
@@ -110,7 +108,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "check parsing generateLogicalMetrics"() {
         given:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetricImpl> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,met3",
                 metricDict,
                 dimensionDict,
@@ -119,7 +117,7 @@ class DataApiRequestImplSpec extends Specification {
 
         HashSet<Dimension> expected =
         ["met1", "met2", "met3" ].collect { String name ->
-            LogicalMetric metric = metricDict.get(name)
+            LogicalMetricImpl metric = metricDict.get(name)
             assert metric?.name == name
             metric
         }
@@ -130,7 +128,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetricImpl> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 metricDict,
                 dimensionDict,

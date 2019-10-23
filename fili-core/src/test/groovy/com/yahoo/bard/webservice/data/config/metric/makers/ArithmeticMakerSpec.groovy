@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -32,8 +32,8 @@ class ArithmeticMakerSpec extends Specification {
     public static final String METRIC_FIELD_NAME = "aggregationField"
     public static final String AVERAGE_PER_OTHER_METRIC_NAME = "averagePerOtherMetric"
     public static final String AVERAGE_PER_OTHER_METRIC_ROUNDED_METRIC_NAME = "averagePerOtherMetricRounded"
-    LogicalMetric unRoundedMetric
-    LogicalMetric roundedUpMetric
+    LogicalMetricImpl unRoundedMetric
+    LogicalMetricImpl roundedUpMetric
 
     private static final int SKETCH_SIZE = 16000
     //Neither of these relies on a metric dictionary.
@@ -98,7 +98,7 @@ class ArithmeticMakerSpec extends Specification {
         given: "Two or more operands and the name of the build metric"
         //The ConstantMaker relies on the dependent metric string being a number, the
         //the SketchCountMaker doesn't care.
-        List<LogicalMetric> operands = (1..numOperands).collect{
+        List<LogicalMetricImpl> operands = (1..numOperands).collect{
             operandMaker.make("metric$it", it as String)
         }
         String metricName = "sum"
@@ -131,10 +131,10 @@ class ArithmeticMakerSpec extends Specification {
                 aggregations,
                 [sumPostAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
-            expectedQuery,
-            MetricMaker.NO_OP_MAPPER,
-            metricName
+        LogicalMetricImpl expectedMetric = new LogicalMetricImpl(
+                expectedQuery,
+                NoOpResultSetMapper.INSTANCE,
+                metricName
         )
 
         and: "a populated metric dictionary for the maker"

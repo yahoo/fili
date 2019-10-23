@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.INTERSECTION_REPORTING
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.THETA_SKETCH_ESTIMATE
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -70,7 +70,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -100,7 +100,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "metric filter on viz metric and expect children of unRegFoos have right sketch operation function"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "viz(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.metricDict,
                 resources.dimensionDict,
@@ -138,7 +138,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "The dimensions returned from the filtered nested logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetricImpl> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.metricDict,
                 resources.dimensionDict,

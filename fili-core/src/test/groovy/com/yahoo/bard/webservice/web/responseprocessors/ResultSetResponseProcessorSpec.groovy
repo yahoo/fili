@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.time.Granularity
@@ -84,7 +84,7 @@ class ResultSetResponseProcessorSpec extends Specification {
     String metric2Name = "postagg1"
 
     ResultSetMapper rsm1
-    LogicalMetric lm1
+    LogicalMetricImpl lm1
     ResultSet rs1
 
     def setup() {
@@ -114,10 +114,10 @@ class ResultSetResponseProcessorSpec extends Specification {
         uriInfo.getQueryParameters() >> paramMap
 
         rsm1 = Mock(ResultSetMapper)
-        lm1 = Mock(LogicalMetric)
+        lm1 = Mock(LogicalMetricImpl)
         lm1.getCalculation() >> rsm1
         lm1.getName() >> "metric1"
-        Set<LogicalMetric> metricSet = [lm1] as Set
+        Set<LogicalMetricImpl> metricSet = [lm1] as Set
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
         apiRequest.getFormat() >> DefaultResponseFormatType.JSON

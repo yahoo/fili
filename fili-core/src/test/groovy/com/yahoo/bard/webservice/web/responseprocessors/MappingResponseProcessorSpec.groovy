@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel
 import com.yahoo.bard.webservice.data.HttpResponseMaker
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
@@ -65,11 +65,11 @@ class MappingResponseProcessorSpec extends Specification{
 
         setup:
         ResultSetMapper rsm1 = Mock(ResultSetMapper)
-        LogicalMetric lm1 = Mock(LogicalMetric)
-        LogicalMetric lm2 = Mock(LogicalMetric)
+        LogicalMetricImpl lm1 = Mock(LogicalMetricImpl)
+        LogicalMetricImpl lm2 = Mock(LogicalMetricImpl)
         lm1.getCalculation() >> rsm1
         lm2.getCalculation() >> null
-        Set<LogicalMetric> metricSet = [lm1, lm2] as Set
+        Set<LogicalMetricImpl> metricSet = [lm1, lm2] as Set
         1 * apiRequest.getLogicalMetrics() >> metricSet
         def expectedContext =[:]
 
@@ -115,15 +115,15 @@ class MappingResponseProcessorSpec extends Specification{
         ResultSetMapper rsm1 = Mock(ResultSetMapper)
         ResultSetMapper rsm2 = Mock(ResultSetMapper)
 
-        LogicalMetric lm1 = Mock(LogicalMetric)
-        LogicalMetric lm2 = Mock(LogicalMetric)
+        LogicalMetricImpl lm1 = Mock(LogicalMetricImpl)
+        LogicalMetricImpl lm2 = Mock(LogicalMetricImpl)
         lm1.getCalculation() >> rsm1
         lm2.getCalculation() >> rsm2
 
         rsm1.map(rs1) >> rs2
         rsm2.map(rs2) >> expected
 
-        Set<LogicalMetric> metricSet = [lm1, lm2] as Set
+        Set<LogicalMetricImpl> metricSet = [lm1, lm2] as Set
         1 * apiRequest.getLogicalMetrics() >> metricSet
 
         when:
@@ -140,12 +140,12 @@ class MappingResponseProcessorSpec extends Specification{
         ResultSetMapper resultSetMapper1 = Mock(ResultSetMapper)
         ResultSetMapper resultSetMapper2 = Mock(ResultSetMapper)
 
-        LogicalMetric logicalMetric1 = Mock(LogicalMetric)
-        LogicalMetric logicalMetric2 = Mock(LogicalMetric)
+        LogicalMetricImpl logicalMetric1 = Mock(LogicalMetricImpl)
+        LogicalMetricImpl logicalMetric2 = Mock(LogicalMetricImpl)
         logicalMetric1.getCalculation() >> resultSetMapper1
         logicalMetric2.getCalculation() >> resultSetMapper2
 
-        Set<LogicalMetric> metricSet = [logicalMetric1, logicalMetric2] as Set
+        Set<LogicalMetricImpl> metricSet = [logicalMetric1, logicalMetric2] as Set
         1 * apiRequest.getLogicalMetrics() >> metricSet
 
         expect:
@@ -157,12 +157,12 @@ class MappingResponseProcessorSpec extends Specification{
         ResultSetMapper resultSetMapper1 = Mock(ResultSetMapper)
         ResultSetMapper resultSetMapper2 = Mock(ResultSetMapper)
 
-        LogicalMetric logicalMetric1 = Mock(LogicalMetric)
-        LogicalMetric logicalMetric2 = Mock(LogicalMetric)
+        LogicalMetricImpl logicalMetric1 = Mock(LogicalMetricImpl)
+        LogicalMetricImpl logicalMetric2 = Mock(LogicalMetricImpl)
         logicalMetric1.getCalculation() >> resultSetMapper1
         logicalMetric2.getCalculation() >> resultSetMapper2
 
-        Set<LogicalMetric> metricSet = [logicalMetric1, logicalMetric2] as Set
+        Set<LogicalMetricImpl> metricSet = [logicalMetric1, logicalMetric2] as Set
         1 * apiRequest.getLogicalMetrics() >> metricSet
 
         expect:

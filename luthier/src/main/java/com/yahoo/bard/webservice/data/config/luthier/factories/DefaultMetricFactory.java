@@ -44,14 +44,14 @@ public class DefaultMetricFactory implements Factory<LogicalMetric> {
                 new LogicalMetricInfo(
                         name,
                         configTable.get(LONG_NAME).textValue(),
-                        configTable.get(CATEGORY).textValue(),
-                        configTable.get(DESCRIPTION).textValue()
+                        configTable.get(DESCRIPTION).textValue(),
+                        configTable.get(CATEGORY).textValue()
                 )
                 : new LogicalMetricInfo(
                         name,
                         configTable.get(LONG_NAME).textValue(),
-                        configTable.get(CATEGORY).textValue(),
                         configTable.get(DESCRIPTION).textValue(),
+                        configTable.get(CATEGORY).textValue(),
                         configTable.get(DATA_TYPE).textValue()
                 );
         List<String> dependencyMetricNames = StreamSupport.stream(
