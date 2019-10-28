@@ -18,6 +18,14 @@ Current
    creating instances of the generator.
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
+- Customizable CORS headers with origin header validation
+   * Addresses the potential security issue: the application trust an arbitrary domain that is provided in the Origin
+   header in cross-origin requests. The application does not validate the Origin header which can lead to data exposure
+   when a malicious site embeds JavaScript to read or update data from the application. This can lead to a user's data
+   being leaked or changed without a user's knowledge.
+   * Ability to configure dangerous methods such as PUT and DELETE in the CORS Access-Control-Allow-Methods header,
+   as well as Access-Control-Allow-Methods and Access-Control-Allow-Credentials.
+
 ### Changed:
 
 - [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
