@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress>
+    <suppress until="2020-03-01Z">
         <vulnerabilityName>CVE-2019-16869</vulnerabilityName>
     </suppress>
-    <suppress>
+    <suppress until="2020-03-01Z">
         <vulnerabilityName>CVE-2014-3488</vulnerabilityName>
     </suppress>
-    <suppress>
+    <suppress until="2020-03-01Z">
         <vulnerabilityName>CVE-2015-2156</vulnerabilityName>
     </suppress>
-    <suppress>
+    <suppress until="2020-03-01Z">
         <vulnerabilityName>CVE-2008-0660</vulnerabilityName>
     </suppress>
 </suppressions>
