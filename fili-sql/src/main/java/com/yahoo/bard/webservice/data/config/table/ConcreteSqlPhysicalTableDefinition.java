@@ -28,6 +28,7 @@ import java.util.Set;
 public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDefinition {
     private final String schemaName;
     private final String timestampColumn;
+    private final String catalog;
 
     /**
      * Define a sql backed physical table using a zoned time grain. Requires the schema and timestamp column to be
@@ -35,6 +36,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
      *
      * @param schemaName  The name of sql schema this table is on.
      * @param timestampColumn  The name of the timestamp column to be used for the database.
+     * @param catalog The name of the database
      * @param name  The table name
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
@@ -43,6 +45,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
     public ConcreteSqlPhysicalTableDefinition(
             String schemaName,
             String timestampColumn,
+            String catalog,
             TableName name,
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
@@ -51,6 +54,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
         super(name, timeGrain, metricNames, dimensionConfigs);
         this.schemaName = schemaName;
         this.timestampColumn = timestampColumn;
+        this.catalog = catalog;
     }
 
     /**
@@ -59,6 +63,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
      *
      * @param schemaName  The name of sql schema this table is on.
      * @param timestampColumn  The name of the timestamp column to be used for the database.
+     * @param catalog The name of the database
      * @param name  The table name
      * @param timeGrain  The zoned time grain
      * @param metricNames  The Set of metric names on the table
@@ -68,6 +73,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
     public ConcreteSqlPhysicalTableDefinition(
             String schemaName,
             String timestampColumn,
+            String catalog,
             TableName name,
             ZonedTimeGrain timeGrain,
             Set<FieldName> metricNames,
@@ -77,6 +83,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
         super(name, timeGrain, metricNames, dimensionConfigs, logicalToPhysicalNames);
         this.schemaName = schemaName;
         this.timestampColumn = timestampColumn;
+        this.catalog = catalog;
     }
 
     @Override
@@ -88,7 +95,8 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
                 getLogicalToPhysicalNames(),
                 new EternalAvailability(DataSourceName.of(getName().asName()), metadataService),
                 schemaName,
-                timestampColumn
+                timestampColumn,
+                catalog
         );
     }
 
@@ -128,5 +136,31 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
         public Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
             return ALL_COLUMNS_ETERNAL_AVAILABILITY;
         }
+    }
+    /**
+     * Gets the sql schema name this table belongs to.
+     *
+     * @return the schema name.
+     */
+    public String getSchemaName() {
+        return schemaName;
+    }
+
+    /**
+     * Gets the catalog.
+     *
+     * @return the catalog name.
+     */
+    public String getCatalog() {
+        return catalog;
+    }
+
+    /**
+     * Gets the name of the timestamp column backing this table.
+     *
+     * @return the name of the timestamp column.
+     */
+    public String getTimestampColumn() {
+        return timestampColumn;
     }
 }

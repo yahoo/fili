@@ -103,7 +103,7 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
-        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName());
+        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
         builder = builder.scan(sqlTable.getName());
         return builder
                 .filter(

@@ -129,8 +129,9 @@ public class DruidQueryToSqlConverter {
                 .getSourceTable();
 
         LOG.debug(
-                "Querying table {} with schema {} using timestampColumn {}",
+                "Querying table {} with catalog:{}, schema {}, using timestampColumn {}",
                 sqlTable.getName(),
+                sqlTable.getCatalog(),
                 sqlTable.getSchemaName(),
                 sqlTable.getTimestampColumn()
         );
@@ -156,7 +157,7 @@ public class DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
-        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName());
+        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), null);
         builder = builder.scan(sqlTable.getName());
         return builder
                 .filter(

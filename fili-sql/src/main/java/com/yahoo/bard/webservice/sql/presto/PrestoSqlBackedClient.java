@@ -24,6 +24,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
@@ -97,8 +99,9 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 new ApiToFieldMapper(druidQuery.getDataSource().getPhysicalTable().getSchema());
         String sqlQuery = druidQueryToPrestoConverter.buildSqlQuery(druidQuery, aliasMaker);
 
-        LOG.info("sqlQuery: {}", sqlQuery);
+        LOG.info("Input raw sql query: {}", sqlQuery);
         sqlQuery = sqlQueryToPrestoQuery(sqlQuery);
+        LOG.info("Processed to presto query: {}", sqlQuery);
 
         PrestoResultSetProcessor resultSetProcessor = new PrestoResultSetProcessor(
                 druidQuery,
@@ -140,13 +143,24 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * */
     private static String sqlQueryToPrestoQuery(String sqlQuery) {
 
-        String fixTimePrestoQuery = sqlQuery
-                .replace("DAYOFYEAR(\"datestamp\")", "DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),\'%Y%m%d%H\'))")
-                .replace(" YEAR(\"datestamp\")", " SUBSTRING(datestamp,1,4)")
-                .replace("MONTH(\"datestamp\")", "SUBSTRING(datestamp,5,2)")
-                .replace("HOUR(\"datestamp\")", "SUBSTRING(datestamp,9,2)");
+        // Extract the timestamp column name.
+        String pat = ".*YEAR\\(\"(.*?)\"\\).*";
+        Pattern pattern = Pattern.compile(pat, Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sqlQuery);
+        matcher.matches();
+        String timestampColumn = matcher.group(1);
 
-        int datestampStartPosition = fixTimePrestoQuery.indexOf("\"datestamp\" >");
+        String fixTimePrestoQuery = sqlQuery
+                .replace(String.format("DAYOFYEAR(\"%s\")", timestampColumn),
+                        String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn))
+                .replace(String.format(" YEAR(\"%s\")", timestampColumn),
+                        String.format(" SUBSTRING(%s,1,4)", timestampColumn))
+                .replace(String.format("MONTH(\"%s\")", timestampColumn),
+                        String.format("SUBSTRING(%s,5,2)", timestampColumn))
+                .replace(String.format("HOUR(\"%s\")", timestampColumn),
+                        String.format("SUBSTRING(%s,9,2)", timestampColumn));
+
+        int datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" >", timestampColumn));
         int datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
         fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +
@@ -156,7 +170,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
 
-        datestampStartPosition = fixTimePrestoQuery.indexOf("\"datestamp\" <");
+        datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" <", timestampColumn));
         datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
         fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
                 fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +

@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.helper;
 
-import com.yahoo.bard.webservice.config.SystemConfig;
-import com.yahoo.bard.webservice.config.SystemConfigProvider;
-
 import org.apache.calcite.adapter.jdbc.JdbcSchema;
 import org.apache.calcite.plan.RelTraitDef;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
@@ -20,7 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -31,12 +30,7 @@ public class CalciteHelper {
     private final DataSource dataSource;
     private final SqlDialect dialect;
 
-    public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    public static final String DATABASE_CATALOG = SYSTEM_CONFIG.getStringProperty(
-            SYSTEM_CONFIG.getPackageVariableName("database_catalog"),
-            null
-    );
-    private static SchemaPlus schemaPlus = null;
+    private static Map<String, SchemaPlus> schemaPlusMap = new HashMap<>();
     private static final Logger LOG = LoggerFactory.getLogger(CalciteHelper.class);
 
     /**
@@ -58,12 +52,13 @@ public class CalciteHelper {
      * Creates a {@link RelBuilder} which can be used to build sql.
      *
      * @param schemaName  The name of the schema that the tables are on.
+     * @param catalog The catalog that the tables are on.
      *
      * @return a {@link RelBuilder} or null if an error occurred.
      */
-    public RelBuilder getNewRelBuilder(String schemaName) {
+    public RelBuilder getNewRelBuilder(String schemaName, String catalog) {
         try {
-            return getBuilder(dataSource, schemaName);
+            return getBuilder(dataSource, schemaName, catalog);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to build RelBuilder", e);
         }
@@ -105,17 +100,18 @@ public class CalciteHelper {
      *
      * @param dataSource  The dataSource for the jdbc schema.
      * @param schemaName  The name of the schema used for the database.
+     * @param catalog The catalog that the tables are on.
      *
      * @return the relbuilder from Calcite.
      *
      * @throws SQLException if can't readSqlResultSet from database.
      */
-    public static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
+    public static RelBuilder getBuilder(DataSource dataSource, String schemaName, String catalog) throws SQLException {
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
         return RelBuilder.create(
                 Frameworks.newConfigBuilder()
                         .parserConfig(SqlParser.Config.DEFAULT)
-                        .defaultSchema(addSchema(rootSchema, dataSource, schemaName, DATABASE_CATALOG))
+                        .defaultSchema(addSchema(rootSchema, dataSource, schemaName, catalog))
                         .traitDefs((List<RelTraitDef>) null)
                         .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
                         .build()
@@ -139,14 +135,16 @@ public class CalciteHelper {
             String catalog
     ) {
         // todo look into https://github.com/yahoo/fili/issues/509
-        if (schemaPlus == null) {
-            schemaPlus = rootSchema.add(// avg tests run at ~75-100ms
+        if (!schemaPlusMap.containsKey(catalog)) {
+            LOG.info("Adding SchemaPlus for catalog: {}", catalog);
+            SchemaPlus instance = rootSchema.add(// avg tests run at ~75-100ms
                     schemaName,
                     JdbcSchema.create(rootSchema, null, dataSource, catalog, schemaName)
             );
-            return schemaPlus;
+            schemaPlusMap.put(catalog, instance);
+            return schemaPlusMap.get(catalog);
         } else {
-            return schemaPlus;
+            return schemaPlusMap.get(catalog);
         }
     }
 }
