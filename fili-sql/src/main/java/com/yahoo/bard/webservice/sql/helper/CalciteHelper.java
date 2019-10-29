@@ -119,6 +119,28 @@ public class CalciteHelper {
     }
 
     /**
+     * Creates a {@link RelBuilder} with the given schema.
+     *
+     * @param dataSource  The dataSource for the jdbc schema.
+     * @param schemaName  The name of the schema used for the database.
+     *
+     * @return the relbuilder from Calcite.
+     *
+     * @throws SQLException if can't readSqlResultSet from database.
+     */
+    public static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
+        SchemaPlus rootSchema = Frameworks.createRootSchema(true);
+        return RelBuilder.create(
+                Frameworks.newConfigBuilder()
+                        .parserConfig(SqlParser.Config.DEFAULT)
+                        .defaultSchema(addSchema(rootSchema, dataSource, schemaName, null))
+                        .traitDefs((List<RelTraitDef>) null)
+                        .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
+                        .build()
+        );
+    }
+
+    /**
      * Adds the schema name to the rootSchema.
      *
      * @param rootSchema  The calcite schema for the database.
