@@ -129,15 +129,7 @@ public class CalciteHelper {
      * @throws SQLException if can't readSqlResultSet from database.
      */
     public static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
-        SchemaPlus rootSchema = Frameworks.createRootSchema(true);
-        return RelBuilder.create(
-                Frameworks.newConfigBuilder()
-                        .parserConfig(SqlParser.Config.DEFAULT)
-                        .defaultSchema(addSchema(rootSchema, dataSource, schemaName, null))
-                        .traitDefs((List<RelTraitDef>) null)
-                        .programs(Programs.heuristicJoinOrder(Programs.RULE_SET, true, 2))
-                        .build()
-        );
+        return getBuilder(dataSource, schemaName, null);
     }
 
     /**
