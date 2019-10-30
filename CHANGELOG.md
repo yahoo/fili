@@ -35,6 +35,10 @@ Current
 
 ### Fixed:
 
+- [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
+   * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
+   * Added handlers to the ObjectMapperSuite json mapper.
+   
 - [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
 
 ### Deprecated:
