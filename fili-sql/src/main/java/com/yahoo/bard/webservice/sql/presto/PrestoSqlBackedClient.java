@@ -43,11 +43,13 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      *
      * @param dataSource The presto datasource used for connection.
      * @param objectMapper  The mapper for all JSON processing.
-     *
-     * @throws SQLException if can't read from database.
      */
-    public PrestoSqlBackedClient(DataSource dataSource, ObjectMapper objectMapper) throws SQLException {
-        calciteHelper = new CalciteHelper(dataSource);
+    public PrestoSqlBackedClient(DataSource dataSource, ObjectMapper objectMapper) {
+        try {
+            calciteHelper = new CalciteHelper(dataSource);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to start PrestoSqlBackedClient.", e);
+        }
         druidQueryToPrestoConverter = new DruidQueryToPrestoConverter(calciteHelper);
         jsonWriter = objectMapper;
     }
@@ -124,8 +126,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
     }
 
     /**
-     * Converts sql dialect into presto compatible dialect.
-     * TODO: Add functionality to specify catalog and schema dynamically.
+     * Converts sql dialect into presto compatible dialect. The input sqlQuery must follow the format of
+     * the output of DruidQueryToPrestoConverter.buildSqlQuery()
      * Steps are:
      * <ul>
      *     <li>1. Replace Time functions with String Functions to be used for HIVE tables</li>
@@ -142,6 +144,9 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * @return a presto compatible sql dialect.
      * */
     private static String sqlQueryToPrestoQuery(String sqlQuery) {
+        if (sqlQuery == null || sqlQuery.isEmpty()) {
+            throw new IllegalStateException("Input sqlQuery is null or empty");
+        }
 
         // Extract the timestamp column name.
         String pat = ".*YEAR\\(\"(.*?)\"\\).*";
@@ -151,14 +156,22 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         String timestampColumn = matcher.group(1);
 
         String fixTimePrestoQuery = sqlQuery
-                .replace(String.format("DAYOFYEAR(\"%s\")", timestampColumn),
-                        String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn))
-                .replace(String.format(" YEAR(\"%s\")", timestampColumn),
-                        String.format(" SUBSTRING(%s,1,4)", timestampColumn))
-                .replace(String.format("MONTH(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,5,2)", timestampColumn))
-                .replace(String.format("HOUR(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,9,2)", timestampColumn));
+                .replace(
+                        String.format("DAYOFYEAR(\"%s\")", timestampColumn),
+                        String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn)
+                )
+                .replace(
+                        String.format(" YEAR(\"%s\")", timestampColumn),
+                        String.format(" SUBSTRING(%s,1,4)", timestampColumn)
+                )
+                .replace(
+                        String.format("MONTH(\"%s\")", timestampColumn),
+                        String.format("SUBSTRING(%s,5,2)", timestampColumn)
+                )
+                .replace(
+                        String.format("HOUR(\"%s\")", timestampColumn),
+                        String.format("SUBSTRING(%s,9,2)", timestampColumn)
+                );
 
         int datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" >", timestampColumn));
         int datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
