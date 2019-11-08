@@ -129,7 +129,7 @@ public class DruidQueryToSqlConverter {
                 .getSourceTable();
 
         LOG.debug(
-                "Querying table {} with catalog:{}, schema {}, using timestampColumn {}",
+                "Querying table {} with catalog: {}, schema {}, using timestampColumn {}",
                 sqlTable.getName(),
                 sqlTable.getCatalog(),
                 sqlTable.getSchemaName(),

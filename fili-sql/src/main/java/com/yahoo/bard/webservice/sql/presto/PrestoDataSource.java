@@ -43,7 +43,6 @@ public class PrestoDataSource implements DataSource {
 
     /**
      * Constructor.
-     * Follow https://docs.google.com/presentation/d/17QfH9uF6JzTkbA8SSVhS-xwqKfpEEtgDxqYqMlK3B4s/edit#slide=id.p
      */
     public PrestoDataSource() {
         properties = new Properties();

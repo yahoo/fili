@@ -104,7 +104,7 @@ public class CalciteHelper {
      *
      * @return the relbuilder from Calcite.
      *
-     * @throws SQLException if can't readSqlResultSet from database.
+     * @throws SQLException if can't read SqlResultSet from database.
      */
     public static RelBuilder getBuilder(DataSource dataSource, String schemaName, String catalog) throws SQLException {
         SchemaPlus rootSchema = Frameworks.createRootSchema(true);
@@ -126,7 +126,7 @@ public class CalciteHelper {
      *
      * @return the relbuilder from Calcite.
      *
-     * @throws SQLException if can't readSqlResultSet from database.
+     * @throws SQLException if can't read SqlResultSet from database.
      */
     public static RelBuilder getBuilder(DataSource dataSource, String schemaName) throws SQLException {
         return getBuilder(dataSource, schemaName, null);

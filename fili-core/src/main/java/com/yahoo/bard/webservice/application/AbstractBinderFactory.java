@@ -1214,8 +1214,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A map where the key is the name of the requestMapper for binding, and value is the requestMapper
      */
-    protected @NotNull
-    Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
+    protected @NotNull Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
         return new HashMap<>(0);
     }
 
@@ -1233,13 +1232,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
         return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
                 ? new AsyncDruidWebServiceImpl(
-                druidServiceConfig,
-                mapper,
-                supplier,
-                new HeaderNestingJsonBuilderStrategy(
-                        AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
-                )
-        )
+                    druidServiceConfig,
+                    mapper,
+                    supplier,
+                    new HeaderNestingJsonBuilderStrategy(
+                            AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
+                    )
+            )
                 : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
 
