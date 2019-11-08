@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import com.yahoo.bard.webservice.druid.model.metadata.ShardSpecMixIn;
 
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import org.joda.time.Interval;
 
+import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.ShardSpec;
 
 /**
@@ -36,6 +38,10 @@ public class ObjectMappersSuite {
         jsonMapper.registerModule(jodaModule);
         jsonMapper.registerModule(new Jdk8Module().configureAbsentsAsNulls(false));
         jsonMapper.registerModule(new AfterburnerModule());
+
+        InjectableValues.Std injectableValues = new InjectableValues.Std();
+        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
+        jsonMapper.setInjectableValues(injectableValues);
     }
 
     /**
