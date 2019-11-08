@@ -36,6 +36,31 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
      *
      * @param schemaName  The name of sql schema this table is on.
      * @param timestampColumn  The name of the timestamp column to be used for the database.
+     * @param name  The table name
+     * @param timeGrain  The zoned time grain
+     * @param metricNames  The Set of metric names on the table
+     * @param dimensionConfigs  The dimension configurations
+     */
+    public ConcreteSqlPhysicalTableDefinition(
+            String schemaName,
+            String timestampColumn,
+            TableName name,
+            ZonedTimeGrain timeGrain,
+            Set<FieldName> metricNames,
+            Set<? extends DimensionConfig> dimensionConfigs
+    ) {
+        super(name, timeGrain, metricNames, dimensionConfigs);
+        this.schemaName = schemaName;
+        this.timestampColumn = timestampColumn;
+        this.catalog = null;
+    }
+
+    /**
+     * Define a sql backed physical table using a zoned time grain. Requires the schema and timestamp column to be
+     * specified.
+     *
+     * @param schemaName  The name of sql schema this table is on.
+     * @param timestampColumn  The name of the timestamp column to be used for the database.
      * @param catalog The name of the database
      * @param name  The table name
      * @param timeGrain  The zoned time grain

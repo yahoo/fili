@@ -840,9 +840,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             DataSourceMetadataService metadataService,
             ObjectMapper mapper
     ) {
-        InjectableValues.Std injectableValues = new InjectableValues.Std();
-        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
-        mapper.setInjectableValues(injectableValues);
         return new DataSourceMetadataLoadTask(
                 physicalTableDictionary,
                 metadataService,

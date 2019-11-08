@@ -56,14 +56,11 @@
             <artifactId>presto-jdbc</artifactId>
             <version>${presto.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>3.10.0</version>
         </dependency>
-
-
     </dependencies>
 
 </project>
