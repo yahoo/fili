@@ -134,7 +134,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.RatioGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.glassfish.hk2.api.TypeLiteral;
@@ -149,7 +148,6 @@ import org.joda.time.format.DateTimePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.druid.timeline.DataSegment;
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
