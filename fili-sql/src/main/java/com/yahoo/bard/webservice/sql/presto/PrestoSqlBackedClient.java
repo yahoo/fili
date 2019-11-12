@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
+import com.yahoo.bard.webservice.sql.SqlResultSetProcessor;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -105,7 +106,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         sqlQuery = sqlQueryToPrestoQuery(sqlQuery);
         LOG.info("Processed to presto query: {}", sqlQuery);
 
-        PrestoResultSetProcessor resultSetProcessor = new PrestoResultSetProcessor(
+        SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
                 druidQuery,
                 aliasMaker,
                 jsonWriter,
@@ -143,7 +144,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      *
      * @return a presto compatible sql dialect.
      * */
-    private static String sqlQueryToPrestoQuery(String sqlQuery) {
+    protected static String sqlQueryToPrestoQuery(String sqlQuery) {
         if (sqlQuery == null || sqlQuery.isEmpty()) {
             throw new IllegalStateException("Input sqlQuery is null or empty");
         }

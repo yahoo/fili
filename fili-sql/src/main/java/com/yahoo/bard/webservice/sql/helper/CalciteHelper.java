@@ -156,7 +156,7 @@ public class CalciteHelper {
                     JdbcSchema.create(rootSchema, null, dataSource, catalog, schemaName)
             );
             schemaPlusMap.put(catalog, instance);
-            return schemaPlusMap.get(catalog);
+            return instance;
         } else {
             return schemaPlusMap.get(catalog);
         }

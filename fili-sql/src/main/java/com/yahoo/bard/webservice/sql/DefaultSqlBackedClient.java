@@ -128,10 +128,9 @@ public class DefaultSqlBackedClient implements SqlBackedClient {
         );
 
         try (Connection connection = calciteHelper.getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-                ResultSet resultSet = preparedStatement.executeQuery()) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
             resultSetProcessor.process(resultSet);
-
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
             LOG.trace("Created response: {}", jsonNode);
             return jsonNode;

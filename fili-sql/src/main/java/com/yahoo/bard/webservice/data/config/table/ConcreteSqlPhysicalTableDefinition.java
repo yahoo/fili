@@ -162,6 +162,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
             return ALL_COLUMNS_ETERNAL_AVAILABILITY;
         }
     }
+
     /**
      * Gets the sql schema name this table belongs to.
      *
@@ -172,7 +173,7 @@ public class ConcreteSqlPhysicalTableDefinition extends ConcretePhysicalTableDef
     }
 
     /**
-     * Gets the catalog.
+     * Gets the catalog. Catalog is the database name.
      *
      * @return the catalog name.
      */

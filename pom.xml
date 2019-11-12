@@ -482,8 +482,6 @@
             <!-- ReactiveX -->
             <dependency>
                 <groupId>io.reactivex</groupId>
-
-
                 <artifactId>rxjava</artifactId>
                 <version>1.2.2</version>
             </dependency>

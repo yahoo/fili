@@ -62,7 +62,6 @@ class PrestoRequestHandlerSpec extends Specification {
             sc = a1
             return Mock(Future)
         }
-        println sc
         when:
         sc.invoke(jsonNode)
         then:
