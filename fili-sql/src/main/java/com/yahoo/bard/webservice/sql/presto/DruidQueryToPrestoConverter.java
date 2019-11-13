@@ -39,8 +39,6 @@ import java.util.stream.Collectors;
  */
 public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
     private static final Logger LOG = LoggerFactory.getLogger(DruidQueryToPrestoConverter.class);
-    public static final int NO_OFFSET = -1;
-    public static final int NO_LIMIT = -1;
 
     /**
      * Constructs the default converter.

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -40,6 +41,7 @@ public class PrestoDataSource implements DataSource {
             SYSTEM_CONFIG.getPackageVariableName("database_kerberos_keytab_path")
     );
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(PrestoDataSource.class);
+    private Driver driver;
 
     /**
      * Constructor.
@@ -53,11 +55,22 @@ public class PrestoDataSource implements DataSource {
         properties.setProperty("KerberosConfigPath", "/etc/krb5.conf");
         properties.setProperty("KerberosPrincipal", KERBEROS_PRINCIPAL);
         properties.setProperty("KerberosKeytabPath", KERBEROS_KEYTAB_PATH);
+        this.driver = new PrestoDriver();
+    }
+
+    /**
+     * Constructor.
+     * @param properties the properties of the connection
+     * @param driver the jdbc driver
+     */
+    public PrestoDataSource(Properties properties, Driver driver) {
+        this.properties = properties;
+        this.driver = driver;
     }
 
     @Override
     public Connection getConnection() throws SQLException {
-        DriverManager.registerDriver(new PrestoDriver());
+        DriverManager.registerDriver(driver);
         LOG.info("getConnection with properties: {}", properties);
         return DriverManager.getConnection(DATABASE_URL, properties);
     }

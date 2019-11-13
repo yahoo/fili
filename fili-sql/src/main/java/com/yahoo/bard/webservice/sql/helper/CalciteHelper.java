@@ -148,17 +148,17 @@ public class CalciteHelper {
             String schemaName,
             String catalog
     ) {
-        // todo look into https://github.com/yahoo/fili/issues/509
-        if (!schemaPlusMap.containsKey(catalog)) {
-            LOG.info("Adding SchemaPlus for catalog: {}", catalog);
+        String key = dataSource.toString() + "_" + catalog + "_" + schemaName;
+        if (!schemaPlusMap.containsKey(key)) {
+            LOG.info("Adding SchemaPlus for schemaName: {}, catalog: {}", schemaName, catalog);
             SchemaPlus instance = rootSchema.add(// avg tests run at ~75-100ms
                     schemaName,
                     JdbcSchema.create(rootSchema, null, dataSource, catalog, schemaName)
             );
-            schemaPlusMap.put(catalog, instance);
+            schemaPlusMap.put(key, instance);
             return instance;
         } else {
-            return schemaPlusMap.get(catalog);
+            return schemaPlusMap.get(key);
         }
     }
 }
