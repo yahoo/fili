@@ -1,4 +1,4 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.evaluator;
 
@@ -6,55 +6,64 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggre
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
 import org.apache.calcite.util.ReflectiveVisitor;
 
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Evaluates post aggregations.
- * For more info see: io.druid.query.aggregation.post.ArithmeticPostAggregator.
+ * Translates recursive postAggregations to sql arithmetic.
  *
- * To use this call {@link #calculate(PostAggregation, Function)}.
- */
+ * To use this call {@link #evaluatePostAggregation(PostAggregation, RelBuilder, ApiToFieldMapper)}
+ * */
 public class PostAggregationEvaluator implements ReflectiveVisitor {
-    private final ReflectUtil.MethodDispatcher<Double> dispatcher;
+    private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
     /**
      * Constructor.
-     */
+     * */
     public PostAggregationEvaluator() {
         /*
-        The method dispatcher dynamically calls the correct method in this class based on the polymorphic first
-        argument. All methods must have the same signature except for the first argument.
+         * The method dispatcher dynamically calls the correct method in this class based on the polymorphic first
+         * argument. All methods must have the same signature except for the first argument.
          */
         dispatcher = ReflectUtil.createMethodDispatcher(
-                Double.class,
+                RexNode.class,
                 this,
                 "evaluate",
                 PostAggregation.class,
-                Function.class
+                RelBuilder.class,
+                ApiToFieldMapper.class
         );
     }
 
     /**
-     * Calculates the value of a post aggregation.
+     * Transforms sql arithmetic from post aggregation by invoking dispatcher.
+     * This method is directly called for using this class.
      *
      * @param postAggregation  The post aggregation to evaluate.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param builder  The RelBuilder for building sql query.
+     * @param apiToFieldMapper Maps between logical and physical column names given a table schema
      *
-     * @return the number calculated from the postAggregation.
+     * @return the RexNode of sql arithmetic
      *
      * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
-    public Number calculate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
-        Double doubleValue = dispatcher.invoke(postAggregation, aggregatedValues);
-        if (postAggregation.isFloatingPoint()) {
-            return doubleValue;
-        } else {
-            return doubleValue.longValue();
+    public RexNode evaluatePostAggregation(
+            PostAggregation postAggregation,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper) {
+        if (postAggregation == null) {
+            return null;
         }
+        return dispatcher.invoke(postAggregation, builder, apiToFieldMapper);
     }
 
     /**
@@ -62,92 +71,100 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * and returns the value.
      *
      * @param postAggregation  The post aggregation to evaluate.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param builder  The RelBuilder for building sql query.
+     * @param apiToFieldMapper Maps between logical and physical column names given a table schema
      *
-     * @return only throws exception.
+     * @return the RexNode of sql arithmetic
      *
      * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
-    public Double evaluate(PostAggregation postAggregation, Function<String, String> aggregatedValues) {
-        throw new UnsupportedOperationException("can't process " + postAggregation);
+    public RexNode evaluate(PostAggregation postAggregation, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        throw new UnsupportedOperationException("Can't Process " + postAggregation);
     }
 
     /**
      * Evaluates a fieldAccessorPostAggregation by parsing the value from the aggregatedValues map.
+     * @param fieldAccessorPostAggregation  The post aggregation to evaluate.
+     * @param builder  The RelBuilder for building sql query.
+     * @param apiToFieldMapper Maps between logical and physical column names given a table schema
      *
-     * @param fieldAccessorPostAggregation  Determines which fields value will be accessed. The field must be in the
-     * `aggregatedValues` which will parse the value returned as a double.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @return the RexNode of sql arithmetic
      *
-     * @return the number parsed from the field.
+     * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
-    public Double evaluate(
+    public RexNode evaluate(
             FieldAccessorPostAggregation fieldAccessorPostAggregation,
-            Function<String, String> aggregatedValues
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper
     ) {
-        String stringNumber = aggregatedValues.apply(fieldAccessorPostAggregation.getFieldName());
-        return Double.valueOf(stringNumber);
-    }
-
-    /**
-     * Evaluates an arithmeticPostAggregation by performing it's operation over other postAggregations.
-     *
-     * @param arithmeticPostAggregation  The post aggregation which performs an operation over other post aggregations.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
-     *
-     * @return the number calculated from it's operation.
-     */
-    public Double evaluate(
-            ArithmeticPostAggregation arithmeticPostAggregation,
-            Function<String, String> aggregatedValues
-    ) {
-        // todo replace switch with a map
-        switch (arithmeticPostAggregation.getFn()) {
-            case PLUS:
-                Double sum = 0D;
-                for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
-                    sum += dispatcher.invoke(postAgg, aggregatedValues);
-                }
-                return sum;
-            case MULTIPLY:
-                Double prod = 1D;
-                for (PostAggregation postAgg : arithmeticPostAggregation.getFields()) {
-                    prod *= dispatcher.invoke(postAgg, aggregatedValues);
-                }
-                return prod;
-            case MINUS:
-                Double sub = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
-                for (int i = 1; i < arithmeticPostAggregation.getFields().size(); i++) {
-                    PostAggregation postAgg = arithmeticPostAggregation.getFields().get(i);
-                    sub -= dispatcher.invoke(postAgg, aggregatedValues);
-                }
-                return sub;
-            case DIVIDE:
-                Double div = dispatcher.invoke(arithmeticPostAggregation.getFields().get(0), aggregatedValues);
-                for (int i = 1; i < arithmeticPostAggregation.getFields().size(); i++) {
-                    PostAggregation postAgg = arithmeticPostAggregation.getFields().get(i);
-                    Double result = dispatcher.invoke(postAgg, aggregatedValues);
-                    // if divisor is zero then result is zero
-                    // from druid docs http://druid.io/docs/latest/querying/post-aggregations.html
-                    if (result == 0.0D) {
-                        return 0.0D;
-                    }
-                    div /= result;
-                }
-                return div;
-        }
-        throw new UnsupportedOperationException("Can't do post aggregation " + arithmeticPostAggregation);
+        return builder.field(apiToFieldMapper.unApply(fieldAccessorPostAggregation.getFieldName()));
     }
 
     /**
      * Evaluates a constantPostAggregation by reading it's value.
      *
-     * @param constantPostAggregation  Contains a constant which will be read.
-     * @param aggregatedValues  A map from fieldNames of aggregated values to their actual value.
+     * @param constantPostAggregation  The post aggregation to evaluate.
+     * @param builder  The RelBuilder for building sql query.
+     * @param apiToFieldMapper Maps between logical and physical column names given a table schema
      *
-     * @return the constant value for this postAggregation.
+     * @return the RexNode of sql arithmetic
+     *
+     * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
      */
-    public Double evaluate(ConstantPostAggregation constantPostAggregation, Function<String, String> aggregatedValues) {
-        return constantPostAggregation.getValue();
+    public RexNode evaluate(
+            ConstantPostAggregation constantPostAggregation,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper
+    ) {
+        return builder.literal(constantPostAggregation.getValue());
+    }
+
+    /**
+     * Evaluates an arithmeticPostAggregation by translating it's operation over other postAggregations
+     * to sql arithmetic.
+     *
+     * @param arithmeticPostAggregation  The post aggregation to evaluate.
+     * @param builder  The RelBuilder for building sql query.
+     * @param apiToFieldMapper Maps between logical and physical column names given a table schema
+     *
+     * @return the RexNode of sql arithmetic
+     *
+     * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
+     */
+    public RexNode evaluate(
+            ArithmeticPostAggregation arithmeticPostAggregation,
+            RelBuilder builder,
+            ApiToFieldMapper apiToFieldMapper) {
+        List<RexNode> innerFields = arithmeticPostAggregation.getFields().stream()
+                .map(field -> dispatcher.invoke(field, builder, apiToFieldMapper))
+                .collect(Collectors.toList());
+
+        switch (arithmeticPostAggregation.getFn()) {
+            case PLUS:
+                return builder.alias(
+                        builder.call(SqlStdOperatorTable.PLUS, innerFields),
+                        arithmeticPostAggregation.getName()
+                );
+            case MULTIPLY:
+                return builder.alias(
+                        builder.call(SqlStdOperatorTable.MULTIPLY, innerFields),
+                        arithmeticPostAggregation.getName()
+                );
+            case MINUS:
+                return builder.alias(
+                        builder.call(SqlStdOperatorTable.MINUS, innerFields),
+                        arithmeticPostAggregation.getName()
+                );
+            case DIVIDE:
+                List<RexNode> temp = new ArrayList<>();
+                //cast Integer to Double to avoid truncation
+                temp.add(builder.call(SqlStdOperatorTable.MULTIPLY, builder.literal(1.0), innerFields.get(0)));
+                temp.addAll(innerFields.subList(1, innerFields.size()));
+                return builder.alias(
+                        builder.call(SqlStdOperatorTable.DIVIDE, temp),
+                        arithmeticPostAggregation.getName()
+                );
+        }
+        throw new UnsupportedOperationException("Can't do post aggregation " + arithmeticPostAggregation);
     }
 }

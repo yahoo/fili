@@ -9,6 +9,12 @@ Current
 -------
 
 ### Added:
+- [Add Presto support](https://github.com/yahoo/fili/pull/986)
+   * Fili now can connect to Presto servers.
+   * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
+   * Version bump for jackson, jackson-databind, async-http-client to address package vulnerability.
+   * Add suppression for other packages with vulnerability but without fixed version.
+
 
 - [Default implementations of new `Generator` interface](https://github.com/yahoo/fili/issues/769)
    * All default implementations are based on the equivalent method from `ApiRequestImpl`. The

@@ -2,11 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql;
 
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.sql.evaluator.PostAggregationEvaluator;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -37,9 +35,11 @@ import java.util.stream.Collectors;
  */
 public class SqlResultSetProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(SqlResultSetProcessor.class);
-    private final DruidAggregationQuery<?> druidQuery;
-    private final ApiToFieldMapper apiToFieldMapper;
+    protected final DruidAggregationQuery<?> druidQuery;
+    protected final ApiToFieldMapper apiToFieldMapper;
     private BiMap<Integer, String> columnToColumnName;
+
+
     private List<String[]> sqlResults;
     private final ObjectMapper objectMapper;
     private final int groupByDimensionsCount;
@@ -80,17 +80,17 @@ public class SqlResultSetProcessor {
     public JsonNode buildDruidResponse() {
         Map<String, Function<String, Number>> resultTypeMapper = getAggregationTypeMapper(druidQuery);
 
-        try (TokenBuffer jsonWriter = new TokenBuffer(objectMapper, true)) {
+        try (TokenBuffer jsonWriter = new TokenBuffer(getObjectMapper(), true)) {
 
             jsonWriter.writeStartArray();
-            for (String[] row : sqlResults) {
+            for (String[] row : getSqlResults()) {
                 jsonWriter.writeStartObject();
 
                 DateTime timestamp;
                 if (AllGranularity.INSTANCE.equals(druidQuery.getGranularity())) {
                     timestamp = druidQuery.getIntervals().get(0).getStart();
                 } else {
-                    timestamp = sqlTimeConverter.getIntervalStart(
+                    timestamp = getSqlTimeConverter().getIntervalStart(
                             groupByDimensionsCount,
                             row,
                             druidQuery
@@ -128,32 +128,26 @@ public class SqlResultSetProcessor {
             JsonGenerator jsonWriter,
             String[] row
     ) throws IOException {
-        int lastTimeIndex = sqlTimeConverter.timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
-        int columnCount = columnToColumnName.size();
+        int lastTimeIndex = getSqlTimeConverter().timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
+        int columnCount = getColumnToColumnName().size();
 
         for (int i = 0; i < columnCount; i++) {
             if (isTimeColumn(lastTimeIndex, i)) {
                 continue;
             }
-            String columnName = columnToColumnName.get(i);
+            String columnName = getColumnToColumnName().get(i);
             if (resultTypeMapper.containsKey(columnName)) {
-                Number result = resultTypeMapper
-                        .get(columnName)
-                        .apply(row[i]);
-
-                writeNumberField(jsonWriter, columnName, result);
+                if (row[i] == null) {
+                    jsonWriter.writeNullField(columnName);
+                } else {
+                    Number result = resultTypeMapper
+                            .get(columnName)
+                            .apply(row[i]);
+                    writeNumberField(jsonWriter, columnName, result);
+                }
             } else {
                 jsonWriter.writeStringField(columnName, row[i]);
             }
-        }
-
-        PostAggregationEvaluator postAggregationEvaluator = new PostAggregationEvaluator();
-        for (PostAggregation postAggregation : druidQuery.getPostAggregations()) {
-            Number postAggResult = postAggregationEvaluator.calculate(
-                    postAggregation,
-                    (String columnName) -> row[columnToColumnName.inverse().get(columnName)]
-            );
-            writeNumberField(jsonWriter, postAggregation.getName(), postAggResult);
         }
     }
 
@@ -165,8 +159,9 @@ public class SqlResultSetProcessor {
      *
      * @return true if the current index is of an exploded date time column.
      */
-    private boolean isTimeColumn(int lastTimeIndex, int currentIndex) {
-        return currentIndex >= groupByDimensionsCount && currentIndex < groupByDimensionsCount + lastTimeIndex;
+    protected boolean isTimeColumn(int lastTimeIndex, int currentIndex) {
+        return currentIndex >= getGroupByDimensionsCount() && currentIndex
+                < getGroupByDimensionsCount() + lastTimeIndex;
     }
 
     /**
@@ -181,17 +176,17 @@ public class SqlResultSetProcessor {
         ResultSetMetaData resultSetMetaData = sqlResultSet.getMetaData();
         int resultSetColumnCount = resultSetMetaData.getColumnCount();
 
-        if (resultSetColumnCount != columnToColumnName.size() && columnToColumnName.size() != 0) {
+        if (resultSetColumnCount != getColumnToColumnName().size() && getColumnToColumnName().size() != 0) {
             String msg = "Attempting to add ResultSet with " + resultSetColumnCount + " columns, but it should have "
-                    + columnToColumnName.size() + " columns";
+                    + getColumnToColumnName().size() + " columns";
             LOG.warn(msg);
             throw new RuntimeException(msg);
         }
 
-        if (columnToColumnName.size() == 0) {
+        if (getColumnToColumnName().size() == 0) {
             for (int i = 1; i <= resultSetColumnCount; i++) {
                 String columnName = apiToFieldMapper.unApply(resultSetMetaData.getColumnName(i));
-                columnToColumnName.put(i - 1, columnName);
+                getColumnToColumnName().put(i - 1, columnName);
             }
         }
 
@@ -200,7 +195,7 @@ public class SqlResultSetProcessor {
             for (int i = 1; i <= resultSetColumnCount; i++) {
                 row[i - 1] = sqlResultSet.getString(i);
             }
-            sqlResults.add(row);
+            getSqlResults().add(row);
         }
     }
 
@@ -251,5 +246,25 @@ public class SqlResultSetProcessor {
                                 }
                         )
                 );
+    }
+
+    protected BiMap<Integer, String> getColumnToColumnName() {
+        return columnToColumnName;
+    }
+
+    protected List<String[]> getSqlResults() {
+        return sqlResults;
+    }
+
+    protected ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    protected int getGroupByDimensionsCount() {
+        return groupByDimensionsCount;
+    }
+
+    protected SqlTimeConverter getSqlTimeConverter() {
+        return sqlTimeConverter;
     }
 }
