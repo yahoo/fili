@@ -1,11 +1,12 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.config.luthier.factories;
+package com.yahoo.bard.webservice.data.config.luthier.factories.physicaltable;
 
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierValidationUtils;
+import com.yahoo.bard.webservice.data.config.luthier.factories.physicaltable.LuthierPhysicalTableParams;
 import com.yahoo.bard.webservice.data.config.luthier.names.LuthierTableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;

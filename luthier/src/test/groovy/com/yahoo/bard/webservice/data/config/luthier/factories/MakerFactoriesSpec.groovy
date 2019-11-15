@@ -10,6 +10,7 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPo
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNodeLuaJ
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.ArithmeticMakerFactory
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker
 import com.yahoo.bard.webservice.data.config.luthier.Factory
@@ -17,9 +18,7 @@ import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
