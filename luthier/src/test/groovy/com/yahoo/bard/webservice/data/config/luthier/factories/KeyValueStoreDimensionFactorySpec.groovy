@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.luthier.ConceptType
 import com.yahoo.bard.webservice.data.config.luthier.Factory
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.config.luthier.LuthierResourceDictionaries
+import com.yahoo.bard.webservice.data.config.luthier.factories.dimension.KeyValueStoreDimensionFactory
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
