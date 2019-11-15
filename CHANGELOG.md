@@ -37,7 +37,7 @@ Current
    * Resolved dependecy issues around where properties files were sourced
    * Rationalized dependencies for sample applications
 
-- [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/982)
+- [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
    
 ### Removed:
 
