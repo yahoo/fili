@@ -17,7 +17,8 @@ import java.util.Set;
 public enum DefaultSqlAggregationType implements SqlAggregationType {
     SUM(SqlStdOperatorTable.SUM, "longSum", "doubleSum"),
     MIN(SqlStdOperatorTable.MIN, "longMin", "doubleMin"),
-    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax");
+    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax"),
+    COUNT(SqlStdOperatorTable.COUNT, "count");
     // todo avg
 
     private final Set<String> validDruidAggregations;

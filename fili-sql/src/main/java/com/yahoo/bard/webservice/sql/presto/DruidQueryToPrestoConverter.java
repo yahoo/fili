@@ -162,17 +162,22 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                     LOG.debug(msg);
                     return new RuntimeException(msg);
                 }))
-                .map(sqlAggregation -> builder.aggregateCall(
-                        sqlAggregation.getSqlAggFunction(),
-                        false,
-                        null,
-                        // TODO: investigate the field name case discrepency
-                        CaseFormat.LOWER_UNDERSCORE.to(
-                                CaseFormat.LOWER_CAMEL,
-                                sqlAggregation.getSqlAggregationAsName()
-                        ),
-                        builder.field(sqlAggregation.getSqlAggregationFieldName())
-                ))
+                .map(sqlAggregation -> {
+                    if (sqlAggregation.getSqlAggFunction() == SqlStdOperatorTable.COUNT) {
+                        return builder.countStar("count");
+                    }
+                    return builder.aggregateCall(
+                            sqlAggregation.getSqlAggFunction(),
+                            false,
+                            null,
+                            // TODO: Investigate why ApiToFieldMapper doesn't work here
+                            CaseFormat.LOWER_UNDERSCORE.to(
+                                    CaseFormat.LOWER_CAMEL,
+                                    sqlAggregation.getSqlAggregationAsName()
+                            ),
+                            builder.field(sqlAggregation.getSqlAggregationFieldName())
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
