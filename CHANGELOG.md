@@ -9,6 +9,9 @@ Current
 -------
 
 ### Added:
+- [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
+   * When there is a `count` metric that uses `countMaker`, it will be translated into a COUNT(\*) in SQL query.
+   
 - [Add Presto support](https://github.com/yahoo/fili/pull/986)
    * Fili now can connect to Presto servers.
    * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
