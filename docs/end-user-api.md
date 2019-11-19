@@ -24,6 +24,7 @@ Table of Contents
 - [Query Options](#query-options)
     - [Pagination / Limit](#pagination--limit)
     - [Response Format](#response-format)
+    - [Filename](#filename)
     - [Filtering](#filtering)
     - [Having](#having)
     - [Sorting](#sorting)
@@ -58,9 +59,9 @@ aggregating, as well as filtering of data, and are a critical part of the system
 fields, as well as a collection of possible values for that dimension. These dimension fields and values serve two
 primary purposes: Filtering and Annotating data query results.
 
-All dimensions have an Id property (a natural key) and a Desc property (a human-readable description). Both of these
-fields can be used to filter rows reported on, and both of these fields are included in the data query result set for
-each dimension.
+All dimensions have an Id property (a natural key) and a Description property (a human-readable description). Both of
+these fields can be used to filter rows reported on, and both of these fields are included in the data query result set
+for each dimension.
 
 Get a [list of all dimensions](https://sampleapp.fili.org/v1/dimensions):
 
@@ -168,12 +169,6 @@ components of this URL.
 
 - **https\://** - The Fili API is only available over a secure connection, so _HTTPS is required_. _HTTP queries
     will not work_.
-
-This [basic query](https://sampleapp.fili.org/v1/data/network/week?metrics=pageViews,dayAvgTimeSpent&dateTime=2014-09-01/2014-09-08)
-gives us network-level page views and daily average time spent data for one week. Let's break down the different 
-components of this URL.
-
-- **https\://** - .
 - **sampleapp.fili.org** - This is where the Fili API lives.
 - **v1** - The version of the API.
 - **data** - This is the resource we are querying, and is the base for all data reports.
@@ -214,8 +209,7 @@ to see the global numbers, not the per-region numbers.
 
 This example also shows that we can filter by dimensions that we are not grouping on! Filters are very rich and
 powerful, so take a look at the [Filters](#filtering) section for more details. Oh, and one last thing about filters on
-the Data resource: Only `in` and `notin` are supported at the moment, but additional filter operations will be added 
-soon!
+the Data resource: By default `in`, `notin`, `eq`, `startswith`, and `contains` are supported, but `startswith` and `contains` may be disabled.
 
 ### Response Format Example ###
 
@@ -226,6 +220,71 @@ so that we can pull it into Excel and play around with it! No worries, the Fili 
 
 For additional information about response format, take a look at the [Format](#response-format) section!
 
+Table Queries
+------------
+
+### Table Availability ###
+Availability for a table(logical table) is defined as the maximal set of intervals that the table may be able to respond
+to. Or put another way, the table can certainly not respond to any intervals beyond the range marked available. 
+
+### Constrained Queries ###
+Constrained availability will be defined as the availability for a table given a set of query constraints. 
+
+Currently the tables/table/timeGrain response lacks an indication of the time range(s) for which the table has data
+(ie. can answer questions), but implementation is going on to expand the table resource so that it can take pretty much
+the same inputs that the data resource takes, and would use those inputs to constrain / restrict the available time
+ranges (and even available schema, etc.) of the logical table.
+
+The constraints are:
+
+* Grouping dimensions
+* Metrics
+* Filters
+* Date/Time
+
+For example:
+
+    GET https://sampleapp.fili.io/v1/tables/myTable/week/dim1/dim2?metrics=myMetric&filters=dim3|id-in[foo,bar]&dateTime=2014-09-01/2018-09-08
+
+Which would result in a table response with the metrics, dimensions, and available intervals restricted down to the set
+of items that are still "reachable" given the constraints in the query. So, if the table normally indicates that `dim7`
+is one of it's dimensions, but there isn't a backing physical table for `myTable` that has `dim1`, `dim2`, `dim3`, and
+`myMetric` along with `dim7`, then `dim7` would not be in the dimension list returned in the response. 
+
+In the example above, query accepts an optional list of path separated grouping dimensions, an optional list of metrics,
+an optional filter clause, and an interval parameter. An example response could be
+
+```json
+{
+      "category": "General",
+      "name": "shapes",
+      "longName": "shapes",
+      "timeGrain": "day",
+      "retention": "P1Y",
+      "description": "shapes",
+      "availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"],
+      "dimensions": [
+        {
+          "cardinality": "0",
+          "category": "General",
+          "name": "color",
+          "longName": "color",
+          "uri": "http://localhost:9998/dimensions/color"
+        }
+      ],
+      "metrics": [
+        {
+          "category": "General",
+          "name":"rowNum",
+          "longName": "rowNum",
+          "uri": "http://localhost:9998/metrics/rowNum"
+        }
+      ]
+    }
+```
+
+Note the line`"availableIntervals": ["2016-05-01 00:00:00.000/2017-05-27 00:00:00.000"]`.
+
 Query Options
 -------------
 
@@ -234,6 +293,7 @@ supported, and how the use the options:
 
 - [Pagination / Limit](#pagination--limit)
 - [Response Format](#response-format)
+- [Filename](#filename)
 - [Filtering](#filtering)
 - [Having](#having)
 - [Dimension Field Selection](#dimension-field-selection)
@@ -408,6 +468,19 @@ dateTime,gender|id,gender|desc,pageViews
 }
 ```
 
+### Filename ###
+
+The default naming formula can produce attachments with long, hard to parse names. Fili provides the `filename` query
+string parameter, which specifies a filename for the result attachment to be downloaded as. The format of the attachment
+is determined by the `format` parameter defined above. As such, do not provide a file extension to the `filename` query.
+
+For example, the [query](https://sampleapp.fili.io/v1/data/network/day/gender?metrics=pageViews&dateTime=2014-09-01/2014-09-02&format=json&filename=data): `GET https://sampleapp.fili.io/v1/data/network/day/gender?metrics=pageViews&dateTime=2014-09-01/2014-09-02&format=json&filename=data`
+
+downloads an attachment `data.json`
+
+The presence of the `filename` parameter indicates that the response should be downloaded as an attachment. Otherwise 
+the response is rendered by the browser. The exception to this is the CSV format, which is always downloaded.
+
 ### Filtering ###
 
 Filters allow you to filter by [dimension](#dimension) values. What is being filtered depends on the resource, but the
@@ -420,7 +493,7 @@ The general format of a single filter is:
 These filters can be combined by comma-separating each individual filter, and the filter strings are [URL-encoded](http://en.wikipedia.org/wiki/Percent-encoding),
 comma-separated values:
 
-    myDim|id-contains[foo,bar],myDim|id-notin[baz],yourDim|desc-startsWith[Once%20upon%20a%20time,in%20a%20galaxy]
+    myDim|id-contains[foo,bar],myDim|id-notin[baz],yourDim|desc-startswith[Once%20upon%20a%20time,in%20a%20galaxy]
 
 These are the available filter operations (Though not all of them are supported by all endpoints):
 
@@ -428,7 +501,7 @@ These are the available filter operations (Though not all of them are supported 
 - **notin**: `Not In` filters are an exact match on a filter string, where all rows _except_ matching rows are included
 - **contains**: `Contains` filters search for the filter string to be contained in the searched field, and work like an 
     `in` filter
-- **startsWith**: `Starts With` filters search for the filter string to be at the beginning of the searched field, and 
+- **startswith**: `Starts With` filters search for the filter string to be at the beginning of the searched field, and 
     work like an `in` filter
 
 Let's take an example, and break down what it means.
@@ -685,13 +758,16 @@ If the ticket is not available in the system, we get a 404 error with the messag
 The user may access the results of a query by sending a `GET` request to `jobs/TICKET/results`. This
 resource takes the following parameters:
 
- 1. **`format`** - Allows the user to specify a response format, i.e. csv, or JSON. This behaves
+1. **`format`** - Allows the user to specify a response format, i.e. csv, or JSON. This behaves
 just like the [`format`](#response-format) parameter on queries sent to the `data` endpoint.
 
-2. **`page`, `perPage`** - The [pagination](#pagination--limit) parameters. Their behavior is the same as when sending
+2. **`filename`** - Allows the user to specify a filename for the result to be downloaded as. This behaves
+just like the [`filename`](#filename) parameter on queries sent to the `data` endpoint.
+
+3. **`page`, `perPage`** - The [pagination](#pagination--limit) parameters. Their behavior is the same as when sending
 a query to the `data` endpoint, and allow the user to get pages of the results.
 
-3. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
+4. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
 result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
 
 If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the
@@ -760,54 +836,18 @@ error response with an HTTP response status code of 429.
 There are a number of different errors you may encounter when interacting with the API. All of them are indicated by the
 HTTP response status code, and most of them have a helpful message indicating what went wrong.
 
-#### 400 BAD REQUEST ####
+| Code | Meaning                         | Cause                                                                                                                                                                                                          |
+| ---- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400  | BAD REQUEST                     | You have some sort of syntax error in your request. We couldn't figure out what you were trying to ask.                                                                                                        |
+| 401  | UNAUTHORIZED                    | We don't know who you are, so send your request again, but tell us who you are. Usually this means you didn't include proper security authentication information in your request                               |
+| 403  | FORBIDDEN                       | We know who you are, but you can't come in.                                                                                                                                                                    |
+| 404  | NOT FOUND                       | We don't know what resource you're talking about. You probably have a typo in your URL path.                                                                                                                   |
+| 416  | REQUESTED RANGE NOT SATISFIABLE | We can't get that data for you from Druid.                                                                                                                                                                     |
+| 422  | UNPROCESSABLE ENTITY            | We understood the request (ie. syntax is correct), but something else about the query is wrong. Likely something like a dimension mis-match, or a metric / dimension not being available in the logical table. |
+| 429  | TOO MANY REQUESTS               | You've hit the rate limit. Wait a little while for any requests you may have sent to finish and try your request again.                                                                                        |
+| 500  | INTERNAL SERVER ERROR           | Some other error on our end. We try to catch and investigate all of these, but we might miss them, so please let us know if you get 500 errors.                                                                |
+| 502  | BAD GATEWAY                     | Bad Druid response.                                                                                                                                                                                            |
+| 503  | SERVICE UNAVAILABLE             | Druid can't be reached.                                                                                                                                                                                        |
+| 504  | GATEWAY TIMEOUT                 | Druid query timeout.                                                                                                                                                                                           |
+| 507  | INSUFFICIENT STORAGE            | Too heavy of a query.                                                                                                                                                                                          |
 
-You have some sort of syntax error in your request. We couldn't figure out what you were trying to ask.
-
-#### 401 UNAUTHORIZED ####
-
-We don't know who you are, so send your request again, but tell us who you are.
-
-Usually this means you didn't include proper security authentication information in your request
-
-#### 403 FORBIDDEN ####
-
-We know who you are, but you can't come in.
-
-#### 404 NOT FOUND ####
-
-We don't know what resource you're talking about. You probably have a typo in your URL path.
-
-#### 416 REQUESTED RANGE NOT SATISFIABLE ####
-
-We can't get that data for you from Druid.
-
-#### 422 UNPROCESSABLE ENTITY ####
-
-We understood the request (ie. syntax is correct), but something else about the query is wrong. Likely something like
-a dimension mis-match, or a metric / dimension not being available in the logical table.
-
-#### 429 TOO MANY REQUESTS ####
-
-You've hit the rate limit. Wait a little while for any requests you may have sent to finish and try your request again.
-
-#### 500 INTERNAL SERVER ERROR ####
-
-Some other error on our end. We try to catch and investigate all of these, but we might miss them, so please let us know
-if you get 500 errors.
-
-#### 502 BAD GATEWAY ####
-
-Bad Druid response
-
-#### 503 SERVICE UNAVAILABLE ####
-
-Druid can't be reached
-
-#### 504 GATEWAY TIMEOUT ####
-
-Druid query timeout
-
-#### 507 INSUFFICIENT STORAGE ####
-
-Too heavy of a query

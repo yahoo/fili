@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
@@ -11,7 +12,6 @@ import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.SketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
@@ -33,7 +33,7 @@ public abstract class MetricMaker {
     public static final Function<String, ResultSetMapper> NO_OP_MAP_PROVIDER = (ignore) -> NO_OP_MAPPER;
 
     private static final String SKETCH_REQUIRED_FORMAT = "Field must be a sketch: %s but is: %s";
-    private static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
+    static final String INCORRECT_NUMBER_OF_DEPS_FORMAT = "%s got %d of %d expected metrics";
     private static final String MISSING_DEP_FORMAT = "Dependent metric %s is not in the metric dictionary";
 
     /**
@@ -63,16 +63,37 @@ public abstract class MetricMaker {
      * @param dependentMetrics  Metrics this metric depends on
      *
      * @return The new logicalMetric
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #make(LogicalMetricInfo, List)} instead.
      */
+    @Deprecated
     public LogicalMetric make(String metricName, List<String> dependentMetrics) {
+        return make(new LogicalMetricInfo(metricName), dependentMetrics);
+    }
+
+    /**
+     * Make the metric.
+     * <p>
+     * This method also sanity-checks the dependent metrics to make sure that they
+     * are metrics we have built and are in the metric dictionary.
+     * <p>
+     * Also sanity-checks that the number of dependent metrics are correct for the maker.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param dependentMetrics  Metrics this metric depends on
+     *
+     * @return The new logicalMetric
+     */
+    public LogicalMetric make(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Check that all of the dependent metrics are in the dictionary
         assertDependentMetricsExist(dependentMetrics);
 
         // Check that we have the right number of metrics
-        assertRequiredDependentMetricCount(metricName, dependentMetrics);
+        assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
         // Have the subclass actually build the metric
-        return this.makeInner(metricName, dependentMetrics);
+        return this.makeInner(logicalMetricInfo, dependentMetrics);
     }
 
     /**
@@ -123,7 +144,7 @@ public abstract class MetricMaker {
      * @return The new logicalMetric
      */
     public LogicalMetric make(String metricName, String dependentMetric) {
-        return this.make(metricName, Collections.singletonList(dependentMetric));
+        return this.make(new LogicalMetricInfo(metricName), Collections.singletonList(dependentMetric));
     }
 
     /**
@@ -132,9 +153,32 @@ public abstract class MetricMaker {
      * @param metricName  Name for the metric we're making
      * @param dependentMetrics  Metrics this metric depends on
      *
-     * @return The new logicalMetric
+     * @return the new logicalMetric
+     *
+     * @deprecated logical metric needs more config-richness to not just configure metric name, but also metric long
+     * name, description, etc. Use {@link #makeInner(LogicalMetricInfo, List)} instead.
      */
-    protected abstract LogicalMetric makeInner(String metricName, List<String> dependentMetrics);
+    @Deprecated
+    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+        return makeInner(new LogicalMetricInfo(metricName), dependentMetrics);
+    }
+
+    /**
+     * Delegated to for actually making the metric.
+     *
+     * @param logicalMetricInfo  Logical metric info provider
+     * @param dependentMetrics  Metrics this metric depends on
+     *
+     * @return the new logicalMetric
+     */
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
+        String message = String.format(
+                "Current implementation of MetricMaker '%s' does not support makeInner operation",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(MetricMaker.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Get the number of dependent metrics the maker requires for making the metric.
@@ -142,21 +186,6 @@ public abstract class MetricMaker {
      * @return the number of dependent metrics the maker requires for making the metric
      */
     protected abstract int getDependentMetricsRequired();
-
-    /**
-     * Fetch the TemplateDruidQuery of the dependent metric from the Metric Dictionary.
-     *
-     * @param name  Name of the metric to fetch the template druid query from
-     *
-     * @return The template druid query of the metric
-     *
-     * @deprecated Instead get the metric in the calling function and then get the TDQ out only if necessary
-     */
-    @Deprecated
-    protected TemplateDruidQuery getDependentQuery(String name) {
-        LogicalMetric dependentMetric = metrics.get(name);
-        return dependentMetric.getTemplateDruidQuery();
-    }
 
     /**
      * A helper function returning the resulting aggregation set from merging one or more template druid queries.
@@ -223,9 +252,9 @@ public abstract class MetricMaker {
         // If the field is a sketch, wrap it in a sketch estimate, if it's an aggregation, create a post aggregation
         // Otherwise it is a number post aggregation already
         return field.isSketch() ?
-                FieldConverterSupplier.sketchConverter.asSketchEstimate(field) :
+                FieldConverterSupplier.getSketchConverter().asSketchEstimate(field) :
                 field instanceof Aggregation ?
-                        new FieldAccessorPostAggregation((Aggregation) field) :
+                        new FieldAccessorPostAggregation(field) :
                         (PostAggregation) field;
     }
 
@@ -248,7 +277,7 @@ public abstract class MetricMaker {
      *
      * @return A post aggregator representing a number field value
      *
-     * @deprecated use the static version {@link #getSketchField(MetricField)} by preference
+     * @deprecated use the static version {@link MetricMaker#getSketchField(MetricField)} by preference
      */
     @Deprecated
     protected PostAggregation getSketchField(String fieldName) {
@@ -276,11 +305,6 @@ public abstract class MetricMaker {
      * @return A post aggregator representing a number field value
      */
     protected static PostAggregation getSketchField(MetricField field) {
-        // SketchEstimatePostAggregations are just wrappers for the actual PostAggregation we want to return
-        if (field instanceof SketchEstimatePostAggregation) {
-            return ((SketchEstimatePostAggregation) field).getField();
-        }
-
         if (field instanceof ThetaSketchEstimatePostAggregation) {
             return ((ThetaSketchEstimatePostAggregation) field).getField();
         }
@@ -295,7 +319,7 @@ public abstract class MetricMaker {
         // Handle it if it's an Aggregation (ie. wrap it in a fieldAccessorPostAggregation)
         // If it's already a post-agg, we're good, and if it was an agg, we've already wrapped it
         return field instanceof Aggregation ?
-                new FieldAccessorPostAggregation((Aggregation) field) :
+                new FieldAccessorPostAggregation(field) :
                 (PostAggregation) field;
     }
 }

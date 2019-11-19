@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 
@@ -20,7 +21,7 @@ class CountMakerSpec extends Specification {
     def "Test building a cardinality metric meets expected values"() {
         setup:
         CountMaker countMaker = new CountMaker(metricDictionary)
-        LogicalMetric actualMetric = countMaker.make("metricName", [])
+        LogicalMetric actualMetric = countMaker.make(new LogicalMetricInfo("metricName"), [])
         CountAggregation actual = (CountAggregation) actualMetric.getTemplateDruidQuery().getMetricField("metricName")
 
         expect:

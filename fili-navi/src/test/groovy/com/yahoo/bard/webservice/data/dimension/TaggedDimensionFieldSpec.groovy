@@ -1,9 +1,13 @@
+// Copyright 2017 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension
 
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_TWO_TAG
-import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_ONE_TAG
 import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_NO_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_ONE_TAG
+import static com.yahoo.bard.webservice.data.dimension.TestTaggedDimensionField.TEST_TWO_TAG
 import static com.yahoo.bard.webservice.data.dimension.impl.DefaultDimensionFieldTag.PRIMARY_KEY
+
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -21,7 +25,7 @@ class TaggedDimensionFieldSpec extends Specification {
     TaggedDimensionField twoTagField
 
     def setup() {
-        objectMapper = new ObjectMapper()
+        objectMapper = new ObjectMappersSuite().getMapper()
 
         mockTag = Mock(Tag)
         mockTag.getName() >> "mockTag"
@@ -45,8 +49,8 @@ class TaggedDimensionFieldSpec extends Specification {
 
     def "Tagged dimension fields serialize as expected"() {
         expect:
-        objectMapper.writeValueAsString(noTagField) == '{"name":"testNoTag","tags":[],"description":"testNoTag description"}'
-        objectMapper.writeValueAsString(oneTagField) == '{"name":"testOneTag","tags":["primaryKey"],"description":"testOneTag description"}'
-        objectMapper.writeValueAsString(twoTagField) == '{"name":"testTwoTag","tags":["primaryKey","mockTag"],"description":"testTwoTag description"}'
+        objectMapper.writeValueAsString(noTagField) == '{"name":"testNoTag","description":"testNoTag description","tags":[]}'
+        objectMapper.writeValueAsString(oneTagField) == '{"name":"testOneTag","description":"testOneTag description","tags":["primaryKey"]}'
+        objectMapper.writeValueAsString(twoTagField) == '{"name":"testTwoTag","description":"testTwoTag description","tags":["primaryKey","mockTag"]}'
     }
 }

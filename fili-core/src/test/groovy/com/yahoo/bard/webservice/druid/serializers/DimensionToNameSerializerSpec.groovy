@@ -2,10 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.serializers
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -21,7 +23,7 @@ class DimensionToNameSerializerSpec extends Specification {
     // NOTE: Dimension serialization is properly tested in GroupByQuerySpec.groovy
     def "allows implementing classes to override default serialization"() {
         setup:
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMappersSuite().getMapper()
 
         expect:
         // NOTE: The fact that this doesn't show an exception demonstrates that it does not hit the DimensionToNameSerializer as well
@@ -29,100 +31,105 @@ class DimensionToNameSerializerSpec extends Specification {
     }
 
     @JsonSerialize
-    public static class DummyDimension implements Dimension {
+    static class DummyDimension implements Dimension {
         @JsonValue
-        public String example() {
-            return "woot";
+        String example() {
+            return "woot"
         }
 
         @Override
-        public void setLastUpdated(DateTime lastUpdated) {
-
-        }
-
-        @Override
-        public String getApiName() {
-            return "abc";
-        }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
-
-        @Override
-        public DateTime getLastUpdated() {
-            return null;
-        }
-
-        @Override
-        public LinkedHashSet<DimensionField> getDimensionFields() {
-            return null;
-        }
-
-        @Override
-        public LinkedHashSet<DimensionField> getDefaultDimensionFields() {
-            return null;
-        }
-
-        @Override
-        public DimensionField getFieldByName(String name) {
-            return null;
-        }
-
-        @Override
-        public SearchProvider getSearchProvider() {
-            return null;
-        }
-
-        @Override
-        public void addDimensionRow(DimensionRow dimensionRow) {
+        void setLastUpdated(DateTime lastUpdated) {
 
         }
 
         @Override
-        public void addAllDimensionRows(Set<DimensionRow> dimensionRows) {
+        String getApiName() {
+            return "abc"
+        }
+
+        @Override
+        String getDescription() {
+            return null
+        }
+
+        @Override
+        DateTime getLastUpdated() {
+            return null
+        }
+
+        @Override
+        LinkedHashSet<DimensionField> getDimensionFields() {
+            return null
+        }
+
+        @Override
+        LinkedHashSet<DimensionField> getDefaultDimensionFields() {
+            return null
+        }
+
+        @Override
+        DimensionField getFieldByName(String name) {
+            return null
+        }
+
+        @Override
+        SearchProvider getSearchProvider() {
+            return null
+        }
+
+        @Override
+        void addDimensionRow(DimensionRow dimensionRow) {
 
         }
 
         @Override
-        public DimensionRow findDimensionRowByKeyValue(String value) {
-            return null;
+        void addAllDimensionRows(Set<DimensionRow> dimensionRows) {
+
         }
 
         @Override
-        public DimensionField getKey() {
-            return null;
+        DimensionRow findDimensionRowByKeyValue(String value) {
+            return null
         }
 
         @Override
-        public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
-            return null;
+        DimensionField getKey() {
+            return null
         }
 
         @Override
-        public DimensionRow createEmptyDimensionRow(String keyFieldValue) {
-            return null;
+        DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
+            return null
         }
 
         @Override
-        public String getCategory() {
-            return null;
+        DimensionRow createEmptyDimensionRow(String keyFieldValue) {
+            return null
         }
 
         @Override
-        public String getLongName() {
-            return null;
+        String getCategory() {
+            return null
         }
 
         @Override
-        public int getCardinality() {
-            return 0;
+        String getLongName() {
+            return null
         }
 
         @Override
-        public boolean isAggregatable() {
-            return false;
+        int getCardinality() {
+            return 0
+        }
+
+        @Override
+        boolean isAggregatable() {
+            return false
+        }
+
+        @Override
+        StorageStrategy getStorageStrategy() {
+            return null
         }
     }
 }

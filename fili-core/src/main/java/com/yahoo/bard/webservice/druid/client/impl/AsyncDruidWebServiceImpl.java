@@ -7,6 +7,9 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQU
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -16,6 +19,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DruidResponse;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.codahale.metrics.Meter;
@@ -38,10 +42,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.ws.rs.core.Response.Status;
@@ -51,12 +57,15 @@ import javax.ws.rs.core.Response.Status;
  */
 public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncDruidWebServiceImpl.class);
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
     private final Meter httpErrorMeter;
     private final Meter exceptionMeter;
-    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+
     public static final String DRUID_TIMER = "DruidProcessing";
     public static final String DRUID_QUERY_TIMER = DRUID_TIMER + "_Q_";
     public static final String DRUID_QUERY_ALL_TIMER = DRUID_QUERY_TIMER + "All";
@@ -64,8 +73,26 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
+    private static final String SSL_ENABLED_CIPHER_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "org.asynchttpclient.AsyncHttpClientConfig.enabledCipherSuites"
+    );
+
+    /**
+     * The default JSON builder puts only response body in the JSON response.
+     */
+    public static final Function<Response, JsonNode> DEFAULT_JSON_NODE_BUILDER_STRATEGY =
+            response -> {
+        try (JsonParser parser = new MappingJsonFactory().createParser(response.getResponseBodyAsStream())) {
+            return parser.readValueAsTree();
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
+        }
+    };
+
     private final Supplier<Map<String, String>> headersToAppend;
     private final DruidServiceConfig serviceConfig;
+
+    private final Function<Response, JsonNode> jsonNodeBuilderStrategy;
 
     /**
      * Friendly non-DI constructor useful for manual tests.
@@ -73,18 +100,44 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param serviceConfig  Configuration for the Druid Service
      * @param mapper  A shared jackson object mapper resource
      * @deprecated We now require a header supplier parameter.
-     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, ObjectMapper, Supplier)}
+     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier, Function)}
      */
     @Deprecated
     public AsyncDruidWebServiceImpl(
             DruidServiceConfig serviceConfig,
             ObjectMapper mapper
     ) {
-        this(serviceConfig, initializeWebClient(serviceConfig.getTimeout()), mapper, HashMap::new);
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                HashMap::new,
+                DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        );
+    }
+
+    /**
+     * IOC constructor.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @deprecated  We now require a header supplier parameter.
+     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier, Function)}
+     */
+    @Deprecated
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper
+    ) {
+        this(config, asyncHttpClient, mapper, HashMap::new, DEFAULT_JSON_NODE_BUILDER_STRATEGY);
     }
 
     /**
      * Friendly non-DI constructor useful for manual tests.
+     * <p>
+     * This constructor uses default JSON builder, which only uses response body to build the JSON response.
      *
      * @param serviceConfig  Configuration for the Druid Service
      * @param mapper  A shared jackson object mapper resource
@@ -95,7 +148,89 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             ObjectMapper mapper,
             Supplier<Map<String, String>> headersToAppend
     ) {
-        this(serviceConfig, initializeWebClient(serviceConfig.getTimeout()), mapper, headersToAppend);
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                headersToAppend,
+                DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        );
+    }
+
+    /**
+     * Friendly non-DI constructor useful for manual tests.
+     *
+     * @param serviceConfig  Configuration for the Druid Service
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig serviceConfig,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            Function<Response, JsonNode> jsonNodeBuilderStrategy
+    ) {
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout()),
+                mapper,
+                headersToAppend,
+                jsonNodeBuilderStrategy
+        );
+    }
+
+    /**
+     * IOC constructor.
+     * <p>
+     * This constructor uses default JSON builder, which only uses response body to build the JSON response.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend
+    ) {
+        this(config, asyncHttpClient, mapper, headersToAppend, DEFAULT_JSON_NODE_BUILDER_STRATEGY);
+    }
+
+    /**
+     * IOC constructor.
+     *
+     * @param config  the configuration for this druid service
+     * @param asyncHttpClient  the HTTP client
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig config,
+            AsyncHttpClient asyncHttpClient,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            Function<Response, JsonNode> jsonNodeBuilderStrategy
+    ) {
+        this.serviceConfig = config;
+
+        if (serviceConfig.getUrl() == null) {
+            String msg = DRUID_URL_INVALID.format(config.getNameAndUrl());
+            LOG.error(msg);
+            throw new IllegalStateException(msg);
+        }
+
+        LOG.info("Configured with druid server config: {}", config);
+        this.headersToAppend = headersToAppend;
+        this.webClient = asyncHttpClient;
+        this.writer = mapper.writer();
+        this.httpErrorMeter = REGISTRY.meter("druid.errors.http");
+        this.exceptionMeter = REGISTRY.meter("druid.errors.exceptions");
+
+        this.jsonNodeBuilderStrategy = jsonNodeBuilderStrategy;
     }
 
     /**
@@ -108,65 +243,25 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static AsyncHttpClient initializeWebClient(int requestTimeout) {
 
         LOG.debug("Druid request timeout: {}ms", requestTimeout);
+        List<String> cipherSuites = SYSTEM_CONFIG.getListProperty(SSL_ENABLED_CIPHER_KEY, null);
+        String[] enabledCipherSuites = cipherSuites == null  || cipherSuites.isEmpty() ?
+                null
+                : cipherSuites.toArray(new String[cipherSuites.size()]);
 
         // Build the configuration
         AsyncHttpClientConfig config = new DefaultAsyncHttpClientConfig.Builder()
                 .setReadTimeout(requestTimeout)
                 .setRequestTimeout(requestTimeout)
+                .setConnectTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
+                .setEnabledCipherSuites(enabledCipherSuites)
+                .setFollowRedirect(true)
                 .build();
 
         return new DefaultAsyncHttpClient(config);
     }
 
-    /**
-     * IOC constructor.
-     *
-     * @param config  the configuration for this druid service
-     * @param asyncHttpClient  the HTTP client
-     * @param mapper  A shared jackson object mapper resource
-     * @deprecated  We now require a header supplier parameter.
-     *      Use {@link #AsyncDruidWebServiceImpl(DruidServiceConfig, AsyncHttpClient, ObjectMapper, Supplier)}
-     */
-    @Deprecated
-    public AsyncDruidWebServiceImpl(
-            DruidServiceConfig config,
-            AsyncHttpClient asyncHttpClient,
-            ObjectMapper mapper
-    ) {
-        this(config, asyncHttpClient, mapper, HashMap::new);
-    }
-
-    /**
-     * IOC constructor.
-     *
-     * @param config  the configuration for this druid service
-     * @param asyncHttpClient  the HTTP client
-     * @param mapper  A shared jackson object mapper resource
-     * @param headersToAppend Supplier for map of headers for Druid requests
-     */
-    public AsyncDruidWebServiceImpl(
-            DruidServiceConfig config,
-            AsyncHttpClient asyncHttpClient,
-            ObjectMapper mapper,
-            Supplier<Map<String, String>> headersToAppend
-    ) {
-        this.serviceConfig = config;
-
-        if (serviceConfig.getUrl() == null) {
-            String msg = DRUID_URL_INVALID.format(config.getNameAndUrl());
-            LOG.error(msg);
-            throw new IllegalStateException(msg);
-        }
-
-        LOG.info("Configured with druid server config: {}", config.toString());
-        this.headersToAppend = headersToAppend;
-        this.webClient = asyncHttpClient;
-        this.writer = mapper.writer();
-        this.httpErrorMeter = REGISTRY.meter("druid.errors.http");
-        this.exceptionMeter = REGISTRY.meter("druid.errors.exceptions");
-    }
 
     /**
      * Serializes the provided query and invokes a request on the druid broker.
@@ -177,8 +272,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * @param requestBuilder  The bound request builder for the request to be sent.
      * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
      * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
+     *
+     * @return a future response for the query being sent
      */
-    protected void sendRequest(
+    protected Future<Response> sendRequest(
             final SuccessCallback success,
             final HttpErrorCallback error,
             final FailureCallback failure,
@@ -188,56 +285,24 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         RequestLog.startTiming(timerName);
         final RequestLog logCtx = RequestLog.dump();
-
         try {
-            requestBuilder.execute(
+            return requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
                     @Override
                     public Response onCompleted(Response response) {
-                        RequestLog.restore(logCtx);
-                        RequestLog.stopTiming(timerName);
-                        if (outstanding.decrementAndGet() == 0) {
-                            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
-                        }
                         String druidQueryId = response.getHeader("X-Druid-Query-Id");
-                        RequestLog.record(new DruidResponse(druidQueryId));
                         Status status = Status.fromStatusCode(response.getStatusCode());
-                        LOG.debug(
-                                "druid {} response code: {} {} and druid query id: {}",
-                                serviceConfig.getNameAndUrl(),
-                                status.getStatusCode(),
-                                status,
-                                druidQueryId
-                        );
+                        logRequest(logCtx, timerName, outstanding, druidQueryId, status);
 
-                        if (status != Status.OK) {
-                            httpErrorMeter.mark();
-                            LOG.debug(
-                                    "druid {} error: {} {} {} and druid query id: {}",
-                                    serviceConfig.getNameAndUrl(),
-                                    status.getStatusCode(),
-                                    status.getReasonPhrase(),
-                                    response.getResponseBody(),
-                                    druidQueryId
-                            );
-
-                            error.invoke(
-                                    status.getStatusCode(),
-                                    status.getReasonPhrase(),
-                                    response.getResponseBody()
-                            );
+                        if (hasError(status)) {
+                            markError(status, response, druidQueryId, error);
                         } else {
-                            MappingJsonFactory jsonFactory = new MappingJsonFactory();
                             try {
-                                JsonNode rootNode;
-                                try (InputStream responseStream = response.getResponseBodyAsStream();
-                                    JsonParser jp = jsonFactory.createParser(responseStream)) {
-                                    rootNode = jp.readValueAsTree();
-                                }
-                                success.invoke(rootNode);
-                            } catch (RuntimeException | IOException e) {
+                                success.invoke(jsonNodeBuilderStrategy.apply(response));
+                            } catch (RuntimeException e) {
                                 failure.invoke(e);
                             }
+
                         }
 
                         // we consumed this response, so pass null to any chains
@@ -264,11 +329,12 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             }
             LOG.error("druid {} http request failed: ", serviceConfig.getNameAndUrl(), t);
             failure.invoke(t);
+            return CompletedFuture.throwing(t);
         }
     }
 
     @Override
-    public void getJsonObject(
+    public Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,
@@ -279,7 +345,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         BoundRequestBuilder requestBuilder = webClient.prepareGet(url);
         headersToAppend.get().forEach(requestBuilder::addHeader);
 
-        sendRequest(
+        return sendRequest(
                 success,
                 error,
                 failure,
@@ -290,7 +356,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     }
 
     @Override
-    public void postDruidQuery(
+    public Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -326,12 +392,12 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
         BoundRequestBuilder requestBuilder = webClient.preparePost(serviceConfig.getUrl())
                 .setBody(entityBody)
-                .addHeader("Content-Type", "application/json");
+                .addHeader("Content-Type", "application/json; charset=UTF-8");
 
         headersToAppend.get().forEach(requestBuilder::addHeader);
 
         LOG.debug("druid json request: {}", entityBody);
-        sendRequest(
+        return sendRequest(
                 success,
                 error,
                 failure,
@@ -349,5 +415,98 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     @Override
     public DruidServiceConfig getServiceConfig() {
         return serviceConfig;
+    }
+
+    protected Meter getHttpErrorMeter() {
+        return httpErrorMeter;
+    }
+
+    protected Meter getExceptionMeter() {
+        return exceptionMeter;
+    }
+
+    protected DruidServiceConfig getDruidServiceConfig() {
+        return serviceConfig;
+    }
+
+    /**
+     * <ol>
+     *     <li>Logs request using RequestLog,</li>
+     *     <li>restores the serialized request log info back into the RequestLog object,</li>
+     *     <li>stops timer that distinguishes this request as part of a druid query or segment metadata request,</li>
+     *     <li>starts response workflow timer,</li>
+     *     <li>decrements counter that keeps track of the outstanding (in flight) requests for the top level query,</li>
+     *     <li>and logs Druid response.</li>
+     * </ol>
+     *
+     * @param logCtx  The snapshot of the request log of the current thread
+     * @param timerName  The name that distinguishes this request as part of a druid query or segment metadata request
+     * @param outstanding  The counter that keeps track of the outstanding (in flight) requests for the top level query
+     * @param druidQueryId  The Druid query ID
+     * @param status  The response status
+     */
+    private void logRequest(
+            RequestLog logCtx,
+            String timerName,
+            AtomicLong outstanding,
+            String druidQueryId,
+            Status status
+    ) {
+        RequestLog.restore(logCtx);
+        RequestLog.stopTiming(timerName);
+        if (outstanding.decrementAndGet() == 0) {
+            RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
+        }
+        RequestLog.record(new DruidResponse(druidQueryId));
+
+        LOG.debug(
+                "druid {} response code: {} {} and druid query id: {}",
+                getServiceConfig().getNameAndUrl(),
+                status.getStatusCode(),
+                status,
+                druidQueryId
+        );
+    }
+
+    /**
+     * Return true if response status code indicates an error.
+     * <p>
+     * If etag cache is enabled, no error on 200 OK and 304 NOT-MODIFIED.
+     * Otherwise, no error only on 200 OK.
+     *
+     * @param status  The Status object that contains status code to be checked
+     *
+     * @return true if the status code indicates an error
+     */
+    protected boolean hasError(Status status) {
+        return CacheFeatureFlag.ETAG.isOn()
+                ? status != Status.OK && status != Status.NOT_MODIFIED
+                : status != Status.OK;
+    }
+
+    /**
+     * Count and log error, then send error response.
+     *
+     * @param status  The response status
+     * @param response  The druid response
+     * @param druidQueryId  The Druid query ID
+     * @param error  callback for handling http errors.
+     */
+    private void markError(Status status, Response response, String druidQueryId, HttpErrorCallback error) {
+        getHttpErrorMeter().mark();
+        LOG.debug(
+                "druid {} error: {} {} {} and druid query id: {}",
+                getServiceConfig().getNameAndUrl(),
+                status.getStatusCode(),
+                status.getReasonPhrase(),
+                response.getResponseBody(),
+                druidQueryId
+        );
+
+        error.invoke(
+                status.getStatusCode(),
+                status.getReasonPhrase(),
+                response.getResponseBody()
+        );
     }
 }

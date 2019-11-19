@@ -3,19 +3,19 @@ Setup
 
 The following will guide you through standing up Fili in front of a Druid instance.
 
+[Also see Troubleshooting.md](troubleshooting.md)
 
 Table of Contents
 -----------------
 
 - [Prerequisites](#prerequisites)
 - [High Level Steps](#high-level-steps)
-- [Fili Integration Application](#bard-integration-application)
+- [Fili Wikipedia Example](#fili-wikipedia-example)
 - [Configure Metadata](#configure-metadata)
 - [Configuration Files](#configuration-files)
 - [Scripts](#scripts)
 - [Build and deploy the WAR](#build-and-deploy-the-war)
 - [Dimension Loading](#dimension-loading)
-- [Troubleshooting](#troubleshooting)
 
 Prerequisites
 -------------
@@ -36,7 +36,7 @@ High Level Steps
 
 The following is a bird's eye view of the steps you must take to stand up a Fili instance.
 
-- [Clone the bard wikipedia example into a separate project](#fili-wikipedia-example).
+- [Clone the fili wikipedia example into a separate project](#fili-wikipedia-example).
 
 - [Modify the dimension, metric, physical table and logical table information to fit the needs of your 
 application.](#configure-metadata)
@@ -50,7 +50,7 @@ application.](#configure-metadata)
 Fili Wikipedia Example
 ----------------------------
 
-The [Fili wikipedia example][bard-wikipedia-example] is where you will leverage the Fili library. Here is where
+The [Fili wikipedia example][fili-wikipedia-example] is where you will leverage the Fili library. Here is where
 you will configure your application-specific metrics, dimensions, and tables.
 
 Configure Metadata
@@ -77,16 +77,12 @@ Next, several configuration files and scripts need to be tweaked:
     you wish to use an in-memory map)
         - (Optional: MDBM) `bard__mdbm_location = dir/to/mdbm` - Note that Fili assumes this directory contains a
         `dimensionCache` folder.
-    - `bard__non_ui_broker = http://url/to/druid/broker`
-    - `bard__ui_broker = http://url/to/druid/broker`
+    - `bard__druid_broker = http://url/to/druid/broker`
     - `bard__druid_coord = http://url/to/druid/coordinator`
+    - `bard__fili_port = [a free port below 65535]`
     
 * [pom.xml][pomXml] -  Find the `fili.version` tag, and update that to point to the desired version of Fili, rather
    than a snapshot. 
-
-Note that both `bard__non_ui_broker` and `bard__ui_broker` are set to the same broker URL. These parameters are 
-artifacts of the project Fili was spun out of. Eventually, these two settings will be generalized into something useful
-for other projects. For now, you can safely treat them as if they were the same.
 
 Build and Deploy the WAR
 ------------------------
@@ -198,37 +194,9 @@ interested in rapidly setting up a Fili instance, you may wish to make all of yo
 load your dimensions later, once you have verified that Fili will meet your needs.
 
 
-Troubleshooting
----------------
+[applicationConfig]: ../fili-wikipedia-example/src/main/resources/applicationConfig.properties
 
-The Fili logs are Jetty logs, so they can be found wherever your Jetty instance stores its logs.
-
-#### App tests return a 500 error ####
-
-It may be that the versions of dependencies in your application's POM are out of sync with the dependency
-versions used by fili. If that is the case, then modifying your dependency versions to use the same version as
-fili should solve the problem.
-
-#### Fili crashes and throws `IllegalStateException: Couldn't create dir: path/to/mdbm/dimensionCache/page` ####
-
-There are two possible causes:
- 
- 1. The `dimensionCache` subdirectory in `path/to/mdbm` does not exist. Fili assumes `path/to/mdbm/dimensionCache`
-already exists, and does not attempt to create it.
- 
- 2. `dimensionCache` exists, but does not have the correct read/write/execute permissions. The user that Jetty is 
- running under (typically `nobody`) needs to have read, write, and execute permissions on `dimensionCache`.
-
-#### Server log claims the segment metadata loader is not healthy ####
-
-Your dimensions have never been updated, and don't have a `lastUpdated` field set. This can happen if you forgot to 
-set up your dimension loader. You can get more details about the problem at the `/healthcheck` endpoint.
-If the dimensions are not being loaded, then see the [Dimension Loading](#dimension-loading) for more details on how
-to set up the dimension loader (or [configure all of your dimensions to be non-loaded](#non-loaded-dimensions)).
-
-[applicationConfig]: https://github.com/yahoo/fili/blob/master/fili-wikipedia-example/src/main/resources/applicationConfig.properties
-
-[fili-wikipedia-example]: https://github.com/yahoo/fili/tree/master/fili-wikipedia-example
+[fili-wikipedia-example]: ../fili-wikipedia-example
 [binderDocumentation]: https://github.com/yahoo/fili/issues/11
 
 [configuringDimensionsDocumentation]: https://github.com/yahoo/fili/issues/12
@@ -244,8 +212,8 @@ to set up the dimension loader (or [configure all of your dimensions to be non-l
 
 [mdbm]: http://yahoo.github.io/mdbm/
 
-[noOpSearchProvider]: ../src/main/java/com/yahoo/bard/webservice/data/dimension/impl/NoOpSearchProvider.java
+[noOpSearchProvider]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/NoOpSearchProvider.java
 
-[pomXml]: https://github.com/yahoo/fili/blob/master/fili-core/pom.xml
+[pomXml]: ../fili-core/pom.xml
 
 [redis]: http://redis.io/

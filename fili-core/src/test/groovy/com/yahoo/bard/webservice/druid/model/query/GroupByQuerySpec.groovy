@@ -3,7 +3,10 @@
 package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.table.TableTestUtils.buildTable
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -28,11 +31,10 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -43,8 +45,7 @@ import spock.lang.Specification
 import java.util.stream.Collectors
 
 class GroupByQuerySpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     DateTimeZone currentTZ
@@ -72,7 +73,6 @@ class GroupByQuerySpec extends Specification {
             ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE,
             [postAggregation1, postAggregation2]
     )
-
 
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
@@ -103,16 +103,15 @@ class GroupByQuerySpec extends Specification {
     }
 
     GroupByQuery defaultQuery(Map vars) {
-
-        vars.dataSource = vars.dataSource ?: new TableDataSource<GroupByQuery>(
-                new ConcretePhysicalTable(
-                        "table_name",
-                        day,
-                        [] as Set,
-                        ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
-                        Mock(DataSourceMetadataService)
-                )
+        ConstrainedTable constrainedTable = buildTable(
+                "table_name",
+                day,
+                [] as Set,
+                ["apiLocale": "locale", "apiPlatform": "platform", "apiProduct": "product"],
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         )
+
+        vars.dataSource = vars.dataSource ?: new TableDataSource(constrainedTable)
         vars.granularity = vars.granularity ?: DAY
         vars.dimensions = vars.dimensions ?: new ArrayList<Dimension>()
         vars.filter = vars.filter ?: null
@@ -146,23 +145,27 @@ class GroupByQuerySpec extends Specification {
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
         vars.dimensions = vars.dimensions ?: "[]"
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
-        vars.context = vars.context ? (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') : '{"queryId":"dummy100"}'
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
+        vars.context = vars.context ?
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
 
-        ("""{
-                "queryType":"$vars.queryType",
-                "dataSource":$vars.dataSource,
-                "granularity":$vars.granularity,
-                "dimensions":$vars.dimensions,
-                $vars.filter
-                "aggregations":$vars.aggregations,
-                "postAggregations":$vars.postAggregations,
-                "intervals":$vars.intervals,
-                "context":$vars.context
-            }""").replaceAll(/\s/, "")
+        """
+        {
+            "queryType":"$vars.queryType",
+            "dataSource":$vars.dataSource,
+            "granularity":$vars.granularity,
+            "dimensions":$vars.dimensions,
+            $vars.filter
+            "aggregations":$vars.aggregations,
+            "postAggregations":$vars.postAggregations,
+            "intervals":$vars.intervals,
+            "context":$vars.context
+        }
+        """
     }
 
     def "check dimensions serialization"() {
@@ -192,7 +195,7 @@ class GroupByQuerySpec extends Specification {
 
     def "check dataSource serialization"() {
         //non nested query
-        DataSource ds1 = new TableDataSource(new ConcretePhysicalTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        DataSource ds1 = new TableDataSource(buildTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]} ))
         GroupByQuery dq1 = defaultQuery(dataSource: ds1)
 
         //nested query
@@ -205,17 +208,18 @@ class GroupByQuerySpec extends Specification {
         //expected result
         String queryString1 = stringQuery(default: true)
 
-        String dataSrc = ("""{
-                                "type":"query",
-                                "query":""" + queryString1 + """
-                            }""").replaceAll(/\s/, "")
+        String dataSrc = """
+            {
+                "type":"query",
+                "query":$queryString1
+            }
+        """
 
         String queryString2 = stringQuery(dataSource: dataSrc)
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
-
     }
 
     def "check filter serialization"() {
@@ -236,43 +240,47 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String filtr1 = ("""{
-                                "type":"selector",
-                                "dimension":"locale",
-                                "value":"US"
-                            }""").replaceAll(/\s/, "")
+        String filtr1 = """
+                {
+                    "type":"selector",
+                    "dimension":"locale",
+                    "value":"US"
+                }
+        """
 
-        String filtr2 = ("""{
-                                "type":"and",
+        String filtr2 = """
+                {
+                    "type":"and",
+                    "fields":
+                        [
+                            {
+                                "type":"or",
                                 "fields":
                                     [
-                                        {
-                                            "type":"or",
-                                            "fields":
-                                                [
-                                                    {
-                                                        "type":"selector",
-                                                        "dimension":"locale",
-                                                        "value":"US"
-                                                    },
-                                                    {
-                                                        "type":"not",
-                                                        "field":
-                                                            {
-                                                                "type":"selector",
-                                                                "dimension":"locale",
-                                                                "value":"US"
-                                                            }
-                                                    }
-                                                ]
-                                        },
                                         {
                                             "type":"selector",
                                             "dimension":"locale",
                                             "value":"US"
+                                        },
+                                        {
+                                            "type":"not",
+                                            "field":
+                                                {
+                                                    "type":"selector",
+                                                    "dimension":"locale",
+                                                    "value":"US"
+                                                }
                                         }
                                     ]
-                            }""").replaceAll(/\s/, "")
+                            },
+                            {
+                                "type":"selector",
+                                "dimension":"locale",
+                                "value":"US"
+                            }
+                        ]
+                }
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -283,7 +291,6 @@ class GroupByQuerySpec extends Specification {
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
         GroovyTestUtils.compareJson(druidQuery3, queryString3)
-
     }
 
     def "check aggregation serialization"() {
@@ -299,26 +306,30 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String agg1 = ("""[
-                            {
-                                "type":"longSum",
-                                "name":"pageViewsSum",
-                                "fieldName":"pageViews"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String agg1 = """
+            [
+                {
+                    "type":"longSum",
+                    "name":"pageViewsSum",
+                    "fieldName":"pageViews"
+                }
+            ]
+        """
 
-        String agg2 = ("""[
-                            {
-                                "type":"longSum",
-                                "name":"pageViewsSum",
-                                "fieldName":"pageViews"
-                            },
-                            {
-                                "type":"longSum",
-                                "name":"timeSpentSum",
-                                "fieldName":"timeSpent"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String agg2 = """
+            [
+                {
+                    "type":"longSum",
+                    "name":"pageViewsSum",
+                    "fieldName":"pageViews"
+                },
+                {
+                    "type":"longSum",
+                    "name":"timeSpentSum",
+                    "fieldName":"timeSpent"
+                }
+            ]
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -329,13 +340,9 @@ class GroupByQuerySpec extends Specification {
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
         GroovyTestUtils.compareJson(druidQuery3, queryString3)
-
     }
 
     def "check post aggregation serialization"() {
-        Aggregation aggregation1 = new LongSumAggregation("pageViewsSum", "pageViews")
-        Aggregation aggregation2 = new LongSumAggregation("timeSpentSum", "timeSpent")
-
         List<PostAggregation> postAggregations1 = []
         List<PostAggregation> postAggregations2 = [postAggregation1]
         List<PostAggregation> postAggregations3 = [postAggregation1, postAggregation3]
@@ -348,35 +355,39 @@ class GroupByQuerySpec extends Specification {
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
         String druidQuery3 = MAPPER.writeValueAsString(dq3)
 
-        String postAgg1 = ("""[
-                            {
-                                "fieldName":"pageViewsSum",
-                                "type":"fieldAccess"
-                            }
-                        ]""").replaceAll(/\s/, "")
+        String postAgg1 = """
+                [
+                    {
+                        "fieldName":"pageViewsSum",
+                        "type":"fieldAccess"
+                    }
+                ]
+        """
 
-        String postAgg2 = ("""[
+        String postAgg2 = """
+                [
+                    {
+                        "fieldName":"pageViewsSum",
+                        "type":"fieldAccess"
+                    },
+                    {
+                        "name":"postAggDiv",
+                        "fields":
+                            [
                                 {
                                     "fieldName":"pageViewsSum",
                                     "type":"fieldAccess"
                                 },
                                 {
-                                    "name":"postAggDiv",
-                                    "fields":
-                                        [
-                                            {
-                                                "fieldName":"pageViewsSum",
-                                                "type":"fieldAccess"
-                                            },
-                                            {
-                                                "fieldName":"timeSpentSum",
-                                                "type":"fieldAccess"
-                                            }
-                                        ],
-                                    "type":"arithmetic",
-                                    "fn":"/"
+                                    "fieldName":"timeSpentSum",
+                                    "type":"fieldAccess"
                                 }
-                            ]""").replaceAll(/\s/, "")
+                            ],
+                        "type":"arithmetic",
+                        "fn":"/"
+                    }
+                ]
+        """
 
         //expected result
         String queryString1 = stringQuery(default: true)
@@ -413,7 +424,7 @@ class GroupByQuerySpec extends Specification {
                                     "2011-07-03T19:00:00.000-05:00/2011-07-05T19:00:00.000-05:00",
                                     "2011-07-07T19:00:00.000-05:00/2011-07-09T19:00:00.000-05:00"
                               ]"""
-        ).replaceAll(/\s/, "")
+        )
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
@@ -443,22 +454,14 @@ class GroupByQuerySpec extends Specification {
         String druidQuery4 = MAPPER.writeValueAsString(dq4)
         String druidQuery5 = MAPPER.writeValueAsString(dq5)
 
-        def contextString1 = """
-                                "timeout": 5
-                        """.replaceAll(/\s/, "")
+        def contextString1 = '"timeout": 5'
 
 
-        def contextString2 = """
-                                "populateCache": true, "bySegment": false
-                           """.replaceAll(/\s/, "")
+        def contextString2 = '"populateCache": true, "bySegment": false'
 
-        def contextString3 = """
-                                "timeout": 5, "populateCache": true
-                           """.replaceAll(/\s/, "")
+        def contextString3 = '"timeout": 5, "populateCache": true'
 
-        def contextString4 = """
-                                "timeout": 5, "populateCache": true, "bySegment": false
-                           """.replaceAll(/\s/, "")
+        def contextString4 = '"timeout": 5, "populateCache": true, "bySegment": false'
 
 
         String queryString0 = stringQuery(default: true)
@@ -478,8 +481,12 @@ class GroupByQuerySpec extends Specification {
 
     def "Check innermost query injection"() {
         setup:
-        TableDataSource inner1 = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
-        TableDataSource inner2 = new TableDataSource(new ConcretePhysicalTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource inner1 = new TableDataSource(
+                buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]})
+        )
+        TableDataSource inner2 = new TableDataSource(
+                buildTable("inner2", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]})
+        )
         GroupByQuery dq1 = defaultQuery(dataSource: inner1)
         DataSource outer1 = new QueryDataSource(dq1)
         GroupByQuery dq2 = defaultQuery(dataSource: outer1)
@@ -491,7 +498,7 @@ class GroupByQuerySpec extends Specification {
         dq3.getDataSource().getNames() as List == ["inner2"]
         dq2.getDataSource().getNames() as List == ["inner1"]
         dq1.getDataSource().getNames() as List == ["inner1"]
-        dq3.getDataSource().getQuery().getDataSource() == inner2
+        dq3.getDataSource().getQuery().get().getDataSource() == inner2
     }
 
     def "Check all intervals injection"() {
@@ -500,7 +507,7 @@ class GroupByQuerySpec extends Specification {
         List<Interval> endingIntervals = [Interval.parse("2016/2017")]
 
         and: "A nested query"
-        TableDataSource table = new TableDataSource(new ConcretePhysicalTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService)))
+        TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
         GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
         GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)
@@ -510,8 +517,8 @@ class GroupByQuerySpec extends Specification {
 
         then: "The intervals at each level are the new intervals"
         converted.intervals == endingIntervals
-        converted.innerQuery.intervals == endingIntervals
-        converted.innerQuery.innerQuery.intervals == endingIntervals
+        converted.getInnerQuery().get().intervals == endingIntervals
+        converted.getInnerQuery().get().getInnerQuery().get().intervals == endingIntervals
     }
 
     def "Check column stream is generated for query"() {
@@ -522,7 +529,7 @@ class GroupByQuerySpec extends Specification {
 
         GroupByQuery query = defaultQuery(dimensions: dimensions, aggregations: aggregations, postAggregations: postAggregations )
         List<Column> columns = [dimension1, dimension2].collect {new DimensionColumn(it)}
-        columns.addAll([aggregation1, aggregation2, postAggregation3].collect {new MetricColumn(it.getName())})
+        columns.addAll([aggregation1, aggregation2, postAggregation3].collect {new MetricColumn(it.name)})
 
         expect:
         query.buildSchemaColumns().collect(Collectors.toList()) == columns

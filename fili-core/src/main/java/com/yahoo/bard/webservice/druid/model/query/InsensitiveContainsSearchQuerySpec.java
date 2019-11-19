@@ -14,7 +14,7 @@ public class InsensitiveContainsSearchQuerySpec extends SearchQuerySpec {
     /**
      * Constructor.
      *
-     * @param value  Values to search for case-insensitively
+     * @param value  Value to search for case-insensitively
      */
     public InsensitiveContainsSearchQuerySpec(String value) {
         super(DefaultSearchQueryType.INSENSITIVE_CONTAINS);

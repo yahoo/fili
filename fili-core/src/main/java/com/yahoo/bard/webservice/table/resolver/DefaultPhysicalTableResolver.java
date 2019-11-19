@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 @Singleton
 public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
 
-    protected static final GranularityComparator COMPARE_GRANULARITY = new GranularityComparator();
+    protected static final GranularityComparator COMPARE_GRANULARITY = GranularityComparator.getInstance();
     protected static final DimensionCardinalityComparator CARDINALITY_COMPARATOR = new DimensionCardinalityComparator();
 
     private final PartialDataHandler partialDataHandler;
@@ -61,7 +61,7 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
     public BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraint) {
         List<Comparator<PhysicalTable>> comparators = new ArrayList<>();
 
-        if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
+        if (BardFeatureFlag.PARTIAL_DATA.isOn() || BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION.isOn()) {
             comparators.add(
                     new PartialTimeComparator(requestConstraint, partialDataHandler));
             comparators.add(

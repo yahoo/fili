@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 /**
@@ -17,6 +16,7 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
 
     private final PartialDataHandler partialDataHandler;
     private final QueryPlanningConstraint requestConstraint;
+    private final SimplifiedIntervalList requestedIntervals;
 
     /**
      * Constructor.
@@ -26,6 +26,7 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
      */
     public PartialTimeComparator(QueryPlanningConstraint requestConstraint, PartialDataHandler handler) {
         this.requestConstraint = requestConstraint;
+        requestedIntervals = new SimplifiedIntervalList(requestConstraint.getIntervals());
         this.partialDataHandler = handler;
     }
 
@@ -40,18 +41,17 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
     @Override
     public int compare(PhysicalTable left, PhysicalTable right) {
         // choose table with most data available for given columns
+
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraint,
-                        Collections.singleton(left),
+                        left.getAvailableIntervals(requestConstraint).intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
                         requestConstraint.getRequestGranularity()
                 )
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
-                        requestConstraint,
-                        Collections.singleton(right),
+                        right.getAvailableIntervals(requestConstraint).intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
                         requestConstraint.getRequestGranularity()
                 )

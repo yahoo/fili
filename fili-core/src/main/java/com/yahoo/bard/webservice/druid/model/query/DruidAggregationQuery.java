@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -92,8 +93,8 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
 
     @Override
     @JsonIgnore
-    default DruidAggregationQuery<?> getInnerQuery() {
-        return (DruidAggregationQuery<?>) DruidFactQuery.super.getInnerQuery();
+    default Optional<? extends DruidAggregationQuery> getInnerQuery() {
+        return DruidFactQuery.super.getInnerQuery().map(DruidAggregationQuery.class::cast);
     }
 
     @Override

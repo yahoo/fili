@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,25 +24,19 @@ public class WebServiceSelectorRequestHandler extends BaseDataRequestHandler {
     /**
      * Constructor.
      *
-     * @param uiWebService  UI Web Service
-     * @param nonUiWebService  Non-UI Web Service
-     * @param uiWebserviceNext  Handler for the UI path
-     * @param nonUiWebserviceNext  Handler for the non-UI path
+     * @param webService  UI Web Service
+     * @param webserviceNext  Handler for the UI path
      * @param mapper  Mapper to use when processing JSON
      */
     public WebServiceSelectorRequestHandler(
-            DruidWebService uiWebService,
-            DruidWebService nonUiWebService,
-            DataRequestHandler uiWebserviceNext,
-            DataRequestHandler nonUiWebserviceNext,
+            DruidWebService webService,
+            DataRequestHandler webserviceNext,
             ObjectMapper mapper
     ) {
         this(
                 new DefaultWebServiceHandlerSelector(
-                        uiWebService,
-                        nonUiWebService,
-                        uiWebserviceNext,
-                        nonUiWebserviceNext
+                        webService,
+                        webserviceNext
                 ),
                 mapper
         );

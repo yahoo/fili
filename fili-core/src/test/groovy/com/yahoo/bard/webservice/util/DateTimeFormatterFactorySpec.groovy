@@ -24,19 +24,19 @@ class DateTimeFormatterFactorySpec extends Specification {
 
         where:
         string                    | expected
-        "2005"                    | new DateTime(2005, 01, 01, 00, 00, 00, 000)
-        "2005-03"                 | new DateTime(2005, 03, 01, 00, 00, 00, 000)
-        "2005-03-25"              | new DateTime(2005, 03, 25, 00, 00, 00, 000)
+        "2005"                    | new DateTime(2005, 01, 01, 00, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03"                 | new DateTime(2005, 03, 01, 00, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25"              | new DateTime(2005, 03, 25, 00, 00, 00, 000, DateTimeZone.UTC)
 
-        "2005-03-25T10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000)
-        "2005-03-25T10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000)
-        "2005-03-25T10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000)
-        "2005-03-25T10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555)
+        "2005-03-25T10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000, DateTimeZone.UTC)
+        "2005-03-25T10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555, DateTimeZone.UTC)
 
-        "2005-03-25 10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000)
-        "2005-03-25 10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000)
-        "2005-03-25 10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000)
-        "2005-03-25 10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555)
+        "2005-03-25 10"           | new DateTime(2005, 03, 25, 10, 00, 00, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20"        | new DateTime(2005, 03, 25, 10, 20, 00, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20:30"     | new DateTime(2005, 03, 25, 10, 20, 30, 000, DateTimeZone.UTC)
+        "2005-03-25 10:20:30.555" | new DateTime(2005, 03, 25, 10, 20, 30, 555, DateTimeZone.UTC)
     }
 
 
@@ -47,8 +47,8 @@ class DateTimeFormatterFactorySpec extends Specification {
         DateTimeZone.setDefault(timeZone)
 
         DateTime date = new DateTime(2005, 03, 25, 10, 20, 30, 555)
-        DateTimeFormatter originalOutputFormatter = DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = null
+        DateTimeFormatter originalOutputFormatter = DateTimeFormatterFactory.datetimeOutputFormatter
+        DateTimeFormatterFactory.datetimeOutputFormatter = null
         systemConfig.setProperty(DateTimeFormatterFactory.OUTPUT_DATETIME_FORMAT, format)
 
         expect: "It parses to the interval we expect"
@@ -56,7 +56,7 @@ class DateTimeFormatterFactorySpec extends Specification {
 
         cleanup:
         systemConfig.clearProperty(DateTimeFormatterFactory.OUTPUT_DATETIME_FORMAT)
-        DateTimeFormatterFactory.DATETIME_OUTPUT_FORMATTER = originalOutputFormatter
+        DateTimeFormatterFactory.datetimeOutputFormatter = originalOutputFormatter
         DateTimeZone.setDefault(originalDateTime)
 
         where:

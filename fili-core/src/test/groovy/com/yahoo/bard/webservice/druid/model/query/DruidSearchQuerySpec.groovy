@@ -2,11 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStore
@@ -16,10 +15,11 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.druid.model.orderby.DefaultSearchSortDirection
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -28,8 +28,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 class DruidSearchQuerySpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     DateTimeZone currentTZ
@@ -46,12 +45,12 @@ class DruidSearchQuerySpec extends Specification {
     DruidSearchQuery defaultQuery(Map vars) {
         vars.queryType = DefaultQueryType.SEARCH
         vars.dataSource = vars.dataSource ?: new TableDataSource(
-                new ConcretePhysicalTable(
+                TableTestUtils.buildTable(
                         "table_name",
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
                         [:],
-                        Mock(DataSourceMetadataService)
+                        Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
                 )
         )
         vars.granularity = vars.granularity ?: DAY
@@ -85,14 +84,14 @@ class DruidSearchQuerySpec extends Specification {
         vars.queryType = vars.queryType ?: "search"
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
         vars.context = vars.context ?
-                (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') :
-                '{"queryId":"dummy100"}'
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.intervals = vars.intervals ?: "[]"
         vars.searchDimensions = vars.searchDimensions ?: "[]"
         vars.query = vars.query ?: ""
-        vars.sort = vars.sort ? ((' "sort": "').replaceAll(/\s/, "") + vars.sort + '",') : ""
+        vars.sort = vars.sort ? /"sort":"$vars.sort",/ : ""
         vars.limit = vars.limit ?: 50000
 
         ("""{
@@ -155,23 +154,23 @@ class DruidSearchQuerySpec extends Specification {
         )
 
         Map vars = [:]
-        vars['query'] = (
-             """{
+        vars['query'] = """
+                {
                     "type": "fragment",
                     "values": [
                         "a",
                         "b"
                     ]
-                }"""
-        ).replaceAll(/\s/, "")
+                }
+        """
 
-        vars['filter'] = (
-             """{
+        vars['filter'] = """
+                {
                     "dimension": "a",
                     "type": "selector",
                     "value": "23"
-                }"""
-        ).replaceAll(/\s/, "")
+                }
+        """
 
         vars['intervals'] = """["1969-12-31T18:00:00.000-06:00/1969-12-31T18:01:00.000-06:00"]"""
         vars['searchDimensions'] = """["a", "b"]"""

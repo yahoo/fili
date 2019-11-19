@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async
 
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.FAILURE
@@ -5,8 +7,6 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.PEND
 
 import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
-
-import rx.Observer
 
 import java.util.concurrent.CountDownLatch
 
@@ -66,8 +66,10 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                 }
     */
 
-    static final String QUERY =
-            "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+
+    String getQuery() {
+        return "http://localhost:${jtb.getHarness().getPort()}/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    }
 
     static final String ERROR_MESSAGE = """{
                         "status" : 500,
@@ -93,7 +95,7 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [
                 data: { "data/shapes/day" },
                 //By querying the syncResults link first, we wait until the results are ready, thanks to the
@@ -109,11 +111,11 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [
                 data: {
                     assert it.status == 202
-                    AsyncTestUtils.validateJobPayload(it.readEntity(String), QUERY, PENDING.name)
+                    AsyncTestUtils.validateJobPayload(jtb, it.readEntity(String), getQuery(), PENDING.name)
                 },
                 syncResults: {
                     // However, there was a problem in the backend, and the job failed. So when we go to get the
@@ -130,13 +132,13 @@ class AsyncDruidSendsErrorSpec extends AsyncFunctionalSpec {
                 },
                 jobs: { response ->
                     assert response.status == 200
-                    AsyncTestUtils.validateJobPayload(response.readEntity(String), QUERY, FAILURE.name)
+                    AsyncTestUtils.validateJobPayload(jtb, response.readEntity(String), getQuery(), FAILURE.name)
                 }
         ]
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: {[
                         metrics: ["height"],

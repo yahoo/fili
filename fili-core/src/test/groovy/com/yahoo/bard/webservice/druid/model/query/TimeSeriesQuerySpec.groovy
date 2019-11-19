@@ -4,15 +4,16 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -21,8 +22,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 class TimeSeriesQuerySpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     DateTimeZone currentTZ
@@ -37,13 +37,12 @@ class TimeSeriesQuerySpec extends Specification {
     }
 
     TimeSeriesQuery defaultQuery(Map vars) {
-
-        vars.dataSource = vars.dataSource ?: new TableDataSource(new ConcretePhysicalTable(
+        vars.dataSource = vars.dataSource ?: new TableDataSource(TableTestUtils.buildTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 [:],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         ))
         vars.granularity = vars.granularity ?: DAY
         vars.filter = vars.filter ?: null
@@ -73,23 +72,27 @@ class TimeSeriesQuerySpec extends Specification {
         vars.queryType = vars.queryType ?: "timeseries"
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
-        vars.context = vars.context ? (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') : '{"queryId":"dummy100"}'
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
+        vars.context = vars.context ?
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
 
 
-        ("""{
-                "queryType":"$vars.queryType",
-                "dataSource":$vars.dataSource,
-                "granularity": $vars.granularity,
-                $vars.filter
-                "context":$vars.context,
-                "aggregations":$vars.aggregations,
-                "postAggregations":$vars.postAggregations,
-                "intervals":$vars.intervals
-            }""").replaceAll(/\s/, "")
+        """
+        {
+            "queryType":"$vars.queryType",
+            "dataSource":$vars.dataSource,
+            "granularity": $vars.granularity,
+            $vars.filter
+            "context":$vars.context,
+            "aggregations":$vars.aggregations,
+            "postAggregations":$vars.postAggregations,
+            "intervals":$vars.intervals
+        }
+        """
     }
 
     def "check query serialization"() {

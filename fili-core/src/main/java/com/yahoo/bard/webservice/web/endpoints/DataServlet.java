@@ -3,9 +3,6 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.GATEWAY_TIMEOUT;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
@@ -24,41 +21,46 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.TimeoutException;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
+import com.yahoo.bard.webservice.exception.DataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
-import com.yahoo.bard.webservice.web.DataApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
-import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessor;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 import rx.subjects.PublishSubject;
@@ -66,8 +68,10 @@ import rx.subjects.Subject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -84,6 +88,7 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.PathSegment;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -104,21 +109,30 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final DataRequestHandler dataRequestHandler;
     private final RequestMapper requestMapper;
     private final DruidFilterBuilder filterBuilder;
+    private final HavingGenerator havingGenerator;
     private final JobRowBuilder jobRowBuilder;
     private final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
     private final JobPayloadBuilder jobPayloadBuilder;
     private final BroadcastChannel<String> preResponseStoredNotifications;
+    private final DateTimeFormatter dateTimeFormatter;
 
     private final GranularityParser granularityParser;
 
     private final ObjectWriter writer;
     private final ObjectMappersSuite objectMappers;
+    private final HttpResponseMaker httpResponseMaker;
+    private final ResponseFormatResolver formatResolver;
+    private final ResponseProcessorFactory responseProcessorFactory;
+
+    private final DataApiRequestFactory dataApiRequestFactory;
 
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("timezone"),
             "UTC"
     ));
+
+    private final DataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -131,13 +145,20 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param requestMapper  Allows for overriding the API request
      * @param objectMappers  JSON serialization tools
      * @param filterBuilder  Helper to build filters
+     * @param havingGenerator  Helper to generate having
      * @param granularityParser  Helper for parsing granularities
      * @param jobPayloadBuilder  The factory for building a view of the JobRow that is sent to the user
      * @param jobRowBuilder  The JobRows factory
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
-     * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard prcesses
+     * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard processes
+     * @param httpResponseMaker  The factory for building HTTP responses
      * that a query has been completed and its results stored in the
+     * @param formatResolver  The formatResolver for determining correct response format
+     * @param dataApiRequestFactory A factory to build dataApiRequests
      * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
+     * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
+     * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
+     * @param dateTimeFormatter  date time formatter
      */
     @Inject
     public DataServlet(
@@ -149,11 +170,18 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @Named(DataApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             ObjectMappersSuite objectMappers,
             DruidFilterBuilder filterBuilder,
+            HavingGenerator havingGenerator,
             GranularityParser granularityParser,
             JobPayloadBuilder jobPayloadBuilder,
             JobRowBuilder jobRowBuilder,
             AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder,
-            BroadcastChannel<String> preResponseStoredNotifications
+            BroadcastChannel<String> preResponseStoredNotifications,
+            HttpResponseMaker httpResponseMaker,
+            ResponseFormatResolver formatResolver,
+            DataApiRequestFactory dataApiRequestFactory,
+            ResponseProcessorFactory responseProcessorFactory,
+            DataExceptionHandler exceptionHandler,
+            DateTimeFormatter dateTimeFormatter
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -164,11 +192,18 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.writer = objectMappers.getMapper().writer();
         this.dataRequestHandler = workflowProvider.buildWorkflow();
         this.filterBuilder = filterBuilder;
+        this.havingGenerator = havingGenerator;
         this.granularityParser = granularityParser;
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.jobRowBuilder = jobRowBuilder;
         this.asynchronousWorkflowsBuilder = asynchronousWorkflowsBuilder;
         this.preResponseStoredNotifications = preResponseStoredNotifications;
+        this.httpResponseMaker = httpResponseMaker;
+        this.formatResolver = formatResolver;
+        this.dataApiRequestFactory = dataApiRequestFactory;
+        this.responseProcessorFactory = responseProcessorFactory;
+        this.exceptionHandler = exceptionHandler;
+        this.dateTimeFormatter = dateTimeFormatter;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -208,12 +243,12 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         LogicalTable table = request.getTable();
         REGISTRY.meter("request.logical.table." + table.getName() + "." + table.getGranularity()).mark();
 
-        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), false));
+        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson()));
         RequestLog.record(
                 new DataRequest(
                         table,
                         request.getIntervals(),
-                        request.getFilters().values(),
+                        request.getApiFilters().values(),
                         metrics,
                         dimensions,
                         druidQuery.getDataSource().getNames(),
@@ -243,6 +278,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param timeZone  Requested time zone (impacts day based granularities and intervals)
      * @param asyncAfter  The maximum time length (in milliseconds) a request is allowed to be synchronous before
      * becoming asynchronous, if "never" then the request is forever synchronous
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param readCache  false to bypass cache
@@ -267,6 +304,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
             @QueryParam("asyncAfter") String asyncAfter,
+            @QueryParam("filename") String downloadFilename,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @DefaultValue("true") @NotNull @QueryParam("_cache") Boolean readCache,
@@ -288,6 +326,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 format,
                 timeZone,
                 asyncAfter,
+                downloadFilename,
                 perPage,
                 page,
                 readCache,
@@ -314,6 +353,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param format  Requested format
      * @param asyncAfter  The maximum time length (in milliseconds) a request is allowed to be synchronous before
      * becoming asynchronous, if "never" then the request is forever synchronous
+     * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
+     * not be downloaded.
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param readCache  false to bypass cache
@@ -339,15 +380,16 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
             @QueryParam("asyncAfter") String asyncAfter,
+            @QueryParam("filename") String downloadFilename,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @DefaultValue("true") @NotNull @QueryParam("_cache") Boolean readCache,
             @Suspended final AsyncResponse asyncResponse
     ) {
+        DataApiRequest apiRequest = null;
         try {
-            DataApiRequest apiRequest;
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-                apiRequest = new DataApiRequest(
+                apiRequest = dataApiRequestFactory.buildApiRequest(
                         tableName,
                         timeGrain,
                         dimensions,
@@ -358,18 +400,20 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         sorts,
                         count,
                         topN,
-                        format,
+                        formatResolver.apply(format, containerRequestContext),
+                        downloadFilename,
                         timeZone,
                         asyncAfter,
                         perPage,
                         page,
-                        uriInfo,
                         this
                 );
             }
 
             if (requestMapper != null) {
-                apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
+                    apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                }
             }
 
             // Build the query template
@@ -390,25 +434,17 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 context = new RequestContext(containerRequestContext, readCache);
             }
 
-            //An instance to prepare the Response with different set of arguments
-            HttpResponseMaker httpResponseMaker = new HttpResponseMaker(
-                    objectMappers,
-                    resourceDictionaries.getDimensionDictionary()
-            );
-
             Subject<PreResponse, PreResponse> queryResultsEmitter = PublishSubject.create();
 
             setupAsynchronousWorkflows(
-                    apiRequest.getAsyncAfter(),
-                    apiRequest.getFormat(),
-                    uriInfo,
+                    apiRequest,
                     queryResultsEmitter,
                     containerRequestContext,
                     asyncResponse,
                     httpResponseMaker
             );
 
-            ResultSetResponseProcessor response = new ResultSetResponseProcessor(
+            ResponseProcessor responseProcessor = responseProcessorFactory.build(
                     apiRequest,
                     queryResultsEmitter,
                     druidResponseParser,
@@ -418,50 +454,58 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
                 logRequestMetrics(apiRequest, readCache, druidQuery);
-                RequestLog.record(new DruidFilterInfo(apiRequest.getFilter()));
+                RequestLog.record(new DruidFilterInfo(druidQuery.getFilter()));
             }
 
             // Process the request
             RequestLog.startTiming(REQUEST_WORKFLOW_TIMER);
-            boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, response);
-            if (! complete) {
+            boolean complete = dataRequestHandler.handleRequest(context, apiRequest, druidQuery, responseProcessor);
+            if (!complete) {
                 throw new IllegalStateException("No request handler accepted request.");
             }
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (NoMatchFoundException e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
-        } catch (TimeoutException e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(GATEWAY_TIMEOUT, e, writer));
-        } catch (Error | Exception e) {
-            LOG.info("Exception processing request", e);
-            asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+        } catch (Throwable e) {
+            exceptionHandler.handleThrowable(
+                e,
+                asyncResponse,
+                Optional.ofNullable(apiRequest),
+                containerRequestContext,
+                writer
+            );
+            // Generally, it's expected that implementations of `ExceptionHandler` will resume
+            // the response in every case. This exists so that if someone writes a buggy handler
+            // that fails to resume the response, they at least get *something* back.
+            if (!asyncResponse.isDone()) {
+                asyncResponse.resume(
+                    RequestHandlerUtils.makeErrorResponse(
+                        Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                        e.getClass().getName(),
+                        "Failed to handle the following error.",
+                        null,
+                        writer
+                    )
+                );
+            }
         }
     }
 
     /**
      * Builds the asynchronous workflows, and subscribes the appropriate channels to the appropriate workflows.
      *
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request
-     * @param responseFormat  The requested format for the response
-     * @param uriInfo  The URI of the request
+     * @param apiRequest  DataApiRequest object with all the associated info in it
      * @param queryResultsEmitter  The observable that will eventually emit the results of the query
      * @param containerRequestContext  The context for the request
      * @param asyncResponse  The channel over which user responses will be sent
      * @param  httpResponseMaker  The factory for building HTTP responses
      */
     private void setupAsynchronousWorkflows(
-            long asyncAfter,
-            ResponseFormatType responseFormat,
-            UriInfo uriInfo,
+            ApiRequest apiRequest,
             Observable<PreResponse> queryResultsEmitter,
             ContainerRequestContext containerRequestContext,
             AsyncResponse asyncResponse,
             HttpResponseMaker httpResponseMaker
     ) {
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
+        long asyncAfter = apiRequest.getAsyncAfter();
         JobRow jobMetadata = jobRowBuilder.buildJobRow(uriInfo, containerRequestContext);
 
         // We need to decide when a query is synchronous, and when it should stop being synchronous and become
@@ -499,9 +543,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         asynchronousWorkflows.getSynchronousPayload().subscribe(
                 new HttpResponseChannel(
                         asyncResponse,
-                        httpResponseMaker,
-                        responseFormat,
-                        uriInfo
+                        apiRequest,
+                        containerRequestContext,
+                        httpResponseMaker
                 )
         );
 
@@ -555,6 +599,10 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         return filterBuilder;
     }
 
+    public HavingGenerator getHavingApiGenerator() {
+        return havingGenerator;
+    }
+
     public ObjectWriter getWriter() {
         return writer;
     }
@@ -582,6 +630,11 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public DateTimeZone getSystemTimeZone() {
         return systemTimeZone;
+    }
+
+    @Override
+    public DateTimeFormatter getDateTimeFormatter() {
+        return dateTimeFormatter;
     }
 
     @Override

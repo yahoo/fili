@@ -29,11 +29,7 @@ public class SerializerUtil {
         // Search for physical name
         return mapNearestDruidQuery(
                 gen,
-                druidQuery -> druidQuery.getDataSource()
-                        .getPhysicalTables()
-                        .iterator()
-                        .next()
-                        .getPhysicalColumnName(apiName)
+                druidQuery -> druidQuery.getDataSource().getPhysicalTable().getPhysicalColumnName(apiName)
         );
     }
 
@@ -45,7 +41,7 @@ public class SerializerUtil {
      * @return  a Boolean where true indicates there are more nested query below this node, false otherwise
      */
     public static Boolean hasInnerQuery(JsonGenerator gen) {
-        return mapNearestDruidQuery(gen, druidQuery -> druidQuery.getInnerQuery() != null).orElse(false);
+        return mapNearestDruidQuery(gen, druidQuery -> druidQuery.getInnerQuery().isPresent()).orElse(false);
     }
 
     /**

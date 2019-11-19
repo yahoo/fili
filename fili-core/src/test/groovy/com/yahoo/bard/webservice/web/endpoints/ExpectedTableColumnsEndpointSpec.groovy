@@ -29,7 +29,7 @@ class ExpectedTableColumnsEndpointSpec extends BaseTableServletComponentSpec {
               "name": "shapes",
               "longName": "shapes",
               "timeGrain": "day",
-              "retention": "P1Y",
+              "retention": "",
               "description": "shapes",
               "dimensions": [
                 {
@@ -37,31 +37,31 @@ class ExpectedTableColumnsEndpointSpec extends BaseTableServletComponentSpec {
                   "category": "General",
                   "name": "color",
                   "longName": "color",
-                  "uri": "http://localhost:9998/dimensions/color"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/color"
                 }, {
                   "cardinality": "0",
                   "category": "General",
                   "name": "shape",
                   "longName": "shape",
-                  "uri": "http://localhost:9998/dimensions/shape"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/shape"
                 }, {
                   "cardinality": "0",
                   "category": "General",
                   "name": "size",
                   "longName": "size",
-                  "uri": "http://localhost:9998/dimensions/size"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/size"
                 }, {
                   "cardinality": "38",
                   "category": "General",
                   "name": "model",
                   "longName": "model",
-                  "uri": "http://localhost:9998/dimensions/model"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/model"
                 }, {
                   "cardinality": "100000",
                   "category": "General",
                   "name": "other",
                   "longName": "other",
-                  "uri": "http://localhost:9998/dimensions/other"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/dimensions/other"
                 }
               ],
               "metrics": [
@@ -69,42 +69,42 @@ class ExpectedTableColumnsEndpointSpec extends BaseTableServletComponentSpec {
                   "category": "General",
                   "name":"rowNum",
                   "longName": "rowNum",
-                  "uri": "http://localhost:9998/metrics/rowNum"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                 }, {
                   "category": "General",
                   "name": "height",
                   "longName": "height",
-                  "uri": "http://localhost:9998/metrics/height"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                 }, {
                   "category": "General",
                   "name": "width",
                   "longName": "width",
-                  "uri": "http://localhost:9998/metrics/width"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
                 }, {
                   "category": "General",
                   "name": "depth",
                   "longName": "depth",
-                  "uri": "http://localhost:9998/metrics/depth"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                 }, {
                   "category": "General",
                   "name": "area",
                   "longName": "area",
-                  "uri": "http://localhost:9998/metrics/area"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                 }, {
                   "category": "General",
                   "name": "volume",
                   "longName": "volume",
-                  "uri": "http://localhost:9998/metrics/volume"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                 }, {
                   "category": "General",
                   "name": "otherUsers",
                   "longName": "otherUsers",
-                  "uri": "http://localhost:9998/metrics/otherUsers"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                 }, {
                   "category": "General",
                   "name": "users",
                   "longName": "users",
-                  "uri": "http://localhost:9998/metrics/users"
+                  "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                 }
               ]
             }"""

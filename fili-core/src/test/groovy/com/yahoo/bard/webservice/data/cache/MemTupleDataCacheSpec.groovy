@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.cache.MemTupleDataCache.DataEntry
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator
 import com.yahoo.bard.webservice.table.availability.AvailabilityTestingUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -55,7 +56,7 @@ class MemTupleDataCacheSpec extends Specification {
     def "cache misses on error without invalidating"() {
         setup:  "Give the cache a client that will throw an error in the middle of hits"
         MemcachedClient client = Mock(MemcachedClient)
-        MemTupleDataCache.DataEntry<String> tuple = new MemTupleDataCache.DataEntry<String>(
+        DataEntry<String,String> tuple = new DataEntry<String,String>(
                 "key",
                 expectedCheckSum,
                 "value"
@@ -142,7 +143,7 @@ class MemTupleDataCacheSpec extends Specification {
            }"""
 
         when: "initial request"
-        jtb.nonUiDruidWebService.jsonResponse = {response}
+        jtb.druidWebService.jsonResponse = {response}
 
         String result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -153,7 +154,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "subsequent request"
-        jtb.nonUiDruidWebService.jsonResponse = {response}
+        jtb.druidWebService.jsonResponse = {response}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -164,7 +165,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "druid result changes only value"
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")
@@ -176,7 +177,7 @@ class MemTupleDataCacheSpec extends Specification {
 
         when: "druid result changes both value and segment metadata"
         defaultCheckSum = ~expectedCheckSum
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
         expected = """{ "rows":[] }"""
 
         result = jtb.getHarness().target("data/shapes/day/color")
@@ -190,7 +191,7 @@ class MemTupleDataCacheSpec extends Specification {
         when: "subsequent queries after change and first cache miss"
         expectedCheckSum = ~expectedCheckSum
         defaultCheckSum = expectedCheckSum
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
         expected = """{ "rows":[] }"""
 
         result = jtb.getHarness().target("data/shapes/day/color")
@@ -202,7 +203,7 @@ class MemTupleDataCacheSpec extends Specification {
         GroovyTestUtils.compareJson(result, expected)
 
         when: "force cache bypass"
-        jtb.nonUiDruidWebService.jsonResponse = {"[]"}
+        jtb.druidWebService.jsonResponse = {"[]"}
 
         result = jtb.getHarness().target("data/shapes/day/color")
             .queryParam("metrics","width")

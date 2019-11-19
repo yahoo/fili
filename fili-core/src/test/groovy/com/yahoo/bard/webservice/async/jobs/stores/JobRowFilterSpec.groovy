@@ -2,9 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.jobs.stores
 
-import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
 import com.yahoo.bard.webservice.web.BadFilterException
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -22,7 +21,7 @@ class JobRowFilterSpec extends Specification {
 
         then:
         jobRowFilter.jobField?.name == jobField
-        jobRowFilter.operation == FilterOperation.valueOf(op)
+        jobRowFilter.operation == DefaultFilterOperation.fromString(op)
         jobRowFilter.values == expected as Set
 
         where:

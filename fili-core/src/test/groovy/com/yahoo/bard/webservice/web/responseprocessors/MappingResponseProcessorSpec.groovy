@@ -13,41 +13,51 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.JsonResponseWriter
 import com.yahoo.bard.webservice.web.PreResponse
+import com.yahoo.bard.webservice.web.ResponseWriter
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 
 import rx.subjects.PublishSubject
 import rx.subjects.Subject
-
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 
 class MappingResponseProcessorSpec extends Specification{
 
     GroupByQuery groupByQuery
     DataApiRequest apiRequest
+    ContainerRequestContext containerRequestContext
     ObjectMappersSuite objectMappers
     Subject<PreResponse, PreResponse> mappingResponseChannel
+    ResponseWriter responseWriter
 
     def setup() {
         groupByQuery = Mock(GroupByQuery)
         apiRequest = Mock(DataApiRequest)
         objectMappers = new ObjectMappersSuite()
+        responseWriter = new JsonResponseWriter(objectMappers)
 
         AsyncResponse asyncResponse = Mock(AsyncResponse)
-        HttpResponseChannel httpResponseChannel = new HttpResponseChannel(asyncResponse, apiRequest, new HttpResponseMaker(objectMappers, Mock(DimensionDictionary)))
+        HttpResponseChannel httpResponseChannel = new HttpResponseChannel(
+                asyncResponse,
+                apiRequest,
+                containerRequestContext,
+                new HttpResponseMaker(objectMappers, Mock(DimensionDictionary), responseWriter)
+        )
         mappingResponseChannel = PublishSubject.create()
         mappingResponseChannel.subscribe(httpResponseChannel)
     }
 
     MappingResponseProcessor buildSimpleMRP() {
         return new MappingResponseProcessor(apiRequest, objectMappers) {
-            public FailureCallback getFailureCallback(DruidAggregationQuery<?> query) {return null;}
-            public HttpErrorCallback getErrorCallback(DruidAggregationQuery<?> query) {return null;}
-            public void processResponse(JsonNode json, DruidAggregationQuery<?> query, LoggingContext metadata) {}
+            FailureCallback getFailureCallback(DruidAggregationQuery<?> query) {return null}
+            HttpErrorCallback getErrorCallback(DruidAggregationQuery<?> query) {return null}
+            void processResponse(JsonNode json, DruidAggregationQuery<?> query, LoggingContext metadata) {return}
         }
     }
 

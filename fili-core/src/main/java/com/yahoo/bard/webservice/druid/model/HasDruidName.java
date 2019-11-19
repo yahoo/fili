@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.model;
 /**
  * A marker interface for things which have a druid name.
  */
+@FunctionalInterface
 public interface HasDruidName {
     /**
      * Get the Druid name.

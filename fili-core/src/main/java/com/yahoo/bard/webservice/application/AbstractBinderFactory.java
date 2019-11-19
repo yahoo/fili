@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_COORDINATOR_METADATA;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_DIMENSIONS_LOADER;
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_LOOKUP_METADATA;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_HITS;
 import static com.yahoo.bard.webservice.web.handlers.CacheRequestHandler.CACHE_REQUESTS;
 import static com.yahoo.bard.webservice.web.handlers.DefaultWebServiceHandlerSelector.QUERY_REQUEST_TOTAL;
@@ -13,6 +14,7 @@ import static com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler.SP
 import com.yahoo.bard.webservice.application.healthchecks.AllDimensionsLoadedHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DataSourceMetadataLoaderHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.DruidDimensionsLoaderHealthCheck;
+import com.yahoo.bard.webservice.application.healthchecks.LookupHealthCheck;
 import com.yahoo.bard.webservice.application.healthchecks.VersionHealthCheck;
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel;
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel;
@@ -28,12 +30,14 @@ import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.async.workflows.AsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.async.workflows.DefaultAsynchronousWorkflowsBuilder;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.config.CacheFeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.DruidQueryBuilder;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
+import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.PreResponseDeserializer;
 import com.yahoo.bard.webservice.data.cache.DataCache;
@@ -42,6 +46,7 @@ import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionLoader;
@@ -49,8 +54,6 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder;
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -62,13 +65,28 @@ import com.yahoo.bard.webservice.druid.client.DruidClientConfigHelper;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
+import com.yahoo.bard.webservice.druid.client.impl.HeaderNestingJsonBuilderStrategy;
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoader;
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter;
+import com.yahoo.bard.webservice.exception.DataExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliDataExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliDimensionExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliJobsExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliMetricExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliSlicesExceptionHandler;
+import com.yahoo.bard.webservice.exception.FiliTablesExceptionHandler;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
+import com.yahoo.bard.webservice.metadata.RegisteredLookupMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
@@ -77,21 +95,40 @@ import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.CsvResponseWriter;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatResolver;
 import com.yahoo.bard.webservice.web.DimensionApiRequestMapper;
-import com.yahoo.bard.webservice.web.DimensionsApiRequest;
-import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
-import com.yahoo.bard.webservice.web.JobsApiRequest;
-import com.yahoo.bard.webservice.web.MetricsApiRequest;
+import com.yahoo.bard.webservice.web.FiliResponseWriter;
+import com.yahoo.bard.webservice.web.FiliResponseWriterSelector;
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper;
+import com.yahoo.bard.webservice.web.JsonApiResponseWriter;
+import com.yahoo.bard.webservice.web.JsonResponseWriter;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
 import com.yahoo.bard.webservice.web.NoOpRequestMapper;
+import com.yahoo.bard.webservice.web.RateLimiter;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.SlicesApiRequest;
-import com.yahoo.bard.webservice.web.TablesApiRequest;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.ResponseWriter;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DefaultDataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
+import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.RatioGauge;
@@ -102,13 +139,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.DateTimeFormatterBuilder;
+import org.joda.time.format.DateTimeParser;
+import org.joda.time.format.DateTimePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.subjects.PublishSubject;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
+import java.lang.management.ManagementFactory;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -137,6 +180,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     public static final String HEALTH_CHECK_NAME_DATASOURCE_METADATA = "datasource metadata loader";
+    public static final String HEALTH_CHECK_NAME_LOOKUP_METADATA = "lookup metadata loader";
     public static final String HEALTH_CHECK_NAME_DRUID_DIM_LOADER = "druid dimensions loader";
     public static final String HEALTH_CHECK_VERSION = "version";
     public static final String HEALTH_CHECK_NAME_DIMENSION = "dimension check";
@@ -144,6 +188,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String METER_CACHE_HIT_RATIO = "queries.meter.cache.hit_ratio";
     private static final String METER_SPLITS_TOTAL_RATIO = "queries.meter.split_queries.total_ratio";
     private static final String METER_SPLITS_RATIO = "queries.meter.split_queries.ratio";
+
+    private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
 
@@ -169,6 +215,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     public static final String DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG = SYSTEM_CONFIG.getPackageVariableName(
             "permissive_column_availability_enabled");
 
+    public static final int DRUID_UNCOVERED_INTERVAL_LIMIT = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_uncovered_interval_limit"),
+            0
+    );
+
     public static final String SYSTEM_CONFIG_TIMEZONE_KEY = "timezone";
 
     private ObjectMappersSuite objectMappers;
@@ -190,6 +241,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         return new AbstractBinder() {
             @Override
             protected void configure() {
+
                 HealthCheckRegistry healthCheckRegistry = HealthCheckRegistryFactory.getRegistry();
 
                 Stream.concat(
@@ -199,14 +251,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(FeatureFlagRegistry.class).to(FeatureFlagRegistry.class);
 
-                // Bard currently expects there to be one web service optimized for low latency queries
-                DruidWebService uiDruidWebService = buildUiDruidWebService(getMappers().getMapper());
+                // Bard currently expects there to be one web service
+                DruidWebService druidWebService = buildDruidWebService(getMappers().getMapper());
 
-                // As well as one for open ended, potentially long running queries
-                DruidWebService nonUiDruidWebService = buildNonUiDruidWebService(getMappers().getMapper());
-
-                bind(uiDruidWebService).named("uiDruidWebService").to(DruidWebService.class);
-                bind(nonUiDruidWebService).named("nonUiDruidWebService").to(DruidWebService.class);
+                bind(druidWebService).to(DruidWebService.class);
 
                 // A separate web service for metadata
                 DruidWebService metadataDruidWebService = null;
@@ -215,7 +263,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
                 }
 
-                // Bind the timeGrain provider
+                // Bind the timeGrain
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
                 bind(getGranularityParser()).to(GranularityParser.class);
 
@@ -224,12 +272,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(TemplateDruidQueryMerger.class).to(TemplateDruidQueryMerger.class);
                 bind(buildDruidResponseParser()).to(DruidResponseParser.class);
                 bind(buildDruidFilterBuilder()).to(DruidFilterBuilder.class);
+                bind(buildDruidHavingBuilder()).to(DruidHavingBuilder.class);
+
+                bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
                 //Initialize the field converter
-                FieldConverterSupplier.sketchConverter = initializeSketchConverter();
+                FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
                 //Initialize the metrics filter helper
-                FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
+                FieldConverterSupplier.setMetricsFilterSetBuilder(initializeMetricsFilterSetBuilder());
 
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
@@ -237,39 +288,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the configuration loader and load configuration
                 loader = getConfigurationLoader();
                 loader.load();
-
-                // Bind the configuration dictionaries
-                bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
-                bind(loader.getMetricDictionary()).to(MetricDictionary.class);
-                bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
-                bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
-                bind(loader.getDictionaries()).to(ResourceDictionaries.class);
+                bindDictionaries(this);
+                bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
 
                 // Bind the request mappers
-                Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
-                bind(requestMappers.getOrDefault(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new DimensionApiRequestMapper(loader.getDictionaries())
-                )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(DataApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
-
-                bind(requestMappers.getOrDefault(JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
-                        new NoOpRequestMapper(loader.getDictionaries())
-                )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+                bindRequestMappers(this);
 
                 // Setup end points and back end services
                 setupHealthChecks(healthCheckRegistry, loader.getDimensionDictionary());
@@ -292,7 +315,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 );
 
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
-                    DataSourceMetadataLoader dataSourceMetadataLoader = buildDataSourceMetadataLoader(
+                    DataSourceMetadataLoadTask dataSourceMetadataLoader = buildDataSourceMetadataLoader(
                             metadataDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             dataSourceMetadataService,
@@ -300,6 +323,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     );
 
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
+                }
+
+                if (DRUID_LOOKUP_METADATA.isOn()) {
+                    setupLookUpMetadataLoader(
+                            healthCheckRegistry,
+                            buildLookupMetaDataLoader(metadataDruidWebService, loader.getDimensionDictionary())
+                    );
                 }
 
                 bind(querySigningService).to(QuerySigningService.class);
@@ -318,23 +348,147 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(getClock()).to(Clock.class);
 
+                bind(getHttpResponseMaker()).to(HttpResponseMaker.class);
+
+                bind(buildResponseUtils()).to(ResponseUtils.class);
+
+                bind(buildResponseWriter(getMappers())).to(ResponseWriter.class);
+
+                bind(buildResponseFormatResolver()).to(ResponseFormatResolver.class);
+
+                bind(buildResponseProcessorFactory()).to(ResponseProcessorFactory.class);
+
+                bind(buildRateLimiter()).to(RateLimiter.class);
+
+                bind(getDataExceptionHandler()).to(DataExceptionHandler.class);
+
+                bindExceptionHandlers(this);
+
+                bind(buildDateTimeFormatter()).to(DateTimeFormatter.class);
+
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
-                    DruidDimensionsLoader druidDimensionsLoader = buildDruidDimensionsLoader(
-                            nonUiDruidWebService,
+                    DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
+                            druidWebService,
                             loader.getPhysicalTableDictionary(),
                             loader.getDimensionDictionary()
                     );
-                    setupDruidDimensionsLoader(healthCheckRegistry, druidDimensionsLoader);
+                    setupDruidDimensionsLoader(healthCheckRegistry, dimensionLoader);
                 }
                 if (SYSTEM_CONFIG.getBooleanProperty(DEPRECATED_PERMISSIVE_AVAILABILITY_FLAG, false)) {
                     LOG.warn(
                             "Permissive column availability feature flag is no longer supported, please use " +
-                                    "PermissiveConcretePhysicalTable to enable permissive column availability.");
+                                    "PermissivePhysicalTable to enable permissive column availability."
+                    );
                 }
                 // Call post-binding hook to allow for additional binding
                 afterBinding(this);
             }
+
         };
+    }
+
+    /**
+     * Binds all the resource dictionaries.
+     *
+     * @param binder The binder to bind the dictionaries to.
+     */
+    private void bindDictionaries(AbstractBinder binder) {
+        // Bind the configuration dictionaries
+        binder.bind(loader.getDimensionDictionary()).to(DimensionDictionary.class);
+        binder.bind(loader.getMetricDictionary()).to(MetricDictionary.class);
+        binder.bind(loader.getLogicalTableDictionary()).to(LogicalTableDictionary.class);
+        binder.bind(loader.getPhysicalTableDictionary()).to(PhysicalTableDictionary.class);
+        binder.bind(loader.getDictionaries()).to(ResourceDictionaries.class);
+    }
+
+    /**
+     * Binds all the exception handlers to the specified binder.
+     *
+     * @param binder  The binder to bind the exception handlers to
+     */
+    protected void bindExceptionHandlers(AbstractBinder binder) {
+        binder.bind(getDimensionExceptionHandler())
+                .named(DimensionsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getMetricsExceptionHandler())
+                .named(MetricsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getTablesExceptionHandler())
+                .named(TablesApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getSlicesExceptionHandler())
+                .named(SlicesApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+        binder.bind(getJobsExceptionHandler())
+                .named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE)
+                .to(MetadataExceptionHandler.class);
+
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getDimensionExceptionHandler() {
+        return FiliDimensionExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getMetricsExceptionHandler() {
+        return FiliMetricExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getSlicesExceptionHandler() {
+        return FiliSlicesExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getTablesExceptionHandler() {
+        return FiliTablesExceptionHandler.class;
+    }
+
+    protected Class<? extends MetadataExceptionHandler> getJobsExceptionHandler() {
+        return FiliJobsExceptionHandler.class;
+    }
+
+    protected Class<? extends DataExceptionHandler> getDataExceptionHandler() {
+        return FiliDataExceptionHandler.class;
+    }
+
+    /**
+     * Bind ApiRequest instances to resource scope names.
+     *
+     * @param binder  The binder being used to bind the request mappers.
+     */
+    private void bindRequestMappers(AbstractBinder binder) {
+        Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
+        binder.bind(requestMappers.getOrDefault(
+                DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new DimensionApiRequestMapper(loader.getDictionaries())
+        )).named(DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                MetricsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                SlicesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                TablesApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(TablesApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                DataApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(DataApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
+
+        binder.bind(requestMappers.getOrDefault(
+                JobsApiRequest.REQUEST_MAPPER_NAMESPACE,
+                new NoOpRequestMapper(loader.getDictionaries())
+        )).named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE).to(RequestMapper.class);
     }
 
     /**
@@ -469,16 +623,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return An instance of SketchFieldConverter
      */
     protected FieldConverters initializeSketchConverter() {
-        return new SketchFieldConverter();
+        return new ThetaSketchFieldConverter();
     }
 
     /**
-     * Initialize the FilteredMetricsHelper. By default it is FilteredSketchMetricsHelper
+     * Initialize the MetricsFilterSetBuilder. By default it is MetricsFilterSetBuilder
      *
-     * @return An instance of FilteredSketchMetricsHelper
+     * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper(buildDruidFilterBuilder());
     }
 
     /**
@@ -567,16 +721,61 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                     }
             );
         }
+
+        if (!metrics.containsKey(JVM_UPTIME)) {
+            metricRegistry.register(
+                    JVM_UPTIME,
+                    (Gauge<Long>) () -> ManagementFactory.getRuntimeMXBean().getUptime()
+            );
+        }
     }
 
     /**
      * Creates an object that constructs Druid dimension filters from Bard dimension filters.
-     * Constructs a {@link DefaultDruidFilterBuilder} by default.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
      *
      * @return An object to build Druid filters from API filters
      */
     protected DruidFilterBuilder buildDruidFilterBuilder() {
-        return new DefaultDruidFilterBuilder();
+        if (BardFeatureFlag.DEFAULT_IN_FILTER.isOn()) {
+            return new DruidInFilterBuilder();
+        } else {
+            return new DruidOrFilterBuilder();
+        }
+    }
+
+    /**
+     * Creates an object that constructs Druid dimension filters from Bard dimension filters.
+     * <p>
+     * Constructs a {@link DruidInFilterBuilder} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DruidHavingBuilder buildDruidHavingBuilder() {
+        return new DefaultDruidHavingBuilder();
+    }
+
+    /**
+     * Creates an factory that constructs DataApiRequests
+     * .
+     * Constructs a {@link DefaultDataApiRequestFactory} by default.
+     *
+     * @return An object to build Druid filters from API filters
+     */
+    protected DataApiRequestFactory buildDataApiRequestFactory() {
+        return new DefaultDataApiRequestFactory();
+    }
+
+    /**
+     * Creates an object that generates map of Api Having from having string.
+     * Constructs a {@link DefaultHavingApiGenerator} by default.
+     * @param loader  Configuration loader that connects resource dictionaries with the loader.
+     *
+     * @return An object to generate having maps from having string.
+     */
+    protected HavingGenerator buildHavingGenerator(ConfigurationLoader loader) {
+        return new PerRequestDictionaryHavingGenerator(new DefaultHavingApiGenerator(loader.getMetricDictionary()));
     }
 
     /**
@@ -603,11 +802,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService dataSourceMetadataService
     ) {
-        return new SegmentIntervalsHashIdGenerator(
-                physicalTableDictionary,
-                dataSourceMetadataService,
-                buildSigningFunctions()
-        );
+        return new SegmentIntervalsHashIdGenerator(dataSourceMetadataService, buildSigningFunctions());
     }
 
     /**
@@ -637,13 +832,13 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A datasource metadata loader.
      */
-    protected DataSourceMetadataLoader buildDataSourceMetadataLoader(
+    protected DataSourceMetadataLoadTask buildDataSourceMetadataLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DataSourceMetadataService metadataService,
             ObjectMapper mapper
     ) {
-        return new DataSourceMetadataLoader(
+        return new DataSourceMetadataLoadTask(
                 physicalTableDictionary,
                 metadataService,
                 webService,
@@ -652,24 +847,41 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Build a DruidDimensionsLoader.
+     * Builds a lookup metadata loader.
+     *
+     * @param webService  The web service used by the loader to query druid for lookup statuses.
+     * @param dimensionDictionary  A {@link com.yahoo.bard.webservice.data.dimension.DimensionDictionary} that is used
+     * to obtain a list of lookups in Fili.
+     *
+     * @return a lookup metadata loader
+     */
+    protected RegisteredLookupMetadataLoadTask buildLookupMetaDataLoader(
+            DruidWebService webService,
+            DimensionDictionary dimensionDictionary
+    ) {
+        return new RegisteredLookupMetadataLoadTask(webService, dimensionDictionary);
+    }
+
+    /**
+     * Build a DimensionValueLoadTask.
      *
      * @param webService  The web service used by the loader to query dimension values
      * @param physicalTableDictionary  The table to update dimensions on
      * @param dimensionDictionary  The dimensions to update
      *
-     * @return A DruidDimensionsLoader
+     * @return A DimensionValueLoadTask
      */
-    protected DruidDimensionsLoader buildDruidDimensionsLoader(
+    protected DimensionValueLoadTask buildDruidDimensionsLoader(
             DruidWebService webService,
             PhysicalTableDictionary physicalTableDictionary,
             DimensionDictionary dimensionDictionary
     ) {
-        return new DruidDimensionsLoader(
+        DruidDimensionValueLoader druidDimensionRowProvider = new DruidDimensionValueLoader(
                 physicalTableDictionary,
                 dimensionDictionary,
                 webService
         );
+        return new DimensionValueLoadTask(Collections.singletonList(druidDimensionRowProvider));
     }
 
     /**
@@ -680,7 +892,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected final void setupDataSourceMetaData(
             HealthCheckRegistry healthCheckRegistry,
-            DataSourceMetadataLoader dataSourceMetadataLoader
+            DataSourceMetadataLoadTask dataSourceMetadataLoader
     ) {
         scheduleLoader(dataSourceMetadataLoader);
 
@@ -693,20 +905,35 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule DruidDimensionsLoader and register its health check.
+     * Schedule a lookup metadata loader and register its health check.
+     *
+     * @param healthCheckRegistry  The health check registry to register lookup health checks.
+     * @param registeredLookupMetadataLoadTask  The {@link RegisteredLookupMetadataLoadTask} to use.
+     */
+    protected final void setupLookUpMetadataLoader(
+            HealthCheckRegistry healthCheckRegistry,
+            RegisteredLookupMetadataLoadTask registeredLookupMetadataLoadTask
+    ) {
+        scheduleLoader(registeredLookupMetadataLoadTask);
+        healthCheckRegistry.register(HEALTH_CHECK_NAME_LOOKUP_METADATA, new LookupHealthCheck(
+                registeredLookupMetadataLoadTask));
+    }
+
+    /**
+     * Schedule DimensionValueLoadTask and register its health check.
      *
      * @param healthCheckRegistry  The health check registry to register Dimension lookup health checks
-     * @param dataDruidDimensionsLoader  The DruidDimensionLoader used for monitoring and health checks
+     * @param dataDimensionLoader  The DruidDimensionLoader used for monitoring and health checks
      */
     protected final void setupDruidDimensionsLoader(
             HealthCheckRegistry healthCheckRegistry,
-            DruidDimensionsLoader dataDruidDimensionsLoader
+            DimensionValueLoadTask dataDimensionLoader
     ) {
-        scheduleLoader(dataDruidDimensionsLoader);
+        scheduleLoader(dataDimensionLoader);
 
-        // Register DruidDimensionsLoader health check
+        // Register DimensionValueLoadTask health check
         HealthCheck druidDimensionsLoaderHealthCheck = new DruidDimensionsLoaderHealthCheck(
-                dataDruidDimensionsLoader,
+                dataDimensionLoader,
                 DRUID_DIM_LOADER_HC_LAST_RUN_PERIOD_MILLIS
         );
         healthCheckRegistry.register(HEALTH_CHECK_NAME_DRUID_DIM_LOADER, druidDimensionsLoaderHealthCheck);
@@ -727,27 +954,73 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return The cache instance
      */
     protected DataCache<?> buildCache() {
-        if (BardFeatureFlag.DRUID_CACHE_V2.isOn()) {
-            try {
-                MemTupleDataCache<String> cache = new MemTupleDataCache<>();
-                LOG.info("MemcachedClient Version 2 started {}", cache);
-                return cache;
-            } catch (IOException e) {
-                LOG.error("MemcachedClient Version 2 failed to start {}", e);
-                throw new IllegalStateException(e);
-            }
-        } else if (BardFeatureFlag.DRUID_CACHE.isOn()) {
-            try {
-                DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
-                LOG.info("MemcachedClient started {}", cache);
-                return cache;
-            } catch (IOException e) {
-                LOG.error("MemcachedClient failed to start {}", e);
-                throw new IllegalStateException(e);
-            }
+        if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
+            return buildLocalSignatureCache();
+        } else if (CacheFeatureFlag.TTL.isOn()) {
+            return buildTtlCache();
+        } else if (CacheFeatureFlag.ETAG.isOn()) {
+            return buildETagCahe();
         } else {
             // not used, but Jersey required a binding
             return new StubDataCache<>();
+        }
+    }
+
+    /**
+     * Builds and returns an instance of local signature cache.
+     *
+     * @return the instance of local signature cache
+     */
+    private DataCache<?> buildLocalSignatureCache() {
+        if (BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
+            LOG.warn("Cache V2 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
+        try {
+            MemTupleDataCache<Long, String> cache = new MemTupleDataCache<>();
+            LOG.info("MemcachedClient Version 2 started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Builds and returns an instance of TTL cache.
+     *
+     * @return the instance of TTL cache
+     */
+    private DataCache<?> buildTtlCache() {
+        if (BardFeatureFlag.DRUID_CACHE.isSet()) {
+            LOG.warn("Cache V1 feature flag is deprecated, " +
+                    "use the new configuration parameter to set desired caching strategy"
+            );
+        }
+        try {
+            DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
+            LOG.info("MemcachedClient started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient failed to start {}", e);
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Builds and returns an instance of eTag cache.
+     *
+     * @return the instance of eTag cache
+     */
+    private DataCache<?> buildETagCahe() {
+        try {
+            MemTupleDataCache<String, String> cache = new MemTupleDataCache<>();
+            LOG.info("MemcachedClient Version 2 started {}", cache);
+            return cache;
+        } catch (IOException e) {
+            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -764,7 +1037,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return The list of valid feature flags
      */
     protected List<FeatureFlag> collectFeatureFlags() {
-        return Collections.<FeatureFlag>emptyList();
+        return Collections.emptyList();
     }
 
     /**
@@ -798,7 +1071,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A configuration loader instance
      */
-    protected final ConfigurationLoader getConfigurationLoader() {
+    protected ConfigurationLoader getConfigurationLoader() {
         if (Objects.isNull(loader)) {
             loader = buildConfigurationLoader(getDimensionLoader(), getMetricLoader(), getTableLoader());
         }
@@ -819,7 +1092,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             MetricLoader metricLoader,
             TableLoader tableLoader
     ) {
-        return new ConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
+        return new DefaultConfigurationLoader(dimensionLoader, metricLoader, tableLoader);
     }
 
     /**
@@ -840,6 +1113,41 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected JobPayloadBuilder buildJobPayloadBuilder() {
         return new DefaultJobPayloadBuilder();
+    }
+
+    /**
+     * Initializes the factory that builds HttpResponseMaker.
+     *
+     * @return an instance of the {@link HttpResponseMaker}
+     */
+    protected Class<? extends HttpResponseMaker> getHttpResponseMaker() {
+        return HttpResponseMaker.class;
+    }
+
+    /**
+     * Builds a response utils object with only CSV as a default always csv format.
+     *
+     * @return the response utils
+     */
+    protected ResponseUtils buildResponseUtils() {
+        return new ResponseUtils();
+    }
+
+    /**
+     * Builder for ResponseWriter, a serializer allowing customized response from Fili.
+     *
+     * @param mappers Shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
+     *
+     * @return FiliResponseWriter
+     */
+    protected ResponseWriter buildResponseWriter(ObjectMappersSuite mappers) {
+        return new FiliResponseWriter(
+                new FiliResponseWriterSelector(
+                        new CsvResponseWriter(mappers),
+                        new JsonResponseWriter(mappers),
+                        new JsonApiResponseWriter(mappers)
+                )
+        );
     }
 
     /**
@@ -922,7 +1230,16 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
-        return new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
+        return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
+                ? new AsyncDruidWebServiceImpl(
+                    druidServiceConfig,
+                    mapper,
+                    supplier,
+                    new HeaderNestingJsonBuilderStrategy(
+                            AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
+                    )
+            )
+                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
 
     /**
@@ -933,11 +1250,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     protected Supplier<Map<String, String>> buildDruidWebServiceHeaderSupplier() {
         Supplier<Map<String, String>> supplier = HashMap::new;
         String customSupplierClassString = SYSTEM_CONFIG.getStringProperty(DRUID_HEADER_SUPPLIER_CLASS, null);
-        if (customSupplierClassString != null && customSupplierClassString.equals("")) {
+        if (customSupplierClassString != null && !customSupplierClassString.equals("")) {
             try {
-                Class<?> c = Class.forName(customSupplierClassString);
-                Constructor<?> constructor = c.getConstructor();
-                supplier = (Supplier<Map<String, String>>) constructor.newInstance();
+                @SuppressWarnings("unchecked")
+                Class<? extends Supplier<Map<String, String>>> c = (Class) Class
+                        .forName(customSupplierClassString).asSubclass(Supplier.class);
+                supplier = c.getConstructor().newInstance();
             } catch (Exception e) {
                 LOG.error(
                         "Unable to load the Druid query header supplier, className: {}, exception: {}",
@@ -959,21 +1277,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A DruidWebService
      */
-    protected DruidWebService buildUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getUiServiceConfig(), mapper);
-    }
-
-    /**
-     * Create a DruidWebService for the non-UI connection.
-     * <p>
-     * Provided so subclasses can implement alternative druid web service implementations for the non-UI connection
-     *
-     * @param mapper shared instance of {@link com.fasterxml.jackson.databind.ObjectMapper}
-     *
-     * @return A DruidWebService
-     */
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return buildDruidWebService(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
+    protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
+        return buildDruidWebService(DruidClientConfigHelper.getServiceConfig(), mapper);
     }
 
     /**
@@ -985,6 +1290,64 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildMetadataDruidWebService(ObjectMapper mapper) {
         return buildDruidWebService(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
+    }
+
+    /**
+     * Create a ResponseFormatResolver for Servlet objects.
+     * <p>
+     * Currently default types are json, jsonapi and csv types.
+     *
+     * @return A ResponseFormatResolver
+     */
+    protected ResponseFormatResolver buildResponseFormatResolver() {
+        return new DefaultResponseFormatResolver();
+    }
+
+    /**
+     * Returns the class to bind to {@link ResponseProcessorFactory}.
+     * <p>
+     * The ResponseProcessorFactory allows us to inject a custom {@link
+     * com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor} despite the fact that these processors depend
+     * on objects that are built uniquely for each request.
+     *
+     * @return A class that implements {@link ResponseProcessorFactory}.
+     */
+    protected Class<? extends ResponseProcessorFactory> buildResponseProcessorFactory() {
+        return ResultSetResponseProcessorFactory.class;
+    }
+
+    /**
+     * Creates a new RateLimiter for the RateLimitFilter.
+     *
+     * @return a RateLimiter implementation
+     */
+    protected RateLimiter buildRateLimiter() {
+        return new DefaultRateLimiter();
+    }
+
+    /**
+     * Builds a default DateTimeFormatter for the UTC timezone.
+     *
+     * @return the formatter
+     */
+    protected DateTimeFormatter buildDateTimeFormatter() {
+        return new DateTimeFormatterBuilder()
+                .append(
+                        (DateTimePrinter) null,
+                        new DateTimeParser[] {
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss.SSS").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd'T'HH").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd' 'HH").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM-dd").getParser(),
+                                DateTimeFormat.forPattern("yyyy-MM").getParser(),
+                                DateTimeFormat.forPattern("yyyy").getParser()
+                        }
+                ).toFormatter().withZone(DateTimeZone.forID("UTC"));
     }
 
     @Override
@@ -1002,20 +1365,20 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
-     * Schedule a loader task.
+     * Schedule a loadTask task.
      *
-     * @param loader  The loader task to run.
+     * @param loadTask  The loadTask task to run.
      */
-    protected void scheduleLoader(Loader<?> loader) {
-        loader.setFuture(
-                loader.isPeriodic ?
+    protected void scheduleLoader(LoadTask<?> loadTask) {
+        loadTask.setFuture(
+                loadTask.isPeriodic ?
                         loaderScheduler.scheduleAtFixedRate(
-                                loader,
-                                loader.getDefinedDelay(),
-                                loader.getDefinedPeriod(),
+                                loadTask,
+                                loadTask.getDefinedDelay(),
+                                loadTask.getDefinedPeriod(),
                                 TimeUnit.MILLISECONDS
                         ) :
-                        loaderScheduler.schedule(loader, loader.getDefinedDelay(), TimeUnit.MILLISECONDS)
+                        loaderScheduler.schedule(loadTask, loadTask.getDefinedDelay(), TimeUnit.MILLISECONDS)
         );
     }
 

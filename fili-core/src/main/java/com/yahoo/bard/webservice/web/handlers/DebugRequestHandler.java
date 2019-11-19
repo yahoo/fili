@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.web.handlers;
 
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,10 +39,10 @@ public class DebugRequestHandler extends BaseDataRequestHandler {
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     ) {
-        if (request.getFormat() != ResponseFormatType.DEBUG) {
+        if (request.getFormat() != DefaultResponseFormatType.DEBUG) {
             return next.handleRequest(context, request, druidQuery, response);
         }
-        response.getErrorCallback(druidQuery).dispatch(200, request.getFormat().name(), "DEBUG");
+        response.getErrorCallback(druidQuery).dispatch(200, request.getFormat().toString(), "DEBUG");
         return true;
     }
 }

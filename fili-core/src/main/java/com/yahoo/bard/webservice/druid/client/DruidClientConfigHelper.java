@@ -9,6 +9,10 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Helper to fetch druid url and timeout settings.
  */
@@ -18,94 +22,52 @@ public class DruidClientConfigHelper {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     /**
-     * The routing priority for low latency queries.
+     * The routing priority for all queries.
      */
-    private static final String UI_DRUID_PRIORITY_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("ui_druid_priority");
+    private static final String DRUID_PRIORITY_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_priority");
 
     /**
-     * The routing priority for high latency queries.
+     * The url for the broker vip which serves all queries.
      */
-    private static final String NON_UI_DRUID_PRIORITY_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_priority");
-
-    /**
-     * The url for the broker vip which serves low latency queries.
-     */
-    private static final String UI_DRUID_BROKER_URL_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("ui_druid_broker");
-
-    /**
-     * The url for the broker vip which serves higher latency queries.
-     */
-    private static final String NON_UI_DRUID_BROKER_URL_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_broker");
+    public static final String DRUID_BROKER_URL_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_broker");
 
     /**
      * The url for the coordinator vip which serves low latency queries.
      */
-    private static final String DRUID_COORD_URL_KEY =
+    public static final String DRUID_COORD_URL_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_coord");
-
     /**
-     * The timeout setting for low latency queries.
+     * The timeout setting for all queries.
      */
-    private static final String UI_DRUID_REQUEST_TIMEOUT_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("ui_druid_request_timeout");
-
-    /**
-     * The timeout setting for high latency queries.
-     */
-    private static final String NON_UI_DRUID_REQUEST_TIMEOUT_KEY =
-            SYSTEM_CONFIG.getPackageVariableName("non_ui_druid_request_timeout");
+    private static final String DRUID_REQUEST_TIMEOUT_KEY =
+            SYSTEM_CONFIG.getPackageVariableName("druid_request_timeout");
 
     /**
      * The default timeout for queries.
      */
-    private static final int DRUID_REQUEST_TIMEOUT_DEFAULT = 10 * 60 * 1000; // 10 Minutes, in milliseconds
+    private static final int DRUID_REQUEST_TIMEOUT_DEFAULT = Math.toIntExact(TimeUnit.MINUTES.toMillis(10));
 
     /**
-     * Fetches the druid UI request Priority.
+     * Fetches the druid Priority.
      *
-     * @return druid UI request timeout
+     * @return druid priority
      */
-    public static Integer getDruidUiPriority() {
-        String priority = SYSTEM_CONFIG.getStringProperty(UI_DRUID_PRIORITY_KEY, null);
-        if (priority == null || "".equals(priority)) {
-            return null;
-        }
+    public static Integer getDruidPriority() {
+        String priority = SYSTEM_CONFIG.getStringProperty(DRUID_PRIORITY_KEY, "1");
         return Integer.parseInt(priority);
     }
 
     /**
-     * Fetches the druid non-UI Priority.
+     * Fetches the druid URL.
      *
-     * @return druid non-UI URL
+     * @return druid URL
      */
-    public static Integer getDruidNonUiPriority() {
-        String priority = SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_PRIORITY_KEY, null);
-        if (priority == null || "".equals(priority)) {
-            return null;
-        }
-        return Integer.parseInt(priority);
-    }
-
-    /**
-     * Fetches the druid UI URL.
-     *
-     * @return druid UI URL
-     */
-    public static String getDruidUiUrl() {
-        return SYSTEM_CONFIG.getStringProperty(UI_DRUID_BROKER_URL_KEY, null);
-    }
-
-    /**
-     * Fetches the druid non-UI URL.
-     *
-     * @return druid non-UI URL
-     */
-    public static String getDruidNonUiUrl() {
-        return SYSTEM_CONFIG.getStringProperty(NON_UI_DRUID_BROKER_URL_KEY, null);
+    public static String getDruidUrl() {
+        String url = SYSTEM_CONFIG.getStringProperty(DRUID_BROKER_URL_KEY, null);
+        validateUrl(url);
+        return url;
     }
 
     /**
@@ -118,39 +80,22 @@ public class DruidClientConfigHelper {
     }
 
     /**
-     * Fetches the druid UI request timeout.
+     * Fetches the druid request timeout.
      *
-     * @return druid UI request timeout
+     * @return druid request timeout
      */
-    public static Integer getDruidUiTimeout() {
-        return fetchDruidResponseTimeOut(UI_DRUID_REQUEST_TIMEOUT_KEY);
+    public static Integer getDruidTimeout() {
+        Integer time = fetchDruidResponseTimeOut(DRUID_REQUEST_TIMEOUT_KEY);
+        return time;
     }
 
     /**
-     * Fetches the druid non-UI request timeout.
-     *
-     * @return druid non-UI request timeout
-     */
-    public static Integer getDruidNonUiTimeout() {
-        return fetchDruidResponseTimeOut(NON_UI_DRUID_REQUEST_TIMEOUT_KEY);
-    }
-
-    /**
-     * Create a druid service configuration object for the UI service.
+     * Create a druid service configuration object.
      *
      * @return a druid service configuration object with all configuration parameters set
      */
-    public static DruidServiceConfig getUiServiceConfig() {
-        return new DruidServiceConfig("Broker", getDruidUiUrl(), getDruidUiTimeout(), getDruidUiPriority());
-    }
-
-    /**
-     * Create a druid service configuration object for the non UI service.
-     *
-     * @return a druid service configuration object with all configuration parameters set
-     */
-    public static DruidServiceConfig getNonUiServiceConfig() {
-        return new DruidServiceConfig("Broker", getDruidNonUiUrl(), getDruidNonUiTimeout(), getDruidNonUiPriority());
+    public static DruidServiceConfig getServiceConfig() {
+        return new DruidServiceConfig("Broker", getDruidUrl(), getDruidTimeout(), getDruidPriority());
     }
 
     /**
@@ -162,8 +107,8 @@ public class DruidClientConfigHelper {
         return new DruidServiceConfig(
                 "Coordinator",
                 getDruidCoordUrl(),
-                getDruidNonUiTimeout(),
-                getDruidNonUiPriority()
+                getDruidTimeout(),
+                getDruidPriority()
         );
     }
 
@@ -180,6 +125,21 @@ public class DruidClientConfigHelper {
         } catch (SystemConfigException e) {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validate the format of url to see if it is a pontential validate url.
+     *
+     * @param url  The url to check against
+     */
+    private static void validateUrl(String url) {
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            String message = String.format("Invalid druid host url provided: %s", url);
+            LOG.error(message);
+            throw new IllegalArgumentException(message, e);
         }
     }
 }

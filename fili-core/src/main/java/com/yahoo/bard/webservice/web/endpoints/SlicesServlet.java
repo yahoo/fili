@@ -3,26 +3,24 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.SliceRequest;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -52,6 +50,8 @@ public class SlicesServlet extends EndpointServlet {
     private final DataSourceMetadataService dataSourceMetadataService;
     private final PhysicalTableDictionary physicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -60,18 +60,24 @@ public class SlicesServlet extends EndpointServlet {
      * @param requestMapper  Mapper for changing the API request
      * @param dataSourceMetadataService  The data source metadata provider
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public SlicesServlet(
             PhysicalTableDictionary physicalTableDictionary,
             @Named(SlicesApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
             DataSourceMetadataService dataSourceMetadataService,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver,
+            @Named(SlicesApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
         this.requestMapper = requestMapper;
         this.dataSourceMetadataService = dataSourceMetadataService;
+        this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -80,7 +86,8 @@ public class SlicesServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
-     * @param uriInfo  UriInfo of the request
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
 
      * @return OK(200) else Bad Request(400) Response format:
@@ -101,16 +108,19 @@ public class SlicesServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo,
-            @Context final ContainerRequestContext containerRequestContext
+            @QueryParam("filename") String downloadFilename,
+            @Context ContainerRequestContext containerRequestContext
     ) {
+        SlicesApiRequest apiRequest = null;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest("all"));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            apiRequest = new SlicesApiRequestImpl(
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
                     physicalTableDictionary,
@@ -119,35 +129,27 @@ public class SlicesServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Stream<Map<String, String>> result = apiRequest.getPage(apiRequest.getSlices());
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    apiRequest.getSlices(),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "slices" : "rows",
                     null
             );
 
-            LOG.debug("Slice Endpoint Response: {}", response.getEntity());
-            RequestLog.stopTiming(this);
+            LOG.trace("Slice Endpoint Response: {}", response.getEntity());
             return response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException e) {
-            String msg = String.format("Internal server error. IOException : %s", e.getMessage());
-            LOG.error(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
-            RequestLog.stopTiming(this);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         }
     }
 
@@ -155,7 +157,6 @@ public class SlicesServlet extends EndpointServlet {
      * Endpoint to get all the dimensions and metrics serviced by a druid slice.
      *
      * @param sliceName  Physical table name
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return OK(200) else Bad Request(400). Response format:
@@ -182,39 +183,38 @@ public class SlicesServlet extends EndpointServlet {
     @Path("/{sliceName}")
     public Response getSliceBySliceName(
             @PathParam("sliceName") String sliceName,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        SlicesApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new SliceRequest(sliceName));
 
-            SlicesApiRequest apiRequest = new SlicesApiRequest(
+            apiRequest = new SlicesApiRequestImpl(
                     sliceName,
                     null,
                     "",
                     "",
                     physicalTableDictionary,
                     dataSourceMetadataService,
-                    uriInfo
+                    containerRequestContext.getUriInfo()
             );
 
             if (requestMapper != null) {
-                apiRequest = (SlicesApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (SlicesApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             String output = objectMappers.getMapper().writeValueAsString(apiRequest.getSlice());
-            LOG.debug("Slice Endpoint Response: {}", output);
-            RequestLog.stopTiming(this);
+            LOG.trace("Slice Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
+        } finally {
             RequestLog.stopTiming(this);
-            return Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException | IllegalStateException e) {
-            LOG.debug("Bad request exception : {}", e);
-            RequestLog.stopTiming(this);
-            return Response.status(BAD_REQUEST).entity("Exception: " + e.getMessage()).build();
         }
     }
 

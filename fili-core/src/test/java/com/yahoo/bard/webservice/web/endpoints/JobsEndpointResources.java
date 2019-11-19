@@ -13,8 +13,8 @@ import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
@@ -49,7 +49,7 @@ public class JobsEndpointResources {
         fieldValueMap1.put(DefaultJobField.JOB_TICKET, "ticket1");
         fieldValueMap1.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap1.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap1.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap1.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap1.put(DefaultJobField.STATUS, "success");
         fieldValueMap1.put(DefaultJobField.USER_ID, "momo");
 
@@ -60,7 +60,7 @@ public class JobsEndpointResources {
         fieldValueMap2.put(DefaultJobField.JOB_TICKET, "ticket2");
         fieldValueMap2.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap2.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap2.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap2.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap2.put(DefaultJobField.STATUS, "pending");
         fieldValueMap2.put(DefaultJobField.USER_ID, "dodo");
 
@@ -71,7 +71,7 @@ public class JobsEndpointResources {
         fieldValueMap3.put(DefaultJobField.JOB_TICKET, "ticket3p");
         fieldValueMap3.put(DefaultJobField.DATE_CREATED, "2016-01-01");
         fieldValueMap3.put(DefaultJobField.DATE_UPDATED, "2016-01-01");
-        fieldValueMap3.put(DefaultJobField.QUERY, "https://localhost:9998/v1/data/QUERY");
+        fieldValueMap3.put(DefaultJobField.QUERY, "https://localhost:PORT/v1/data/QUERY");
         fieldValueMap3.put(DefaultJobField.STATUS, "success");
         fieldValueMap3.put(DefaultJobField.USER_ID, "yoyo");
 
@@ -104,9 +104,9 @@ public class JobsEndpointResources {
         apiMetricColumnNames.add("pageViews");
 
         ResponseContext responseContext = new ResponseContext();
-        responseContext.put("headers", new MultivaluedHashMap<>());
-        responseContext.put("apiMetricColumnNames", apiMetricColumnNames);
-        responseContext.put("requestedApiDimensionFields", new LinkedHashMap<>());
+        responseContext.put(ResponseContextKeys.HEADERS.getName(), new MultivaluedHashMap<>());
+        responseContext.put(ResponseContextKeys.API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
+        responseContext.put(ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS.getName(), new LinkedHashMap<>());
 
         PreResponse preResponse = new PreResponse(resultSet, responseContext);
         preResponseStore.save("ticket1", preResponse);
@@ -114,11 +114,11 @@ public class JobsEndpointResources {
         preResponseStore.save("IExistOnlyInPreResponseStore", preResponse);
 
         ResponseContext errorResponseContext = new ResponseContext();
-        errorResponseContext.put("headers", new MultivaluedHashMap<>());
+        errorResponseContext.put(ResponseContextKeys.HEADERS.getName(), new MultivaluedHashMap<>());
         errorResponseContext.put(ResponseContextKeys.STATUS.getName(), 500);
         errorResponseContext.put(ResponseContextKeys.ERROR_MESSAGE.getName(), "Error");
-        errorResponseContext.put("apiMetricColumnNames", apiMetricColumnNames);
-        errorResponseContext.put("requestedApiDimensionFields", new HashMap<>());
+        errorResponseContext.put(ResponseContextKeys.API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
+        errorResponseContext.put(ResponseContextKeys.REQUESTED_API_DIMENSION_FIELDS.getName(), new LinkedHashMap<>());
         PreResponse errorPresResponse = new PreResponse(resultSet, errorResponseContext);
         preResponseStore.save("errorPreResponse", errorPresResponse);
 

@@ -7,10 +7,12 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Optional;
+
 /**
  * Common interface for Druid Query classes.
  *
- * @param <Q> class that extends DruidQuery
+ * @param <Q> class that implements DruidQuery
  */
 public interface DruidQuery<Q extends DruidQuery<? super Q>> {
 
@@ -48,10 +50,10 @@ public interface DruidQuery<Q extends DruidQuery<? super Q>> {
     /**
      * If this query is nestable, and has a nested query return it.
      *
-     * @return the nested query or null if there is no nested query
+     * @return the nested query or empty if there is no nested query
      */
     @JsonIgnore
-    default DruidQuery<?> getInnerQuery() {
+    default Optional<? extends DruidQuery> getInnerQuery() {
         return getDataSource().getQuery();
     }
 
@@ -62,7 +64,7 @@ public interface DruidQuery<Q extends DruidQuery<? super Q>> {
      */
     @JsonIgnore
     default DruidQuery<?> getInnermostQuery() {
-        return getInnerQuery() == null ? this : getInnerQuery().getInnermostQuery();
+        return getInnerQuery().isPresent() ? getInnerQuery().get().getInnermostQuery() : this;
     }
 
     /**

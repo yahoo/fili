@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
 import com.yahoo.bard.webservice.util.ReactiveTestUtils
 
 import rx.observers.TestSubscriber
-
 import spock.lang.Specification
 import spock.lang.Unroll
 

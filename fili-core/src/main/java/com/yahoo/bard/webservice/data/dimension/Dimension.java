@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension;
 
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.druid.serializers.DimensionToDefaultDimensionSpec;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -56,16 +57,16 @@ public interface Dimension {
     DateTime getLastUpdated();
 
     /**
-     * Getter for dimension fields.
+     * Returns all dimension fields of this dimension.
      *
-     * @return Set of dimension fields
+     * @return all dimension fields of this dimension
      */
     LinkedHashSet<DimensionField> getDimensionFields();
 
     /**
-     * Getter for default dimension fields.
+     * Returns the default dimension fields to be shown in the response.
      *
-     * @return Set of dimension fields
+     * @return the default dimension fields to be shown in the response
      */
     LinkedHashSet<DimensionField> getDefaultDimensionFields();
 
@@ -75,6 +76,8 @@ public interface Dimension {
      * @param name  field name
      *
      * @return DimensionField
+     *
+     * @throws IllegalArgumentException if this dimension does not have a field with the specified name
      */
     DimensionField getFieldByName(String name);
 
@@ -146,6 +149,13 @@ public interface Dimension {
      * @return long name
      */
     String getLongName();
+
+    /**
+     * Returns the {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy} of the dimension.
+     *
+     * @return the storage strategy of the dimension.
+     */
+    StorageStrategy getStorageStrategy();
 
     /**
      * Get the cardinality of the dimension.

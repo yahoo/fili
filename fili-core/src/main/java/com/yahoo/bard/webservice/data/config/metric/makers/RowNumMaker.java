@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.mappers.RowNumMapper;
 
@@ -27,12 +28,11 @@ public class RowNumMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new LogicalMetric(
                 null,
                 ROW_NUM_MAPPER,
-                metricName,
-                "Generator for Row Numbers"
+                logicalMetricInfo
         );
     }
 

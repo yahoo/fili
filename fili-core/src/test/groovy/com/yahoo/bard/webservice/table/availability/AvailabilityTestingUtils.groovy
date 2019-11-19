@@ -3,12 +3,13 @@
 package com.yahoo.bard.webservice.table.availability
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
-import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
 
@@ -16,12 +17,43 @@ import spock.lang.Specification
 
 import java.util.stream.Collectors
 import java.util.stream.Stream
-
 /**
  * Contains a collection of utility methods to aid in testing functionality that relies on table availability, like
  * partial data and volatility.
  */
 class AvailabilityTestingUtils extends Specification {
+
+    static class TestAvailability implements Availability {
+        final Set<DataSourceName> sourceDataSourceNames
+        final Map<String, Set<Interval>> intervals
+
+        TestAvailability(Set<DataSourceName> sourceDataSourceNames, Map<String, Set<Interval>> intervals) {
+            this.sourceDataSourceNames = sourceDataSourceNames
+            this.intervals = intervals
+        }
+
+        @Override
+        Set<DataSourceName> getDataSourceNames() {
+            return sourceDataSourceNames
+        }
+
+        @Override
+        Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+            return getDataSourceNames()
+        }
+
+        @Override
+        Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
+            intervals.entrySet().collectEntries {
+                [(it.key): new SimplifiedIntervalList(it.value)]
+            }
+        }
+
+        @Override
+        SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+            return (constraint instanceof QueryPlanningConstraint) ? getAvailableIntervals().intersect(SimplifiedIntervalList.simplifyIntervals(constraint.intervals)) : getAvailableIntervals()
+        }
+    }
 
     /**
      * Make the specified physical tables believe they have data available for the specified interval.
@@ -31,7 +63,7 @@ class AvailabilityTestingUtils extends Specification {
      * @param namesOfTablesToPopulate The names of the physical tables whose availability should include the specified
      * interval, if empty then every table is made available for the specified interval, defaults to empty
      */
-    static def populatePhysicalTableCacheIntervals(
+    static populatePhysicalTableCacheIntervals(
             JerseyTestBinder jtb,
             Interval interval,
             Set<String> namesOfTablesToPopulate = [] as Set
@@ -42,24 +74,26 @@ class AvailabilityTestingUtils extends Specification {
         Set<String> tableNames = namesOfTablesToPopulate ?: physicalTableDictionary.keySet()
 
         physicalTableDictionary
-                .findAll { tableName, _ -> tableName in tableNames}
-                .each { _, ConcretePhysicalTable table ->
-                    Map<Column, Set<Interval>> metricIntervals = table.getSchema().getColumns(MetricColumn.class)
-                            .collectEntries {
-                                    [(it): intervalSet]
-                            }
-                    Map<Column, Set<Interval>> dimensionIntervals = table.getSchema().getColumns(DimensionColumn.class)
-                            .collectEntries {
-                                    [(it): intervalSet]
-                            }
+                .findAll { tableName, _ -> tableName in tableNames }
+                .each { _, table ->
+                    Map<String, Set<Interval>> metricIntervals = table.schema.getColumns(MetricColumn)
+                            .collectEntries { [(it.name): intervalSet] }
 
-                    Map<Column, Set<Interval>> allIntervals = Stream.concat(
+                    // Below code assumes unique one-to-one mapping from logical to physical name in testing resource
+                    Map<String, Set<Interval>> dimensionIntervals = table.schema.getColumns(DimensionColumn)
+                            .collectEntries {
+                        [(table.schema.getPhysicalColumnName(it.name)): intervalSet]
+                    }
+
+                    Map<String, Set<Interval>> allIntervals = Stream.concat(
                             dimensionIntervals.entrySet().stream(),
                             metricIntervals.entrySet().stream()
-                    ).collect(Collectors.toMap({it.key}, { it.value }))
+                    ).collect(Collectors.toMap({ it.key }, { it.value }))
 
-            // set new cache
-                    table.setAvailability(new ConcreteAvailability(table.getTableName(), table.getSchema().getColumns(), new TestDataSourceMetadataService(allIntervals)))
+                    // set new available interval cache
+                    table.setAvailability(
+                            new TestAvailability(table.getAvailability().getDataSourceNames(), allIntervals)
+                    )
                 }
     }
 }

@@ -1,10 +1,10 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data
+
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -23,8 +23,7 @@ class PreResponseSerializationProxySpec extends Specification {
 
     def setup() {
         resources = new SerializationResources().init()
-        ObjectMappersSuite MapperSuite = new ObjectMappersSuite()
-        typePreservingMapper = MapperSuite.getMapper()
+        typePreservingMapper = (new ObjectMappersSuite()).getMapper()
         typePreservingMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         preResponseProxy = new PreResponseSerializationProxy(resources.preResponse, typePreservingMapper)
@@ -45,6 +44,7 @@ class PreResponseSerializationProxySpec extends Specification {
                 resources.responseContext,
                 typePreservingMapper
         )
+
         ResponseContext responseContext = typePreservingMapper.readValue(
                 serializedResponseContext,
                 ResponseContext.class
@@ -55,7 +55,7 @@ class PreResponseSerializationProxySpec extends Specification {
                 "a",
                 "b",
                 "c",
-                new SimplifiedIntervalList([resources.interval]),
+                new ArrayList<>([resources.interval]),
                 resources.bigDecimal
         ]
         responseContext.get("randomHeader") == "someHeader"

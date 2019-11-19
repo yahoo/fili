@@ -30,7 +30,10 @@ import javax.validation.constraints.NotNull;
  */
 public class SimplifiedIntervalList extends LinkedList<Interval> {
 
-    public static final SimplifiedIntervalList NO_INTERVALS = new SimplifiedIntervalList();
+    /**
+     * Function to iterate an iterator if it has a next element, otherwise return null.
+     */
+    protected Function<Iterator<Interval>, Interval> getNextIfAvailable = (it) -> it.hasNext() ? it.next() : null;
 
     /**
      * Constructor.
@@ -38,11 +41,6 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
     public SimplifiedIntervalList() {
         super();
     }
-
-    /**
-     * Function to iterate an iterator if it has a next element, otherwise return null.
-     */
-    protected Function<Iterator<Interval>, Interval> getNextIfAvailable = (it) -> it.hasNext() ? it.next() : null;
 
     /**
      * Simplify then build a list.
@@ -102,7 +100,6 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
                 .sorted(IntervalStartComparator.INSTANCE::compare)
                 .collect(getCollector());
     }
-
 
     /**
      * Given a sorted linked list of intervals, add the following interval to the end, merging the incoming interval
@@ -317,15 +314,16 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
      */
     public SimplifiedIntervalList subtract(SimplifiedIntervalList that) {
         Iterator<Interval> theseIntervals = this.iterator();
-        Iterator<Interval> thoseIntervals = that.iterator();
         Interval thisCurrent = getNextIfAvailable.apply(theseIntervals);
-        Interval thatCurrent = getNextIfAvailable.apply(thoseIntervals);
-
-        List<Interval> collected = new ArrayList<>();
 
         if (thisCurrent == null) {
-            return SimplifiedIntervalList.NO_INTERVALS;
+            return new SimplifiedIntervalList();
         }
+
+        Iterator<Interval> thoseIntervals = that.iterator();
+
+        Interval thatCurrent = getNextIfAvailable.apply(thoseIntervals);
+        List<Interval> collected = new ArrayList<>();
 
         while (thisCurrent != null && thatCurrent != null) {
             if (thisCurrent.isBefore(thatCurrent)) {

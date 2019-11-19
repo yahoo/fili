@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidFactQuery;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -21,7 +22,7 @@ public class QueryDataSource extends DataSource {
      * @param query  Query that defines the DataSource.
      */
     public QueryDataSource(DruidFactQuery<?> query) {
-        super(DefaultDataSourceType.QUERY, query.getDataSource().getPhysicalTables());
+        super(DefaultDataSourceType.QUERY, query.getDataSource().getPhysicalTable());
 
         this.query = query;
     }
@@ -33,7 +34,7 @@ public class QueryDataSource extends DataSource {
     }
 
     @Override
-    public DruidFactQuery<?> getQuery() {
-        return query;
+    public Optional<? extends DruidFactQuery<?>> getQuery() {
+        return Optional.ofNullable(query);
     }
 }

@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField
@@ -6,7 +8,6 @@ import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
 import spock.lang.Timeout
 
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 import javax.ws.rs.core.Response
 
@@ -43,11 +44,12 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
 
     final CountDownLatch validationFinished = new CountDownLatch(3)
 
-    static final String QUERY =
-            "http://localhost:9998/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    String getQuery() {
+        return "http://localhost:${jtb.getHarness().getPort()}/data/shapes/day/color?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    }
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [
                 data: {"data/shapes/day/color"},
                 jobs: {AsyncTestUtils.buildTicketLookup(it.data.readEntity(String))},
@@ -59,27 +61,30 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [
                 data: {Response response ->
                     try {
-                        assert response.status == 202
+                        assert response.status == 202 : response.toString()
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {
                         validationFinished.countDown()
                     }
+                    sleep(10)
                 },
                 jobs: {Response response ->
                     try {
-                        assert response.status == 200
+                        assert response.status == 200 : response.toString()
                         //The jobs endpoint returns job metadata containing the same expected value as the data endpoint
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {
@@ -88,12 +93,13 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
                 },
                 results: {Response response ->
                     try {
-                        assert response.status == 200
+                        assert response.status == 200 : response.toString()
                         //The results endpoint returns job metadata containing the same expected value as the data
                         // endpoint
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.PENDING.name
                         )
                     } finally {
@@ -104,7 +110,7 @@ class AsyncResultsNotReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: {[
                         metrics: ["height"],

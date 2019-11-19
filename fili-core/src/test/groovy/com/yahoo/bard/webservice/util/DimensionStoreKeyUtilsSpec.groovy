@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

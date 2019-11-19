@@ -32,7 +32,7 @@ public abstract class Filter {
      * Valid types for druid filters.
      */
     public enum DefaultFilterType implements FilterType {
-        SELECTOR, REGEX, AND, OR, NOT, EXTRACTION, SEARCH, IN;
+        SELECTOR, REGEX, AND, OR, NOT, EXTRACTION, SEARCH, IN, BOUND;
 
         final String jsonName;
 

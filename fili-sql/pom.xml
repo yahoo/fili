@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>fili-parent-pom</artifactId>
+        <groupId>com.yahoo.fili</groupId>
+        <version>0.12-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>fili-sql</artifactId>
+    <name>Fili: Sql Module</name>
+    <description>Sql support for Fili</description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <checkstyle.config.location>../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+
+        <version.h2>1.4.195</version.h2>
+        <version.calcite>1.20.0</version.calcite>
+        <presto.version>0.226</presto.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>fili-core</artifactId>
+        </dependency>
+
+
+        <!-- Support for sql backend using calcite and h2 -->
+        <dependency>
+            <groupId>org.apache.calcite</groupId>
+            <artifactId>calcite-core</artifactId>
+            <version>${version.calcite}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${version.h2}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.facebook.presto</groupId>
+            <artifactId>presto-jdbc</artifactId>
+            <version>${presto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.10.0</version>
+        </dependency>
+    </dependencies>
+
+</project>

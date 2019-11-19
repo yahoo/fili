@@ -45,13 +45,15 @@ public class ResourceDictionaries {
 
     @Override
     public String toString() {
-        return String.format("Dimension dictionary: %s \n\n" +
+        return String.format(
+                "Dimension dictionary: %s \n\n" +
                         "Metric dictionary: %s \n\n" +
                         "Logical Table dictionary: %s \n\n" +
                         "Physical Table dictionary: %s",
-                 dimension,
-                 metric.keySet(),
-                 logical,
-                 physical);
+                dimension,
+                metric.keySet(),
+                logical,
+                physical
+        );
     }
 }

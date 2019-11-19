@@ -7,16 +7,18 @@ import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.util.MultiThreadedTest
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
-import com.yahoo.bard.webservice.web.RateLimiter
 import com.yahoo.bard.webservice.web.endpoints.TestFilterServlet
+import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter
 
 import spock.lang.IgnoreIf
+import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Timeout
 
 import java.util.concurrent.atomic.AtomicInteger
 
 /* Do not test on Jenkins since URL requests are inconsistent */
+@Retry
 @Timeout(30)    // Fail test if hangs
 @IgnoreIf({System.getenv("BUILD_NUMBER") != null})
 class RateLimitFilterSpec extends Specification {
@@ -32,15 +34,15 @@ class RateLimitFilterSpec extends Specification {
     def static originalUiLimit
 
     static void setDefaults() {
-        originalGlobalLimit = systemConfig.setProperty(RateLimiter.REQUEST_LIMIT_GLOBAL_KEY, LIMIT_GLOBAL as String)
-        originalUserLimit = systemConfig.setProperty(RateLimiter.REQUEST_LIMIT_PER_USER_KEY, LIMIT_PER_USER as String)
-        originalUiLimit = systemConfig.setProperty(RateLimiter.REQUEST_LIMIT_UI_KEY, LIMIT_UI as String)
+        originalGlobalLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_GLOBAL_KEY, LIMIT_GLOBAL as String)
+        originalUserLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_PER_USER_KEY, LIMIT_PER_USER as String)
+        originalUiLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_UI_KEY, LIMIT_UI as String)
     }
 
     static void clearDefaults() {
-        systemConfig.resetProperty(RateLimiter.REQUEST_LIMIT_GLOBAL_KEY, originalGlobalLimit)
-        systemConfig.resetProperty(RateLimiter.REQUEST_LIMIT_PER_USER_KEY, originalUserLimit)
-        systemConfig.resetProperty(RateLimiter.REQUEST_LIMIT_UI_KEY, originalUiLimit)
+        systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_GLOBAL_KEY, originalGlobalLimit)
+        systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_PER_USER_KEY, originalUserLimit)
+        systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_UI_KEY, originalUiLimit)
     }
 
     def setupSpec() {
@@ -95,7 +97,7 @@ class RateLimitFilterSpec extends Specification {
 
         void runTest() {
 
-            URL url = new URL("http://localhost:9998/test/data?"+TestRateLimitFilter.USER_PARAM+"="+this.user+"&t="+Thread.currentThread().getName())
+            URL url = new URL("http://localhost:${jtb.getHarness().getPort()}/test/data?"+TestRateLimitFilter.USER_PARAM+"="+this.user+"&t="+Thread.currentThread().getName())
 
             HttpURLConnection con = url.openConnection()
             con.setInstanceFollowRedirects(false)
@@ -113,7 +115,7 @@ class RateLimitFilterSpec extends Specification {
                     break
 
                 default:
-                    assert false
+                    fail
             }
         }
     }
@@ -208,7 +210,7 @@ class RateLimitFilterSpec extends Specification {
     def "UI header triggers UI user limit"() {
         when: "UI user opens 20 simultaneous requests"
         Map headers = [
-            referer: "http://localhost:9998/",
+            referer: "http://localhost:${jtb.getHarness().getPort()}/",
             (DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME) : (DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
         ]
         List<Thread> threads = []
@@ -266,7 +268,7 @@ class RateLimitFilterSpec extends Specification {
                     fail.incrementAndGet()
                     break
                 default:
-                    assert false
+                    fail
             }
         }
     }

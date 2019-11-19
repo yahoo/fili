@@ -5,37 +5,30 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
-import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import com.codahale.metrics.Meter;
 
 /**
- * Selects between ui and non-ui web services based on request headers.
+ * A no-op web service selector.
  */
 public class DefaultWebServiceHandlerSelector implements WebServiceHandlerSelector {
 
     public static final Meter QUERY_REQUEST_TOTAL = MetricRegistryFactory.getRegistry().meter("queries.meter.total");
 
-    private final WebServiceHandler uiWebServiceHandler;
-    private final WebServiceHandler nonUiWebServiceHandler;
+    private final WebServiceHandler webServiceHandler;
 
     /**
      * Constructor.
      *
-     * @param uiWebService  UI Web Service
-     * @param nonUiWebService  Non-UI Web Service
-     * @param uiWebServiceNext  Handler for the UI path
-     * @param nonUiWebServiceNext  Handler for the non-UI path
+     * @param webService  UI Web Service
+     * @param webServiceNext  Handler for the UI path
      */
     public DefaultWebServiceHandlerSelector(
-            DruidWebService uiWebService,
-            DruidWebService nonUiWebService,
-            DataRequestHandler uiWebServiceNext,
-            DataRequestHandler nonUiWebServiceNext
+            DruidWebService webService,
+            DataRequestHandler webServiceNext
     ) {
-        uiWebServiceHandler = new WebServiceHandler(uiWebService, uiWebServiceNext);
-        nonUiWebServiceHandler = new WebServiceHandler(nonUiWebService, nonUiWebServiceNext);
+        webServiceHandler = new WebServiceHandler(webService, webServiceNext);
     }
 
     @Override
@@ -45,8 +38,6 @@ public class DefaultWebServiceHandlerSelector implements WebServiceHandlerSelect
             RequestContext context
     ) {
         QUERY_REQUEST_TOTAL.mark();
-        return DataApiRequestTypeIdentifier.isUi(context.getHeadersLowerCase()) ?
-                uiWebServiceHandler :
-                nonUiWebServiceHandler;
+        return webServiceHandler;
     }
 }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
 import java.util.Objects;
 
@@ -24,13 +25,25 @@ public class SelectorFilter extends DimensionalFilter {
         this.value = value;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dimension  Dimension to apply the extraction to
+     * @param value  Value of the filter
+     * @param extractionFn  Extraction function to be applied on dimension
+     */
+    public SelectorFilter(Dimension dimension, String value, ExtractionFunction extractionFn) {
+        super(dimension, DefaultFilterType.SELECTOR, extractionFn);
+        this.value = value;
+    }
+
     public String getValue() {
         return value;
     }
 
     @Override
     public SelectorFilter withDimension(Dimension dimension) {
-        return new SelectorFilter(dimension,  value);
+        return new SelectorFilter(dimension,  value, getExtractionFunction());
     }
 
     /**
@@ -41,7 +54,18 @@ public class SelectorFilter extends DimensionalFilter {
      * @return a new instance of this filter with the given value
      */
     public SelectorFilter withValue(String value) {
-        return new SelectorFilter(getDimension(), value);
+        return new SelectorFilter(getDimension(), value, getExtractionFunction());
+    }
+
+    /**
+     * Get a new instance of this filter with the given value.
+     *
+     * @param extractionFn  Extraction function to be applied on dimension
+     *
+     * @return a new instance of this filter with the given value
+     */
+    public SelectorFilter withExtractionFn(ExtractionFunction extractionFn) {
+        return new SelectorFilter(getDimension(), value, extractionFn);
     }
 
     @Override
@@ -57,5 +81,10 @@ public class SelectorFilter extends DimensionalFilter {
         return
                 super.equals(obj) &&
                 Objects.equals(value, other.value);
+    }
+
+    @Override
+    public String toString() {
+        return "Filter{ type=" + getType() + ", dimension=" + getDimension() + ", value=" + getValue() + "}";
     }
 }

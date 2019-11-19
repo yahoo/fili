@@ -1,6 +1,8 @@
 Configuring Metrics
 ===================
 
+*Read this in other languages: [中文](../translations/zh/configuring-metrics-zh.md).*
+
 Table of Contents
 -----------------
 
@@ -80,7 +82,7 @@ For example, consider the following enum:
 ```
 
 This enum specifies that all metrics are valid for time grains at the day level and coarser (week, month, year, etc).
-The [`WikiApiMetricName`][wikiApiMetricName] in the [fili-wikipedia-example][fili-wikipedia-example] provides a
+The [`WikiApiMetricName`][wikiApiMetricName] in the [Fili-wikipedia-example][fili-wikipedia-example] provides a
 more complete example.
 
 You also need to give Fili the names of the Druid metrics. This is done by implementing the [`FieldName`][fieldName]
@@ -94,7 +96,7 @@ loading tables. The [`WikiDruidMetricName`][wikiDruidMetricName] enum provides a
 ### Building and Loading Metrics ###
 
 Next, you need to write the code that builds the metrics and loads them into the `MetricDictionary` at Fili start up. To
-do so, you need to implement the  [MetricLoader][metricLoader] interface, which has a single method 
+do so, you need to implement the [`MetricLoader`][metricLoader] interface, which has a single method 
 `loadMetricDictionary`.
 
 For example, suppose you want to register the three page view metrics introduced in [Overview](#overview).
@@ -160,8 +162,8 @@ private void addToMetricDictionary(MetricDictionary metricDictionary, List<Metri
 }
 ```
 
-The [bard-wikipedia-example][bard-wikipedia-example] has a sample metric loader called
-[`WIkiMetricLoader`][wikiMetricLoader].
+The [Fili wikipedia example][fili-wikipedia-example] has a sample metric loader called
+[`WikiMetricLoader`][wikiMetricLoader].
 
 Of course, Fili also needs to be told about the `MetricLoader` that you just defined. See
 [Binding Resources](binding-resources) for details on how to do that.
@@ -176,6 +178,7 @@ case, defining the new metric is as simple as adding the following line to your
 ```java
    new MetricInstance(NEW_METRIC_NAME, metricMaker, DEPENDENT, METRIC, NAMES)
 ```
+
 and adding `NEW_METRIC_NAME` to your implementation of [ApiMetricName][apiMetricName].
 
 See [Built-in Metrics](built-in-makers) for a list of makers that come with Fili.
@@ -236,7 +239,6 @@ into a single query. This can be accomplished using the [`MetricMaker::getMerged
             .collect(Collectors.toList());
     PostAggregation arithmeticPostAgg = new ArithmeticPostAggregation(metricName, function, operands);
     ```
-
 
 3. **Build the inner query:** Construct the inner query, if the metric requires query nesting. 
 
@@ -323,43 +325,43 @@ unchanged. If post-Druid processing is required, a [Mapper](#mappers) can be add
 If Druid returns a JSON `null`, then Fili will parse it into the Java `null`.
 
 [aggregationAverageMaker-docs]: https://github.com/yahoo/fili/issues/10
-[apiMetricName]: ../src/main/java/com/yahoo/bard/webservice/data/config/names/ApiMetricName.java
-[arithmeticMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
+[apiMetricName]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/names/ApiMetricName.java
+[arithmeticMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/ArithmeticMaker.java
 
-[baseTableLoader]: ../src/main/java/com/yahoo/bard/webservice/data/config/table/BaseTableLoader.java
-[bard-wikipedia-example]: https://github.com/yahoo/fili/tree/master/fili-wikipedia-example
+[baseTableLoader]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/table/BaseTableLoader.java
+[fili-wikipedia-example]: ../fili-wikipedia-example
 
-[columnMapper]: ../src/main/java/com/yahoo/bard/webservice/data/metric/mappers/ColumnMapper.java
+[columnMapper]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/mappers/ColumnMapper.java
 
-[wikiApiMetricName]: https://github.com/yahoo/fili/blob/master/src/main/java/com/yahoo/wiki/webservice/data/config/names/WikiApiMetricName.java
-[wikiDruidMetricName]:https://github.com/yahoo/fili/blob/master/fili-wikipedia-example/src/main/java/com/yahoo/wiki/webservice/data/config/names/WikiDruidMetricName.java
-[wikiMetricLoader]: https://github.com/yahoo/fili/blob/master/src/main/java/com/yahoo/wiki/webservice/data/config/metric/WikiMetricLoader.java
+[wikiApiMetricName]: ../fili-wikipedia-example/src/main/java/com/yahoo/wiki/webservice/data/config/names/WikiApiMetricName.java
+[wikiDruidMetricName]: ../fili-wikipedia-example/src/main/java/com/yahoo/wiki/webservice/data/config/names/WikiDruidMetricName.java
+[wikiMetricLoader]: ../fili-wikipedia-example/src/main/java/com/yahoo/wiki/webservice/data/config/metric/WikiMetricLoader.java
 [druid aggregations]: http://druid.io/docs/latest/querying/aggregations.html
 [druid post-aggregations]: http://druid.io/docs/latest/querying/post-aggregations.html
 
-[fieldName]: ../src/main/java/com/yahoo/bard/webservice/data/config/names/FieldName.java
+[fieldName]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/names/FieldName.java
 
 [jsonNode]: http://fasterxml.github.io/jackson-databind/javadoc/2.0.0/com/fasterxml/jackson/databind/JsonNode.html
 
-[logicalMetric]: ../src/main/java/com/yahoo/bard/webservice/data/metric/LogicalMetric.java
-[longSumMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
+[logicalMetric]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/LogicalMetric.java
+[longSumMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/LongSumMaker.java
 
-[metricDictionary]: ../src/main/java/com/yahoo/bard/webservice/data/metric/MetricDictionary.java
-[metricInstance]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/MetricInstance.java
-[metricLoader]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/MetricLoader.java
-[metricMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/MetricMaker.java
-[metricMakerDir]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers
+[metricDictionary]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/MetricDictionary.java
+[metricInstance]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/MetricInstance.java
+[metricLoader]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/MetricLoader.java
+[metricMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/MetricMaker.java
+[metricMakerDir]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers
 
-[nonNumericMetrics]: ../src/test/java/com/yahoo/bard/webservice/data/config/metric/NonNumericMetrics.java
-[noOpResultSetMapper]: ../src/main/java/com/yahoo/bard/webservice/data/metric/mappers/NoOpResultSetMapper.java
+[nonNumericMetrics]: ../fili-core/src/test/java/com/yahoo/bard/webservice/data/config/metric/NonNumericMetrics.java
+[noOpResultSetMapper]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/mappers/NoOpResultSetMapper.java
 
-[rawAggregationMetricMaker]: ../src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/RawAggregationMetricMaker.java
-[result]: ../src/main/java/com/yahoo/bard/webservice/data/Result.java
-[resultSetMapper]: ../src/main/java/com/yahoo/bard/webservice/data/metric/mappers/ResultSetMapper.java
-[rowNumMapper]: ../src/main/java/com/yahoo/bard/webservice/data/metric/mappers/RowNumMapper.java
+[rawAggregationMetricMaker]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/config/metric/makers/RawAggregationMetricMaker.java
+[result]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/Result.java
+[resultSetMapper]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/mappers/ResultSetMapper.java
+[rowNumMapper]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/mappers/RowNumMapper.java
 
-[sketchRoundUpMapper]: ../src/main/java/com/yahoo/bard/webservice/data/metric/mappers/SketchRoundUpMapper.java
+[sketchRoundUpMapper]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/mappers/SketchRoundUpMapper.java
 
-[templateDruidQuery]: ../src/main/java/com/yahoo/bard/webservice/data/metric/TemplateDruidQuery.java
-[timeGrain]: ../src/main/java/com/yahoo/bard/webservice/data/time/TimeGrain.java
+[templateDruidQuery]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/metric/TemplateDruidQuery.java
+[timeGrain]: ../fili-core/src/main/java/com/yahoo/bard/webservice/data/time/TimeGrain.java
 

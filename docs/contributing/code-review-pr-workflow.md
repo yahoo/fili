@@ -61,9 +61,10 @@ however, following a few small guidelines will ensure that the changes are easy 
 
 In some cases, what the changes are and why they are being made are self-evident, but in many cases, it's not clear what
 the spirit of the change is. So, to make it easier for reviewers to understand what the changes are, and why they are
-being made, please describe the changes in the PR description. It's also good to review your own PRs and leave comments 
-where the changes need additional explanation. Remember, ***it's the author's job to make reviewing changes easy for the
-reviewers!***
+being made, please describe the changes in the PR description and CHANGELOG, as well. Please follow the format of the
+existing CHANGELOG entry. `Current` changes can be modified in unstable ways and shouldn't be considered stable from a
+public API point of view. It's also good to review your own PRs and leave comments where the changes need additional
+explanation. Remember, ***it's the author's job to make reviewing changes easy for the reviewers!***
 
 Phases
 ------

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.mappers.RowNumMapper
 
@@ -15,11 +16,13 @@ class RowNumMakerSpec extends Specification {
     private static final String DESCRIPTION = "Generator for Row Numbers"
 
     def "Build a logical metric that generates row numbers"() {
+        LogicalMetricInfo logicalMetricInfo = new LogicalMetricInfo(METRIC_NAME, METRIC_NAME, DESCRIPTION);
+
         given: "A logical metric that generates row numbers"
-        LogicalMetric metric = new LogicalMetric(null, new RowNumMapper(), METRIC_NAME, DESCRIPTION)
+        LogicalMetric metric = new LogicalMetric(null, new RowNumMapper(), logicalMetricInfo)
 
         expect:
         //RowSumMaker does not rely on the metric dictionary.
-        new RowNumMaker(new MetricDictionary()).make(METRIC_NAME, []) == metric
+        new RowNumMaker(new MetricDictionary()).make(logicalMetricInfo, []) == metric
     }
 }

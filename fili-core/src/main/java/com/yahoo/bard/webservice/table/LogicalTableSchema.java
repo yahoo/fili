@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;

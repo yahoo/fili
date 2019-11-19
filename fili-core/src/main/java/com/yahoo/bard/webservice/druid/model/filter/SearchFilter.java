@@ -4,10 +4,13 @@ package com.yahoo.bard.webservice.druid.model.filter;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Filter for a search.
@@ -23,6 +26,8 @@ import java.util.Objects;
  *
  */
 public class SearchFilter extends DimensionalFilter {
+    private static final String QUERY_TYPE = "type";
+    private static final String QUERY_VALUE = "value";
 
     /**
      * Query type for the search.
@@ -41,6 +46,22 @@ public class SearchFilter extends DimensionalFilter {
          */
         QueryType(String type) {
             this.type = type;
+        }
+
+        /**
+         * Get the QueryType enum from it's search type.
+         *
+         * @param type  The type of query.
+         *
+         * @return the enum QueryType if found otherwise empty.
+         */
+        public static Optional<QueryType> fromType(String type) {
+            for (QueryType queryType : values()) {
+                if (queryType.type.equals(type)) {
+                    return Optional.of(queryType);
+                }
+            }
+            return Optional.empty();
         }
     }
 
@@ -68,8 +89,8 @@ public class SearchFilter extends DimensionalFilter {
         super(dimension, DefaultFilterType.SEARCH);
         this.query = Collections.unmodifiableMap(new LinkedHashMap<String, String>() {
             {
-                put("type", type);
-                put("value", value);
+                put(QUERY_TYPE, type);
+                put(QUERY_VALUE, value);
             }
         });
     }
@@ -78,18 +99,28 @@ public class SearchFilter extends DimensionalFilter {
         return query;
     }
 
+    @JsonIgnore
+    public String getQueryType() {
+        return query.get(QUERY_TYPE);
+    }
+
+    @JsonIgnore
+    public String getQueryValue() {
+        return query.get(QUERY_VALUE);
+    }
+
     @Override
     public SearchFilter withDimension(Dimension dimension) {
-        return new SearchFilter(dimension, query.get("type"), query.get("value"));
+        return new SearchFilter(dimension, getQueryType(), getQueryValue());
     }
 
     // CHECKSTYLE:OFF
     public SearchFilter withQueryType(QueryType queryType) {
-        return new SearchFilter(getDimension(), queryType.type, query.get("value"));
+        return new SearchFilter(getDimension(), queryType.type, getQueryValue());
     }
 
     public SearchFilter withValue(String value) {
-        return new SearchFilter(getDimension(), query.get("type"), value);
+        return new SearchFilter(getDimension(), getQueryType(), value);
     }
     // CHECKSTYLE:ON
 

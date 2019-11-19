@@ -96,12 +96,13 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
         );
 
         try {
-            Set<PhysicalTable> physicalTables = filter(candidateTables, requestConstraint);
+            PhysicalTable bestTable = filter(candidateTables, requestConstraint).stream()
+                    .reduce(getBetterTableOperator(requestConstraint))
+                    .get();
 
-            PhysicalTable bestTable = physicalTables.stream()
-                    .reduce(getBetterTableOperator(requestConstraint)).get();
-
-            REGISTRY.meter("request.physical.table." + bestTable.getName() + "." + bestTable.getTimeGrain()).mark();
+            REGISTRY.meter(
+                    "request.physical.table." + bestTable.getName() + "." + bestTable.getSchema().getTimeGrain()
+            ).mark();
             LOG.trace("Found best Table: {}", bestTable);
             return bestTable;
         } catch (NoMatchFoundException me) {

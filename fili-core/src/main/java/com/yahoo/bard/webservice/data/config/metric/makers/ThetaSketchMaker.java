@@ -20,7 +20,7 @@ public class ThetaSketchMaker extends RawAggregationMetricMaker {
      * @param sketchSize  The size beyond which the sketch constructed by this maker should perform approximations.
      */
     public ThetaSketchMaker(MetricDictionary metrics, int sketchSize) {
-        super(metrics, ((name, fieldName) -> new ThetaSketchAggregation(name, fieldName, sketchSize)));
+        super(metrics, (name, fieldName) -> new ThetaSketchAggregation(name, fieldName, sketchSize));
     }
 
     @Override

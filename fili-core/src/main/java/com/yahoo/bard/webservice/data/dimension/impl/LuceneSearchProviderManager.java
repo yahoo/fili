@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -18,40 +19,31 @@ public class LuceneSearchProviderManager {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final @NotNull String LUCENE_INDEX_PATH = SYSTEM_CONFIG.getPackageVariableName("lucene_index_path");
-    private static final String HITS_PER_PAGE_PKG_NAME = SYSTEM_CONFIG.getPackageVariableName("lucene_hits_per_page");
-    private static final int DEFAULT_HITS_PER_PAGE = 1000000;
-    private static final int DEFAULT_MAX_RESULTS_WITHOUT_FILTERS = 10000;
-    private static final int MAX_RESULTS_WITHOUT_FILTER = SYSTEM_CONFIG.getIntProperty(
-            SYSTEM_CONFIG.getPackageVariableName("max_results_without_filters"),
-            DEFAULT_MAX_RESULTS_WITHOUT_FILTERS
-    );
-    private static final int HITS_PER_PAGE = SYSTEM_CONFIG.getIntProperty(
-            HITS_PER_PAGE_PKG_NAME,
-            DEFAULT_HITS_PER_PAGE
-    );
 
     private static final Map<String, LuceneSearchProvider> LUCENE_SEARCH_PROVIDERS = new HashMap<>();
 
     /**
-     * Get instance pointing to a search provider This method makes sure that there just one instance of search provider
-     * for a given dimension.
+     * Get instance pointing to a search provider. This method makes sure that there just one instance of search
+     * provider for a given dimension.
      *
-     * @param providerName name unique identifier for search provider instances
+     * @param providerName  Name unique identifier for search provider instances
      *
-     * @return The lucene search provider
+     * @return the lucene search provider
      */
-    public static synchronized LuceneSearchProvider getInstance(String providerName) {
-        LuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
+    public static LuceneSearchProvider getInstance(String providerName) {
+        synchronized (LuceneSearchProviderManager.class) {
+            LuceneSearchProvider luceneProvider = LUCENE_SEARCH_PROVIDERS.get(providerName);
 
-        if (luceneProvider == null) {
-            luceneProvider = new LuceneSearchProvider(
-                    getProviderPath(providerName),
-                    PaginationParameters.EVERYTHING_IN_ONE_PAGE.getPerPage()
-            );
-            LUCENE_SEARCH_PROVIDERS.put(providerName, luceneProvider);
+            if (luceneProvider == null) {
+                luceneProvider = new LuceneSearchProvider(
+                        getProviderPath(providerName),
+                        PaginationParameters.EVERYTHING_IN_ONE_PAGE.getPerPage()
+                );
+                LUCENE_SEARCH_PROVIDERS.put(providerName, luceneProvider);
+            }
+
+            return luceneProvider;
         }
-
-        return luceneProvider;
     }
 
     /**
@@ -59,9 +51,11 @@ public class LuceneSearchProviderManager {
      *
      * @param providerName The name of the provider
      */
-    public static synchronized void removeInstance(String providerName) {
-        LUCENE_SEARCH_PROVIDERS.remove(providerName);
-        Utils.deleteFiles(getProviderPath(providerName));
+    public static void removeInstance(String providerName) {
+        synchronized (LuceneSearchProviderManager.class) {
+            LUCENE_SEARCH_PROVIDERS.remove(providerName);
+            Utils.deleteFiles(getProviderPath(providerName));
+        }
     }
 
     /**
@@ -77,6 +71,6 @@ public class LuceneSearchProviderManager {
                 "%s/dimensionCache/%s/lucene_indexes/",
                 SYSTEM_CONFIG.getStringProperty(LUCENE_INDEX_PATH),
                 providerName
-        );
+        ).replaceAll("/+", "/"); // replaces one or more slashes with one slash:
     }
 }

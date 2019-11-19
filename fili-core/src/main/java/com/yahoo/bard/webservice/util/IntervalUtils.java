@@ -4,7 +4,10 @@ package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
+import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -29,6 +32,8 @@ import java.util.stream.StreamSupport;
  * Methods and Iterators which support interval slicing alignment and set operations.
  */
 public class IntervalUtils {
+
+    private static final GranularityComparator COMPARATOR = GranularityComparator.getInstance();
 
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
@@ -83,7 +88,7 @@ public class IntervalUtils {
      * @return A set of intervals describing the time common to both sets
      */
     public static Set<Interval> getOverlappingSubintervals(Set<Interval> left, Set<Interval> right) {
-        return getOverlappingSubintervals((Collection) left, (Collection) right);
+        return getOverlappingSubintervals((Collection<Interval>) left, (Collection<Interval>) right);
     }
 
     /**
@@ -124,33 +129,6 @@ public class IntervalUtils {
         Iterable<Interval> requestIterable = grain.intervalsIterable(rawIntervals);
         return StreamSupport.stream(requestIterable.spliterator(), false)
                 .count();
-    }
-
-    /**
-     * Collect all subintervals from a bucketed collection that are not subintervals of a supply.
-     * <p>
-     * The bucketed list of intervals are split by grain before being tested as subintervals of the supply list.
-     *
-     * @param supplyIntervals  The intervals which bucketed intervals are being tested against
-     * @param bucketedIntervals  The grain bucketed intervals to collect if not in the supply
-     * @param granularity  The grain at which to split the bucketingIntervals
-     *
-     * @return a simplified list of intervals reflecting the intervals in the fromSet which do not appear in the
-     * remove set
-     */
-    public static SimplifiedIntervalList collectBucketedIntervalsNotInIntervalList(
-            SimplifiedIntervalList supplyIntervals,
-            SimplifiedIntervalList bucketedIntervals,
-            Granularity granularity
-    ) {
-        // Stream the from intervals, split by grain
-        Iterable<Interval> bucketIterable = granularity.intervalsIterable(bucketedIntervals);
-
-        // Not in returns true if any part of the stream interval is not 'covered' by the remove intervals.
-        Predicate<Interval> notIn = new SimplifiedIntervalList.IsSubinterval(supplyIntervals).negate();
-        return StreamSupport.stream(bucketIterable.spliterator(), false)
-                .filter(notIn)
-                .collect(SimplifiedIntervalList.getCollector());
     }
 
     /**
@@ -208,5 +186,22 @@ public class IntervalUtils {
         return intervalSets.stream().flatMap(Collection::stream)
                 .map(Interval::getStart)
                 .reduce(Utils::getMinValue);
+    }
+
+    /**
+     * Find a valid timegrain for the interval based on the start and end date of the interval.
+     *
+     * @param interval  The interval to find a timegrain for.
+     * @return the valid timegrain spanned by the interval.
+     */
+    public static Optional<TimeGrain> getTimeGrain(Interval interval) {
+        return StandardGranularityParser.getDefaultGrainMap()
+                .values()
+                .stream()
+                .filter(granularity -> granularity instanceof TimeGrain)
+                .map(granularity -> (TimeGrain) granularity)
+                .filter(timeGrain -> timeGrain.aligns(interval))
+                .filter(timeGrain -> interval.getStart().plus(timeGrain.getPeriod()).equals(interval.getEnd()))
+                .findFirst();
     }
 }

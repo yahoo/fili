@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 
@@ -43,8 +44,15 @@ class TableFullViewProcessorSpec extends Specification {
 
         TablesServlet tablesServlet = Mock(TablesServlet)
         tablesServlet.getLogicalTableDictionary() >> fullDictionary
-        TablesApiRequest apiRequest = new TablesApiRequest(null, null, null, "", "", null, tablesServlet)
-        Set<LogicalTable> logicalTableSet = apiRequest.getTables();
+        TablesApiRequestImpl tablesApiRequestImpl = new TablesApiRequestImpl(
+                null,  // tableName
+                null,  // granularity
+                null,  // format
+                "",  // perPage
+                "",  // page
+                tablesServlet
+        )
+        Set<LogicalTable> logicalTableSet = tablesApiRequestImpl.getTables();
 
         petsShapesTables= new HashSet<>()
         petsShapesTables = logicalTableSet.findAll {it.getName() == "pets" || it.getName() == "shapes"}
@@ -70,7 +78,17 @@ class TableFullViewProcessorSpec extends Specification {
     def "Check table meta data info at grain level"() {
 
         setup:
-        String expectedResponse = "[description:The pets all grain, dimensions:[[category:General, name:breed, longName:breed, uri:http://localhost:9998/v1/breed, cardinality:0, fields:[id, desc]], [category:General, name:sex, longName:sex, uri:http://localhost:9998/v1/sex, cardinality:0, fields:[id, desc]], [category:General, name:species, longName:species, uri:http://localhost:9998/v1/species, cardinality:0, fields:[id, desc]]], longName:All, metrics:[[category:General, name:rowNum, longName:rowNum, uri:http://localhost:9998/v1/rowNum], [category:General, name:limbs, longName:limbs, uri:http://localhost:9998/v1/limbs], [category:General, name:dayAvgLimbs, longName:dayAvgLimbs, uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:P1Y]"
+        String expectedResponse = "[description:The pets all grain, dimensions:[[category:General, name:breed, " +
+                "longName:breed, uri:http://localhost:9998/v1/breed, cardinality:0, fields:[id, desc], " +
+                "storageStrategy:loaded], [category:General, name:sex, longName:sex, " +
+                "uri:http://localhost:9998/v1/sex, cardinality:0, fields:[id, desc], storageStrategy:loaded], " +
+                "[category:General, name:species, longName:species, uri:http://localhost:9998/v1/species, " +
+                "cardinality:0, fields:[id, desc], storageStrategy:loaded]], longName:All, " +
+                "metrics:[[category:General, name:rowNum, longName:rowNum, type:number, uri:http://localhost:9998/v1/rowNum], " +
+                "[category:General, name:limbs, longName:limbs, type:number, uri:http://localhost:9998/v1/limbs], " +
+                "[category:General, name:dayAvgLimbs, longName:dayAvgLimbs, type:number, " +
+                "uri:http://localhost:9998/v1/dayAvgLimbs]], name:all, retention:]"
+
         LogicalTable petsTable = petsShapesTables.find {it.getName() == "pets"}
 
         when:
@@ -110,7 +128,7 @@ class TableFullViewProcessorSpec extends Specification {
             resultRow.put("name", lt.granularity.getName())
             resultRow.put("longName", StringUtils.capitalize(lt.granularity.getName()))
             resultRow.put("description", "The " + lt.getName() + " " + lt.granularity.getName() + " grain")
-            resultRow.put("retention", lt.getRetention().toString())
+            resultRow.put("retention", lt.getRetention() != null ? lt.getRetention().toString() : "")
             resultRow.put(
                     "dimensions",
                     new TableFullViewProcessor().getDimensionListFullView(lt.dimensions, uriInfo)

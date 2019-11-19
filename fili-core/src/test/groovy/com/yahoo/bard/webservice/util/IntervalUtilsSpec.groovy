@@ -7,8 +7,10 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.Granularity
+import com.yahoo.bard.webservice.data.time.TimeGrain
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -26,7 +28,7 @@ class IntervalUtilsSpec extends Specification {
         DateTimeZone.setDefault(DateTimeZone.UTC)
     }
 
-    SimplifiedIntervalList buildIntervalList(Collection<String> intervals) {
+    static SimplifiedIntervalList buildIntervalList(Collection<String> intervals) {
         intervals.collect { new Interval(it) } as SimplifiedIntervalList
     }
 
@@ -80,6 +82,11 @@ class IntervalUtilsSpec extends Specification {
         ["2013/2014"]              | ["2013-03-01/2014-04-01", "2014/2016"]             || ["2013-03-01/2014-01-01"]
         ["2013/2015", "2016/2018"] | ["2014/2016", "2015/2017"]                         || ["2014/2015", "2016/2017"]
         ["2013/2015"]              | ["2013-03-01/2014-04-01", "2014/2016"]             || ["2014/2015", "2013-03-01/2014-04-01"]
+    }
+
+    def "Empty interval collection returns no earliest DateTime"() {
+        expect:
+        IntervalUtils.firstMoment(Collections.emptySet()) == Optional.empty()
     }
 
     @Unroll
@@ -156,20 +163,6 @@ class IntervalUtilsSpec extends Specification {
         )
 
         return results
-    }
-
-    @Unroll
-    def "Test that complement cuts out the correct hole(s) #comment"() {
-        given:
-        SimplifiedIntervalList from = buildIntervalList(fromAsStrings)
-        SimplifiedIntervalList remove = buildIntervalList(removeAsStrings)
-        SimplifiedIntervalList expected = buildIntervalList(expectedAsStrings)
-
-        expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(remove, from, granularity) == expected
-
-        where:
-        [granularity, comment, fromAsStrings, removeAsStrings, expectedAsStrings] << complementExpectedSets()
     }
 
     static def complementExpectedSets() {
@@ -277,53 +270,46 @@ class IntervalUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "Complement of #supply yields #expected with fixed request and grain"() {
+    def "test getTimeGrain from interval - #expectedTimeGrain"() {
         setup:
-        SimplifiedIntervalList supplyIntervals = buildIntervalList(supply)
-        SimplifiedIntervalList requestedIntervals = buildIntervalList(['2014/2015'])
-        Granularity granularity = MONTH
-        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
+        String[] dates = stringInterval.split("/")
+        DateTime start = new DateTime(dates[0], DateTimeZone.UTC)
+        DateTime end = new DateTime(dates[1], DateTimeZone.UTC)
+        Interval interval = new Interval(start.toInstant(), end.toInstant())
 
-        expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(
-                supplyIntervals,
-                requestedIntervals,
-                granularity
-        ) == expectedIntervals
+        when: "we parse the time"
+        Optional<TimeGrain> timeGrain = IntervalUtils.getTimeGrain(interval)
+
+        then: "what we expect"
+        timeGrain == expectedTimeGrain
 
         where:
-        supply               | expected
-        ["2013-04/2014-04"]  | ["2014-04/2015"]
-        ["2014-04/2014-05"]  | ["2014/2014-04", "2014-05/2015"]
-        ["2012-09/2016-05"]  | []
-        ["2012/2013"]        | ["2014/2015"]
-        ["2020/2023"]        | ["2014/2015"]
+        stringInterval                                      | expectedTimeGrain
+        "2015-01-01T00:00:00.000Z/2016-01-01T00:00:00.000Z" | Optional.of(YEAR)
+        "2017-01-01T00:00:00.000Z/2017-02-01T00:00:00.000Z" | Optional.of(MONTH)
+        "2017-02-27T00:00:00.000Z/2017-03-06T00:00:00.000Z" | Optional.of(WEEK)
+        "2015-09-12T00:00:00.000Z/2015-09-13T01:01:01.000Z" | Optional.empty()
+        "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DAY)
+        "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
+        "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
     }
 
     @Unroll
-    def "Collect of #requestedIntervals by #grain yields #expected when fixed supply is removed"() {
-        setup:
-        SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
-        SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)
-        SimplifiedIntervalList requestedIntervals = buildIntervalList(requested)
-        Granularity granularity = grain
-
+    def "The first date time instant of '#intervals' is '#earliest'"() {
         expect:
-        IntervalUtils.collectBucketedIntervalsNotInIntervalList(
-                supply,
-                requestedIntervals,
-                granularity
-        ) == expectedIntervals
+        IntervalUtils.firstMoment(buildIntervals(intervals)).get() == new DateTime(earliest)
 
         where:
-        grain | requested                 | expected
-        YEAR  | ["2012/2017"]             | ["2012/2013"]
-        MONTH | ["2012-02/2017"]          | ["2012-02/2012-06"]
-        DAY   | ["2012-02-02/2016-05"]    | ["2012-02-02/2012-05-04"]
-        DAY   | ["2012-06/2016-05"]       | []
-        YEAR  | ["2013/2018"]             | ["2017/2018"]
-        MONTH | ["2013/2017-04"]          | ["2017-02/2017-04"]
-        DAY   | ["2012-02-03/2017-04-04"] | ["2012-02-03/2012-05-04", "2017-02-03/2017-04-04"]
+        intervals | earliest
+        [["2019/2020"], ["2021/2022"]] | "2019"
+        [["2019/2020"], ["2019/2021"]] | "2019"
+        [["2019/2021"], ["2020/2022"]] | "2019"
+    }
+
+    Collection<? extends Collection<Interval>> buildIntervals(Collection<? extends Collection<String>> intervals) {
+        return intervals.stream()
+                .map { it -> it.stream().map { interval -> new Interval(interval) }.collect(Collectors.toList()) }
+                .collect(Collectors.toList())
     }
 
     /**

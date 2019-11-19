@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.table.resolver
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -15,9 +16,9 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Specification
 
@@ -65,8 +66,8 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 ),
         ] as Set
 
-        physicalTable = new ConcretePhysicalTable(
-                "test table",
+        physicalTable = new StrictPhysicalTable(
+                TableName.of("test table"),
                 DAY.buildZonedTimeGrain(UTC),
                 dimSet.collect {new DimensionColumn(it)}.toSet(),
                 ['dimA':'druidDimA', 'dimCommon': 'druidDimC', 'dimB': 'dimCommon'],
@@ -80,7 +81,7 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
         query.getDependentFieldNames() >> ([] as Set)
         request.getFilterDimensions() >> []
         request.getDimensions() >> (dimSet)
-        request.getFilters() >> Collections.emptyMap()
+        request.getApiFilters() >> Collections.emptyMap()
         request.getIntervals() >> []
         request.getLogicalMetrics() >> []
 

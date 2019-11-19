@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.models.druid.client.impl;
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -10,22 +11,25 @@ import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
+import com.yahoo.bard.webservice.util.CompletedFuture;
 import com.yahoo.bard.webservice.util.JsonSlurper;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
+import org.apache.commons.lang3.concurrent.ConcurrentUtils;
+import org.asynchttpclient.Response;
 import org.glassfish.jersey.internal.util.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Test druid web service acts as a proxy for a real web service, accepting requests and saving them and providing
@@ -36,9 +40,8 @@ public class TestDruidWebService implements DruidWebService {
 
     public static String DEFAULT_NAME = "unnamed";
 
-    private static ObjectMapper mapper = new ObjectMapper().registerModule(
-            new Jdk8Module().configureAbsentsAsNulls(false)
-    );
+    private static ObjectMapper mapper = new ObjectMappersSuite().getMapper();
+
     private static ObjectWriter writer = mapper.writer();
 
     public Producer<String> jsonResponse = () -> "[]";
@@ -86,10 +89,11 @@ public class TestDruidWebService implements DruidWebService {
     /**
      * If TestDruidWebService#throwable is set, invokes the failure callback.  Otherwise invokes success or failure
      * dependent on whether TestDruidWebService#statusCode equals 200.
+     * Note that since this doesn't send requests to druid all the responses will be null or {@link CompletedFuture}.
      */
     @Override
     @SuppressWarnings("checkstyle:cyclomaticcomplexity")
-    public void postDruidQuery(
+    public Future<Response> postDruidQuery(
             RequestContext context,
             SuccessCallback success,
             HttpErrorCallback error,
@@ -111,30 +115,33 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return CompletedFuture.throwing(throwable);
         }
 
-        // Set the response to use based on the type of the query we're processing
-        if (!(lastQuery.getQueryType() instanceof DefaultQueryType)) {
-            throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
-        }
+        if (lastQuery.getQueryType() instanceof DefaultQueryType) {
+            // For known response types, create a default response provider
 
-        DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
-        switch (defaultQueryType) {
-            case GROUP_BY:
-            case TOP_N:
-            case TIMESERIES:
-            case LOOKBACK:
-                // default response is groupBy response
-                break;
-            case SEGMENT_METADATA:
-                jsonResponse = () -> segmentMetadataResponse;
-                break;
-            case TIME_BOUNDARY:
-                jsonResponse = () -> timeBoundaryResponse;
-                break;
-            default:
-                throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+            // Set the response to use based on the type of the query we're processing
+            DefaultQueryType defaultQueryType = (DefaultQueryType) lastQuery.getQueryType();
+            switch (defaultQueryType) {
+                case GROUP_BY:
+                case TOP_N:
+                case TIMESERIES:
+                case LOOKBACK:
+                    // default response is groupBy response
+                    break;
+                case SEGMENT_METADATA:
+                    jsonResponse = () -> segmentMetadataResponse;
+                    break;
+                case TIME_BOUNDARY:
+                    jsonResponse = () -> timeBoundaryResponse;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal query type : " + lastQuery.getQueryType());
+            }
+
+        } else {
+            // Otherwise extended query types will have to set up their own responses
         }
 
         try {
@@ -147,7 +154,10 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
+            return CompletedFuture.throwing(e);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 
     /**
@@ -173,7 +183,7 @@ public class TestDruidWebService implements DruidWebService {
      * @param reason  failure reason string
      * @param response  json response
      */
-    public void setFailure(Response.Status status, String reason, String response) {
+    public void setFailure(Status status, String reason, String response) {
         setFailure(status.getStatusCode(), status.name(), reason, response);
     }
 
@@ -209,7 +219,7 @@ public class TestDruidWebService implements DruidWebService {
     }
 
     @Override
-    public void getJsonObject(
+    public Future<Response> getJsonObject(
             SuccessCallback success,
             HttpErrorCallback error,
             FailureCallback failure,
@@ -223,7 +233,7 @@ public class TestDruidWebService implements DruidWebService {
         // Invoke failure callback if we have a throwable to give it
         if (throwable != null) {
             failure.invoke(throwable);
-            return;
+            return CompletedFuture.throwing(throwable);
         }
 
          try {
@@ -234,6 +244,9 @@ public class TestDruidWebService implements DruidWebService {
             }
         } catch (IOException e) {
             failure.invoke(e);
+             return CompletedFuture.throwing(throwable);
         }
+
+        return ConcurrentUtils.constantFuture(null);
     }
 }

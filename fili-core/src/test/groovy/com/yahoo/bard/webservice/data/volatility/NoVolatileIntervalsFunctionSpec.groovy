@@ -13,6 +13,6 @@ class NoVolatileIntervalsFunctionSpec extends Specification {
 
     def "getVolatileIntervals returns empty intervals"() {
         expect:
-        SimplifiedIntervalList.NO_INTERVALS == NoVolatileIntervalsFunction.INSTANCE.getVolatileIntervals()
+        new SimplifiedIntervalList() == NoVolatileIntervalsFunction.INSTANCE.getVolatileIntervals()
     }
 }

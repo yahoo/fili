@@ -11,6 +11,7 @@ import java.util.Optional;
  *
  * @param <T>  the type that corresponds to the id of the set of segments referenced by a druid query.
  */
+@FunctionalInterface
 public interface QuerySigningService<T> {
 
     /**

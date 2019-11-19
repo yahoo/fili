@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.config;
 
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.CIRCULAR_DEPENDENCY;
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.MISSING_DEPENDENCY;
+import static com.yahoo.bard.webservice.config.ConfigMessageFormat.MODULE_DEPENDS_ON_MESSAGE;
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.MODULE_FOUND_MESSAGE;
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.MODULE_NAME_DUPLICATION;
 import static com.yahoo.bard.webservice.config.ConfigMessageFormat.MODULE_NAME_MISSING;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
  */
 public class ConfigurationGraph {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ConfigResourceLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationGraph.class);
 
     /**
      * The special property which uniquely identifies the name of the module.
@@ -78,7 +79,6 @@ public class ConfigurationGraph {
      * @param configName  The resource name for that configuration
      * @param nameValidator  A function which throws exceptions on module names which are not valid.
      */
-    @SuppressWarnings("unchecked")
     private void addVertex(Configuration configuration, String configName, Consumer<String> nameValidator) {
         if (!configuration.containsKey(MODULE_NAME_KEY)) {
             // This may be the result of another library using one of our configuration names
@@ -102,6 +102,7 @@ public class ConfigurationGraph {
 
         // later dependencies have higher precedence.  Store moduleDependencies in precedence order descending
         Collections.reverse(dependencies);
+        LOG.debug(MODULE_DEPENDS_ON_MESSAGE.logFormat(moduleName, dependencies));
 
         moduleDependencies.put(moduleName, dependencies);
     }

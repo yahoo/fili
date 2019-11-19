@@ -42,8 +42,8 @@ public interface ResponseProcessor {
     /**
      * Process the response json and respond to the original web request.
      *
-     * @param query  The query with the schema for processing this response
      * @param json  The json representing a druid data response
+     * @param query  The query with the schema for processing this response
      * @param metadata  The LoggingContext to use
      */
     void processResponse(JsonNode json, DruidAggregationQuery<?> query, LoggingContext metadata);

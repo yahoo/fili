@@ -6,20 +6,42 @@ package com.yahoo.bard.webservice.config;
  * Feature flags bind an object to a system configuration name.
  */
 public enum BardFeatureFlag implements FeatureFlag {
+
+    CURRENT_MACRO_USES_LATEST("current_macro_uses_latest"),
+    CURRENT_TIME_ZONE_ADJUSTMENT("adjust_current_by_timezone"),
+
+    /** Partial Data is the old form global flag.  It will only govern behavior is the new flags are off.*/
     PARTIAL_DATA("partial_data_enabled"),
-    DRUID_CACHE("druid_cache_enabled"),
-    DRUID_CACHE_V2("druid_cache_v2_enabled"),
+
+    /** If true, use the PartialDataResultSetMapper to prune partial from responses. */
+    PARTIAL_DATA_PROTECTION("partial_data_protection"),
+    /** If true, use the partial and volatile data info to prefer tables in query planning. */
+    PARTIAL_DATA_QUERY_OPTIMIZATION("partial_data_query_optimization"),
+
+
+    /** Use {@link CacheFeatureFlag#TTL} instead. */
+    @Deprecated DRUID_CACHE("druid_cache_enabled"),
+    /** Use {@link CacheFeatureFlag#LOCAL_SIGNATURE} instead. */
+    @Deprecated DRUID_CACHE_V2("druid_cache_v2_enabled"),
     QUERY_SPLIT("query_split_enabled"),
+    CACHE_PARTIAL_DATA("cache_partial_data"),
     TOP_N("top_n_enabled"),
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),
     DRUID_COORDINATOR_METADATA("druid_coordinator_metadata_enabled"),
+    DRUID_LOOKUP_METADATA("druid_lookup_metadata_enabled"),
     DRUID_DIMENSIONS_LOADER("druid_dimensions_loader_enabled"),
-    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled");
+    CASE_SENSITIVE_KEYS("case_sensitive_keys_enabled"),
+    DEFAULT_IN_FILTER("default_in_filter_enabled"),
+    REQUIRE_METRICS_QUERY("require_metrics_in_query"),
+    POJO_DARI_REQUIRE_ALL_STAGES_CALLED("require_all_data_request_building_stages_called")
+    ;
+
+    static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private final String propertyName;
-    private Boolean on;
+    private Boolean on = null;
 
     /**
      * Constructor.
@@ -27,9 +49,7 @@ public enum BardFeatureFlag implements FeatureFlag {
      * @param propertyName  Name of the SystemConfig property to use for the feature flag.
      */
     BardFeatureFlag(String propertyName) {
-        SystemConfig systemConfig = SystemConfigProvider.getInstance();
         this.propertyName = propertyName;
-        this.on = systemConfig.getBooleanProperty(systemConfig.getPackageVariableName(propertyName), false);
     }
 
     @Override
@@ -39,11 +59,22 @@ public enum BardFeatureFlag implements FeatureFlag {
 
     @Override
     public boolean isOn() {
+        if (on == null) {
+            on = SYSTEM_CONFIG.getBooleanProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), false);
+        }
         return on;
     }
 
     @Override
+    @SuppressWarnings("squid:S3066") // Suppress sonar warning about mutable fields in enums that doesn't apply here
     public void setOn(Boolean newValue) {
+        SYSTEM_CONFIG.setProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName), newValue.toString());
         on = newValue;
+    }
+
+    @Override
+    public void reset() {
+        SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName(propertyName));
+        on = null;
     }
 }

@@ -2,30 +2,35 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table;
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 /**
  * Base implementation of physical table that are shared across various types of physical tables.
  */
-public abstract class BasePhysicalTable implements PhysicalTable {
+public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     private static final Logger LOG = LoggerFactory.getLogger(BasePhysicalTable.class);
 
-    private final TableName name;
+    private final String name;
+    private final TableName tableName;
     private final PhysicalTableSchema schema;
     private Availability availability;
 
@@ -45,29 +50,37 @@ public abstract class BasePhysicalTable implements PhysicalTable {
             @NotNull Map<String, String> logicalToPhysicalColumnNames,
             @NotNull Availability availability
     ) {
-        this.name = name;
+        this.name = name.asName();
+        this.tableName = name;
         this.availability = availability;
         this.schema = new PhysicalTableSchema(timeGrain, columns, logicalToPhysicalColumnNames);
     }
 
     @Override
     public TableName getTableName() {
-        return name;
+        return tableName;
     }
 
     @Override
     public String getName() {
-        return name.asName();
+        return name;
     }
 
     @Override
-    public Availability getAvailability() {
-        return availability;
+    public Set<DataSourceName> getDataSourceNames() {
+        // TODO: Once the availability setter is removed from this class, move this to the constructor
+        return getAvailability().getDataSourceNames().stream()
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }
 
     @Override
     public PhysicalTableSchema getSchema() {
         return schema;
+    }
+
+    @Override
+    public Availability getAvailability() {
+        return availability;
     }
 
     @Override
@@ -78,18 +91,27 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     }
 
     @Override
-    public Map<Column, List<Interval>> getAllAvailableIntervals() {
-        return getAvailability().getAllAvailableIntervals();
+    public Map<Column, SimplifiedIntervalList> getAllAvailableIntervals() {
+        return mapToSchemaAvailability(
+                getAvailability().getAllAvailableIntervals(),
+                getSchema()
+        );
+    }
+
+    @Override
+    public SimplifiedIntervalList getAvailableIntervals() {
+        return getAvailability().getAvailableIntervals();
     }
 
     @Override
     public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
-        return getAvailability().getAvailableIntervals(constraint);
+        validateConstraintSchema(constraint);
+        return getAvailability().getAvailableIntervals(new PhysicalDataSourceConstraint(constraint, getSchema()));
     }
 
     @Override
     public String getPhysicalColumnName(String logicalName) {
-        if (!schema.containsLogicalName(logicalName)) {
+        if (!getSchema().containsLogicalName(logicalName)) {
             LOG.warn(
                     "No mapping found for logical name '{}' to physical name on table '{}'. Will use logical name as " +
                             "physical name. This is unexpected and should not happen for properly configured " +
@@ -98,7 +120,7 @@ public abstract class BasePhysicalTable implements PhysicalTable {
                     getName()
             );
         }
-        return schema.getPhysicalColumnName(logicalName);
+        return getSchema().getPhysicalColumnName(logicalName);
     }
 
     /**
@@ -111,5 +133,69 @@ public abstract class BasePhysicalTable implements PhysicalTable {
     @Deprecated
     protected void setAvailability(Availability availability) {
         this.availability = availability;
+    }
+
+    /**
+     * Create a constrained copy of this table.
+     *
+     * @param constraint  The dataSourceConstraint which narrows the view of the underlying availability
+     *
+     * @return a constrained table whose availability and serialization are narrowed by this constraint
+     */
+    @Override
+    public ConstrainedTable withConstraint(DataSourceConstraint constraint) {
+        validateConstraintSchema(constraint);
+        return new ConstrainedTable(this, new PhysicalDataSourceConstraint(constraint, getSchema()));
+    }
+
+    /**
+     * Ensure that the schema of the constraint is consistent with what the table supports.
+     *
+     * @param constraint  The constraint being tested
+     *
+     * @throws IllegalArgumentException If there are columns referenced by the constraint unavailable in the table
+     */
+    private void validateConstraintSchema(DataSourceConstraint constraint) throws IllegalArgumentException {
+        Set<String> tableColumnNames = getSchema().getColumnNames();
+        // Validate that the requested columns are answerable by the current table
+        if (!constraint.getAllColumnNames().stream().allMatch(tableColumnNames::contains)) {
+            String message = String.format(
+                    "Received invalid request requesting for columns: %s that is not available in this table: %s",
+                    constraint.getAllColumnNames().stream()
+                            .filter(name -> !tableColumnNames.contains(name))
+                            .collect(Collectors.joining(",")), getName()
+            );
+            LOG.error(message);
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof BasePhysicalTable) {
+            BasePhysicalTable that = (BasePhysicalTable) obj;
+            return Objects.equals(name, that.name)
+                    && Objects.equals(schema, that.schema)
+                    && Objects.equals(availability, that.availability);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, schema, availability);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Physical table: '%s', schema: '%s', availability: '%s'",
+                name,
+                schema,
+                availability
+        );
     }
 }

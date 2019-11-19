@@ -56,7 +56,7 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
             abortRequest(
                     containerRequestContext,
                     Response.Status.FORBIDDEN,
-                    BouncerAuthorizationStatus.ACCESS_DENIED
+                    AuthorizationStatus.ACCESS_DENIED
             );
         }
     }
@@ -107,7 +107,7 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
     private void abortRequest(
             ContainerRequestContext containerRequestContext,
             Response.Status status,
-            BouncerAuthorizationStatus reason
+            AuthorizationStatus reason
     ) {
         LOG.debug("The user is not authorized in an authorized role ", status);
         Map<String, Object> responseMap = new LinkedHashMap<>();

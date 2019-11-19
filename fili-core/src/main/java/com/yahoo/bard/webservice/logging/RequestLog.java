@@ -112,8 +112,7 @@ public class RequestLog {
         getLoginfoOrder().stream().filter(entry -> !Objects.equals(entry, "Epilogue")).forEachOrdered(
                 entry -> {
                     try {
-                        @SuppressWarnings("unchecked")
-                        Class<LogInfo> cls = (Class<LogInfo>) Class.forName(entry);
+                        Class<? extends LogInfo> cls = Class.forName(entry).asSubclass(LogInfo.class);
                         info.add(cls);
                     } catch (ClassNotFoundException | ClassCastException e) {
                         String msg = ErrorMessageFormat.LOGINFO_CLASS_INVALID.logFormat(entry);
@@ -128,12 +127,31 @@ public class RequestLog {
     }
 
     /**
+     * Get the aggregate durations for this request.
+     *
+     * @return A map of phase to duration (ns)
+     */
+    public static Map<String, Long> getDurations() {
+        RequestLog log = RLOG.get();
+        return log.durations();
+    }
+
+    /**
      * Adds the durations in milliseconds of all the recorded timed phases to a map.
      *
      * @return the map containing all the recorded times per phase in milliseconds
      */
-    private Map<String, Long> getDurations() {
+    private Map<String, Long> durations() {
         return times.values().stream().collect(Collectors.toMap(TimedPhase::getName, TimedPhase::getDuration));
+    }
+
+    /**
+     * Get the aggregate durations for this request.
+     *
+     * @return A map of phase to duration (ms)
+     */
+    public static Map<String, Float> getAggregateDurations() {
+        return RLOG.get().aggregateDurations();
     }
 
     /**
@@ -142,7 +160,7 @@ public class RequestLog {
      * @return the map containing all the recorded times per phase in milliseconds
      */
     private Map<String, Float> aggregateDurations() {
-        Map<String, Long> durations = getDurations();
+        Map<String, Long> durations = durations();
 
         OptionalLong max = durations.entrySet()
                 .stream()
@@ -166,15 +184,14 @@ public class RequestLog {
      *
      * @param caller  the caller to name this stopwatch with its class's simple name
      *
-     * @return whether this stopwatch is started
+     * @return whether this stopwatch is currently running
      */
-
     public static boolean isRunning(Object caller) {
         return isRunning(caller.getClass().getSimpleName());
     }
 
     /**
-     * Check if a stopwatch is started.
+     * Check if a stopwatch is currently running.
      *
      * @param timePhaseName  the name of this stopwatch
      *
@@ -288,7 +305,7 @@ public class RequestLog {
     /**
      * Record logging information in the logging context.
      *
-     * @param logPhase  the name of the class destined to hold this logging information
+     * @param logPhase  The name of the class destined to hold this logging information
      *
      * @see LogBlock
      */
@@ -301,6 +318,50 @@ public class RequestLog {
                     logPhase.getClass().getSimpleName()
             );
         }
+    }
+
+    /**
+     * Retrieve logging information in the logging context.
+     *
+     * @param cls  The class destined to hold this logging information
+     *
+     * @return the logging information in the logging context
+     *
+     * @see LogBlock
+     */
+    public static LogInfo retrieve(Class cls) {
+        RequestLog requestLog = RLOG.get();
+        if (requestLog == null) {
+            String message = String.format(
+                    "Attempted to retrieve log info while request log object was uninitialized: %s",
+                    cls.getSimpleName()
+            );
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+
+        LogInfo logInfo = requestLog.info.get(cls.getSimpleName());
+        if (logInfo == null) {
+            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName());
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+        return logInfo;
+    }
+
+    /**
+     * Returns a map of all the LogInfo blocks currently registered with this thread's RequestLog.
+     *
+     * @return A map of all the LogInfo objects registered to this thread's RequestLog
+     */
+    public static Map<String, LogInfo> retrieveAll() {
+        RequestLog requestLog = RLOG.get();
+        if (requestLog == null) {
+            String message = String.format("Attempted to retrieve log info while request log object was uninitialized");
+            LOG.error(message);
+            throw new IllegalStateException(message);
+        }
+        return requestLog.info.any();
     }
 
     /**

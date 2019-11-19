@@ -7,10 +7,13 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import org.slf4j.LoggerFactory;
+
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -41,14 +44,23 @@ public interface SearchProvider {
     int getDimensionCardinality();
 
     /**
+     * Gets the number of distinct dimension rows (assuming the key field is unique) in the index.
+     *
+     * @param  refresh If true, clear any cached cardinality and recalculate before returning.
+     *
+     * @return The number of dimension rows for this dimension
+     */
+    default int getDimensionCardinality(boolean refresh) {
+        // If no caching is done, simply delegate
+        return getDimensionCardinality();
+    }
+
+    /**
      * Getter for dimension rows.
      *
      * @return Set of dimension rows the Search Provider has in it's indexes
      *
-     * @deprecated  Searching for dimension rows is moving to a paginated version
-     * ({@link #findAllDimensionRowsPaged}) in order to give greater control to the caller.
      */
-    @Deprecated
     default Set<DimensionRow> findAllDimensionRows() {
         return new LinkedHashSet<>(
                 findAllDimensionRowsPaged(PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()
@@ -81,11 +93,7 @@ public interface SearchProvider {
      *
      * @return set of dimension row(s)
      *
-     * @deprecated  Searching for filtered dimension rows is moving to a paginated version
-     * ({@link #findFilteredDimensionRowsPaged})
-     * in order to give greater control to the caller.
      */
-    @Deprecated
     default TreeSet<DimensionRow> findFilteredDimensionRows(Set<ApiFilter> filters) {
         return new TreeSet<>(
                 findFilteredDimensionRowsPaged(filters, PaginationParameters.EVERYTHING_IN_ONE_PAGE).getPageOfData()
@@ -107,6 +115,17 @@ public interface SearchProvider {
             Set<ApiFilter> filters,
             @NotNull PaginationParameters paginationParameters
     );
+
+    /**
+     * Determine if any rows match these filters.
+     *
+     * @param filters  ApiFilters to use for finding matching dimension rows
+     *
+     * @return true if at least one row is returned.
+     */
+    default boolean hasAnyRows(Set<ApiFilter> filters) {
+        return findFilteredDimensionRowsPaged(filters, PaginationParameters.ONE_RESULT).getNumResults() > 0;
+    }
 
     /**
      * Method to add / update indexes.
@@ -132,6 +151,20 @@ public interface SearchProvider {
      * @return true if healthy
      */
     boolean isHealthy();
+
+    /**
+     * Replaces index with a new index in hot-swap manner.
+     *
+     * @param newLuceneIndexPathString  The location of directory that contains the the new index.
+     */
+    default void replaceIndex(String newLuceneIndexPathString) {
+        String message = String.format(
+                "Current implementation of SearchProvider: %s does not support index replacement operation.",
+                this.getClass().getSimpleName()
+        );
+        LoggerFactory.getLogger(SearchProvider.class).error(message);
+        throw new UnsupportedOperationException(message);
+    }
 
     /**
      * Clears the dimension cache, and resets the indices, effectively resetting the SearchProvider to a clean state.

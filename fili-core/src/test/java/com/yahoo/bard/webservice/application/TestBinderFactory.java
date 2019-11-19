@@ -26,6 +26,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService;
 import com.yahoo.bard.webservice.data.volatility.NoVolatileIntervalsFunction;
@@ -58,6 +59,9 @@ import java.util.UUID;
 
 /**
  * Bard test app configuration binder.
+ *
+ * TODO we can possibly make a provider version of this class for easy test level custom bindings that get wiped on
+ * each run.
  */
 public class TestBinderFactory extends AbstractBinderFactory {
 
@@ -78,7 +82,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
         dimensionConfig = new TestDimensions().getDimensionConfigurationsByApiName(SIZE, COLOR, SHAPE);
         metricLoader = new MetricLoader() {
             @Override
-            public void loadMetricDictionary(MetricDictionary dictionary) {
+            public void loadMetricDictionary(MetricDictionary dictionary, DimensionDictionary dimensionDictionary) {
                 // Empty
             }
         };
@@ -89,8 +93,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
             }
         };
         state = new ApplicationState();
-        state.uiWebService = new TestDruidWebService("default ui");
-        state.nonUiWebService = new TestDruidWebService("default non ui");
+        state.webService = new TestDruidWebService("default");
         state.metadataWebService = new TestDruidWebService("default metadata service");
     }
 
@@ -127,23 +130,30 @@ public class TestBinderFactory extends AbstractBinderFactory {
      */
     @Override
     protected VolatileIntervalsService getVolatileIntervalsService() {
+        PhysicalTableDictionary physicalTableDictionary = getConfigurationLoader().getPhysicalTableDictionary();
         Map<PhysicalTable, VolatileIntervalsFunction> hourlyMonthlyVolatileIntervals = new LinkedHashMap<>();
-        hourlyMonthlyVolatileIntervals.put(
-                getConfigurationLoader().getPhysicalTableDictionary().get(HOURLY.asName()),
-                () -> new SimplifiedIntervalList(
-                        Collections.singleton(
-                                new Interval(new DateTime(2016, 8, 15, 0, 0), new DateTime(2016, 8, 16, 0, 0))
-                        )
-                )
-        );
-        hourlyMonthlyVolatileIntervals.put(
-                getConfigurationLoader().getPhysicalTableDictionary().get(MONTHLY.asName()),
-                () -> new SimplifiedIntervalList(
-                        Collections.singleton(
-                                new Interval(new DateTime(2016, 8, 1, 0, 0), new DateTime(2016, 9, 1, 0, 0))
-                        )
-                )
-        );
+
+        if (physicalTableDictionary.containsKey(HOURLY.asName())) {
+            hourlyMonthlyVolatileIntervals.put(
+                    getConfigurationLoader().getPhysicalTableDictionary().get(HOURLY.asName()),
+                    () -> new SimplifiedIntervalList(
+                            Collections.singleton(
+                                    new Interval(new DateTime(2016, 8, 15, 0, 0), new DateTime(2016, 8, 16, 0, 0))
+                            )
+                    )
+            );
+        }
+        if (physicalTableDictionary.containsKey(MONTHLY.asName())) {
+            hourlyMonthlyVolatileIntervals.put(
+                    getConfigurationLoader().getPhysicalTableDictionary().get(MONTHLY.asName()),
+                    () -> new SimplifiedIntervalList(
+                            Collections.singleton(
+                                    new Interval(new DateTime(2016, 8, 1, 0, 0), new DateTime(2016, 9, 1, 0, 0))
+                            )
+                    )
+            );
+        }
+
         return new DefaultingVolatileIntervalsService(
                 NoVolatileIntervalsFunction.INSTANCE,
                 hourlyMonthlyVolatileIntervals
@@ -210,13 +220,8 @@ public class TestBinderFactory extends AbstractBinderFactory {
     }
 
     @Override
-    protected DruidWebService buildUiDruidWebService(ObjectMapper mapper) {
-        return state.uiWebService;
-    }
-
-    @Override
-    protected DruidWebService buildNonUiDruidWebService(ObjectMapper mapper) {
-        return state.nonUiWebService;
+    protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
+        return state.webService;
     }
 
     @Override

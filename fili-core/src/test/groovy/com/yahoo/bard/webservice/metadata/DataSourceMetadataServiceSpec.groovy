@@ -3,8 +3,8 @@
 package com.yahoo.bard.webservice.metadata
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-import com.yahoo.bard.webservice.data.config.names.TableName
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
+import com.yahoo.bard.webservice.data.config.names.TestApiDimensionName
 
 import org.joda.time.DateTime
 import org.joda.time.Interval
@@ -17,34 +17,46 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
     DataSourceMetadata metadata
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        dimensions = generateDimensions()
+        metrics = generateMetrics()
+        segments = generateSegments()
+    }
+
     def setup() {
-        metadata = new DataSourceMetadata(tableName, [:], segments)
+        metadata = new DataSourceMetadata(tableName, [:], segments.values().toList())
     }
 
     def "test metadata service updates segment availability for physical tables and access methods behave correctly"() {
         setup:
         JerseyTestBinder jtb = new JerseyTestBinder()
-        PhysicalTableDictionary tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
+        DataSourceName dataSourceName = DataSourceName.of(tableName)
+
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
-        TableName currentTableName = tableDict.get(tableName).getTableName()
 
         when:
-        metadataService.update(tableDict.get(tableName), metadata)
+        metadataService.update(dataSourceName, metadata)
 
         then:
-        metadataService.allSegmentsByTime.get(currentTableName) instanceof AtomicReference
-        metadataService.allSegmentsByColumn.get(currentTableName) instanceof AtomicReference
+        metadataService.allSegmentsByTime.get(dataSourceName) instanceof AtomicReference
+        metadataService.allSegmentsByColumn.get(dataSourceName) instanceof AtomicReference
 
         and:
-        metadataService.getTableSegments(Collections.singleton(currentTableName)).stream()
+        metadataService.getSegments([dataSourceName] as Set).stream()
                 .map({it.values()})
                 .flatMap({it.stream()})
                 .map({it.values()})
-                .collect(Collectors.toList()).toString()  == [[segment1.getIdentifier(), segment2.getIdentifier()],
-                                                              [segment3.getIdentifier(), segment4.getIdentifier()]].toString()
+                .map({it.collect {it.identifier}})
+                .collect(Collectors.toList())  == [
+                        [segments.segment1.identifier, segments.segment2.identifier],
+                        [segments.segment3.identifier, segments.segment4.identifier]
+                ]
 
         and: "all the intervals by column in metadata service are simplified to interval12"
-        [[interval12]].containsAll(metadataService.getAvailableIntervalsByTable(currentTableName).values())
+        [[intervals["interval12"]]].containsAll(metadataService.getAvailableIntervalsByDataSource(dataSourceName).values())
 
         cleanup:
         jtb.tearDown()
@@ -52,36 +64,34 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
     def "grouping segment data by date time behave as expected"() {
         given:
-        ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> segmentByTime = DataSourceMetadataService.groupSegmentByTime(metadata)
-        DateTime dateTime1 = new DateTime(interval1.getStart())
-        DateTime dateTime2 = new DateTime(interval2.getStart())
+        ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>> segmentByTime = DataSourceMetadataService
+                .groupSegmentByTime(metadata)
+        DateTime dateTime1 = new DateTime(intervals["interval1"].start)
+        DateTime dateTime2 = new DateTime(intervals["interval2"].start)
 
         expect:
         segmentByTime.keySet() == [dateTime1, dateTime2] as Set
-        segmentByTime.get(new DateTime(interval2.getStart())).keySet() == [segment3.getIdentifier(), segment4.getIdentifier()] as Set
+        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments.segment3.identifier, segments.segment4.identifier] as Set
     }
-
 
     def "grouping intervals by column behave as expected"() {
         given:
-        Map<String, Set<Interval>> intervalByColumn = DataSourceMetadataService.groupIntervalByColumn(metadata)
+        Map<String, List<Interval>> intervalByColumn = DataSourceMetadataService.groupIntervalByColumn(metadata)
 
         expect:
-        intervalByColumn.keySet() == (dimensions123 + metrics123) as Set
-        intervalByColumn.get(dimensions123.get(0)) == [interval12]
+        intervalByColumn.keySet() == dimensions.keySet() + metrics.keySet()
+        intervalByColumn.get(dimensions.(TestApiDimensionName.BREED.asName()).asName()) == [intervals["interval12"]]
     }
-
 
     def "accessing availability by column throws exception if the table does not exist in datasource metadata service"() {
         setup:
         DataSourceMetadataService metadataService = new DataSourceMetadataService()
 
         when:
-        metadataService.getAvailableIntervalsByTable(TableName.of("InvalidTable"))
+        metadataService.getAvailableIntervalsByDataSource(DataSourceName.of("InvalidTable"))
 
         then:
         IllegalStateException e = thrown()
-        e.message == 'Trying to access InvalidTable physical table datasource that is not available in metadata service'
-
+        e.message == "Datasource 'InvalidTable' is not available in the metadata service"
     }
 }

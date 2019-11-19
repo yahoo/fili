@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel
 import com.yahoo.bard.webservice.data.HttpResponseMaker
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.ResultSetSchema
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -18,25 +19,27 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
+import com.yahoo.bard.webservice.druid.model.QueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.Schema
-import com.yahoo.bard.webservice.web.DataApiRequest
-import com.yahoo.bard.webservice.web.ResponseFormatType
+import com.yahoo.bard.webservice.table.TableTestUtils
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
+import com.yahoo.bard.webservice.web.JsonResponseWriter
+import com.yahoo.bard.webservice.web.ResponseWriter
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.google.common.collect.Sets
 
 import org.joda.time.DateTimeZone
@@ -46,6 +49,7 @@ import rx.subjects.Subject
 import spock.lang.Specification
 
 import javax.ws.rs.container.AsyncResponse
+import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.PathSegment
 import javax.ws.rs.core.Response
@@ -55,15 +59,16 @@ class ResultSetResponseProcessorSpec extends Specification {
 
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = MAPPERS.getMapper()
 
     HttpResponseMaker httpResponseMaker
+    ResponseWriter responseWriter
     GroupByQuery groupByQuery
     DataApiRequest apiRequest
     HttpResponseChannel httpResponseChannel
     Subject responseEmitter
     DruidResponseParser druidResponseParser
+    ContainerRequestContext containerRequestContext
     UriInfo uriInfo
     PathSegment pathSegment
     MultivaluedMap paramMap
@@ -87,12 +92,19 @@ class ResultSetResponseProcessorSpec extends Specification {
         AsyncResponse asyncResponse = Mock(AsyncResponse)
         apiRequest = Mock(DataApiRequest)
         druidResponseParser = Mock(DruidResponseParser)
+        containerRequestContext = Mock(ContainerRequestContext)
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)
+        responseWriter = new JsonResponseWriter(MAPPERS)
 
-        httpResponseMaker =  new HttpResponseMaker(MAPPERS, Mock(DimensionDictionary))
-        httpResponseChannel = new HttpResponseChannel(asyncResponse, apiRequest, httpResponseMaker);
+        httpResponseMaker =  new HttpResponseMaker(MAPPERS, Mock(DimensionDictionary), responseWriter)
+        httpResponseChannel = new HttpResponseChannel(
+                asyncResponse,
+                apiRequest,
+                containerRequestContext,
+                httpResponseMaker
+        );
         responseEmitter = PublishSubject.create()
         responseEmitter.subscribe(httpResponseChannel)
 
@@ -108,8 +120,8 @@ class ResultSetResponseProcessorSpec extends Specification {
         Set<LogicalMetric> metricSet = [lm1] as Set
         apiRequest.getLogicalMetrics() >> metricSet
         apiRequest.getGranularity() >> DAY
-        apiRequest.getFormat() >> ResponseFormatType.JSON
-        apiRequest.getUriInfo() >> uriInfo
+        apiRequest.getFormat() >> DefaultResponseFormatType.JSON
+        containerRequestContext.getUriInfo() >> uriInfo
 
         List<Dimension> dimensions = new ArrayList<Dimension>()
         List<Aggregation> aggregations = new ArrayList<Dimension>()
@@ -146,7 +158,15 @@ class ResultSetResponseProcessorSpec extends Specification {
         groupByQuery.getDimensions() >> dimensions
         groupByQuery.getAggregations() >> aggregations
         groupByQuery.getPostAggregations() >> postAggs
-        groupByQuery.getDataSource() >> new TableDataSource(new ConcretePhysicalTable("table_name", DAY.buildZonedTimeGrain(DateTimeZone.UTC), [] as Set, ["dimension1":"dimension1"], Mock(DataSourceMetadataService)))
+        groupByQuery.getDataSource() >> new TableDataSource(
+                TableTestUtils.buildTable(
+                        "table_name",
+                        DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                        [] as Set,
+                        ["dimension1": "dimension1"],
+                        Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
+                )
+        )
 
         ResultSetSchema schema = new ResultSetSchema(DAY, Sets.newHashSet(new MetricColumn("lm1")))
 
@@ -201,10 +221,9 @@ class ResultSetResponseProcessorSpec extends Specification {
         }
 
         1 * druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone dateTimeZone
-                ->
-                captureSchema = schema;
-                captureJson = json;
+            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone dateTimeZone ->
+                captureSchema = schema
+                captureJson = json
                 rs
         }
         druidResponseParser.buildSchemaColumns(groupByQuery) >> {
@@ -223,7 +242,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         captureSchema.getColumn(metric2Name, MetricColumn.class).get() == m2
         captureSchema.getColumn("fakeMetric", MetricColumn.class) == Optional.empty()
         actual == rs
-
     }
 
     def "Test processResponse"() {
@@ -262,7 +280,6 @@ class ResultSetResponseProcessorSpec extends Specification {
         then:
         1 * jsonMock.clone()
         2 * resultSetMock.getSchema()
-        1 == 1
     }
 
     def "Test failure callback"() {
@@ -277,7 +294,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         FailureCallback fbc = resultSetResponseProcessor.getFailureCallback()
         Throwable t = new Throwable("message1234")
         Response responseCaptor = null
-        1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
+        1 * httpResponseChannel.asyncResponse.resume(_) >> { Response r -> responseCaptor = r }
         when:
         fbc.invoke(t)
         String entity = responseCaptor.entity
@@ -303,7 +320,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         String entity = responseCaptor.entity
 
         then:
-        1 * httpResponseChannel.asyncResponse.resume(_) >> { javax.ws.rs.core.Response r -> responseCaptor = r }
+        1 * httpResponseChannel.asyncResponse.resume(_) >> { Response r -> responseCaptor = r }
         responseCaptor.getStatus() == 499
         entity.contains("myreason")
         entity.contains("body123")
@@ -331,8 +348,7 @@ class ResultSetResponseProcessorSpec extends Specification {
             getQueryType() >> GROUP_BY
         }
         druidResponseParser.parse(_, _, _, _) >> {
-            JsonNode json, Schema schema, DefaultQueryType type, DateTimeZone tz ->
-            new ResultSet(schema, [])
+            JsonNode json, ResultSetSchema schema, QueryType type, DateTimeZone tz -> new ResultSet(schema, [])
         }
         druidResponseParser.buildSchemaColumns(query) >> {
             [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)].stream()

@@ -2,15 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import com.yahoo.bard.webservice.data.config.metric.MetricInstance;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,9 +24,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +39,29 @@ import javax.ws.rs.core.MultivaluedMap;
  * Utils.
  */
 public class Utils {
+
+    /**
+     * Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
+
+    /**
+     * A strategy that deletes a directory.
+     */
+    private static final FileVisitor<Path> DELETE_VISITOR = new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+        }
+    };
+
     /**
      * Given a collection of objects which share the same super class, return the subset of objects that share a common
      * sub class.
@@ -45,7 +75,7 @@ public class Utils {
      */
     public static <T, K extends T> LinkedHashSet<K> getSubsetByType(Collection<T> set, Class<K> type) {
         return set.stream()
-                .filter(member -> type.isAssignableFrom(member.getClass()))
+                .filter(type::isInstance)
                 .map(StreamUtils.uncheckedCast(type))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -58,7 +88,7 @@ public class Utils {
      * </pre>
      *
      * @param <E>  The element type for the linked hash set
-     * @param e  the array from which the LinkedHashSet will be built
+     * @param e  The array from which the LinkedHashSet will be built
      *
      * @return a LinkedHashSet view of the specified array
      */
@@ -81,80 +111,21 @@ public class Utils {
     }
 
     /**
-     * An terminator to the recursive making of immutable collection trees.
-     *
-     * @param <T>  The type of the collection
-     * @param nonCollection  An object that isn't a map or collection
-     *
-     * @return The object itself
-     */
-    private static <T> T makeImmutable(T nonCollection) {
-        return nonCollection;
-    }
-
-    /**
-     * A recursive call to make a map and all it's values immutable.
-     *
-     * @param <K>  The key type of the map
-     * @param <V>  The value type of the map
-     * @param mutableMap  The original, potentially mutable, map
-     *
-     * @return An immutable Map with all it's values made immutable.
-     */
-    public static <K, V> Map<K, V> makeImmutable(Map<K, V> mutableMap) {
-        Map<K, V> newMap = new HashMap<>();
-        for (Map.Entry<K, V>  entry : mutableMap.entrySet()) {
-            newMap.put(entry.getKey(), Utils.makeImmutable(entry.getValue()));
-        }
-        return Collections.unmodifiableMap(newMap);
-    }
-
-    /**
-     * A recursive call to make a collection and all it's values immutable.
-     *
-     * @param <T>  The type of the collection
-     * @param mutableCollection  The original, potentially mutable, collection
-     *
-     * @return Am immutable copy whose values are also immutable.
-     */
-    public static <T> Collection<T> makeImmutable(Collection<T> mutableCollection) {
-        Collection<T> newCollection;
-        try {
-            @SuppressWarnings("unchecked")
-            Class<Collection<T>> cls = (Class<Collection<T>>) mutableCollection.getClass();
-            newCollection = cls.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
-        for (T element : mutableCollection) {
-            newCollection.add(Utils.makeImmutable(element));
-        }
-        return Collections.unmodifiableCollection(newCollection);
-    }
-
-    /**
      * Delete files or directories in the specified path.
      *
      * @param path  The pathname
      */
     public static void deleteFiles(String path) {
-        Path directory = Paths.get(path);
+        Path file = Paths.get(path);
+
+        // do nothing if there is nothing to delete
+        if (!Files.exists(file)) {
+            LOG.trace(String.format("'%s' does not exist. Nothing is deleted", path));
+            return;
+        }
 
         try {
-            Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-
-            });
+            Files.walkFileTree(file, DELETE_VISITOR);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -198,7 +169,11 @@ public class Utils {
      * @param node The root of the tree of json nodes.
      * @param fieldName The name of the node to be omitted.
      * @param mapper  The object mapper that creates and empty node.
+     *
+     * @deprecated  Should avoid this method and instead use {@link #canonicalize(JsonNode, ObjectMapper, boolean)}
+     * which preserves JSON object ordering that guarantees consistent hash values.
      */
+    @Deprecated
     public static void omitField(JsonNode node, String fieldName, ObjectMapper mapper) {
         if (node.has("context")) {
             ((ObjectNode) node).replace(fieldName, mapper.createObjectNode());
@@ -206,6 +181,40 @@ public class Utils {
 
         for (JsonNode child : node) {
             omitField(child, fieldName, mapper);
+        }
+    }
+
+    /**
+     * Given a JsonObjectNode, order the fields and recursively and replace context blocks with empty nodes.
+     *
+     * This method is recursive.
+     *
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
+     */
+    public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+        if (node.isObject()) {
+            ObjectNode objectNode = ((ObjectNode) node);
+
+            if (objectNode.has("context") && !preserveContext) {
+                objectNode.replace("context", mapper.createObjectNode());
+            }
+
+            Iterator<Map.Entry<String, JsonNode>> iterator = objectNode.fields();
+            // collect and sort the entries
+            TreeMap<String, JsonNode> fieldMap = new TreeMap<>();
+            while (iterator.hasNext()) {
+                Map.Entry<String, JsonNode> entry = iterator.next();
+                fieldMap.put(entry.getKey(), entry.getValue());
+                // canonicalize all child nodes
+                canonicalize(entry.getValue(), mapper, preserveContext);
+            }
+            // remove the existing entries
+            objectNode.removeAll();
+
+            // replace the entries in sorted order
+            objectNode.setAll(fieldMap);
         }
     }
 
@@ -237,5 +246,15 @@ public class Utils {
      */
     public static <T, U, V> ImmutablePair<T, V> withRight(ImmutablePair<T, U> pair, V right) {
         return new ImmutablePair<>(pair.getLeft(), right);
+    }
+
+    /**
+     * Create metrics from instance descriptors and store in the metric dictionary.
+     *
+     * @param metricDictionary  The dictionary to store metrics in
+     * @param metrics  The list of metric descriptors
+     */
+    public static void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
+        metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
     }
 }

@@ -5,9 +5,9 @@ package com.yahoo.bard.webservice.table.resolver;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.QUERY_GRAIN_NOT_SATISFIED;
 
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

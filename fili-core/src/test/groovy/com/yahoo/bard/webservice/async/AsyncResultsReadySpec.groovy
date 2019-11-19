@@ -1,10 +1,10 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
 import com.yahoo.bard.webservice.async.workflows.TestAsynchronousWorkflowsBuilder
 import com.yahoo.bard.webservice.util.GroovyTestUtils
-
-import rx.Observer
 
 import java.util.concurrent.CountDownLatch
 
@@ -65,8 +65,9 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                 }
     */
 
-    static final String QUERY =
-            "http://localhost:9998/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    String getQuery() {
+        return "http://localhost:${jtb.getHarness().getPort()}/data/shapes/day?dateTime=2016-08-30%2F2016-08-31&metrics=height&asyncAfter=always"
+    }
 
     final CountDownLatch jobMetadataReady = new CountDownLatch(1)
 
@@ -74,7 +75,11 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
         TestAsynchronousWorkflowsBuilder.addSubscriber(
                 TestAsynchronousWorkflowsBuilder.Workflow.JOB_MARKED_COMPLETE,
                 {jobMetadataReady.countDown()},
-                {throw it}
+                {
+                    System.err.println(it)
+                    it.printStackTrace()
+                    throw it
+                }
         )
     }
 
@@ -83,7 +88,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [
                 data: { "data/shapes/day" },
                 //By querying the syncResults link first, we wait until the results are ready, thanks to the
@@ -101,11 +106,11 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [
                 data: {
                     assert it.status == 202
-                    AsyncTestUtils.validateJobPayload(it.readEntity(String), QUERY, DefaultJobStatus.PENDING.name)
+                    AsyncTestUtils.validateJobPayload(jtb, it.readEntity(String), getQuery(), DefaultJobStatus.PENDING.name)
                 },
                 syncResults: {
                     assert it.status == 200
@@ -118,8 +123,9 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
                 jobs: { response ->
                         assert response.status == 200
                         AsyncTestUtils.validateJobPayload(
+                                jtb,
                                 response.readEntity(String),
-                                QUERY,
+                                getQuery(),
                                 DefaultJobStatus.SUCCESS.name
                         )
                 }
@@ -127,7 +133,7 @@ class AsyncResultsReadySpec extends AsyncFunctionalSpec {
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: {[
                         metrics: ["height"],

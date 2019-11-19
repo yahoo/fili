@@ -8,19 +8,17 @@ import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
+import org.joda.time.Interval;
+
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -35,23 +33,20 @@ public class PartialDataRequestHandler implements DataRequestHandler {
     public static final String PARTIAL_DATA_HEADER = "partialData";
 
     protected final @NotNull DataRequestHandler next;
-    protected final @NotNull PhysicalTableDictionary physicalTableDictionary;
     protected final @NotNull PartialDataHandler partialDataHandler;
+
 
     /**
      * Wrap the response processor in a partial data check.
      *
      * @param next The next request handler to invoke
-     * @param physicalTableDictionary  the repository of slice data
-     * @param partialDataHandler the PartialDataHandler to use
+     * @param partialDataHandler the service to calculate partial data from table availabilities
      */
     public PartialDataRequestHandler(
             DataRequestHandler next,
-            PhysicalTableDictionary physicalTableDictionary,
             PartialDataHandler partialDataHandler
     ) {
         this.next = next;
-        this.physicalTableDictionary = physicalTableDictionary;
         this.partialDataHandler = partialDataHandler;
     }
 
@@ -67,15 +62,9 @@ public class PartialDataRequestHandler implements DataRequestHandler {
         }
         MappingResponseProcessor mappingResponse = (MappingResponseProcessor) response;
 
-        // Gather the tables from the query
-        Set<PhysicalTable> physicalTables = druidQuery.getInnermostQuery().getDataSource().getNames().stream()
-                .map(physicalTableDictionary::get)
-                .collect(Collectors.toSet());
-
         // Gather the missing intervals
         SimplifiedIntervalList missingIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                new DataSourceConstraint(request, druidQuery),
-                physicalTables,
+                druidQuery.getInnermostQuery().getDataSource().getPhysicalTable().getAvailableIntervals(),
                 new SimplifiedIntervalList(request.getIntervals()),
                 request.getGranularity()
         );
@@ -85,7 +74,7 @@ public class PartialDataRequestHandler implements DataRequestHandler {
 
             responseContext.put(MISSING_INTERVALS_CONTEXT_KEY.getName(), missingIntervals);
 
-            if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
+            if (BardFeatureFlag.PARTIAL_DATA.isOn()  || BardFeatureFlag.PARTIAL_DATA_PROTECTION.isOn()) {
                 PartialDataResultSetMapper mapper = new PartialDataResultSetMapper(
                         missingIntervals,
                         () -> VolatileDataRequestHandler.getVolatileIntervalsWithDefault(responseContext)
@@ -101,15 +90,21 @@ public class PartialDataRequestHandler implements DataRequestHandler {
 
     /**
      * Return the missing intervals from the context.
+     * <p>
+     * <b>WARNING</b>: A serialization issue may result in the context value being a list but not a
+     * Simplified Interval List. See https://github.com/yahoo/fili/issues/657
      *
      * @param context  The map containing the missing intervals if any
      *
      * @return the missing intervals from the request or an empty list
      */
+    @SuppressWarnings("unchecked")
     public static SimplifiedIntervalList getPartialIntervalsWithDefault(Map<String, Serializable> context) {
-        return (SimplifiedIntervalList) context.computeIfAbsent(
-                MISSING_INTERVALS_CONTEXT_KEY.getName(),
-                (ignored) -> new SimplifiedIntervalList()
+        return new SimplifiedIntervalList(
+                (Collection<Interval>) context.computeIfAbsent(
+                        MISSING_INTERVALS_CONTEXT_KEY.getName(),
+                        (ignored) -> new SimplifiedIntervalList()
+                )
         );
     }
 }

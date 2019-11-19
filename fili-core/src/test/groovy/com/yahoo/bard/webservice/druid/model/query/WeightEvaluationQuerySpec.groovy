@@ -22,14 +22,19 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.data.filterbuilders.DefaultDruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import org.joda.time.Interval
@@ -76,12 +81,15 @@ class WeightEvaluationQuerySpec extends Specification {
         dataServlet.getMetricDictionary() >> configurationLoader.metricDictionary
         dataServlet.getDimensionDictionary() >> configurationLoader.dimensionDictionary
         dataServlet.getLogicalTableDictionary() >> configurationLoader.logicalTableDictionary
-        dataServlet.getFilterBuilder() >> new DefaultDruidFilterBuilder()
+        dataServlet.getFilterBuilder() >> new DruidOrFilterBuilder()
+        dataServlet.getHavingApiGenerator() >> new DefaultHavingApiGenerator(configurationLoader)
         dataServlet.getGranularityParser() >> new StandardGranularityParser()
 
         builder = new DruidQueryBuilder(
                 jtb.configurationLoader.logicalTableDictionary,
-                new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null)
+                new DefaultPhysicalTableResolver((PartialDataHandler) null, (VolatileIntervalsService) null),
+                new DruidInFilterBuilder(),
+                new DefaultDruidHavingBuilder()
         )
 
         Map emptyMap = new MultivaluedHashMap<>()
@@ -102,7 +110,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for day"() {
         given: "outer daily use daily time grain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "day",
                 [size, shape, color, other],
@@ -118,7 +126,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -131,7 +138,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for daily average aggregated to week"() {
         given: "weekly day average in outer query, use inner daily time grain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],
@@ -147,7 +154,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -159,7 +165,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Worst case estimate calculation for weekly aggregate"() {
         given: "weekly day average in outer query, use inner daily timegrain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],
@@ -175,7 +181,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -187,7 +192,7 @@ class WeightEvaluationQuerySpec extends Specification {
 
     def "Weight check query strips sort columns"() {
         given: "weekly day average in outer query, use inner daily timegrain"
-        final DataApiRequest apiRequest = new DataApiRequest(
+        final DataApiRequest apiRequest = new DataApiRequestImpl(
                 "shapes",
                 "week",
                 [size, shape, color, other],
@@ -203,7 +208,6 @@ class WeightEvaluationQuerySpec extends Specification {
                 null, //asyncAfter
                 "", //perPage
                 "", //page
-                null, //uriInfo
                 dataServlet
         )
 
@@ -262,7 +266,7 @@ class WeightEvaluationQuerySpec extends Specification {
             getDimensions() >> [d1, d2]
             getDimension() >> d1
             getThreshold() >> Long.MAX_VALUE
-            getAggregations() >> [Stub(SketchCountAggregation)]
+            getAggregations() >> [Stub(ThetaSketchAggregation)]
             getIntervals() >> [new Interval("2014/2016")]
             getGranularity() >> granularity
             getQueryType() >> queryType

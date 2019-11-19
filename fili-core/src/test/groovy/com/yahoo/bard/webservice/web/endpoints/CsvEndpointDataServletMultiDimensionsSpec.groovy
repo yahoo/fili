@@ -125,7 +125,7 @@ class CsvEndpointDataServletMultiDimensionsSpec extends BaseDataServletComponent
     }
 
     @Override
-    def validateExpectedApiResponse(String expectedApiResponse) {
+    boolean validateExpectedApiResponse(String expectedApiResponse) {
         true
     }
 

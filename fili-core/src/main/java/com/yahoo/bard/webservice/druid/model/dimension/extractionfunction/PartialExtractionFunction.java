@@ -8,8 +8,15 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Regular Expression ExtractionFunction that returns the dimension value if it matches the regular expression.
- * If there is no match, it returns null
+ * Partial extraction function returns the dimension value unchanged if the regex matches, otherwise returns null.
+ * <pre>
+ * {@code
+ *     {
+ *         "type": "partial",
+ *         "expr": <regular_expression>
+ *     }
+ * }
+ * </pre>
  */
 public class PartialExtractionFunction extends ExtractionFunction {
     private final Pattern pattern;
@@ -24,6 +31,11 @@ public class PartialExtractionFunction extends ExtractionFunction {
         this.pattern = pattern;
     }
 
+    /**
+     * Returns the regex pattern of this extraction function, i.e. the value of {@code expr}.
+     *
+     * @return the regex pattern of this extraction function
+     */
     @JsonProperty(value = "expr")
     public Pattern getPattern() {
         return pattern;
@@ -54,5 +66,18 @@ public class PartialExtractionFunction extends ExtractionFunction {
         return super.equals(obj) &&
                 (pattern == null ? other.pattern == null : other.pattern != null && Objects.equals(pattern.pattern(), other.pattern.pattern()));
         // CHECKSTYLE:ON
+    }
+
+    /**
+     * Returns the string representation of this extraction function.
+     * <p>
+     * The format of the string is "PartialExtractionFunction{pattern=XXX}", where XXX is the string representation of
+     * the regex pattern of this extraction function.
+     *
+     * @return the string representation of this extraction function
+     */
+    @Override
+    public String toString() {
+        return String.format("PartialExtractionFunction{pattern=%s}", getPattern());
     }
 }

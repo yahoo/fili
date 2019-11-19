@@ -7,12 +7,16 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DUPLICATE_METRICS
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationHelper;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+import com.yahoo.bard.webservice.druid.model.filter.InFilter;
 import com.yahoo.bard.webservice.druid.model.filter.MultiClauseFilter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
@@ -24,9 +28,13 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimate
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,17 +50,39 @@ import java.util.Set;
  * Class containing helper methods to build filtered metrics.
  */
 public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder {
+
     private static final Logger LOG = LoggerFactory.getLogger(FilteredThetaSketchMetricsHelper.class);
     private static final String ALPHANUMERIC_REGEX = "[^a-zA-Z0-9]";
 
+    protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
+    protected DruidFilterBuilder filterBuilder;
+
+    /**
+     * Constructor.
+     *
+     * Default implementation using the InFilterBuilder
+     */
+    public FilteredThetaSketchMetricsHelper() {
+        this(new DruidInFilterBuilder());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param druidFilterBuilder  The druid filter builder used when creating filtered metrics.
+     */
+    public FilteredThetaSketchMetricsHelper(DruidFilterBuilder druidFilterBuilder) {
+        filterBuilder = druidFilterBuilder;
+    }
+
 
     @Override
-    public void validateDuplicateMetrics(JSONArray metricsJsonArray) {
+    public void validateDuplicateMetrics(ArrayNode metricsJsonArray) {
         Set<String> metricsList = new HashSet<>();
         List<String> duplicateMetrics = new ArrayList<>();
 
-        for (int i = 0; i < metricsJsonArray.length(); i++) {
-            String metricName = metricsJsonArray.getJSONObject(i).getString("name");
+        for (int i = 0; i < metricsJsonArray.size(); i++) {
+            String metricName = metricsJsonArray.get(i).get("name").asText();
             boolean status = metricsList.add(metricName);
             if (!status) {
                 duplicateMetrics.add(metricName);
@@ -67,25 +97,25 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     @Override
     public LogicalMetric getFilteredLogicalMetric(
             LogicalMetric logicalMetric,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
 
         TemplateDruidQuery templateDruidQuery = logicalMetric.getTemplateDruidQuery();
 
         if (templateDruidQuery.isNested()) {
             //If the Logical Metric is nested, update the aggs and post aggs of the nested query.
             TemplateDruidQuery newInnerQuery = updateTemplateDruidQuery(
-                    templateDruidQuery.getInnerQuery(),
+                    templateDruidQuery.getInnerQuery().get(),
                     metricFilterObject,
                     dimensionDictionary,
                     table,
                     apiRequest
             );
 
-            String filterSuffix = "-" + metricFilterObject.get("AND").toString().replaceAll(ALPHANUMERIC_REGEX, "");
+            String filterSuffix = "-" + metricFilterObject.get("AND").asText().replaceAll(ALPHANUMERIC_REGEX, "");
 
             //innerPostAggToOuterAggMap stores the mapping of old postAgg to new postAgg name. In filtering of metrics,
             //the name of postAggs(all postAggs other than CONSTANT type) in the nested query is appended with a filter
@@ -118,7 +148,11 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             );
         }
         //build new LogicalMetric and return
-        return new LogicalMetric(templateDruidQuery, logicalMetric.getCalculation(), logicalMetric.getName());
+        return new LogicalMetric(
+                templateDruidQuery,
+                logicalMetric.getCalculation(),
+                new LogicalMetricInfo(logicalMetric.getName())
+        );
     }
 
     @Override
@@ -143,7 +177,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         return new TemplateDruidQuery(
                 updatedOuterAggs,
                 updateOuterPostAggs,
-                outerQuery.getInnerQuery(),
+                outerQuery.getInnerQuery().orElse(null),
                 outerQuery.getTimeGrain()
         );
     }
@@ -207,11 +241,11 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     @Override
     public TemplateDruidQuery updateTemplateDruidQuery(
             TemplateDruidQuery query,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
 
         Set<PostAggregation> postAggregations = query.getPostAggregations();
         Set<PostAggregation> updatedPostAggs = new HashSet<>();
@@ -277,7 +311,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         }
 
         //with the filtered aggregation and reconstructed post aggregation, generate new templateDruidQuery
-        return new TemplateDruidQuery(updatedAggs, updatedPostAggs, query.getInnerQuery(), query.getTimeGrain());
+        return new TemplateDruidQuery(
+                updatedAggs,
+                updatedPostAggs,
+                query.getInnerQuery().orElse(null),
+                query.getTimeGrain()
+        );
     }
 
    @Override
@@ -287,7 +326,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             Map<String, List<FilteredAggregation>> filteredAggDictionary
     ) {
         if (postAggregation instanceof WithFields) {
-            WithFields withFieldsPostAgg = (WithFields) postAggregation;
+            WithFields<?> withFieldsPostAgg = (WithFields<?>) postAggregation;
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             //In case the postAgg has the function NOT, we apply INTERSECT on the left operand of the
@@ -317,7 +356,6 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                 return withFieldsPostAgg.withFields(resultPostAggsList);
             }
 
-            @SuppressWarnings("unchecked")
             List<PostAggregation> childPostAggs = withFieldsPostAgg.getFields();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(
@@ -359,22 +397,19 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             String fieldName = ((FieldAccessorPostAggregation) postAggregation).getFieldName();
             if (oldNameToNewAggregationMapping.containsKey(fieldName)) {
                 return new FieldAccessorPostAggregation(oldNameToNewAggregationMapping.get(fieldName));
-
-            } else {
-                //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
-                return postAggregation;
             }
+            //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
+            return postAggregation;
 
         } else if (postAggregation instanceof WithFields) {
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
-            @SuppressWarnings("unchecked")
-            List<PostAggregation> childPostAggs = ((WithFields) postAggregation).getFields();
+            List<PostAggregation> childPostAggs = ((WithFields<?>) postAggregation).getFields();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(replacePostAggWithPostAggFromMap(postAgg, oldNameToNewAggregationMapping));
             }
 
-            return ((WithFields) postAggregation).withFields(resultPostAggsList);
+            return ((WithFields<?>) postAggregation).withFields(resultPostAggsList);
         } else {
             return postAggregation;
         }
@@ -382,25 +417,25 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
     @Override
     public Set<FilteredAggregation> getFilteredAggregation(
-            JSONObject filter,
+            JsonNode filter,
             Aggregation aggregation,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException {
+    ) throws FilterBuilderException {
         //Converting json filter string to a plain filter string to prepare the Filter out of it
-        String filterString = filter.get("AND").toString().replace("],", "]],");
+        String filterString = filter.get("AND").asText().replace("],", "]],");
         String[] filterList = filterString.split("],");
         Set<FilteredAggregation> filteredAggregationSet = new HashSet<>();
         Map<String, Filter> filterHashMap = new HashMap<>();
 
         for (String aFilter : filterList) {
-            Map<Dimension, Set<ApiFilter>> metricFilter = apiRequest.generateFilters(
+            Map<Dimension, Set<ApiFilter>> metricFilter = filterGenerator.generate(
                     aFilter,
                     table,
                     dimensionDictionary
             );
-            filterHashMap.put(generateMetricName(aFilter), apiRequest.getFilterBuilder().buildFilters(metricFilter));
+            filterHashMap.put(generateMetricName(aFilter), filterBuilder.buildFilters(metricFilter));
         }
 
         for (Map.Entry<String, Filter> entry: filterHashMap.entrySet()) {
@@ -417,7 +452,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
    @Override
     public String generateMetricName(String filterString) {
-        return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
+       return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
     }
 
     @Override
@@ -427,11 +462,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
     @Override
     public Set<Dimension> gatherFilterDimensions(Filter filter, Set<Dimension> dimensions) {
-
         if (filter instanceof SelectorFilter) {
             dimensions.add(((SelectorFilter) filter).getDimension());
+        } else if (filter instanceof InFilter) {
+            dimensions.add(((InFilter) filter).getDimension());
         } else if (filter instanceof MultiClauseFilter) {
-            for (Filter multiclauseFilter: ((MultiClauseFilter) filter).getFields()) {
+            for (Filter multiclauseFilter : ((MultiClauseFilter) filter).getFields()) {
                 gatherFilterDimensions(multiclauseFilter, dimensions);
             }
         } else if (filter instanceof NotFilter) {

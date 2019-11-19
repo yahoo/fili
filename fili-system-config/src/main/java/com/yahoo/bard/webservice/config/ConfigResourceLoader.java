@@ -75,7 +75,7 @@ public class ConfigResourceLoader {
      */
     public Stream<Resource> loadResourcesWithName(String name) throws IOException {
         String resourceName = RESOURCE_LOADER_PREFIX + name;
-        LOG.debug("Attempting to load resources named {}", resourceName);
+        LOG.debug("Loading resources named '{}'", resourceName);
         return Arrays.stream(resolver.getResources(resourceName))
                 .peek(it -> LOG.debug(RESOURCE_LOAD_MESSAGE.logFormat(name, it)));
     }
@@ -93,8 +93,9 @@ public class ConfigResourceLoader {
             result.load(resource.getInputStream());
             return result;
         } catch (ConfigurationException | IOException e) {
-            LOG.error(CONFIGURATION_LOAD_ERROR.format(resource.getFilename()), e);
-            throw new SystemConfigException(CONFIGURATION_LOAD_ERROR.format(resource.getFilename()), e);
+            String message = CONFIGURATION_LOAD_ERROR.format(resource.getFilename());
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -108,7 +109,7 @@ public class ConfigResourceLoader {
     public boolean isResourceNotAJar(Resource resource) {
         try {
             return !resource.getURI().getScheme().equals("jar");
-        } catch (IOException e) {
+        } catch (IOException ignored) {
             // If the resource doesn't parse cleanly as a URI, it's not a jar
             return true;
         }

@@ -2,16 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.responseprocessors
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.cache.HashDataCache.Pair
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.logging.RequestLog
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -21,8 +21,7 @@ import spock.lang.Specification
 import java.util.concurrent.atomic.AtomicInteger
 
 public class SplitQueryResponseProcessorSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     SplitQueryResponseProcessor sqrp
     DataApiRequest apiRequest = Mock(DataApiRequest)

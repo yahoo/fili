@@ -13,6 +13,8 @@ import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SinglePagePagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.DefaultFilterOperation;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -77,6 +79,14 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     @Override
     public int getDimensionCardinality() {
         return Integer.parseInt(keyValueStore.get(DimensionStoreKeyUtils.getCardinalityKey()));
+    }
+
+    @Override
+    public int getDimensionCardinality(boolean refresh) {
+        if (refresh) {
+            refreshCardinality();
+        }
+        return getDimensionCardinality();
     }
 
     /**
@@ -266,7 +276,10 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     }
 
     @Override
-    public TreeSet<DimensionRow> startswithFilterOperation(TreeSet<DimensionRow> dimensionRows, ApiFilter filter) {
+    public TreeSet<DimensionRow> startswithFilterOperation(
+            TreeSet<DimensionRow> dimensionRows,
+            ApiFilter filter
+    ) {
         TreeSet<DimensionRow> filteredDimensionRows = new TreeSet<>();
 
         // regex string containing all starts with filter values
@@ -332,7 +345,11 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     ) {
         TreeSet<DimensionRow> filteredDimensionRows = applyFilters(getAllOrderedDimensionRows(), filters);
         return new SinglePagePagination<>(
-                doPagination(filteredDimensionRows, paginationParameters.getPage(), paginationParameters.getPerPage())
+                doPagination(
+                        filteredDimensionRows,
+                        paginationParameters.getPage(filteredDimensionRows.size()),
+                        paginationParameters.getPerPage()
+                )
                         .stream()
                         .collect(Collectors.toList()),
                 paginationParameters,
@@ -349,9 +366,10 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      * @return  All dimension rows that belongs to a requested page
      */
     private TreeSet<DimensionRow> getAllDimensionRowsPaged(PaginationParameters paginationParameters) {
+        TreeSet<DimensionRow> allRows = getAllOrderedDimensionRows();
         return doPagination(
-                getAllOrderedDimensionRows(),
-                paginationParameters.getPage(),
+                allRows,
+                paginationParameters.getPage(allRows.size()),
                 paginationParameters.getPerPage()
         );
     }
@@ -361,7 +379,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      *
      * @return  All ordered dimension rows that belongs to a requested page
      */
-    private TreeSet<DimensionRow> getAllOrderedDimensionRows() {
+    protected TreeSet<DimensionRow> getAllOrderedDimensionRows() {
         return getDimRowIndexes().stream()
                 .map(keyValueStore::get)
                 .filter(Objects::nonNull)
@@ -392,7 +410,8 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
      * @return  The index of rows
      */
     private List<String> getDimRowIndexes() {
-        return readValue(new TypeReference<List>() { }, keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey()));
+        return readValue(new TypeReference<List<String>>() { },
+            keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey()));
     }
 
     /**
@@ -426,7 +445,16 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     private TreeSet<DimensionRow> applyFilters(TreeSet<DimensionRow> dimensionRows, Set<ApiFilter> filters) {
         // filter chain
         for (ApiFilter filter : filters) {
-            switch (filter.getOperation()) {
+            FilterOperation op = filter.getOperation();
+            if (!(op instanceof DefaultFilterOperation)) {
+                LOG.error("Illegal Filter operation : {}, only default filter ops supported", filter.getOperation());
+                throw new IllegalArgumentException(
+                        "Only supports default filter operations: in, notin, startswith, contains, eq"
+                );
+            }
+            DefaultFilterOperation defaultFilterOp = (DefaultFilterOperation) op;
+
+            switch (defaultFilterOp) {
                 case eq:
                     // fall through on purpose since eq and in have the same functionality
                 case in:

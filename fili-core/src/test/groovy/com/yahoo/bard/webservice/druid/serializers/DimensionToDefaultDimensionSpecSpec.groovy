@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.druid.serializers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
@@ -13,7 +14,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -35,10 +36,15 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     DruidAggregationQuery<?> druidQuery
 
     def setup() {
-        objectMapper = new ObjectMapper()
+        objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
         DefaultPhysicalTableResolver resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
-        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver)
+        builder = new DruidQueryBuilder(
+                resources.logicalDictionary,
+                resolver,
+                resources.druidFilterBuilder,
+                resources.druidHavingBuilder
+        )
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 
@@ -48,10 +54,12 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
         apiRequest.getLogicalMetrics() >> ([lm1])
         apiRequest.getIntervals() >> [new Interval(new DateTime("2015"), Hours.ONE)]
         apiRequest.getFilterDimensions() >> []
-        apiRequest.getTopN() >> OptionalInt.empty()
+        apiRequest.getTopN() >> Optional.empty()
         apiRequest.getSorts() >> ([])
-        apiRequest.getCount() >> OptionalInt.empty()
-        apiRequest.getFilters() >> Collections.emptyMap()
+        apiRequest.getCount() >> Optional.empty()
+        apiRequest.getApiFilters() >> Collections.emptyMap()
+
+        apiRequest.withFilters(_) >> {apiRequest}
     }
 
     def "Serialize to apiName when apiName and physicalName of a dimension is the same"() {

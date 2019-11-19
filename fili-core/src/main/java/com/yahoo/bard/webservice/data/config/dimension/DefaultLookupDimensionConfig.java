@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 /**

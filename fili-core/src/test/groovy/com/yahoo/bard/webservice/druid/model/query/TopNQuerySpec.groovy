@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.druid.model.query
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionField
@@ -14,11 +16,10 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -27,8 +28,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 class TopNQuerySpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     @Shared
     DateTimeZone currentTZ
@@ -43,13 +43,12 @@ class TopNQuerySpec extends Specification {
     }
 
     TopNQuery defaultQuery(Map vars) {
-
-        vars.dataSource = vars.dataSource ?: new TableDataSource<TopNQuery>(new ConcretePhysicalTable(
+        vars.dataSource = vars.dataSource ?: new TableDataSource(TableTestUtils.buildTable(
                 "table_name",
                 DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                 [] as Set,
                 ["apiLocale": "locale"],
-                Mock(DataSourceMetadataService)
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
         ))
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
@@ -86,10 +85,10 @@ class TopNQuerySpec extends Specification {
         vars.dimension = vars.dimension ?: ""
         vars.threshold = vars.threshold ?: 5
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
-        vars.filter = vars.filter ? ((' "filter": ').replaceAll(/\s/, "") + vars.filter + ',') : ""
+        vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
         vars.context = vars.context ?
-                (('{"queryId":"dummy100",').replaceAll(/\s/, "") + vars.context + '}') :
-                '{"queryId":"dummy100"}'
+                /{"queryId":"dummy100",$vars.context}/ :
+                /{"queryId": "dummy100"}/
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
@@ -109,9 +108,10 @@ class TopNQuerySpec extends Specification {
     }
 
     def "check dimension serialization"() {
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
+        LinkedHashSet<DimensionField> dimensionFields = [
+                BardDimensionField.ID,
+                BardDimensionField.DESC
+        ] as LinkedHashSet
 
         Dimension dimension1 = new KeyValueStoreDimension(
                 "apiLocale",
@@ -124,7 +124,7 @@ class TopNQuerySpec extends Specification {
         TopNQuery dq1 = defaultQuery(dimension: dimension1)
         String druidQuery1 = MAPPER.writeValueAsString(dq1)
 
-        String queryString1 = stringQuery(dimension: '{ "dimension":"locale","outputName":"apiLocale","type":"default" }')
+        String queryString1 = stringQuery(dimension: '{"dimension":"locale","outputName":"apiLocale","type":"default"}')
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)

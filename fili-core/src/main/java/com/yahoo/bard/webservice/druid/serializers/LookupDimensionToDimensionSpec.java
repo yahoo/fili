@@ -3,12 +3,11 @@
 package com.yahoo.bard.webservice.druid.serializers;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
+import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension;
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.model.dimension.ExtractionDimensionSpec;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
-import com.yahoo.bard.webservice.druid.model.util.ModelUtil;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -25,18 +24,18 @@ import java.util.Optional;
 /**
  * Serializer to map LookupDimension to either DimensionSpec base on namespaces.
  */
-public class LookupDimensionToDimensionSpec  extends JsonSerializer<KeyValueStoreDimension> {
+public class LookupDimensionToDimensionSpec extends JsonSerializer<ExtractionFunctionDimension> {
     private static final Logger LOG = LoggerFactory.getLogger(LookupDimensionToDimensionSpec.class);
 
     @Override
-    public void serialize(KeyValueStoreDimension value, JsonGenerator gen, SerializerProvider provider)
+    public void serialize(ExtractionFunctionDimension value, JsonGenerator gen, SerializerProvider provider)
             throws IOException {
 
         if (!LookupDimension.class.isInstance(value) && !RegisteredLookupDimension.class.isInstance(value)) {
             throw new TypeMismatchException("Lookup dimension serializer was given a non-lookup dimension.");
         }
 
-        Optional<ExtractionFunction> extractionFunction = ModelUtil.getExtractionFunction(value);
+        Optional<ExtractionFunction> extractionFunction = value.getExtractionFunction();
 
         // Use DimensionToDefaultDimensionSpec serializer if LookupDimension does not contain any namespace or lookups
         // or is not the inner most query
@@ -53,6 +52,6 @@ public class LookupDimensionToDimensionSpec  extends JsonSerializer<KeyValueStor
                 }
         );
 
-        gen.writeObject(new ExtractionDimensionSpec(physicalName, apiName, extractionFunction.get()));
+        gen.writeObject(new ExtractionDimensionSpec(physicalName, apiName, extractionFunction.get(), value));
     }
 }

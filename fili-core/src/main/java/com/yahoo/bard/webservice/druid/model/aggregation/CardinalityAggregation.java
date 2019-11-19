@@ -9,11 +9,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -108,15 +110,9 @@ public class CardinalityAggregation extends Aggregation {
         return new CardinalityAggregation(getName(), dimensions, byRow);
     }
 
-    /**
-     * Cardinality aggregators cannot be safely nested due to correctness constraints which Bard does not currently
-     * support.
-     *
-     * @return Always throws an exception
-     */
     @Override
-    public Pair<Aggregation, Aggregation> nest() {
-        throw new UnsupportedOperationException("Cardinality aggregators cannot support dynamic nesting.");
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
+        return new ImmutablePair<>(Optional.of(this), Optional.empty());
     }
 
     @Override

@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.metric.mappers.PartialDataResultSetMapper
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
@@ -25,7 +25,7 @@ import java.util.function.Supplier
 public class PartialDataResultSetMapperSpec extends Specification {
 
     PhysicalTableDictionary physicalTableDictionary = Mock(PhysicalTableDictionary)
-    SimplifiedIntervalList intervals = SimplifiedIntervalList.NO_INTERVALS
+    SimplifiedIntervalList intervals = new SimplifiedIntervalList()
     ResultSetSchema schema = Mock(ResultSetSchema)
     Result result = Mock(Result)
     PartialDataHandler handler = new PartialDataHandler()
@@ -165,7 +165,7 @@ public class PartialDataResultSetMapperSpec extends Specification {
 
     PartialDataResultSetMapper buildMapper(
             SimplifiedIntervalList intervals,
-            Supplier<SimplifiedIntervalList> provider = { -> SimplifiedIntervalList.NO_INTERVALS }
+            Supplier<SimplifiedIntervalList> provider = { -> new SimplifiedIntervalList() }
     ) {
         return new PartialDataResultSetMapper(intervals, provider)
     }

@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
  */
@@ -16,10 +18,7 @@ public class LogicalMetric {
 
     private final TemplateDruidQuery query;
     private final ResultSetMapper calculation;
-    private final String name;
-    private final String longName;
-    private final String category;
-    private final String description;
+    protected LogicalMetricInfo logicalMetricInfo;
 
     /**
      * Build a fully specified Logical Metric.
@@ -27,9 +26,12 @@ public class LogicalMetric {
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param name  Name of the metric
-     * @param longName Long name of the metric
+     * @param longName  Long name of the metric
      * @param category  Category of the metric
      * @param description  Description of the metric
+     *
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
@@ -39,12 +41,7 @@ public class LogicalMetric {
             String category,
             String description
     ) {
-        this.calculation = calculation;
-        this.name = name;
-        this.longName = longName;
-        this.category = category;
-        this.description = description;
-        this.query = templateDruidQuery;
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, longName, category, description));
     }
 
     /**
@@ -57,14 +54,18 @@ public class LogicalMetric {
      * @param name  Name of the metric
      * @param description  Description of the metric
      *
+     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
+    @Deprecated
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
             String name,
             String description
     ) {
-        this(templateDruidQuery, calculation, name, name, DEFAULT_CATEGORY, description);
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, description));
     }
 
     /**
@@ -75,17 +76,39 @@ public class LogicalMetric {
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param name  Name of the metric
+     *
+     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
+     * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
+     * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
+    @Deprecated
     public LogicalMetric(TemplateDruidQuery templateDruidQuery, ResultSetMapper calculation, String name) {
-        this(templateDruidQuery, calculation, name, name, DEFAULT_CATEGORY, name);
+        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, name));
+    }
+
+    /**
+     * Constructor. Builds a Logical Metric whose instance variables are provided by a LogicalMetricInfo object.
+     *
+     * @param templateDruidQuery  Query the metric needs
+     * @param calculation  Mapper for the metric
+     * @param logicalMetricInfo  Logical Metric info provider
+     */
+    public LogicalMetric(
+            TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            @NotNull LogicalMetricInfo logicalMetricInfo
+    ) {
+        this.calculation = calculation;
+        this.logicalMetricInfo = logicalMetricInfo;
+        this.query = templateDruidQuery;
     }
 
     public String getName() {
-        return this.name;
+        return logicalMetricInfo.getName();
     }
 
     public String getDescription() {
-        return description;
+        return logicalMetricInfo.getDescription();
     }
 
     public ResultSetMapper getCalculation() {
@@ -100,21 +123,25 @@ public class LogicalMetric {
         return getTemplateDruidQuery().getMetricField(getName());
     }
 
-    @Override
-    public String toString() {
-        return "LogicalMetric{\n" +
-                "name=" + name + ",\n" +
-                "templateDruidQuery=" + query + ",\n" +
-                "calculation=" + calculation + "\n" +
-                "}";
-    }
-
     public String getCategory() {
-        return category;
+        return logicalMetricInfo.getCategory();
     }
 
     public String getLongName() {
-        return longName;
+        return logicalMetricInfo.getLongName();
+    }
+
+    public String getType() {
+        return logicalMetricInfo.getType();
+    }
+
+    @Override
+    public String toString() {
+        return "LogicalMetric{\n" +
+                "name=" + logicalMetricInfo.getName() + ",\n" +
+                "templateDruidQuery=" + query + ",\n" +
+                "calculation=" + calculation + "\n" +
+                "}";
     }
 
     @Override
@@ -125,14 +152,11 @@ public class LogicalMetric {
         return
                 Objects.equals(query, that.query) &&
                 Objects.equals(calculation, that.calculation) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(longName, that.longName) &&
-                Objects.equals(category, that.category) &&
-                Objects.equals(description, that.description);
+                Objects.equals(logicalMetricInfo, that.logicalMetricInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(query, calculation, name, longName, category, description);
+        return Objects.hash(query, calculation, logicalMetricInfo);
     }
 }

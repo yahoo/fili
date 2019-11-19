@@ -37,7 +37,7 @@ public class ResponseCorsFilter implements ContainerResponseFilter {
         // allow all requested headers
         headers.add("Access-Control-Allow-Headers", requestedHeaders == null ? "" : requestedHeaders);
 
-        headers.add("Access-Control-Allow-Methods", "*");
+        headers.add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT, PATCH");
         headers.add("Access-Control-Allow-Credentials", "true");
         RequestLog.stopTiming(this);
     }

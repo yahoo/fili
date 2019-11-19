@@ -9,16 +9,16 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_NON_NUMERI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_INVALID;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +35,7 @@ public class ApiHaving {
 
     private final LogicalMetric metric;
     private final HavingOperation operation;
-    private final Set<Double> values;
+    private final List<Double> values;
 
     /*  url having query pattern:  (metric name)-(operation)[(value or comma separated numeric values)]?
      *
@@ -58,7 +58,11 @@ public class ApiHaving {
      *
      * @throws BadHavingException  when having pattern is not matched or when any of its properties are not valid.
      */
-    public ApiHaving(@NotNull String havingQuery, MetricDictionary metricDictionary) throws BadHavingException {
+    public ApiHaving(
+            @NotNull String havingQuery,
+            Map<String, LogicalMetric> metricDictionary
+    ) throws BadHavingException {
+
         LOG.trace("Having query: {} MetricDictionary: {}", havingQuery, metricDictionary);
 
         Matcher tokenizedQuery = QUERY_PATTERN.matcher(havingQuery);
@@ -82,10 +86,10 @@ public class ApiHaving {
      * @param operation  The operation to perform (i.e. greater than, less than).
      * @param values  The numbers to compare the metric to.
      */
-    private ApiHaving(LogicalMetric metric, HavingOperation operation, Set<Double> values) {
+    public ApiHaving(LogicalMetric metric, HavingOperation operation, List<Double> values) {
         this.metric = metric;
         this.operation = operation;
-        this.values = Collections.unmodifiableSet(values);
+        this.values = Collections.unmodifiableList(values);
     }
 
     // CHECKSTYLE:OFF
@@ -97,7 +101,7 @@ public class ApiHaving {
         return new ApiHaving(metric, operation, values);
     }
 
-    public ApiHaving withValues(@NotNull Set<Double> values) {
+    public ApiHaving withValues(@NotNull List<Double> values) {
         return new ApiHaving(metric, operation, values);
     }
     // CHECKSTYLE:ON
@@ -110,7 +114,7 @@ public class ApiHaving {
         return operation;
     }
 
-    public Set<Double> getValues() {
+    public List<Double> getValues() {
         return values;
     }
 
@@ -125,7 +129,7 @@ public class ApiHaving {
      */
     private LogicalMetric extractMetric(
             Matcher tokenizedQuery,
-            MetricDictionary metricDictionary
+            Map<String, LogicalMetric> metricDictionary
     ) throws BadHavingException {
         String metricName = tokenizedQuery.group(1);
         LogicalMetric extractedMetric = metricDictionary.get(metricName);
@@ -164,8 +168,8 @@ public class ApiHaving {
      * @throws BadHavingException If the fragment of the query that specifies the values is malformed, or at least one
      * of the values is not a number.
      */
-    private Set<Double> extractValues(Matcher query, String havingQuery) throws BadHavingException {
-        Set<String> stringValues = createValueSet(query, havingQuery);
+    private List<Double> extractValues(Matcher query, String havingQuery) throws BadHavingException {
+        List<String> stringValues = createValueList(query, havingQuery);
 
         //Allows us to parse the values in a streamy way without losing information about the first value that
         //fails to parse.
@@ -179,7 +183,7 @@ public class ApiHaving {
         };
 
         try {
-            return stringValues.stream().map(toNumber).collect(Collectors.toCollection(LinkedHashSet::new));
+            return stringValues.stream().map(toNumber).collect(Collectors.toCollection(LinkedList::new));
         } catch (NumberFormatException e) {
             LOG.debug(HAVING_NON_NUMERIC.format(e.getMessage()));
             throw new BadHavingException(HAVING_NON_NUMERIC.format(e.getMessage()));
@@ -195,10 +199,10 @@ public class ApiHaving {
      * @return A set of strings representing the values to be used in the having query.
      * @throws BadHavingException If the string of values is malformed.
      */
-    private Set<String> createValueSet(Matcher query, String havingQuery) throws BadHavingException {
+    private List<String> createValueList(Matcher query, String havingQuery) throws BadHavingException {
         try {
             // replaceAll takes care of any leading ['s or trailing ]'s which might mess up the values set.
-            return new LinkedHashSet<>(
+            return new LinkedList<>(
                     FilterTokenizer.split(
                             query.group(3)
                                     .replaceAll("\\[", "")

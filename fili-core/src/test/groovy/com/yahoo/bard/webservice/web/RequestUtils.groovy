@@ -15,9 +15,8 @@ import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery
-import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 
 import org.joda.time.DateTimeZone
 
@@ -30,7 +29,7 @@ class RequestUtils {
             List postAggregations = []
     ) {
         DataSource dataSource = new TableDataSource(
-                new ConcretePhysicalTable(
+                TableTestUtils.buildTable(
                         dataSourceName,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
@@ -61,7 +60,7 @@ class RequestUtils {
             List postAggregations = []
     ) {
         DataSource dataSource = new TableDataSource(
-                new ConcretePhysicalTable(
+                TableTestUtils.buildTable(
                         dataSourceName,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
@@ -90,7 +89,7 @@ class RequestUtils {
             List postAggregations = []
     ) {
         DataSource dataSource = new TableDataSource(
-                new ConcretePhysicalTable(
+                TableTestUtils.buildTable(
                         dataSourceName,
                         DAY.buildZonedTimeGrain(DateTimeZone.UTC),
                         [] as Set,
@@ -109,25 +108,21 @@ class RequestUtils {
         )
     }
 
-    static String defaultQueryJson(
-            String dataSourceName = "dataSource",
-            TimeGrain timeGrain = DAY
-    ) {
-        """
-        {
-            "queryType" : "groupBy",
-            "context":{},
-            "dataSource" : {
-              "name" : "${dataSourceName}",
-              "type" : "table"
+    static String defaultQueryJson(String dataSourceName = "dataSource", TimeGrain timeGrain = DAY) {
+        """{
+            "queryType": "groupBy",
+            "context": {},
+            "dataSource": {
+              "name": "$dataSourceName",
+              "type": "table"
             },
-            "dimensions" : [ ],
-            "aggregations" : [ ],
-            "postAggregations" : [ ],
-            "intervals" : [ ],
-            "granularity" : {
-              "type" : "period",
-              "period" : "${timeGrain.getPeriodString()}"
+            "dimensions": [],
+            "aggregations": [],
+            "postAggregations": [],
+            "intervals": [],
+            "granularity": {
+              "type": "period",
+              "period": "$timeGrain.periodString"
             }
         }"""
     }

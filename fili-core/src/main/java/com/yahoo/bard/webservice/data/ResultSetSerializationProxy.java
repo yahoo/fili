@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +104,10 @@ public class ResultSetSerializationProxy {
         schemaComponents.put(SCHEMA_GRANULARITY, schema.getGranularity().getName());
         schemaComponents.put(
                 SCHEMA_DIM_COLUMNS,
-                schema.getColumns(DimensionColumn.class).stream().map(Column::getName).collect(Collectors.toSet())
+                schema.getColumns(DimensionColumn.class)
+                        .stream()
+                        .map(Column::getName)
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
         );
         schemaComponents.put(
                 SCHEMA_METRIC_COLUMNS,

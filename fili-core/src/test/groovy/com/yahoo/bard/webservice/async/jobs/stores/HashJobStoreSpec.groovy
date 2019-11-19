@@ -8,7 +8,7 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_
 import com.yahoo.bard.webservice.async.jobs.JobTestUtils
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
 import com.yahoo.bard.webservice.util.ReactiveTestUtils
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import rx.observers.TestSubscriber
 import spock.lang.Shared
@@ -55,13 +55,13 @@ class HashJobStoreSpec extends ApiJobStoreSpec {
         hashJobStore.save(userFooJobRow2).subscribe()
         hashJobStore.save(userBarJobRow1).subscribe()
 
-        userIdFilter = new JobRowFilter(USER_ID, FilterOperation.startswith, ["Fo"] as Set)
-        jobTicketFilter = new JobRowFilter(JOB_TICKET, FilterOperation.eq, ["1"] as Set)
+        userIdFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.startswith, ["Fo"] as Set)
+        jobTicketFilter = new JobRowFilter(JOB_TICKET, DefaultFilterOperation.eq, ["1"] as Set)
 
-        notInFilter = new JobRowFilter(USER_ID, FilterOperation.notin, ["Foo"] as Set)
-        inFilter = new JobRowFilter(USER_ID, FilterOperation.in, ["Foo"] as Set)
-        startsWithFilter = new JobRowFilter(USER_ID, FilterOperation.startswith, ["F"] as Set)
-        containsFilter = new JobRowFilter(USER_ID, FilterOperation.contains, ["oo"] as Set)
+        notInFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.notin, ["Foo"] as Set)
+        inFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.in, ["Foo"] as Set)
+        startsWithFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.startswith, ["F"] as Set)
+        containsFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.contains, ["oo"] as Set)
 
     }
 
@@ -112,7 +112,7 @@ class HashJobStoreSpec extends ApiJobStoreSpec {
         JobRow jobRowWithoutUserId = new JobRow(JOB_TICKET, [(JOB_TICKET): "1"])
         hashJobStore.save(jobRowWithoutUserId)
 
-        JobRowFilter jobRowFilter = new JobRowFilter(USER_ID, FilterOperation.eq, ["Foo"] as Set)
+        JobRowFilter jobRowFilter = new JobRowFilter(USER_ID, DefaultFilterOperation.eq, ["Foo"] as Set)
         TestSubscriber<JobRow> testSubscriber = new TestSubscriber<>()
 
         when:

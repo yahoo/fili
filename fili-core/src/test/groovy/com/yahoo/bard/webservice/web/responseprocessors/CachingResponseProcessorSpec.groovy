@@ -3,10 +3,10 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
-import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.cache.DataCache
@@ -15,13 +15,12 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
 
@@ -30,8 +29,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class CachingResponseProcessorSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
@@ -42,7 +40,7 @@ class CachingResponseProcessorSpec extends Specification {
     DataApiRequest apiRequest = Mock(DataApiRequest)
     GroupByQuery groupByQuery = Mock(GroupByQuery)
     List<ResultSetMapper> mappers = new ArrayList<ResultSetMapper>()
-    @Shared SimplifiedIntervalList intervals = NO_INTERVALS
+    @Shared SimplifiedIntervalList intervals = new SimplifiedIntervalList()
     @Shared SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([new Interval(0, 1)])
 
     ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : intervals])
@@ -78,10 +76,10 @@ class CachingResponseProcessorSpec extends Specification {
         true     | [:]
         false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
         false    | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
-        true     | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : NO_INTERVALS])
-        true     | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : NO_INTERVALS])
+        true     | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : new SimplifiedIntervalList()])
+        true     | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : new SimplifiedIntervalList()])
         false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): NO_INTERVALS, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList(), (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
     }
 
     def "Process response stored and continues without partial and good cache key"() {

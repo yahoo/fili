@@ -3,7 +3,9 @@
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
 /**
- * Allowed values for Extraction function in druid.
+ * An object that represents a allowed types for extraction function in Druid.
+ * <p>
+ * See http://druid.io/docs/latest/querying/dimensionspecs.html#extraction-functions
  */
 public interface ExtractionFunctionType {
 }

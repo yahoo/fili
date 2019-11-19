@@ -3,9 +3,9 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
-import com.yahoo.bard.webservice.data.metric.mappers.ColumnMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction;
@@ -52,29 +52,6 @@ public class ArithmeticMaker extends MetricMaker {
     }
 
     /**
-     * Constructor.
-     *
-     * @param metricDictionary  The dictionary used to resolve dependent metrics when building the LogicalMetric
-     * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
-     * @param resultSetMapper  The mapping function to be applied to the result that is returned by the query that is
-     * built from the LogicalMetric which is built by this maker.
-     *
-     * @deprecated to override default mapping, use the Function constructor
-     */
-    @Deprecated
-    public ArithmeticMaker(
-            MetricDictionary metricDictionary,
-            ArithmeticPostAggregationFunction function,
-            ColumnMapper resultSetMapper
-    ) {
-        this(
-                metricDictionary,
-                function,
-                (Function<String, ResultSetMapper>) (String name) -> (ResultSetMapper) resultSetMapper
-        );
-    }
-
-    /**
      * Build an ArithmeticMaker with SketchRoundUpMapper as the ResultSetMapper for building the LogicalMetric.
      *
      * @param metricDictionary  The dictionary used to resolve dependent metrics when building the LogicalMetric
@@ -89,7 +66,7 @@ public class ArithmeticMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Get the ArithmeticPostAggregation operands from the dependent metrics
         List<PostAggregation> operands = dependentMetrics.stream()
                 .map(metrics::get)
@@ -99,13 +76,17 @@ public class ArithmeticMaker extends MetricMaker {
 
         // Create the ArithmeticPostAggregation
         Set<PostAggregation> postAggregations = Collections.singleton(new ArithmeticPostAggregation(
-                metricName,
+                logicalMetricInfo.getName(),
                 function,
                 operands
         ));
 
         TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-        return new LogicalMetric(query, resultSetMapperSupplier.apply(metricName), metricName);
+        return new LogicalMetric(
+                query,
+                resultSetMapperSupplier.apply(logicalMetricInfo.getName()),
+                logicalMetricInfo
+        );
     }
 
     @Override

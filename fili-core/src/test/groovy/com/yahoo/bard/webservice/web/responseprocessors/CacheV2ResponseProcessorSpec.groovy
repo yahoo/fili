@@ -3,10 +3,11 @@
 package com.yahoo.bard.webservice.web.responseprocessors
 
 import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
-import static com.yahoo.bard.webservice.util.SimplifiedIntervalList.NO_INTERVALS
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DATA
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
@@ -16,13 +17,12 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
 import org.joda.time.Interval
 
@@ -31,8 +31,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 class CacheV2ResponseProcessorSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
@@ -44,7 +43,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
     DataApiRequest apiRequest = Mock(DataApiRequest)
     GroupByQuery groupByQuery = Mock(GroupByQuery)
     List<ResultSetMapper> mappers = new ArrayList<ResultSetMapper>()
-    @Shared SimplifiedIntervalList intervals = NO_INTERVALS
+    @Shared SimplifiedIntervalList intervals = new SimplifiedIntervalList()
     @Shared SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([new Interval(0, 1)])
 
     ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
@@ -57,10 +56,17 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     CacheV2ResponseProcessor crp
 
+    boolean cache_partial_data
+
     def setup() {
-        querySigningService.getSegmentSetId(_) >> Optional.of(1234)
+        querySigningService.getSegmentSetId(_) >> Optional.of(1234L)
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
+        cache_partial_data = CACHE_PARTIAL_DATA.isOn()
+    }
+
+    def cleanup() {
+        CACHE_PARTIAL_DATA.setOn(cache_partial_data)
     }
 
     def "Test Constructor"() {
@@ -87,10 +93,10 @@ class CacheV2ResponseProcessorSpec extends Specification {
         true     | [:]
         false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
         false    | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        true     | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): NO_INTERVALS])
-        true     | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): NO_INTERVALS])
+        true     | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
+        true     | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
         false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): NO_INTERVALS, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList(), (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
     }
 
 
@@ -105,14 +111,24 @@ class CacheV2ResponseProcessorSpec extends Specification {
 
     }
 
-    def "After error saving to cache, process response continues"() {
+    @Unroll
+    def "After error #savedToCache, process response continues"() {
         when:
+        CACHE_PARTIAL_DATA.setOn(cachePartialData)
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        2 * next.getResponseContext() >> responseContext
+        numGetContext * next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
+
+        where:
+        cachePartialData | _
+        true             | _
+        false            | _
+
+        savedToCache = cachePartialData ? "saving to cache" : "not saved to cache"
+        numGetContext = cachePartialData ? 0 : 2
     }
 
     def "After json serialization error of the cache value, process response continues"() {
@@ -133,30 +149,35 @@ class CacheV2ResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
     }
 
-    def "Partial data doesn't cache and then continues"() {
-        setup:
-        ResponseContext responseContext = createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
+    @Unroll
+    def "When cache_partial_data is turned #on, #typed data with #simplifiedIntervalList #is cached and then continues"() {
+        setup: "turn on or off cache_partial_data"
+        CACHE_PARTIAL_DATA.setOn(cachePartialData)
 
-        when:
+        when: "we process respnse"
         crp.processResponse(json, groupByQuery, null)
 
-        then:
-        2 * next.getResponseContext() >> responseContext
+        then: "data cache is handled property and continues"
+        numGetContext * next.getResponseContext() >> createResponseContext(
+                [(MISSING_INTERVALS_CONTEXT_KEY.name): simplifiedIntervalList]
+        )
+        numCache * dataCache.set(*_)
         1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
-    }
 
-    def "Volatile data doesn't cache and then continues"() {
-        setup:
-        ResponseContext responseContext = createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name) : nonEmptyIntervals])
+        where:
+        cachePartialData | typed      | simplifiedIntervalList
+        true             | "partial"  | intervals
+        false            | "partial"  | nonEmptyIntervals
+        false            | "partial"  | intervals
+        true             | "volatile" | intervals
+        false            | "volatile" | nonEmptyIntervals
+        false            | "volatile" | intervals
 
-        when:
-        crp.processResponse(json, groupByQuery, null)
+        on = cachePartialData ? "on" : "off"
+        is = simplifiedIntervalList.empty ? "is" : "is not"
 
-        then:
-        2 * next.getResponseContext() >> responseContext
-        1 * next.processResponse(json, groupByQuery, null)
-        0 * dataCache.set(*_)
+        numGetContext = cachePartialData ? 0 : 2
+        numCache = simplifiedIntervalList.empty ? 1 : 0
     }
 
     def "Overly long data doesn't cache and then continues"() {

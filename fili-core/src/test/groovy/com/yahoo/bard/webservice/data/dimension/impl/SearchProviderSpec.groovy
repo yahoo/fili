@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl
 
-import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.ID
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.DESC
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.FIELD1
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.FIELD2
+import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.ID
 import static com.yahoo.bard.webservice.data.dimension.BardDimensionField.makeDimensionRow
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -16,14 +16,15 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.FilterOperation
+import com.yahoo.bard.webservice.web.DefaultFilterOperation
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.joda.time.DateTime
 
 import spock.lang.Specification
-
 /**
  * Specification of behavior that all SearchProviders should share.
  */
@@ -41,6 +42,8 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
 
     LogicalTable animalTable
     DimensionDictionary spaceIdDictionary
+
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         childSetupSpec()
@@ -471,13 +474,13 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         ApiFilter oldDescription = new ApiFilter(
                 keyValueStoreDimension,
                 DESC,
-                FilterOperation.eq,
+                DefaultFilterOperation.eq,
                 ["this is a raptor"] as Set
         )
         ApiFilter newDescription = new ApiFilter(
                 keyValueStoreDimension,
                 DESC,
-                FilterOperation.eq,
+                DefaultFilterOperation.eq,
                 ["this is a new raptor"] as Set
         )
 
@@ -501,15 +504,66 @@ abstract class SearchProviderSpec<T extends SearchProvider> extends Specificatio
         searchProvider.findFilteredDimensionRowsPaged([newDescription] as Set, paginationParameters).getPageOfData() == [dimensionRow2new] as List
     }
 
+    def "The pagination information contains the correct number of results, but only sends the desired page"() {
+        setup: "Given a filter that will filter down to three rows"
+        /* Expected rows, not necessarily in this order:
+                name: "hawk", description: "this is a raptor"
+                name: "eagle", description: "this is a raptor"
+                name: "kumquat", description: "this is not an animal"
+        */
+        Set<ApiFilter> filters = [
+                buildFilter("animal|desc-startswith[this]"),
+                buildFilter("animal|desc-notin[this is an owl]")
+        ]
+        and: "We get the second page, where each page has two rows (so the last page has to have only one result)"
+        PaginationParameters parameters = new PaginationParameters("2", "last")
+
+        when: "We query the search provider"
+        Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)
+
+        then: "We get only the last page of results (which has one value)"
+        resultsPage.getPageOfData().size() == 1
+
+        and: "The pagination metadata includes the correct number of total results"
+        resultsPage.numResults == 3
+    }
+
+    def "An empty string filter value should return all results"() {
+        setup: "Given a filter that will match every row"
+        /* Expected rows, not necessarily in this order:
+                name: "owl", description: "this is an owl"
+                name: "hawk", description: "this is a raptor"
+                name: "eagle", description: "this is a raptor"
+                name: "kumquat", description: "this is not an animal"
+        */
+        Set<ApiFilter> filters = [
+                buildFilter("animal|desc-startswith[this]"),
+                buildFilter('animal|desc-contains[""]')
+        ]
+        Set<String> expectedOutcomes = ["owl", "hawk", "eagle", "kumquat"]
+        and: "We get the second page, where each page has two rows"
+        PaginationParameters parameters = new PaginationParameters(4, 1)
+
+        when: "We query the search provider"
+        Pagination<DimensionRow> resultsPage = searchProvider.findFilteredDimensionRowsPaged(filters, parameters)
+
+        then: "We get only one page of results"
+        resultsPage.getPageOfData().size() == 4
+
+        and: "We get only {'owl', 'hawk', 'eagle', 'kumquat'}"
+        resultsPage.numResults == 4
+        expectedOutcomes == resultsPage.pageOfData.collect{ it.getKeyValue() } as Set
+    }
+
     /**
      * Checks that this search provider's indices have been cleared.
      *
      * @return true if the search provider's indices have been cleared properly, false otherwise
      */
-    abstract boolean indicesHaveBeenCleared();
+    abstract boolean indicesHaveBeenCleared()
 
     ApiFilter buildFilter(String filterQuery) {
-        new ApiFilter(filterQuery, spaceIdDictionary)
+        return filterBinders.generateApiFilter(filterQuery, spaceIdDictionary)
     }
 
     def "findAllDimensionRowsPaged and findFilteredDimensionRowsPaged paginates results correctly"() {

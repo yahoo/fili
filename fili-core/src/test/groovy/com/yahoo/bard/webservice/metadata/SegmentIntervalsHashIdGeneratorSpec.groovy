@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.metadata
 import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource
@@ -14,12 +15,14 @@ import com.yahoo.bard.webservice.druid.model.query.LookbackQuery
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuerySpec
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuerySpec
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.DefaultingDictionary
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTime
+import org.joda.time.Interval
 import org.joda.time.Period
 
 import spock.lang.Shared
@@ -29,6 +32,10 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.atomic.AtomicReference
 
 class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
+    @Shared
+    Interval interval1
+    @Shared
+    Interval interval2
     @Shared
     Map<String, SegmentInfo> segmentInfoMap1
     @Shared
@@ -54,65 +61,68 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
     @Shared
     LookbackQuery lookbackQuery
 
+    @Override
+    def childSetupSpec() {
+        tableName = generateTableName()
+        intervals = generateIntervals()
+        segments = generateSegments()
+    }
+
     def setupSpec() {
-        segmentInfoMap1 = new LinkedHashMap<>()
-        segmentInfoMap2 = new LinkedHashMap<>()
-        segmentInfoMap3 = new LinkedHashMap<>()
+        interval1 = intervals.interval1
+        interval2 = intervals.interval2
 
-        segmentInfoMap1.put(segment1.getIdentifier(), new SegmentInfo(segment1))
-        segmentInfoMap1.put(segment2.getIdentifier(), new SegmentInfo(segment2))
+        segmentInfoMap1 = [:] as LinkedHashMap
+        segmentInfoMap2 = [:] as LinkedHashMap
+        segmentInfoMap3 = [:] as LinkedHashMap
 
-        segmentInfoMap2.put(segment3.getIdentifier(), new SegmentInfo(segment3))
+        segmentInfoMap1[segments.segment1.identifier] = new SegmentInfo(segments.segment1)
+        segmentInfoMap1[segments.segment2.identifier] = new SegmentInfo(segments.segment2)
+
+        segmentInfoMap2[segments.segment3.identifier] = new SegmentInfo(segments.segment3)
 
         jtb = new JerseyTestBinder()
-        tableDict = jtb.configurationLoader.getPhysicalTableDictionary()
+        tableDict = jtb.configurationLoader.physicalTableDictionary
         metadataService = new DataSourceMetadataService()
 
-        segmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(
-                tableDict,
-                metadataService
+        segmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService)
+
+        Map<Class, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>(
+                { DruidAggregationQuery query -> new SimplifiedIntervalList(query.intervals) } as RequestedIntervalsFunction
         )
+        signingFunctions.put(LookbackQuery, new LookbackQuery.LookbackQueryRequestedIntervalsFunction())
 
-        Map<Class, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>({new SimplifiedIntervalList(it.getIntervals())} as RequestedIntervalsFunction)
-        signingFunctions.put(LookbackQuery.class, new LookbackQuery.LookbackQueryRequestedIntervalsFunction())
+        customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(metadataService, signingFunctions)
 
-        customSegmentSetIdGenerator = new SegmentIntervalsHashIdGenerator(
-                tableDict,
-                metadataService,
-                signingFunctions
-        )
+        availabilityList1 = [
+                (interval1.start): segmentInfoMap1,
+                (interval2.start): segmentInfoMap2
+        ] as ConcurrentSkipListMap
 
-        availabilityList1 = new ConcurrentSkipListMap<>()
-
-        availabilityList1.put(interval1.getStart(), segmentInfoMap1)
-        availabilityList1.put(interval2.getStart(), segmentInfoMap2)
-
-        availabilityList2 = new ConcurrentSkipListMap<>()
-        availabilityList2.put(interval2.getStart(), segmentInfoMap2)
+        availabilityList2 = [(interval2.start): segmentInfoMap2] as ConcurrentSkipListMap
 
         AtomicReference<ConcurrentSkipListMap<DateTime, Map<String, SegmentInfo>>> atomicRef = new AtomicReference<>()
         atomicRef.set(availabilityList1)
 
         metadataService.allSegmentsByTime.put(
-                tableDict.get(tableName).getTableName(),
+                tableDict.get(tableName).dataSourceNames[0],
                 atomicRef
-        );
+        )
 
-        TimeSeriesQuerySpec timeSeriesQuerySpec = new TimeSeriesQuerySpec()
-        timeSeriesQuery = timeSeriesQuerySpec.defaultQuery(
+        timeSeriesQuery = new TimeSeriesQuerySpec().defaultQuery(
                 intervals: [interval2],
                 dataSource: new TableDataSource(
-                        new ConcretePhysicalTable(
-                                tableName, DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
+                        TableTestUtils.buildTable(
+                                tableName,
+                                DefaultTimeGrain.DAY.buildZonedTimeGrain(UTC),
                                 [] as Set,
                                 [:],
-                                Mock(DataSourceMetadataService)
+                                Mock(DataSourceMetadataService) {getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
                         )
                 )
         )
 
-        LookbackQuerySpec lookbackQuerySpec = new LookbackQuerySpec()
-        lookbackQuery = lookbackQuerySpec.defaultQuery(
+        lookbackQuery = new LookbackQuerySpec().defaultQuery(
                 dataSource: new QueryDataSource(timeSeriesQuery),
                 lookbackOffsets: [Period.days(-1)]
         )
@@ -124,37 +134,41 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
 
     def "test metadata service returns valid segment ids"() {
         setup:
-        DataSource<?> dataSource = Mock(DataSource)
-        dataSource.getNames() >> ([tableName] as Set)
+        DataSource dataSource = Mock(DataSource)
+        dataSource.physicalTable >> Mock(ConstrainedTable) {
+            getDataSourceNames() >> ([DataSourceName.of(tableName)] as Set)
+        }
+
         DruidAggregationQuery<?> query = Mock(DruidAggregationQuery)
-        query.getIntervals() >> [interval1, interval2]
-        query.getInnermostQuery() >> query
-        query.getDataSource() >> dataSource
+        query.intervals >> [interval1, interval2]
+        query.innermostQuery >> query
+        query.dataSource >> dataSource
 
         when:
         Optional<Long> hashCode = segmentSetIdGenerator.getSegmentSetId(query)
 
         then:
-        hashCode.isPresent() && hashCode.get() == availabilityList1.hashCode() as Long
+        hashCode.present && hashCode.get() == availabilityList1.hashCode() as Long
     }
 
     @Unroll
     def "test getSegmentHash produces the #expectedHash for #requestedSegment"() {
         expect:
-        segmentSetIdGenerator.getSegmentHash(requestedSegment) == expectedHash
+        segmentSetIdGenerator.getSegmentHash(requestedSegment.stream()) == expectedHash
 
         where:
-        requestedSegment                                | expectedHash
-        [] as Set                                       | 0 as Long
+        requestedSegment                                | expectedValue
+        [] as Set                                       | null
         [availabilityList1] as Set                      | availabilityList1.hashCode()
-        [availabilityList2, availabilityList1] as Set   | (availabilityList2.hashCode() + availabilityList1.hashCode()) as long
+        [availabilityList2, availabilityList1] as Set   | availabilityList2.hashCode() + availabilityList1.hashCode()
+
+        expectedHash = !expectedValue ? Optional.empty() : Optional.of(expectedValue as long)
     }
 
     def "test different segments have different hashcodes"() {
         expect:
-        segmentSetIdGenerator.getSegmentHash([availabilityList1] as Set) != segmentSetIdGenerator.getSegmentHash([availabilityList2] as Set)
+        segmentSetIdGenerator.getSegmentHash([availabilityList1].stream()).get() != segmentSetIdGenerator.getSegmentHash([availabilityList2].stream()).get()
     }
-
 
     @Unroll
     def "test SegmentIntervalsHashGenerator with custom QuerySigningService returns valid #segmentId for a given #query"() {
@@ -162,7 +176,7 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         Optional<Long> hashCode = customSegmentSetIdGenerator.getSegmentSetId(query)
 
         then:
-        hashCode.isPresent() && hashCode.get() == segmentId
+        hashCode.present && hashCode.get() == segmentId
 
         where:
         query           | segmentId

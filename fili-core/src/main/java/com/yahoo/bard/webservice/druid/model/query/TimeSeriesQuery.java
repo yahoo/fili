@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
@@ -31,8 +32,8 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
      * @param postAggregations  The post-aggregations
      * @param intervals  The intervals
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     public TimeSeriesQuery(
             DataSource dataSource,
@@ -42,7 +43,7 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
             Collection<PostAggregation> postAggregations,
             Collection<Interval> intervals,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
         super(
                 DefaultQueryType.TIMESERIES,
@@ -54,7 +55,7 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
                 postAggregations,
                 intervals,
                 context,
-                doFork
+                incrementQueryId
         );
     }
 

@@ -1,40 +1,30 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2018 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
-
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_ERROR;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
-import com.yahoo.bard.webservice.util.FilterTokenizer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * ApiFilter object.
+ * ApiFilter object. Represents the different pieces of data in the filter clause of a Fili Api Query.
  */
 public class ApiFilter {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiFilter.class);
 
     private final Dimension dimension;
     private final DimensionField dimensionField;
     private final FilterOperation operation;
-    private final Set<String> values;
+    private final List<String> values;
 
     /**
      * Constructor.
@@ -45,130 +35,129 @@ public class ApiFilter {
      * @param values  The values the filter uses when operating
      */
     public ApiFilter(
-            Dimension dimension,
+            @NotNull Dimension dimension,
             DimensionField dimensionField,
             FilterOperation operation,
-            Set<String> values
+            Collection<String> values
     ) {
         this.dimension = dimension;
         this.dimensionField = dimensionField;
         this.operation = operation;
-        this.values = Collections.unmodifiableSet(values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withDimension(@NotNull Dimension dimension) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withDimensionField(@NotNull DimensionField dimensionField) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withOperation(@NotNull FilterOperation operation) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
-    }
-
-    @SuppressWarnings("checkstyle:javadocmethod")
-    public ApiFilter withValues(@NotNull Set<String> values) {
-        return new ApiFilter(dimension, dimensionField, operation, values);
+        this.values = Collections.unmodifiableList(new ArrayList<>(values)) ;
     }
 
     /**
+     * Constructor.
+     *
      * Parses the URL filter Query and generates the ApiFilter object.
      *
      * @param filterQuery  Expects a URL filter query String in the format:
-     * <p>
      * <code>(dimension name)|(field name)-(operation)[?(value or comma separated values)]?</code>
-     *
      * @param dimensionDictionary  cache containing all the valid dimension objects.
      *
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
-     * valid.
+     * @deprecated use {@link ApiFilterGenerator} build method instead
      */
+    @Deprecated
     public ApiFilter(
             @NotNull String filterQuery,
             DimensionDictionary dimensionDictionary
     ) throws BadFilterException {
-        LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
-
-        /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
-         *
-         *  e.g.    locale|name-in[US,India]
-         *          locale|id-eq[5]
-         *
-         *          dimension name: locale      locale
-         *          field name:     name        id
-         *          operation:      in          eq
-         *          values:         US,India    5
-         */
-        Pattern pattern = Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
-        Matcher matcher = pattern.matcher(filterQuery);
-
-        // if pattern match found, extract values else throw exception
-        if (!matcher.matches()) {
-            LOG.debug(FILTER_INVALID.logFormat(filterQuery));
-            throw new BadFilterException(FILTER_INVALID.format(filterQuery));
-        }
-
-        try {
-            // Extract filter dimension form the filter query.
-            String filterDimensionName = matcher.group(1);
-            this.dimension = dimensionDictionary.findByApiName(filterDimensionName);
-
-            // If no filter dimension is found in dimension dictionary throw exception.
-            if (dimension == null) {
-                LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(filterDimensionName));
-                throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(filterDimensionName));
-            }
-
-            String dimensionFieldName = matcher.group(2);
-            try {
-                this.dimensionField = this.dimension.getFieldByName(dimensionFieldName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(dimensionFieldName, filterDimensionName));
-                throw new BadFilterException(
-                        FILTER_FIELD_NOT_IN_DIMENSIONS.format(dimensionFieldName, filterDimensionName)
-                );
-            }
-            String operationName = matcher.group(3);
-            try {
-                this.operation = FilterOperation.valueOf(operationName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(operationName));
-                throw new BadFilterException(FILTER_OPERATOR_INVALID.format(operationName));
-            }
-
-            // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-            this.values = new LinkedHashSet<>(
-                    FilterTokenizer.split(
-                            matcher.group(4)
-                                    .replaceAll("\\[", "")
-                                    .replaceAll("\\]", "")
-                                    .trim()
-                    )
-            );
-        } catch (IllegalArgumentException e) {
-            LOG.debug(FILTER_ERROR.logFormat(filterQuery, e.getMessage()), e);
-            throw new BadFilterException(FILTER_ERROR.format(filterQuery, e.getMessage()), e);
-        }
+        ApiFilter filter = ApiFilterGenerator.build(filterQuery, dimensionDictionary);
+        this.dimension = filter.getDimension();
+        this.dimensionField = filter.getDimensionField();
+        this.operation = filter.getOperation();
+        this.values = filter.getValuesList();
     }
 
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new dimension replacing this ApiFilter's
+     * dimension.
+     *
+     * @param dimension The new dimension to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withDimension(Dimension dimension) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new DimensionField replacing this ApiFilter's
+     * DimensionField.
+     *
+     * @param dimensionField The new DimensionField to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withDimensionField(DimensionField dimensionField) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new FilterOperation replacing this ApiFilter's
+     * FilterOperation.
+     *
+     * @param operation The new operation to use in the new ApiFilter.
+     * @return the new ApiFilter object.
+     */
+    public ApiFilter withOperation(FilterOperation operation) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Creates a new ApiFilter based on this ApiFilter, except with the new set of filter values replacing this
+     * ApiFilter's filter values.
+     *
+     * @param values The new set of values to use in the new ApiFilter
+     *
+     * @return the new ApiFilter object
+     */
+
+    public ApiFilter withValues(Collection<String> values) {
+        return new ApiFilter(dimension, dimensionField, operation, values);
+    }
+
+    /**
+     * Getter for this ApiFilter's dimension.
+     *
+     * @return the Dimension
+     */
     public Dimension getDimension() {
         return this.dimension;
     }
 
+    /**
+     * Getter for this ApiFilter's DimensionField.
+     *
+     * @return the DimensionField
+     */
     public DimensionField getDimensionField() {
         return this.dimensionField;
     }
 
+    /**
+     * Getter for this ApiFilter's FilterOperation.
+     *
+     * @return the operation
+     */
     public FilterOperation getOperation() {
         return this.operation;
     }
 
+    /**
+     * Getter for this ApiFilter's set of filter values.
+     *
+     * @return the set of values
+     */
     public Set<String> getValues() {
+        return new LinkedHashSet<>(this.values);
+    }
+
+    /**
+     * Getter for this ApiFilter's set of filter values.
+     *
+     * @return the list of values
+     */
+    public List<String> getValuesList() {
         return this.values;
     }
 
@@ -181,9 +170,9 @@ public class ApiFilter {
 
         return
                 Objects.equals(dimension, apiFilter.dimension) &&
-                Objects.equals(dimensionField, apiFilter.dimensionField) &&
-                Objects.equals(operation, apiFilter.operation) &&
-                Objects.equals(values, apiFilter.values);
+                        Objects.equals(dimensionField, apiFilter.dimensionField) &&
+                        Objects.equals(operation, apiFilter.operation) &&
+                        Objects.equals(values, apiFilter.values);
     }
 
     @Override

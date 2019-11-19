@@ -4,9 +4,10 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
         .ArithmeticPostAggregationFunction.DIVIDE;
-import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.sketchConverter;
+import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
@@ -71,7 +72,7 @@ public class AggregationAverageMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Get the Metric that is being averaged over
         LogicalMetric dependentMetric = metrics.get(dependentMetrics.get(0));
 
@@ -80,9 +81,9 @@ public class AggregationAverageMaker extends MetricMaker {
 
         // Build the TemplateDruidQuery for the metric
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
-        TemplateDruidQuery outerQuery = buildOuterQuery(metricName, sourceMetric, innerQuery);
+        TemplateDruidQuery outerQuery = buildOuterQuery(logicalMetricInfo.getName(), sourceMetric, innerQuery);
 
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, metricName);
+        return new LogicalMetric(outerQuery, NO_OP_MAPPER, logicalMetricInfo);
     }
 
     /**
@@ -125,14 +126,12 @@ public class AggregationAverageMaker extends MetricMaker {
      * @return A template query representing the inner aggregation
      */
     private TemplateDruidQuery buildInnerQuery(MetricField sourceMetric, TemplateDruidQuery innerDependentQuery) {
-        Set<Aggregation> newInnerAggregations = convertSketchesToSketchMerges(innerDependentQuery.getAggregations());
-
         Set<PostAggregation> newInnerPostAggregations = (sourceMetric instanceof PostAggregation) ?
                 ImmutableSet.of((PostAggregation) sourceMetric) :
                 Collections.emptySet();
 
         // Build the inner query with the new aggregations and with the count
-        return innerDependentQuery.withAggregations(newInnerAggregations)
+        return innerDependentQuery.withAggregations(innerDependentQuery.getAggregations())
                 .withPostAggregations(newInnerPostAggregations)
                 .merge(buildTimeGrainCounterQuery());
     }
@@ -147,7 +146,7 @@ public class AggregationAverageMaker extends MetricMaker {
      */
     private MetricField convertToSketchEstimateIfNeeded(MetricField originalSourceMetric) {
         return originalSourceMetric instanceof SketchAggregation ?
-                sketchConverter.asSketchEstimate((SketchAggregation) originalSourceMetric) :
+                getSketchConverter().asSketchEstimate((SketchAggregation) originalSourceMetric) :
                 originalSourceMetric;
     }
 
@@ -165,7 +164,7 @@ public class AggregationAverageMaker extends MetricMaker {
     @Deprecated
     private Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
         return originalAggregations.stream()
-                .map(agg -> agg.isSketch() ? sketchConverter.asInnerSketch((SketchAggregation) agg) : agg)
+                .map(agg -> agg.isSketch() ? getSketchConverter().asInnerSketch((SketchAggregation) agg) : agg)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 

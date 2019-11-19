@@ -19,12 +19,13 @@ import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.impl.AsyncDruidWebServiceImpl;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter;
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
-import com.yahoo.bard.webservice.web.FilteredSketchMetricsHelper;
+import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper;
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder;
+import com.yahoo.bard.webservice.web.filters.BardLoggingFilter;
 import com.yahoo.bard.webservice.web.filters.TestLogWrapperFilter;
 
 import com.codahale.metrics.jersey2.InstrumentedResourceMethodApplicationListener;
@@ -37,6 +38,7 @@ import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -47,15 +49,17 @@ import ch.qos.logback.classic.LoggerContext;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 
 /**
  * Configures JerseyTest and also sets up DI.  This is a singleton since JerseyTest binds a network port.
  */
 public class JerseyTestBinder {
-
     private static final Logger LOG = LoggerFactory.getLogger(JerseyTestBinder.class);
 
     public ApplicationState state;
@@ -66,6 +70,7 @@ public class JerseyTestBinder {
     public ConfigurationLoader configurationLoader;
     public TestBinderFactory testBinderFactory;
     public boolean useTestWebService = true;
+    private static final String RANDOM_PORT = "0";
 
     private DateTimeZone previousDateTimeZone;
 
@@ -100,13 +105,14 @@ public class JerseyTestBinder {
      * @param resourceClasses  Resource classes for Jersey to load
      */
     public JerseyTestBinder(boolean doStart, ApplicationState state, Class<?>... resourceClasses) {
+
         this.state = state;
 
         //Initializing the Sketch field converter
-        FieldConverterSupplier.sketchConverter =  initializeSketchConverter();
+        FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
         //Initialize the metrics filter helper
-        FieldConverterSupplier.metricsFilterSetBuilder = initializeMetricsFilterSetBuilder();
+        FieldConverterSupplier.setMetricsFilterSetBuilder(initializeMetricsFilterSetBuilder());
 
         // Set up the web services
         buildWebServices();
@@ -130,7 +136,7 @@ public class JerseyTestBinder {
         // Order matters. First check if BardLoggingFilter is requested
         boolean skipWrapper = false;
         for (Class<?> cls : resourceClasses) {
-            if (cls.getSimpleName().equals("BardLoggingFilter")) {
+            if (cls.getSimpleName().equals(BardLoggingFilter.class.getSimpleName())) {
                 skipWrapper = true;
             }
         }
@@ -140,7 +146,7 @@ public class JerseyTestBinder {
         if (skipWrapper) {
             this.config.registerClasses(resourceClasses);
         } else {
-            this.config.register(TestLogWrapperFilter.class, 1);
+            this.config.register(getLoggingFilter(), 1);
             // Now register the requested classes
             for (Class<?> cls : resourceClasses) {
                 this.config.register(cls, 5);
@@ -156,6 +162,9 @@ public class JerseyTestBinder {
         this.harness = new JerseyTest() {
             @Override
             protected Application configure() {
+                // Find first available port.
+                forceSet(TestProperties.CONTAINER_PORT, RANDOM_PORT);
+
                 return config;
             }
         };
@@ -163,6 +172,16 @@ public class JerseyTestBinder {
         if (doStart) {
             start();
         }
+    }
+
+    /**
+     * Allows a customer to customize which logging filter to use during testing if the `BardLoggingFilter` is not
+     * explicitly specified.
+     *
+     * @return The Class the customer is using as a LoggingFilter
+     */
+    protected Class<?> getLoggingFilter() {
+        return TestLogWrapperFilter.class;
     }
 
     /**
@@ -239,7 +258,7 @@ public class JerseyTestBinder {
             if (isAlive()) {
                 // Include thread stack dump
                 StringBuilder sb = new StringBuilder("Timeout starting Jersey\n");
-                for (StackTraceElement ste: this.getStackTrace()) {
+                for (StackTraceElement ste : this.getStackTrace()) {
                     sb.append("\tat ").append(ste).append('\n');
                 }
                 // try to interrupt and tear down
@@ -272,21 +291,21 @@ public class JerseyTestBinder {
     }
 
     /**
-     * Initialize the field converter. By default it is SketchFieldConverter
+     * Initialize the field converter. By default it is ThetaSketchFieldConverter
      *
-     * @return An instance of SketchFieldConverter
+     * @return An instance of FieldConverters
      */
     protected FieldConverters initializeSketchConverter() {
-        return new SketchFieldConverter();
+        return new ThetaSketchFieldConverter();
     }
 
     /**
-     * Initialize the FilteredMetricsHelper. By default it is FilteredSketchMetricsHelper
+     * Initialize the MetricsFilterSetBuilder. By default it is FilteredThetaSketchMetricsHelper
      *
-     * @return An instance of FilteredSketchMetricsHelper
+     * @return An instance of MetricsFilterSetBuilder
      */
     protected MetricsFilterSetBuilder initializeMetricsFilterSetBuilder() {
-        return new FilteredSketchMetricsHelper();
+        return new FilteredThetaSketchMetricsHelper();
     }
 
     public ConfigurationLoader getConfigurationLoader() {
@@ -301,12 +320,8 @@ public class JerseyTestBinder {
         return harness;
     }
 
-    public DruidWebService getUiDruidWebService() {
-        return state.uiWebService;
-    }
-
-    public DruidWebService getNonUiDruidWebService() {
-        return state.nonUiWebService;
+    public DruidWebService getDruidWebService() {
+        return state.webService;
     }
 
     public DruidWebService getMetadataDruidWebService() {
@@ -401,20 +416,52 @@ public class JerseyTestBinder {
 
         // This alternate switched implementation approach is not really used anywhere, should be split off into a
         // separate subclass if needed
-        if (state.uiWebService == null) {
-            state.uiWebService = (useTestWebService) ?
+        if (state.webService == null) {
+            state.webService = useTestWebService ?
                     new TestDruidWebService("Test UI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getUiServiceConfig(), mapper);
-        }
-        if (state.nonUiWebService == null) {
-            state.nonUiWebService = (useTestWebService) ?
-                    new TestDruidWebService("Test NonUI WS") :
-                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getNonUiServiceConfig(), mapper);
+                    new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getServiceConfig(), mapper);
         }
         if (state.metadataWebService == null) {
             state.metadataWebService = (useTestWebService) ?
                     new TestDruidWebService("Test Metadata WS") :
                     new AsyncDruidWebServiceImpl(DruidClientConfigHelper.getMetadataServiceConfig(), mapper);
         }
+    }
+
+    /**
+     * Constructs and sends a request to a specified URL with specified query parameters.
+     * <p>
+     * If the request does not have any query parameters, please use {@link #makeRequest(String)} instead.
+     *
+     * @param target  The specified URL
+     * @param queryParams  The specified query parameters
+     *
+     * @return a request builder which user can use to send different types of requests, such as HTTP HEAD and HTTP GET
+     * methods.
+     */
+    public Builder makeRequest(String target, Map<String, Object> queryParams) {
+        // Set target of call
+        WebTarget httpCall = getHarness().target(target);
+
+        // Add query params to call
+        for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
+            httpCall = httpCall.queryParam(entry.getKey(), entry.getValue());
+        }
+
+        return httpCall.request();
+    }
+
+    /**
+     * Constructs and sends a request to a specified URL.
+     * <p>
+     * If the request has query parameters, please use {@link #makeRequest(String, Map)} instead.
+     *
+     * @param target  The specified URL
+     *
+     * @return a request builder which user can use to send different types of requests, such as HTTP HEAD and HTTP GET
+     * methods.
+     */
+    public Builder makeRequest(String target) {
+        return getHarness().target(target).request();
     }
 }

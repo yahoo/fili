@@ -24,18 +24,6 @@ public class DimensionColumn extends Column {
         this.dimension = dimension;
     }
 
-    /**
-     * Constructor.
-     * Uses the given columnName for column name.
-     *
-     * @param dimension  The column's corresponding dimension
-     * @param columnName  Column name backing dimension
-     */
-    protected DimensionColumn(@NotNull Dimension dimension, @NotNull String columnName) {
-        super(columnName);
-        this.dimension = dimension;
-    }
-
     public Dimension getDimension() {
         return this.dimension;
     }

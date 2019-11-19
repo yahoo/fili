@@ -2,24 +2,26 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.aggregation
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
+import com.yahoo.bard.webservice.table.ConstrainedTable
+import com.yahoo.bard.webservice.table.TableTestUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 
+import org.apache.commons.lang3.tuple.Pair
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 
 class CardinalityAggregationSpec extends Specification {
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new Jdk8Module().configureAbsentsAsNulls(false))
+    private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     static String expectedJson = """
     { "type":"cardinality", "name":"name", "fieldNames": ["d1DruidName", "d2DruidName"], "byRow": true}
@@ -28,11 +30,20 @@ class CardinalityAggregationSpec extends Specification {
     Dimension d2
     CardinalityAggregation a1
 
+    ConstrainedTable constrainedTable
+
     def setupSpec() {
         MAPPER.readTree(expectedJson)
     }
 
     def setup() {
+        constrainedTable = TableTestUtils.buildTable(
+                "table",
+                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
+                [] as Set,
+                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
+                Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}
+        )
         d1 = Mock(Dimension)
         d2 = Mock(Dimension)
 
@@ -41,12 +52,16 @@ class CardinalityAggregationSpec extends Specification {
         a1 = new CardinalityAggregation("name", [d1, d2] as LinkedHashSet, true)
     }
 
-    def "verify nest throws exception"() {
+    def "verify cardinality aggregation nests correctly"() {
+        setup:
+        Aggregation a1 = new CardinalityAggregation("name", new LinkedHashSet<Dimension>(), true)
+
         when:
-        a1.nest()
+        Pair<Optional<Aggregation>, Optional<Aggregation>> nested = a1.nest()
 
         then:
-        thrown(UnsupportedOperationException)
+        nested.getLeft().get() == a1
+        nested.getRight() == Optional.empty()
     }
 
     def "Test with field throws exception"() {
@@ -70,13 +85,8 @@ class CardinalityAggregationSpec extends Specification {
         //       Consequently, query's also need this to be serialized.
         DruidAggregationQuery query = Mock(DruidAggregationQuery)
         DataSource ds = Mock(DataSource)
-        ds.getPhysicalTables() >> [new ConcretePhysicalTable(
-                "table",
-                DefaultTimeGrain.DAY.buildZonedTimeGrain(DateTimeZone.UTC),
-                [] as Set,
-                ["d1ApiName": "d1DruidName", "d2ApiName": "d2DruidName"],
-                Mock(DataSourceMetadataService)
-        )]
+        ds.getQuery() >> Optional.empty()
+        ds.getPhysicalTable() >> constrainedTable
         query.dataSource >> ds
         query.aggregations >> [a1]
 

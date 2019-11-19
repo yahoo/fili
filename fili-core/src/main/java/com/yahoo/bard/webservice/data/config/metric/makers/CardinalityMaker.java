@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -66,14 +67,16 @@ public class CardinalityMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentDimensions) {
+    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentDimensions) {
         Set<Dimension> dimensions = dependentDimensions.stream()
                 .map(dimensionDictionary::findByApiName)
                 .collect(Collectors.toSet());
 
-        Set<Aggregation> aggs = Collections.singleton(new CardinalityAggregation(metricName, dimensions, byRow));
+        Set<Aggregation> aggs = Collections.singleton(
+                new CardinalityAggregation(logicalMetricInfo.getName(), dimensions, byRow)
+        );
 
-        return new LogicalMetric(new TemplateDruidQuery(aggs, Collections.emptySet()), NO_OP_MAPPER, metricName);
+        return new LogicalMetric(new TemplateDruidQuery(aggs, Collections.emptySet()), NO_OP_MAPPER, logicalMetricInfo);
     }
 
     @Override

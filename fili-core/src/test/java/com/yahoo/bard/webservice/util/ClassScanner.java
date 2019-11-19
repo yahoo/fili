@@ -92,7 +92,8 @@ public class ClassScanner {
             URL resource = resources.nextElement();
             dirs.add(new File(resource.getFile()));
         }
-        ArrayList<Class<?>> classes = new ArrayList<>();
+
+        List<Class<?>> classes = new ArrayList<>();
         for (File directory : dirs) {
             classes.addAll(findClasses(directory, packageName));
         }
@@ -112,14 +113,16 @@ public class ClassScanner {
         if (!directory.exists()) {
             return classes;
         }
-        TreeSet<File> files = new TreeSet<>(Arrays.asList(directory.listFiles()));
 
+        Iterable<File> files = new TreeSet<>(Arrays.asList(directory.listFiles()));
         for (File file : files) {
             String name = file.getName();
             if (file.isDirectory()) {
                 assert !name.contains(".");
+                // Extend the package and recurse
                 classes.addAll(findClasses(file, packageName + "." + name));
             } else if (name.endsWith(".class")) {
+                // Grab just the class name, stripping the .class extension
                 name = packageName + '.' + name.substring(0, name.length() - 6);
                 classes.add(Class.forName(name));
             }
@@ -174,7 +177,7 @@ public class ClassScanner {
         }
 
         // saves context for the InstantiationException
-        IllegalArgumentException cause = null;
+        IllegalArgumentException cause;
 
         // Try a no arg constructor first
         try {
@@ -212,7 +215,7 @@ public class ClassScanner {
                 boolean notnull = false;
                 Args argMode = mode;
                 for (Annotation annotation : constructor.getParameterAnnotations()[i]) {
-                    if (annotation.annotationType().isAssignableFrom(NotNull.class)) {
+                    if (NotNull.class.isInstance(annotation)) {
                         argMode = Args.VALUES;
                         notnull = true;
                         break;
@@ -240,7 +243,7 @@ public class ClassScanner {
         }
 
         // Exhausted all constructors, give up
-        throw (InstantiationException) new InstantiationException().initCause(cause);
+        throw (InstantiationException) new InstantiationException(cause.getMessage()).initCause(cause);
     }
 
     /**
@@ -277,7 +280,6 @@ public class ClassScanner {
             arg = cachedValue;
         } else if (cls == Object[].class) {
             arg = (T) new Object[0];
-
         } else if (cls.isArray()) {
             Object arrayElement = constructArg(cls.getComponentType(), mode, stack);
             arg = (T) Array.newInstance(cls.getComponentType(), 1);
@@ -287,7 +289,7 @@ public class ClassScanner {
         } else {
             try {
                 arg = cls.newInstance();
-            } catch (Throwable e) {
+            } catch (Throwable ignored) {
                 try {
                     arg = constructObject(cls, mode, stack);
                 } catch (Throwable e2) {
@@ -300,7 +302,7 @@ public class ClassScanner {
         if (arg != null) {
             putInArgumentValueCache(arg.getClass(), arg);
         }
-        return (T) arg;
+        return arg;
     }
 
     /**
@@ -347,13 +349,12 @@ public class ClassScanner {
                 // find a subclass to construct
                 if (cls.isAssignableFrom(subclass) && !Modifier.isAbstract(subclass.getModifiers())) {
                     try {
-                        @SuppressWarnings("unchecked")
-                        T arg = constructObject((Class<T>) subclass, mode, stack);
+                        T arg = constructObject(subclass.asSubclass(cls), mode, stack);
                         if (arg != null) {
                             return arg;
                         }
                     } catch (InstantiationException e) {
-                        LOG.debug("Instantiation exception : {}", e);
+                        LOG.trace("Instantiation exception : {}", e);
                     }
                 }
             }
@@ -374,13 +375,12 @@ public class ClassScanner {
      *
      * @return a mock if we have one, otherise just null
      */
-    @SuppressWarnings("unchecked")
     private <T> T getCachedValue(Class<T> cls) {
-        return (T) argumentValueCache.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return argumentValueCache.keySet().stream()
                 .filter(cls::isAssignableFrom)
                 .findFirst()
                 .map(argumentValueCache::get)
+                .map(StreamUtils.uncheckedCast(cls))
                 .orElse(null);
     }
 
@@ -389,8 +389,8 @@ public class ClassScanner {
      *
      * @param values  The value being cached
      */
-    public void putInArgumentValueCache(Collection values) {
-        values.stream().forEach(value -> putInArgumentValueCache(value.getClass(), value));
+    public void putInArgumentValueCache(Collection<?> values) {
+        values.forEach(value -> putInArgumentValueCache(value.getClass(), value));
     }
 
     /**
@@ -399,7 +399,7 @@ public class ClassScanner {
      * @param cls  The class to associate with the object
      * @param value  The value being cached
      */
-    private void putInArgumentValueCache(Class cls, Object value) {
+    public void putInArgumentValueCache(Class cls, Object value) {
         argumentValueCache.put(cls, value);
     }
 }

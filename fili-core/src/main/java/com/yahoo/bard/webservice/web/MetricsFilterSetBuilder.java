@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -13,9 +13,10 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,7 +39,7 @@ public interface MetricsFilterSetBuilder {
      * @throws  BadApiRequestException Invalid metric query if the metric query has
      * duplicate metrics
      */
-    void validateDuplicateMetrics(JSONArray metricsJsonArray) throws BadApiRequestException;
+    void validateDuplicateMetrics(ArrayNode metricsJsonArray) throws BadApiRequestException;
 
     /**
      * Provides filter wrapped logical metric for the given logical metric.
@@ -51,16 +52,16 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return A Logical Metric that is filtered
-     * @throws DimensionRowNotFoundException if the dimension mentioned in the
-     * metric filter is not found
+     * @throws FilterBuilderException if the dimension mentioned in the
+     * metric filter is not found or other filter building error occurs
      */
     LogicalMetric getFilteredLogicalMetric(
             LogicalMetric logicalMetric,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * A method to update outer query aggregations and postAggregations.
@@ -120,16 +121,16 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return updated query which contains filtered aggregations
-     * @throws DimensionRowNotFoundException if the dimension row in the metric
-     * filter is not found.
+     * @throws FilterBuilderException if the dimension row in the metric
+     * filter is not found or other filter building issue occurs
      */
     TemplateDruidQuery updateTemplateDruidQuery(
             TemplateDruidQuery query,
-            JSONObject metricFilterObject,
+            JsonNode metricFilterObject,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * A method to replace postAggs with new postAggs that access the intersection or union of filteredAggregators.
@@ -173,16 +174,15 @@ public interface MetricsFilterSetBuilder {
      * @param apiRequest  The data api request that will be used to generate the filters
      *
      * @return A set of FilteredAggregators for the given aggregator and Filter
-     * @throws DimensionRowNotFoundException if the dimension row in the metric
-     * filter is not found.
+     * @throws FilterBuilderException if the dimension row in the metric filter is not found or other error occurs.
      */
     Set<FilteredAggregation> getFilteredAggregation(
-            JSONObject filter,
+            JsonNode filter,
             Aggregation aggregation,
             DimensionDictionary dimensionDictionary,
             LogicalTable table,
             DataApiRequest apiRequest
-    ) throws DimensionRowNotFoundException;
+    ) throws FilterBuilderException;
 
     /**
      * Method to prepare filter string.

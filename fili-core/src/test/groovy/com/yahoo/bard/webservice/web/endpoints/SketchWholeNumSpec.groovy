@@ -49,7 +49,7 @@ class SketchWholeNumSpec extends BaseDataServletComponentSpec {
                     "fieldName": "users",
                     "name": "users",
                     "size": 16384,
-                    "type": "sketchCount"
+                    "type": "thetaSketch"
                 }
         ],
             "dataSource": {

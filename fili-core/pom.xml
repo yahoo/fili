@@ -2,18 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
 
     <parent>
         <groupId>com.yahoo.fili</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.8-SNAPSHOT</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-core</artifactId>
     <packaging>jar</packaging>
+
     <name>Fili: Core Libraries</name>
     <description>
         Fili web service library provides core capabilities for RESTful aggregation navigation, query planning and
@@ -118,6 +116,10 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-afterburner</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
@@ -132,11 +134,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-csv</artifactId>
-        </dependency>
-        <dependency>
-            <!--TODO: switch back to jackson parser-->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
         </dependency>
 
         <!-- Redis -->
@@ -190,7 +187,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
             <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Lucene -->
@@ -205,6 +202,10 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-backward-codecs</artifactId>
         </dependency>
 
         <!-- Guava -->
@@ -266,18 +267,18 @@
                         <phase>generate-test-resources</phase>
                         <configuration>
                             <target>
-                                <delete 
+                                <delete
                                     quiet="true"
                                     file="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"/>
                                 <mkdir dir="${project.build.directory}/avro/avroFilesTesting"/>
-                                <java 
+                                <java
                                     jar="${project.build.directory}/avro-dependencies/jar/avro-tools.jar"
                                     fork="true">
                                     <arg value="fromjson"/>
                                     <arg value="--schema-file"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.avsc"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.json"/>
-                                    <redirector 
+                                    <redirector
                                         output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"
                                         binaryOutput="true"/>
                                 </java>
@@ -299,7 +300,7 @@
                         <goals>
                             <goal>add-test-resource</goal>
                         </goals>
-                        <configuration> 
+                        <configuration>
                             <resources>
                                 <resource>
                                     <directory>target/avro</directory>
@@ -311,28 +312,12 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>test-source</id>
                         <goals>
                             <goal>test-jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-test-javadocs</id>
-                        <goals>
-                            <goal>test-javadoc-no-fork</goal>
-                            <goal>test-jar</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -355,6 +340,7 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>test-jar</id>
                         <goals>
                             <goal>test-jar</goal>
                         </goals>

@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -23,6 +24,7 @@ public class FilteredAggregationMakerSpec extends Specification{
 
     private static final String DEPENDENT_METRIC_NAME = "totalPageViews"
     private static final String FILT_METRIC_NAME = "filteredPageViews"
+    private static final String FILTER_METRIC_INFO = new LogicalMetricInfo(FILT_METRIC_NAME)
 
     MetricDictionary metricDictionary = new MetricDictionary();
     LongSumMaker longSumMaker = new LongSumMaker(metricDictionary)
@@ -38,10 +40,10 @@ public class FilteredAggregationMakerSpec extends Specification{
         metricDictionary.put("longSum", metric);
 
         and: "The expected metric"
-        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILT_METRIC_NAME)
+        Aggregation expectedAgg = new FilteredAggregation(FILTER_METRIC_INFO, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
+        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILTER_METRIC_INFO)
 
         expect:
-        maker.make(FILT_METRIC_NAME, ["longSum"]) == expectedMetric
+        maker.make(new LogicalMetricInfo(FILTER_METRIC_INFO), ["longSum"]) == expectedMetric
     }
 }

@@ -3,7 +3,11 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
+import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectWriter
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -42,6 +46,7 @@ class ClassScannerSpec extends Specification {
                  Days.days(1),
                  DateTimeZone.UTC
                 ])
+        classScanner.putInArgumentValueCache(ObjectWriter.class, new ObjectMapper().writer())
     }
 
     def shutdownSpec() {
@@ -66,28 +71,22 @@ class ClassScannerSpec extends Specification {
                 AbstractMap,
                 AbstractMap.SimpleEntry,
                 LinkedHashMap,
-                JobRow
+                JobRow,
+                FlagFromTagDimension
         ]
 
-        for ( Class cls : classScanner.getClasses() ) {
+        for (Class cls : classScanner.classes) {
             // test only classes that override equals
-            if (Modifier.isAbstract(cls.getModifiers())) {
-                continue
-            }
-            if (cls.isEnum()) {
-                continue
-            }
-            if (Pattern.matches(anonymousClassPattern, cls.name)) {
+            if (Modifier.isAbstract(cls.modifiers) || cls.enum || Pattern.matches(anonymousClassPattern, cls.name)) {
                 continue
             }
 
-            /* check if this class or any superclass (except ignore list) implements .equals */
+            // check if this class or any superclass (except ignore list) implements .equals
             try {
-                Class declaringClass = cls.getMethod(method,parameterTypes).getDeclaringClass()
-                if ( ignoreDeclaringClasses.contains( declaringClass ) ) {
+                if (ignoreDeclaringClasses.contains(cls.getMethod(method, parameterTypes).declaringClass)) {
                     continue
                 }
-            } catch ( NoSuchMethodException | UnsupportedOperationException e ) {
+            } catch (NoSuchMethodException | UnsupportedOperationException ignored) {
                 continue
             }
 
@@ -107,10 +106,24 @@ class ClassScannerSpec extends Specification {
      * This method is ignored if no declaring classes will trigger the where block.
      * This is an issue because downstream developers may want to defensively deploy subclasses of this class to
      * ensure that any legitimate class scanner targets are picked up when discovered and appropriate.
+     * <p>
+     * This method also allows for supplying dependencies for the class under test. To do so, the method will call
+     * <tt>Map&lt;Class, Object&gt; supplyDependencies()</tt> on a Spec file for the class under test (eg.
+     * <tt>ClassUnderTestSpec</tt> if such a Spec exists with that method.
      */
-    @IgnoreIf({ ClassScannerSpec.getClassesDeclaring("equals", Object.class).empty })
+    @IgnoreIf({ClassScannerSpec.getClassesDeclaring("equals", Object.class).empty})
     @Unroll
-    def "test equals #cls.simpleName"() {
+    def "test equals for #className"() {
+        setup:
+        try {
+            // Allow class specs to define well formed dependencies
+            Map<Class, Object> dependencies = Class.forName("${cls.name}Spec").newInstance().supplyDependencies()
+            dependencies.each {
+                classScanner.putInArgumentValueCache(it.key, it.value)
+            }
+        } catch( Exception ignore ) {
+        }
+
         expect:
         // Create test object with default values
         Object obj1 = classScanner.constructObject( cls, ClassScanner.Args.VALUES )
@@ -127,13 +140,13 @@ class ClassScannerSpec extends Specification {
         // attempt to create third object with nulls and if able, call functions, test for not equals
         Object objNulls
         try {
-            objNulls = classScanner.constructObject( cls, ClassScanner.Args.NULLS  )
-        } catch ( InstantiationException e ) {
+            objNulls = classScanner.constructObject(cls, ClassScanner.Args.NULLS)
+        } catch (InstantiationException ignored) {
             objNulls = null
         }
 
         // make sure these calls run and do not fail with NullPointerException
-        if ( objNulls != null ) {
+        if (objNulls != null) {
             objNulls.equals(null)
             objNulls.equals(new Object())
             ! obj1.equals(objNulls) || obj1.hashCode() == objNulls.hashCode()
@@ -143,25 +156,26 @@ class ClassScannerSpec extends Specification {
 
         where:
         cls << getClassesDeclaring("equals", Object.class)
+        className = cls.simpleName
     }
 
     @Unroll
-    def "test toString #cls.simpleName runs"() {
+    def "test toString for #className runs"() {
         expect:
-
         Object obj
         try {
             // Create test object with NULL values
-            obj = classScanner.constructObject( cls, ClassScanner.Args.NULLS  )
-        } catch ( InstantiationException e ) {
+            obj = classScanner.constructObject(cls, ClassScanner.Args.NULLS)
+        } catch (InstantiationException ignored) {
             // else create test object with default values.  If fails here consider making Mock argument in setupSpec
-            obj = classScanner.constructObject( cls, ClassScanner.Args.VALUES  )
+            obj = classScanner.constructObject(cls, ClassScanner.Args.VALUES)
         }
 
         // make sure toString does not blow up
         obj.toString() != null
 
         where:
-        cls << getClassesDeclaring("toString" )
+        cls << getClassesDeclaring("toString")
+        className = cls.simpleName
     }
 }

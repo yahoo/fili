@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 /**
  * Interface implemented by macros to get the dateTime based on granularity.
  */
+@FunctionalInterface
 public interface MacroCalculationStrategies {
 
     /**

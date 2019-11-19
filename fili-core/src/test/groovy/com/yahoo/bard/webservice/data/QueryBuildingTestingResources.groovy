@@ -15,15 +15,19 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
+import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
 import com.yahoo.bard.webservice.data.config.dimension.TestRegisteredLookupDimensions
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
+import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
@@ -33,33 +37,40 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.ConcretePhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.bard.webservice.table.availability.ConcreteAvailability
+import com.yahoo.bard.webservice.table.availability.StrictAvailability
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
-public class QueryBuildingTestingResources {
+class QueryBuildingTestingResources {
 
     // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
 
     // Non-aggregatable dimensions, numbered for identification
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
+
+    // Flag from tag dimension
+    public Dimension d14, d15
 
     // Logical metrics, numbered for identification
     public LogicalMetric m1, m2, m3, m4, m5, m6
@@ -68,16 +79,16 @@ public class QueryBuildingTestingResources {
     public Interval interval1, interval2, interval3
 
     // tables are enumerated by dimension set number, d or h for day or hour
-    public ConcretePhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
+    public StrictPhysicalTable t1h, t1d, t1hShort, t2h, t3d, t4h1, t4h2, t4d1, t4d2, t5h
 
     // table used to test ordering, empty has no availability, partial some, whole largest availability
-    public ConcretePhysicalTable emptyFirst, partialSecond, wholeThird, emptyLast
+    public StrictPhysicalTable emptyFirst, partialSecond, wholeThird, emptyLast
 
     // Tables with not aggregatable dimensions, numbers indicate the dimension set
-    public ConcretePhysicalTable tna1236d, tna1237d, tna167d, tna267d
+    public StrictPhysicalTable tna1236d, tna1237d, tna167d, tna267d
 
     // Tables with volatile hour and volatile day
-    public ConcretePhysicalTable volatileHourTable, volatileDayTable
+    public StrictPhysicalTable volatileHourTable, volatileDayTable
 
     public VolatileIntervalsService volatileIntervalsService
 
@@ -99,20 +110,22 @@ public class QueryBuildingTestingResources {
 
     public DataSourceMetadataService metadataService
 
-    public QueryBuildingTestingResources() {
+    public DruidFilterBuilder druidFilterBuilder = new DruidInFilterBuilder()
+
+    public DruidHavingBuilder druidHavingBuilder = new DefaultDruidHavingBuilder()
+
+    QueryBuildingTestingResources() {
         init()
     }
 
-    public QueryBuildingTestingResources init() {
+    QueryBuildingTestingResources init() {
 
         DateTimeZone.setDefault(UTC)
         def ages = ["1": "0-10", "2": "11-14", "3": "14-29", "4": "30-40", "5": "41-59", "6": "60+"]
 
         metadataService = new TestDataSourceMetadataService([:])
 
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
+        LinkedHashSet<DimensionField> dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC] as LinkedHashSet
 
         LinkedHashSet<DimensionConfig> lookupDimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
         LinkedHashSet<DimensionConfig> registeredLookupDimConfig = new TestRegisteredLookupDimensions().getDimensionConfigurationsByApiName(BREED, SPECIES, OTHER);
@@ -179,8 +192,6 @@ public class QueryBuildingTestingResources {
                 false
         )
 
-        LinkedHashSet<DimensionConfig> dimConfig = new TestLookupDimensions().getDimensionConfigurationsByApiName(SIZE, SHAPE, COLOR)
-
         // lookup dimensions with multiple, one, and none lookups
         d8 = new LookupDimension(lookupDimConfig.getAt(0))
         d9 = new LookupDimension(lookupDimConfig.getAt(1))
@@ -192,7 +203,43 @@ public class QueryBuildingTestingResources {
         d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
         dimensionDictionary = new DimensionDictionary()
-        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10])
+        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
+
+        // flag from tag dimensions
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
+                {"flagFromTagLookup"},
+                "shape", //grouping dim physical name
+                "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                "dim1", // filtering
+                "TAG_VALUE"
+        )
+        d9.getExtractionFunction().ifPresent({it -> builder.addExtractionFunction(it)})
+        FlagFromTagDimensionConfig lookupFftConfig = builder
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
+        d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
+
+        builder = new FlagFromTagDimensionConfig.Builder(
+                {"flagFromTagRegisteredLookup"},
+                "breed", // grouping dim physical name
+                 "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                "dim1", // filtering
+                "TAG_VALUE"
+        )
+        FlagFromTagDimensionConfig registeredLookupFftConfig = builder
+                .extractionFunctions(d11.getRegisteredLookupExtractionFns())
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
+        d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
+
+        dimensionDictionary.add(d14)
+        dimensionDictionary.add(d15)
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")
@@ -213,53 +260,62 @@ public class QueryBuildingTestingResources {
         TimeGrain utcHour = HOUR.buildZonedTimeGrain(UTC)
         TimeGrain utcDay = DAY.buildZonedTimeGrain(UTC)
 
-        volatileHourTable = new ConcretePhysicalTable("hour", HOUR.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
-        volatileDayTable = new ConcretePhysicalTable("day", DAY.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
+        volatileHourTable = new StrictPhysicalTable(TableName.of("hour"), HOUR.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)} as Set, [:], metadataService)
+        volatileDayTable = new StrictPhysicalTable(TableName.of("day"), DAY.buildZonedTimeGrain(UTC), [d1, m1].collect{toColumn(it)} as Set, [:], metadataService)
 
-        t1h = new ConcretePhysicalTable("table1h", utcHour, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        t1d = new ConcretePhysicalTable("table1d", utcDay, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        t1hShort = new ConcretePhysicalTable("table1Short", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t1h = new StrictPhysicalTable(TableName.of("table1h"), utcHour, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        t1d = new StrictPhysicalTable(TableName.of("table1d"), utcDay, [d1, d2, d3, m1, m2, m3].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        t1hShort = new StrictPhysicalTable(TableName.of("table1Short"), utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        t2h = new ConcretePhysicalTable("table2", utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t3d = new ConcretePhysicalTable("table3", utcDay, [d1, d2, d5, m6].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t2h = new StrictPhysicalTable(TableName.of("table2"), utcHour, [d1, d2, d4, m1, m4, m5].collect{toColumn(it)} as Set, [:], metadataService)
+        t3d = new StrictPhysicalTable(TableName.of("table3"), utcDay, [d1, d2, d5, m6].collect{toColumn(it)} as Set, [:], metadataService)
 
-        tna1236d = new ConcretePhysicalTable("tableNA1236", utcDay, [d1, d2, d3, d6].collect{toColumn(it)}.toSet(),["ageBracket":"age_bracket"], metadataService)
-        tna1237d = new ConcretePhysicalTable("tableNA1237", utcDay, [d1, d2, d3, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket"], metadataService)
-        tna167d = new ConcretePhysicalTable("tableNA167", utcDay, [d1, d6, d7].collect{toColumn(it)}.toSet(), ["ageBracket":"age_bracket", "dim7":"dim_7"], metadataService)
-        tna267d = new ConcretePhysicalTable("tableNA267", utcDay, [d2, d6, d7].collect{toColumn(it)}.toSet(), ["dim7":"dim_7"], metadataService)
+        tna1236d = new StrictPhysicalTable(TableName.of("tableNA1236"), utcDay, [d1, d2, d3, d6].collect{toColumn(it)} as Set,["ageBracket":"age_bracket"], metadataService)
+        tna1237d = new StrictPhysicalTable(TableName.of("tableNA1237"), utcDay, [d1, d2, d3, d7].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket"], metadataService)
+        tna167d = new StrictPhysicalTable(TableName.of("tableNA167"), utcDay, [d1, d6, d7].collect{toColumn(it)} as Set, ["ageBracket":"age_bracket", "dim7":"dim_7"], metadataService)
+        tna267d = new StrictPhysicalTable(TableName.of("tableNA267"), utcDay, [d2, d6, d7].collect{toColumn(it)} as Set, ["dim7":"dim_7"], metadataService)
 
-        t4h1 = new ConcretePhysicalTable("table4h1", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4h2 = new ConcretePhysicalTable("table4h2", utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4d1 = new ConcretePhysicalTable("table4d1", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        t4d2 = new ConcretePhysicalTable("table4d2", utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t4h1 = new StrictPhysicalTable(TableName.of("table4h1"), utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4h2 = new StrictPhysicalTable(TableName.of("table4h2"), utcHour, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4d1 = new StrictPhysicalTable(TableName.of("table4d1"), utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        t4d2 = new StrictPhysicalTable(TableName.of("table4d2"), utcDay, [d1, d2, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [interval1].toSet())
-            availabilityMap2.put(toColumn(it), [interval2].toSet())
+            availabilityMap1.put(toColumn(it).getName(), [interval1] as Set)
+            availabilityMap2.put(toColumn(it).getName(), [interval2] as Set)
         }
 
-        t4h1.setAvailability(new ConcreteAvailability(t4h1.getTableName(), t4h1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        t4d1.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
+        t4h1.setAvailability(new StrictAvailability(DataSourceName.of(t4h1.name), new TestDataSourceMetadataService(availabilityMap1)))
+        t4d1.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap1)))
 
-        t5h = new ConcretePhysicalTable("table5d", utcHour, [d8, d9, d10, d11, d12, d13, m1].collect{toColumn(it)}.toSet(), [:], metadataService)
+        t5h = new StrictPhysicalTable(
+                TableName.of("table5d"),
+                utcHour,
+                [d8, d9, d10, d11, d12, d13, d14, d15, m1].collect{toColumn(it)} as Set,
+                [
+                        flagFromTagLookup: "shape",
+                        flagFromTagRegisteredLookup: "breed"
+                ],
+                metadataService
+        )
 
-        t4h2.setAvailability(new ConcreteAvailability(t4h2.getTableName(), t4h2.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        t4d2.setAvailability(new ConcreteAvailability(t4d1.getTableName(), t4d1.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
+        t4h2.setAvailability(new StrictAvailability(DataSourceName.of(t4h2.name), new TestDataSourceMetadataService(availabilityMap2)))
+        t4d2.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap2)))
 
         setupPartialData()
 
-        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
-        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [d1].toSet())
-        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
-        tg6h = new TableGroup([t5h] as LinkedHashSet, [].toSet(), [].toSet())
-        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.getName())}.toSet(), [].toSet())
+        tg1h = new TableGroup([t1h, t1d, t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [d1] as Set)
+        tg1d = new TableGroup([t1d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [d1] as Set)
+        tg1Short = new TableGroup([t1hShort] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg2h = new TableGroup([t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg3d = new TableGroup([t3d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg4h = new TableGroup([t1h, t2h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg5h = new TableGroup([t2h, t1h] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
+        tg6h = new TableGroup([t5h] as LinkedHashSet, [] as Set, [] as Set)
+        tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
 
         lt12 = new LogicalTable("base12", HOUR, tg1h, metricDictionary)
         lt13 = new LogicalTable("base13", DAY, tg1d, metricDictionary)
@@ -285,25 +341,25 @@ public class QueryBuildingTestingResources {
         logicalDictionary = new LogicalTableDictionary()
         logicalDictionary.putAll(baseMap)
 
-        simpleTemplateQuery = new TemplateDruidQuery(new LinkedHashSet(), new LinkedHashSet(), null, null)
+        simpleTemplateQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
         simpleNestedTemplateQuery = simpleTemplateQuery.nest()
         complexTemplateQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateQuery,
                 null
         )
 
-        simpleTemplateWithGrainQuery = new TemplateDruidQuery(new LinkedHashSet(), new LinkedHashSet(), DAY)
+        simpleTemplateWithGrainQuery = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet, DAY)
         complexTemplateWithInnerGrainQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateWithGrainQuery,
                 null
         )
         complexTemplateWithDoubleGrainQuery = new TemplateDruidQuery(
-                new LinkedHashSet(),
-                new LinkedHashSet(),
+                [] as LinkedHashSet,
+                [] as LinkedHashSet,
                 simpleTemplateWithGrainQuery,
                 WEEK
         )
@@ -314,26 +370,26 @@ public class QueryBuildingTestingResources {
     def setupPartialData() {
         // In the event of partiality on all data, the coarsest table will be selected and the leftmost of the
         // coarsest tables should be selected
-        emptyFirst = new ConcretePhysicalTable("emptyFirst", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        emptyLast = new ConcretePhysicalTable("emptyLast", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        partialSecond = new ConcretePhysicalTable("partialSecond", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
-        wholeThird = new ConcretePhysicalTable("wholeThird", MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)}.toSet(), [:], metadataService)
+        emptyFirst = new StrictPhysicalTable(TableName.of("emptyFirst"), MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        emptyLast = new StrictPhysicalTable(TableName.of("emptyLast"), MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        partialSecond = new StrictPhysicalTable(TableName.of("partialSecond"), MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
+        wholeThird = new StrictPhysicalTable(TableName.of("wholeThird"), MONTH.buildZonedTimeGrain(UTC), [d1, m1, m2, m3].collect{toColumn(it)} as Set, [:], metadataService)
 
-        Map<Column, Set<Interval>> availabilityMap1 = [:]
-        Map<Column, Set<Interval>> availabilityMap2 = [:]
-        Map<Column, Set<Interval>> availabilityMap3 = [:]
+        Map<String, Set<Interval>> availabilityMap1 = [:]
+        Map<String, Set<Interval>> availabilityMap2 = [:]
+        Map<String, Set<Interval>> availabilityMap3 = [:]
 
         [d1, d2, m1, m2, m3].each {
-            availabilityMap1.put(toColumn(it), [new Interval("2015/2015")].toSet())
-            availabilityMap2.put(toColumn(it), [new Interval("2015/2016")].toSet())
-            availabilityMap3.put(toColumn(it), [new Interval("2011/2016")].toSet())
+            availabilityMap1.put(toColumn(it).name, [new Interval("2015/2015")] as Set)
+            availabilityMap2.put(toColumn(it).name, [new Interval("2015/2016")] as Set)
+            availabilityMap3.put(toColumn(it).name, [new Interval("2011/2016")] as Set)
         }
-        emptyFirst.setAvailability(new ConcreteAvailability(emptyFirst.getTableName(), emptyFirst.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        emptyLast.setAvailability(new ConcreteAvailability(emptyLast.getTableName(), emptyLast.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap1)))
-        partialSecond.setAvailability(new ConcreteAvailability(partialSecond.getTableName(), partialSecond.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap2)))
-        wholeThird.setAvailability(new ConcreteAvailability(wholeThird.getTableName(), wholeThird.getSchema().getColumns(), new TestDataSourceMetadataService(availabilityMap3)))
+        emptyFirst.setAvailability(new StrictAvailability(DataSourceName.of(emptyFirst.name), new TestDataSourceMetadataService(availabilityMap1)))
+        emptyLast.setAvailability(new StrictAvailability(DataSourceName.of(emptyLast.name), new TestDataSourceMetadataService(availabilityMap1)))
+        partialSecond.setAvailability(new StrictAvailability(DataSourceName.of(partialSecond.name), new TestDataSourceMetadataService(availabilityMap2)))
+        wholeThird.setAvailability(new StrictAvailability(DataSourceName.of(wholeThird.name), new TestDataSourceMetadataService(availabilityMap3)))
 
-        tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [].toSet(), [].toSet())
+        tg1All = new TableGroup([emptyFirst, partialSecond, wholeThird, emptyLast] as LinkedHashSet, [] as Set, [] as Set)
         ti1All = new TableIdentifier("base1All", AllGranularity.INSTANCE)
     }
 
@@ -346,15 +402,14 @@ public class QueryBuildingTestingResources {
      * availability, and volatility information
      */
     def setupVolatileTables(Collection<Collection> physicalTableAvailabilityVolatilityTriples) {
-        physicalTableAvailabilityVolatilityTriples.each { ConcretePhysicalTable table, Interval availability, _ ->
+        physicalTableAvailabilityVolatilityTriples.each { StrictPhysicalTable table, Interval availability, _ ->
             table.setAvailability(
-                    new ConcreteAvailability(
-                            table.getTableName(),
-                            table.getSchema().getColumns(),
+                    new StrictAvailability(
+                            DataSourceName.of(table.name),
                             new TestDataSourceMetadataService(
-                                [new DimensionColumn(d1), new LogicalMetricColumn(m1)].collectEntries() {
-                                    [(it): [availability]]
-                                }
+                                    [new DimensionColumn(d1).name, new LogicalMetricColumn(m1).name].collectEntries() {
+                                        [(it): [availability]]
+                                    }
                             )
                     )
             )
