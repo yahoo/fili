@@ -9,8 +9,12 @@ import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.Arith
 import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.CountMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.logicaltable.DefaultLogicalTableGroupFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.logicalmetric.DefaultMetricFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleMaxMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleMinMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleSumMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.dimension.KeyValueStoreDimensionFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongMaxMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongMinMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongSumMakerFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.searchprovider.LuceneSearchProviderFactory;
 import com.yahoo.bard.webservice.data.config.luthier.factories.keyvaluestore.MapKeyValueStoreFactory;
@@ -516,9 +520,33 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
+                    new LongMaxMakerFactory(),
+                    LongSumMaker.class,
+                    "longMax"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new LongMinMakerFactory(),
+                    DoubleSumMaker.class,
+                    "longMin"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
                     new DoubleSumMakerFactory(),
                     DoubleSumMaker.class,
                     "doubleSum"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleMaxMakerFactory(),
+                    DoubleSumMaker.class,
+                    "doubleMax"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleMinMakerFactory(),
+                    DoubleSumMaker.class,
+                    "doubleMin"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
@@ -526,7 +554,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
                     AggregationAverageMaker.class,
                     "avg",
                     "average",
-                    "aggregateAverage"
+                    "aggregationAverage"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,

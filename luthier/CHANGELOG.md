@@ -20,6 +20,11 @@ Current
 
 ### Changed:
 
+- [Add Max and Min factories to Luther](https://github.com/yahoo/fili/issues/993)
+    * Repackaged slightly to reduce class density in the factory packages.
+    * Added `DoubleMaxFactory`, `DoubleMinFactory`, `LongMaxFactory`, `LongMinFactory`
+    
+
 - [Luthier now uses LuaJ to run the Lua scripts directly](https://github.com/yahoo/fili/pull/966)
 
     * The KeyValueStoreDimensionFactory has been tweaked so that it no
