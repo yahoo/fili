@@ -16,14 +16,16 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.util.Pagination;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseWriter;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
-import com.yahoo.bard.webservice.web.util.ResponseFormat;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import java.net.URI;
 import java.util.Collections;
@@ -34,8 +36,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
@@ -46,25 +47,45 @@ import javax.ws.rs.core.StreamingOutput;
 @Singleton
 public class HttpResponseMaker {
 
-    private final ObjectMappersSuite objectMappers;
-    private final DimensionDictionary dimensionDictionary;
-    private final ResponseWriter responseWriter;
+    protected final ObjectMappersSuite objectMappers;
+    protected final DimensionDictionary dimensionDictionary;
+    protected final ResponseWriter responseWriter;
+    protected final ResponseUtils responseUtils;
 
     /**
      * Class constructor.
+     *
      * @param objectMappers  Mappers object for serialization
      * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
      * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
+     * @param responseUtils A class providing utility methods for processing response headers.
      */
     @Inject
     public HttpResponseMaker(
             ObjectMappersSuite objectMappers,
             DimensionDictionary dimensionDictionary,
-            ResponseWriter responseWriter
+            ResponseWriter responseWriter,
+            ResponseUtils responseUtils
     ) {
         this.objectMappers = objectMappers;
         this.dimensionDictionary = dimensionDictionary;
         this.responseWriter = responseWriter;
+        this.responseUtils = responseUtils;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param objectMappers  Mappers object for serialization
+     * @param dimensionDictionary  The dimension dictionary from which to look up dimensions by name
+     * @param responseWriter  Serializer which takes responseData and apiRequest, outputs formatted data stream.
+     */
+    public HttpResponseMaker(
+            ObjectMappersSuite objectMappers,
+            DimensionDictionary dimensionDictionary,
+            ResponseWriter responseWriter
+    ) {
+        this(objectMappers, dimensionDictionary, responseWriter, new ResponseUtils());
     }
 
     /**
@@ -72,17 +93,20 @@ public class HttpResponseMaker {
      *
      * @param preResponse  PreResponse object which contains result set, response context and headers
      * @param apiRequest  ApiRequest object which contains request related information
+     * @param containerRequestContext The container for jersey request processing objects
      *
      * @return Completely built response with headers and result set
      */
     public javax.ws.rs.core.Response buildResponse(
             PreResponse preResponse,
-            ApiRequest apiRequest
+            ApiRequest apiRequest,
+            ContainerRequestContext containerRequestContext
     ) {
         ResponseBuilder rspBuilder = createResponseBuilder(
                 preResponse.getResultSet(),
                 preResponse.getResponseContext(),
-                apiRequest
+                apiRequest,
+                containerRequestContext
         );
 
         @SuppressWarnings("unchecked")
@@ -103,30 +127,33 @@ public class HttpResponseMaker {
      * @param resultSet  The result set being processed
      * @param responseContext  A meta data container for the state gathered by the web container
      * @param apiRequest  ApiRequest object which contains request related information
+     * @param containerRequestContext The container for jersey request processing objects
      *
      * @return Build response with requested format and associated meta data info.
      */
-    private ResponseBuilder createResponseBuilder(
+    protected ResponseBuilder createResponseBuilder(
             ResultSet resultSet,
             ResponseContext responseContext,
-            ApiRequest apiRequest
+            ApiRequest apiRequest,
+            ContainerRequestContext containerRequestContext
     ) {
-        @SuppressWarnings("unchecked")
         ResponseFormatType responseFormatType = apiRequest.getFormat();
+        @SuppressWarnings("unchecked")
         Map<String, URI> bodyLinks = (Map<String, URI>) responseContext.get(
                 PAGINATION_LINKS_CONTEXT_KEY.getName()
         );
         if (bodyLinks == null) {
             bodyLinks = Collections.emptyMap();
         }
-        Pagination pagination = (Pagination) responseContext.get(PAGINATION_CONTEXT_KEY.getName());
+        Pagination<?> pagination = (Pagination<?>) responseContext.get(PAGINATION_CONTEXT_KEY.getName());
 
         // Add headers for content type
         // default response format is JSON
         if (responseFormatType == null) {
-            responseFormatType = ResponseFormatType.JSON;
+            responseFormatType = DefaultResponseFormatType.JSON;
         }
 
+        @SuppressWarnings("unchecked")
         LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
                 (LinkedHashMap<String, LinkedHashSet<DimensionField>>) responseContext.get(
                         REQUESTED_API_DIMENSION_FIELDS.getName());
@@ -144,7 +171,8 @@ public class HttpResponseMaker {
                                 LinkedHashMap::new
                         ));
 
-        ResponseData responseData = new ResponseData(
+        @SuppressWarnings("unchecked")
+        ResponseData responseData = buildResponseData(
                 resultSet,
                 (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
                 requestedApiDimensionFields,
@@ -158,24 +186,14 @@ public class HttpResponseMaker {
             responseWriter.write(apiRequest, responseData, outputStream);
         };
 
-        // pass stream handler as response
+//      pass stream handler as response
         ResponseBuilder rspBuilder = javax.ws.rs.core.Response.ok(stream);
-
-        // build response
-        switch (responseFormatType) {
-            case CSV:
-                return rspBuilder
-                        .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=utf-8")
-                        .header(
-                                HttpHeaders.CONTENT_DISPOSITION,
-                                ResponseFormat.getCsvContentDispositionValue(apiRequest.getUriInfo())
-                        );
-            case JSON:
-                // Fall-through: Default is JSON
-            default:
-                return rspBuilder
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON + "; charset=utf-8");
-        }
+        return buildAndAddResponseHeaders(
+                rspBuilder,
+                responseFormatType,
+                containerRequestContext,
+                apiRequest.getDownloadFilename().orElse(null)
+        );
     }
 
     /**
@@ -201,5 +219,85 @@ public class HttpResponseMaker {
                 druidQuery,
                 objectMappers.getMapper().writer()
         );
+    }
+
+    /**
+     * Builds a ResponseData object.
+     *
+     * @param resultSet  ResultSet to turn into response
+     * @param apiMetricColumnNames  The names of the logical metrics requested
+     * @param requestedApiDimensionFields  The fields for each dimension that should be shown in the response
+     * @param partialIntervals  intervals over which partial data exists
+     * @param volatileIntervals  intervals over which data is understood as 'best-to-date'
+     * @param pagination  The object containing the pagination information. Null if we are not paginating
+     * @param paginationLinks A mapping from link names to links to be added to the end of the JSON response
+     *
+     * @return a new ResponseData object
+     */
+    protected ResponseData buildResponseData(
+            ResultSet resultSet,
+            LinkedHashSet<String> apiMetricColumnNames,
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
+            SimplifiedIntervalList partialIntervals,
+            SimplifiedIntervalList volatileIntervals,
+            Pagination<?> pagination,
+            Map<String, URI> paginationLinks
+    ) {
+        return new ResponseData(
+                resultSet,
+                apiMetricColumnNames,
+                requestedApiDimensionFields,
+                partialIntervals,
+                volatileIntervals,
+                pagination,
+                paginationLinks
+        );
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     *
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext
+    ) {
+        return buildAndAddResponseHeaders(rspBuilder, responseFormatType, containerRequestContext, null);
+    }
+
+    /**
+     * Builds the headers for the response and gives them to the provided response builder to be added to the response.
+     *
+     * @param rspBuilder  ResponseBuilder that handles adding the headers to the response
+     * @param responseFormatType  The type of the response
+     * @param containerRequestContext  The request context
+     * @param downloadFilename  The filename the response should be downloaded as. Null or empty indicates the response
+     * should not be downloaded and instead rendered by the browser
+     *
+     * @return the response builder that has had the headers added
+     */
+    protected ResponseBuilder buildAndAddResponseHeaders(
+            ResponseBuilder rspBuilder,
+            ResponseFormatType responseFormatType,
+            ContainerRequestContext containerRequestContext,
+            String downloadFilename
+    ) {
+        Map<String, String> responseHeaders = responseUtils.buildResponseFormatHeaders(
+                containerRequestContext,
+                downloadFilename,
+                responseFormatType
+        );
+
+        ResponseBuilder responseBuilderWithHeaders = rspBuilder;
+        for (Map.Entry<String, String> entry : responseHeaders.entrySet()) {
+            responseBuilderWithHeaders = responseBuilderWithHeaders.header(entry.getKey(), entry.getValue());
+        }
+        return responseBuilderWithHeaders;
     }
 }

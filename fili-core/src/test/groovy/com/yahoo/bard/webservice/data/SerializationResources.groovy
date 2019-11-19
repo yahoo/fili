@@ -13,9 +13,8 @@ import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumnWithValueType
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
-import com.yahoo.bard.webservice.druid.model.query.Granularity
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.PreResponse
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 
@@ -154,7 +153,7 @@ class SerializationResources extends Specification {
         responseContext.put("randomHeader", "someHeader")
         responseContext.put(
                 "missingIntervals",
-                (["a", "b", "c", new SimplifiedIntervalList([interval]), bigDecimal] as ArrayList)
+                (["a", "b", "c", new ArrayList<>([interval]), bigDecimal] as ArrayList)
         )
 
         responseContext1 = new ResponseContext([:])
@@ -162,7 +161,7 @@ class SerializationResources extends Specification {
         responseContext1.put("apiMetricColumnNames", ["metric1, metric2"] as LinkedHashSet)
         responseContext1.put(
                 "requestedApiDimensionFields",
-                [(ageBracketDim.getApiName()): [BardDimensionField.ID] as Set]
+                [(ageBracketDim.getApiName()): [BardDimensionField.ID] as LinkedHashSet]
         )
 
         preResponse = new PreResponse(resultSet, responseContext)

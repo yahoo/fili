@@ -2,17 +2,20 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
+import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.config.names.TableName
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrainSpec
 import com.yahoo.bard.webservice.table.Column
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.DataSourceFilter
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import com.google.common.collect.Sets
 
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 import org.joda.time.Interval
+import org.joda.time.format.DateTimeFormat
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -22,11 +25,17 @@ import spock.lang.Unroll
  */
 class PartitionAvailabilitySpec extends Specification{
 
+    static DateTimeZone originalTimeZone
+    static {
+        originalTimeZone = DateTimeZone.getDefault()
+        DateTimeZone.setDefault(DateTimeZone.UTC)
+    }
+
+    public static final String DISTANT_PAST_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.DISTANT_PAST)
+    public static final String FAR_FUTURE_STR = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm").print(Availability.FAR_FUTURE)
     public static final String SOURCE1 = 'source1'
     public static final String SOURCE2 = 'source2'
     PartitionAvailability partitionAvailability
-
-    ZonedTimeGrain testTimeGrain = ZonedTimeGrainSpec.DAY_UTC
 
     Availability availability1
     Availability availability2
@@ -38,6 +47,16 @@ class PartitionAvailabilitySpec extends Specification{
     Column column1
     Column column2
 
+    DateTime startDate_1
+    DateTime startDate_2
+
+    DateTime endDate_1
+    DateTime endDate_2
+
+    def cleanupSpec() {
+        DateTimeZone.setDefault(originalTimeZone)
+    }
+
     def setup() {
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
@@ -45,6 +64,18 @@ class PartitionAvailabilitySpec extends Specification{
         availability1.getDataSourceNames() >> ([TableName.of(SOURCE1)] as Set)
         availability2.getDataSourceNames() >> ([TableName.of(SOURCE2)] as Set)
 
+        startDate_1 = null
+        startDate_2 = null
+
+        endDate_1 = null
+        endDate_2 = null
+
+        // groovy mocks DO NOT inherit default methods, so we MUST mock the getExpectedStart/EndDate methods for this to work
+        availability1.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_1) }
+        availability2.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(startDate_2) }
+
+        availability1.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(endDate_1) }
+        availability2.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> { Optional.ofNullable(endDate_2) }
     }
 
     @Unroll
@@ -69,6 +100,34 @@ class PartitionAvailabilitySpec extends Specification{
         [SOURCE1]          | []        | [SOURCE1]
         [SOURCE1]          | [SOURCE1] | [SOURCE1]
         [SOURCE1, SOURCE2] | [SOURCE1] | [SOURCE1, SOURCE2]
+    }
+
+    def "getDataSourceNames(constraint) returns only datasource names that are actually needed"() {
+        given:
+        DataSourceName name1 = DataSourceName.of("datasource1")
+        DataSourceName name2 = DataSourceName.of("datasource2")
+
+        availability1 = Mock(Availability)
+        availability2 = Mock(Availability)
+
+        availability1.getDataSourceNames() >> ([name1] as Set)
+        availability2.getDataSourceNames() >> ([name2] as Set)
+
+        availability1.getDataSourceNames(_ as DataSourceConstraint) >> ([name1] as Set)
+        availability2.getDataSourceNames(_ as DataSourceConstraint) >> ([name2] as Set)
+
+        DataSourceFilter partition1 = Mock(DataSourceFilter)
+        DataSourceFilter partition2 = Mock(DataSourceFilter)
+
+        partition1.apply(_ as DataSourceConstraint) >> true
+        partition2.apply(_ as DataSourceConstraint) >> false
+
+        Map<Availability, DataSourceFilter> partitionMap = [(availability1): partition1, (availability2) : partition2]
+
+        partitionAvailability = new PartitionAvailability(partitionMap)
+
+        expect:
+        partitionAvailability.getDataSourceNames(Mock(PhysicalDataSourceConstraint)) == [name1] as Set
     }
 
     @Unroll
@@ -140,14 +199,20 @@ class PartitionAvailabilitySpec extends Specification{
         Availability early = Mock(Availability)
         early.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> earlyInterval
         early.getDataSourceNames() >> ([TableName.of('early')] as Set)
+        early.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        early.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Availability mid = Mock(Availability)
         mid.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> midInterval
         mid.getDataSourceNames() >> ([TableName.of('mid')] as Set)
+        mid.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        mid.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Availability late = Mock(Availability)
         late.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> lateInterval
         late.getDataSourceNames() >> ([TableName.of('late')] as Set)
+        late.getExpectedStartDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
+        late.getExpectedEndDate(_ as PhysicalDataSourceConstraint) >> Optional.empty()
 
         Set<Availability> availabilities = [early, mid, late].findAll { partitionsImpacted.containsAll(it.dataSourceNames.collect() {it.asName()}) } as Set
         PhysicalDataSourceConstraint constraint = Mock(PhysicalDataSourceConstraint)
@@ -172,5 +237,83 @@ class PartitionAvailabilitySpec extends Specification{
         ['mid', 'late']          | midInterval.intersect(lateInterval)
         ['early', 'late']        | earlyInterval.intersect(lateInterval)
         ['early', 'mid', 'late'] | earlyInterval.intersect(lateInterval).intersect(midInterval)
+    }
+
+    @Unroll
+    def "test missing intervals properly created for #interval interval and #desc"() {
+        given:
+        startDate_1 = start
+        endDate_1 = end
+
+        SimplifiedIntervalList actualAvailability = new SimplifiedIntervalList(availableIntervalsToTest.collect({it -> new Interval(it)}))
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability }
+
+        SimplifiedIntervalList expectedMissing = new SimplifiedIntervalList(expectedMissingIntervals.collect({it -> new Interval(it)}))
+
+        partitionAvailability = new PartitionAvailability([(availability1): {true} as DataSourceFilter] as Map)
+
+        expect:
+        SimplifiedIntervalList result = partitionAvailability.getBoundedMissingIntervalsWithConstraint(availability1, Mock(PhysicalDataSourceConstraint))
+        result == expectedMissing
+
+        where:
+        start                           |   end                         |   availableIntervalsToTest                                ||   expectedMissingIntervals                                                                                               |   interval                                        |   desc
+        null                            |   null                        |   ["2017-01-01/2018-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString(), "2018-01-01/${FAR_FUTURE_STR}".toString()]                               |   "unbroken"                                      |   "no expected start nor end"
+        null                            |   null                        |   ["2014-01-01/2015-01-01", "2016-01-01/2017-01-01"]      ||   ["${DISTANT_PAST_STR}/2014-01-01".toString(), "2015-01-01/2016-01-01", "2017-01-01/${FAR_FUTURE_STR}".toString()]      |   "two separate"                                  |   "no expected start nor end"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2018-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "unbroken"                                      |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2020-01-01"]                               ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "unbroken but outside end"                      |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2017-01-01/2018-01-01", "2019-01-01/2020-01-01"]      ||   ["${DISTANT_PAST_STR}/2017-01-01".toString()]                                                                          |   "one before end, one after end"                 |   "concrete end, no expected start"
+        null                            |   new DateTime(2018,1,1,0,0)  |   ["2013-01-01/2014-01-01", "2017-01-01/2018-01-01"]      ||   ["${DISTANT_PAST_STR}/2013-01-01".toString(), "2014-01-01/2017-01-01"]                                                 |   "two separate before end"                       |   "concrete end, no expected start"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2014-01-01/2015-01-01"]                               ||   ["2015-01-01/${FAR_FUTURE_STR}".toString()]                                                                            |   "unbroken"                                      |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2012-01-01/2013-01-01", "2014-01-01/2015-01-01"]      ||   ["2015-01-01/${FAR_FUTURE_STR}".toString()]                                                                            |   "two separate, one before start"                |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   null                        |   ["2012-01-01/2015-01-01", "2017-01-01/2018-01-01"]      ||   ["2015-01-01/2017-01-01", "2018-01-01/${FAR_FUTURE_STR}".toString()]                                                   |   "two separate, after start"                     |   "concrete beginning, no expected end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2014-01-01/2018-01-01"]                               ||   []                                                                                                                     |   "unbroken"                                      |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2012-01-01/2014-01-01", "2016-01-01/2020-01-01"]      ||   ["2014-01-01/2016-01-01"]                                                                                              |   "two separate, one end of each outside range"   |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2014-01-01/2016-01-01"]                               ||   ["2016-01-01/2018-01-01"]                                                                                              |   "unbroken, from start to middle"                |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2018-01-01"]                               ||   ["2014-01-01/2016-01-01"]                                                                                              |   "unbroken, from middle to end"                  |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2015-01-01/2017-01-01"]                               ||   ["2014-01-01/2015-01-01", "2017-01-01/2018-01-01"]                                                                     |   "unbroken, after start before end"              |   "concrete beginning and end"
+        new DateTime(2014,1,1,0,0)      |   new DateTime(2018,1,1,0,0)  |   ["2015-01-01/2015-06-01", "2016-01-01/2016-06-01"]      ||   ["2014-01-01/2015-01-01", "2015-06-01/2016-01-01", "2016-06-01/2018-01-01"]                                            |   "two separate, both after start before end"     |   "concrete beginning and end"
+    }
+
+    @Unroll
+    def "partition availability calculated correctly when #desc"() {
+        given:
+        startDate_1 = start_1
+        endDate_1 = end_1
+
+        startDate_2 = start_2
+        endDate_2 = end_2
+
+        SimplifiedIntervalList actualAvailability_1 = new SimplifiedIntervalList(actual_1.collect({it -> new Interval(it)}))
+        SimplifiedIntervalList actualAvailability_2 = new SimplifiedIntervalList(actual_2.collect({it -> new Interval(it)}))
+        availability1.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability_1 }
+        availability2.getAvailableIntervals(_ as PhysicalDataSourceConstraint) >> { actualAvailability_2 }
+
+        partitionAvailability = new PartitionAvailability([
+                (availability1): {true} as DataSourceFilter,
+                (availability2): {true} as DataSourceFilter
+        ] as Map)
+
+        SimplifiedIntervalList expectedAvailability = new SimplifiedIntervalList(expected.collect({it -> new Interval(it)}))
+
+        expect:
+        SimplifiedIntervalList result = partitionAvailability.getAvailableIntervals(Mock(PhysicalDataSourceConstraint))
+        result == expectedAvailability
+
+        where:
+        start_1                     |   end_1                       |   start_2                     |   end_2                       |   actual_1                    |   actual_2                                            |   expected                                            |   desc
+        null                        |   null                        |   null                        |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2016-01-01/2017-01-01"]                           |   ["2016-01-01/2017-01-01"]                           |   "both subparts no bounds and same availability"
+        null                        |   new DateTime(2017,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2017-01-01/2018-01-01"]                           |   ["2016-01-01/2018-01-01"]                           |   "subparts are abutting, and ends not abutting have no expected start or end respectively"
+        null                        |   new DateTime(2017,6,1,0,0)  |   new DateTime(2016,6,1,0,0)  |   null                        |   ["2016-01-01/2017-06-01"]   |   ["2016-06-01/2018-01-01"]                           |   ["2016-01-01/2018-01-01"]                           |   "subparts are partially overlapping, and ends not overlapping have no expected start or end respectively"
+        null                        |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   null                        |   ["2016-01-01/2017-06-01"]   |   ["2016-06-01/2018-01-01"]                           |   ["2016-06-01/2017-06-01"]                           |   "subparts are partially overlapping, with missing data on non overlapping intervals of each other"
+        null                        |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   null                        |   ["2016-01-01/2017-01-01"]   |   ["2017-01-01/2018-01-01"]                           |   []                                                  |   "subparts are abutting, with missing completely overlapping the other part"
+        null                        |   new DateTime(2016,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   null                        |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (1)"
+        null                        |   new DateTime(2017,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   null                        |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (2)"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2016-06-01"]   |   ["2017-06-01/2018-01-01"]                           |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "subparts are separate and do not have any missing overlapping with each other's availability (3)"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   []                                                  |   "both subparts have expected start and end, but one part is completely missing and is same as availabile part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2015,1,1,0,0)  |   new DateTime(2020,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   []                                                  |   "both subparts have expected start and end, but one part is completely missing and is larger than available part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,6,1,0,0)  |   new DateTime(2017,6,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   []                                                  |   ["2016-01-01/2016-06-01", "2017-06-01/2018-01-01"]  |   "both subparts have expected start and end, but one part is completely missing and is contained by available part"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2017,1,1,0,0)  |   ["2016-01-01/2017-01-01"]   |   ["2016-01-01/2017-01-01"]                           |   ["2016-01-01/2017-01-01"]                           |   "both subparts same availability, availability equivalent to bounds, no missing"
+        new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   new DateTime(2016,1,1,0,0)  |   new DateTime(2018,1,1,0,0)  |   ["2016-01-01/2018-01-01"]   |   ["2016-06-01/2016-09-01", "2017-06-01/2017-09-01"]  |   ["2016-06-01/2016-09-01", "2017-06-01/2017-09-01"]  |   "both subparts have expected start and end, but one part has fragmented availability and is contained by available part"
     }
 }

@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.endpoints;
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.OK;
@@ -17,20 +16,22 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.JobRequest;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.ApiRequest;
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
-import com.yahoo.bard.webservice.web.JobsApiRequest;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
@@ -49,7 +50,6 @@ import rx.Observable;
 import rx.exceptions.Exceptions;
 import rx.observables.ConnectableObservable;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +83,8 @@ import javax.ws.rs.core.UriInfo;
 public class JobsServlet extends EndpointServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobsServlet.class);
+    private static final String PAGE = "page";
+    private static final String PER_PAGE = "perPage";
 
     private final ApiJobStore apiJobStore;
     private final RequestMapper requestMapper;
@@ -91,6 +93,9 @@ public class JobsServlet extends EndpointServlet {
     private final BroadcastChannel<String> broadcastChannel;
     private final ObjectWriter writer;
     private final HttpResponseMaker httpResponseMaker;
+
+    private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -101,6 +106,8 @@ public class JobsServlet extends EndpointServlet {
      * @param broadcastChannel  Channel to notify other Bard processes (i.e. long pollers)
      * @param requestMapper  Mapper for changing the API request
      * @param httpResponseMaker  The factory for building HTTP responses
+     * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public JobsServlet(
@@ -110,7 +117,9 @@ public class JobsServlet extends EndpointServlet {
             PreResponseStore preResponseStore,
             BroadcastChannel<String> broadcastChannel,
             @Named(JobsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            HttpResponseMaker httpResponseMaker
+            HttpResponseMaker httpResponseMaker,
+            ResponseFormatResolver formatResolver,
+            @Named(JobsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.requestMapper = requestMapper;
@@ -120,6 +129,8 @@ public class JobsServlet extends EndpointServlet {
         this.broadcastChannel = broadcastChannel;
         this.writer = objectMappers.getMapper().writer();
         this.httpResponseMaker = httpResponseMaker;
+        this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -128,10 +139,11 @@ public class JobsServlet extends EndpointServlet {
      * @param perPage  Requested number of rows of data to be displayed on each page of results
      * @param page  Requested page of results desired
      * @param format  Requested format
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param filters  Filters to be applied on the JobRows. Expects a URL filter query String that may contain multiple
      * filter strings separated by comma.  The format of a filter String is :
      * (JobField name)-(operation)[(value or comma separated values)]?
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      * @param asyncResponse  An asyncAfter response that we can use to respond asynchronously
      */
@@ -141,59 +153,64 @@ public class JobsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("filters") String filters,
-            @Context UriInfo uriInfo,
             @Context ContainerRequestContext containerRequestContext,
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+    JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
-                    format,
+            apiRequest = new JobsApiRequestImpl(
+                    formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     null, //asyncAfter is null so it behaves like a synchronous request
                     perPage,
                     page,
                     filters,
-                    uriInfo,
+                    containerRequestContext.getUriInfo(),
                     jobPayloadBuilder,
                     apiJobStore
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
                     jobsApiRequest.getAllPagesPaginationFactory(
                             jobsApiRequest.getPaginationParameters()
                                     .orElse(
-                                            jobsApiRequest.getDefaultPagination()
+                                            ApiRequestImpl.DEFAULT_PAGINATION
                                     )
                     );
 
             observableResponse = apiRequest.getJobViews().toList()
-                    .map(jobs -> jobsApiRequest.getPage(paginationFactory.apply(jobs)))
-                    .map(result -> formatResponse(jobsApiRequest, result, "jobs", null))
+                    .map(jobs -> paginateAndFormatResponse(
+                            jobsApiRequest,
+                            containerRequestContext,
+                            paginationFactory.apply(jobs),
+                            "jobs",
+                            null
+                    ))
                     .defaultIfEmpty(getResponse("{}"))
                     .onErrorReturn(this::getErrorResponse);
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
-            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }
-
         observableResponse.subscribe(asyncResponse::resume);
     }
 
@@ -215,11 +232,12 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            JobsApiRequest apiRequest = new JobsApiRequest(
-                    ResponseFormatType.JSON.toString(),
+            apiRequest = new JobsApiRequestImpl(
+                    DefaultResponseFormatType.JSON.toString(),
                     null,
                     "",
                     "",
@@ -230,17 +248,17 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            observableResponse = handleJobResponse(ticket, apiRequest);
+            observableResponse = handleJobResponse(ticket, apiRequest, uriInfo);
 
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (IOException | IllegalStateException e) {
-            LOG.debug("Bad request exception : {}", e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(BAD_REQUEST, e, writer));
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }
@@ -253,6 +271,8 @@ public class JobsServlet extends EndpointServlet {
      *
      * @param ticket  The ticket that can uniquely identify a Job
      * @param format  Requested format of the response
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
      * @param perPage  Requested number of rows of data to be displayed on each page of results
@@ -267,6 +287,7 @@ public class JobsServlet extends EndpointServlet {
     public void getJobResultsByTicket(
             @PathParam("ticket") String ticket,
             @QueryParam("format") String format,
+            @QueryParam("filename") String downloadFilename,
             @QueryParam("asyncAfter") String asyncAfter,
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
@@ -275,12 +296,14 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            JobsApiRequest apiRequest = new JobsApiRequest(
+            apiRequest = new JobsApiRequestImpl(
                     format,
+                    downloadFilename,
                     asyncAfter,
                     perPage,
                     page,
@@ -291,12 +314,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequest jobsApiRequest = apiRequest;
+            JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
@@ -305,6 +328,7 @@ public class JobsServlet extends EndpointServlet {
                             isEmptyResult -> handlePreResponse(
                                     ticket,
                                     jobsApiRequest,
+                                    containerRequestContext,
                                     asyncResponse,
                                     preResponseObservable,
                                     isEmptyResult
@@ -313,12 +337,12 @@ public class JobsServlet extends EndpointServlet {
                     .toBlocking()
                     .single();
 
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            observableResponse = Observable.just(RequestHandlerUtils.makeErrorResponse(e.getStatus(), e, writer));
-        } catch (Error | Exception e) {
-            LOG.debug("Exception processing request", e);
-            observableResponse = Observable.just(Response.status(INTERNAL_SERVER_ERROR).entity(e.getMessage()).build());
+        } catch (Throwable t) {
+            observableResponse = Observable.just(exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            ));
         } finally {
             RequestLog.stopTiming(this);
         }
@@ -331,7 +355,8 @@ public class JobsServlet extends EndpointServlet {
      * result to the user.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
+     * @param containerRequestContext the context for the http request
      * @param asyncResponse  Parameter specifying for how long the request should be asyncAfter
      * @param preResponseObservable  An Observable wrapping a PreResponse or an empty observable
      * @param isEmpty  A boolean that indicates if the PreResponse is empty
@@ -340,18 +365,19 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Observable<Response> handlePreResponse(
             String ticket,
-            JobsApiRequest apiRequest,
+            JobsApiRequestImpl apiRequest,
+            ContainerRequestContext containerRequestContext,
             AsyncResponse asyncResponse,
             Observable<PreResponse> preResponseObservable,
             boolean isEmpty
     ) {
         if (isEmpty) {
             //If we did not get the PreResponse before the sync timeout, send the job payload back to the user.
-            return handleJobResponse(ticket, apiRequest);
+            return handleJobResponse(ticket, apiRequest, containerRequestContext.getUriInfo());
         }
 
         //We got a PreResponse from the PreResponseStore. Send the query result back to the user.
-        handleResultsResponse(preResponseObservable, asyncResponse, apiRequest);
+        handleResultsResponse(preResponseObservable, asyncResponse, apiRequest, containerRequestContext);
         return Observable.empty();
     }
 
@@ -373,32 +399,31 @@ public class JobsServlet extends EndpointServlet {
             // to behave like the results are not ready in the store, and the asynchronous timeout has expired even
             // if the results are available.
             return Observable.empty();
-        } else {
-            /*
-             * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any
-             * subscribers. We use the replay operator so that the preResponseObservable upon connection, will begin
-             * collecting values.
-             * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
-             */
-            ConnectableObservable<String> broadcastChannelNotifications = broadcastChannel.getNotifications()
-                    .filter(ticket::equals)
-                    .take(1)
-                    .replay(1);
-            broadcastChannelNotifications.connect();
-            /*
-             * In the cases where we may get a synchronous response (asyncAfter is a number, or
-             * ApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ), then we start the timer, and
-             * go to the store and check to see if it has the results. If it doesn't, and 'asyncAfter' is a number
-             * then it starts listening to the broadcast channel, and waiting for the timer to expire.
-             *
-             * What this means is that in the case of `asyncAfter=0`, we have the following semantics:
-             * If the results are already in the response store, then return them to me. Otherwise, very quickly
-             * send back the asynchronous payload.
-             */
-            return preResponseStore.get(ticket).switchIfEmpty(
-                    applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
-            );
         }
+        /*
+         * BroadCastChannel is a hot observable i.e. it emits notification irrespective of whether it has any
+         * subscribers. We use the replay operator so that the preResponseObservable upon connection, will begin
+         * collecting values.
+         * Once a new observer subscribes to the observable, it will have all the collected values replayed to it.
+         */
+        ConnectableObservable<String> broadcastChannelNotifications = broadcastChannel.getNotifications()
+                .filter(ticket::equals)
+                .take(1)
+                .replay(1);
+        broadcastChannelNotifications.connect();
+        /*
+         * In the cases where we may get a synchronous response (asyncAfter is a number, or
+         * ApiRequest.SYNCHRONOUS_ASYNC_AFTER_VALUE ), then we start the timer, and
+         * go to the store and check to see if it has the results. If it doesn't, and 'asyncAfter' is a number
+         * then it starts listening to the broadcast channel, and waiting for the timer to expire.
+         *
+         * What this means is that in the case of `asyncAfter=0`, we have the following semantics:
+         * If the results are already in the response store, then return them to me. Otherwise, very quickly
+         * send back the asynchronous payload.
+         */
+        return preResponseStore.get(ticket).switchIfEmpty(
+                applyTimeoutIfNeeded(broadcastChannelNotifications, asyncAfter).flatMap(preResponseStore::get)
+        );
     }
 
     /**
@@ -425,11 +450,12 @@ public class JobsServlet extends EndpointServlet {
      * Process a request to get job payload.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequest object with all the associated info in it
+     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
+     * @param uriInfo The Uri Info needed to build response links
      *
      * @return an observable response to be consumed.
      */
-    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequest apiRequest) {
+    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequestImpl apiRequest, UriInfo uriInfo) {
         return apiRequest.getJobViewObservable(ticket)
                 //map the job to Json String
                 .map(
@@ -453,23 +479,26 @@ public class JobsServlet extends EndpointServlet {
      * @param preResponseObservable  An Observable over the PreResponse which will be used to generate the Response
      * @param asyncResponse  An async response that we can use to respond asynchronously
      * @param apiRequest  JobsApiRequest object with all the associated info with it
+     * @param containerRequestContext  The container request used to process headers and pagination
      */
     protected void handleResultsResponse(
             Observable<PreResponse> preResponseObservable,
             AsyncResponse asyncResponse,
-            ApiRequest apiRequest
+            ApiRequest apiRequest,
+            ContainerRequestContext containerRequestContext
     ) {
 
         preResponseObservable
                 .flatMap(preResponse -> handlePreResponseWithError(
                         preResponse,
-                        apiRequest.getUriInfo(),
+                        containerRequestContext.getUriInfo(),
                         apiRequest.getPaginationParameters()
                 ))
                 .subscribe(
                         new HttpResponseChannel(
                                 asyncResponse,
                                 apiRequest,
+                                containerRequestContext,
                                 httpResponseMaker
                         )
                 );
@@ -534,7 +563,9 @@ public class JobsServlet extends EndpointServlet {
                 .map(pair -> Utils.withRight(pair, pair.getRight().getAsInt()))
                 .map(pair -> Utils.withRight(
                         pair,
-                        uriInfo.getRequestUriBuilder().replaceQueryParam("page", pair.getRight())
+                        uriInfo.getRequestUriBuilder()
+                                .replaceQueryParam(PAGE, pair.getRight())
+                                .replaceQueryParam(PER_PAGE, pages.getPerPage())
                         )
                 )
                 .map(pair -> Utils.withRight(pair, pair.getRight().build()))

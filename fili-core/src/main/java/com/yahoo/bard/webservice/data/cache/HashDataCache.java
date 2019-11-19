@@ -4,8 +4,6 @@ package com.yahoo.bard.webservice.data.cache;
 
 import com.yahoo.bard.webservice.config.SystemConfigException;
 
-import org.asynchttpclient.util.Base64;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.Objects;
+import java.util.Base64;
 
 /**
  * DataCache using hashed keys to reduce the key length for the provided underlying cache.
@@ -79,7 +78,7 @@ public class HashDataCache<T extends Serializable> implements DataCache<T> {
             byte[] keyBytes = key.getBytes("UTF-8");
             md.update(keyBytes, 0, keyBytes.length);
             byte[] binaryhash = md.digest();
-            return Base64.encode(binaryhash);
+            return Base64.getEncoder().encodeToString(binaryhash);
         } catch (Exception e) {
             LOG.warn("Failed to get hash encoding for key: {}", key, e);
             return key;

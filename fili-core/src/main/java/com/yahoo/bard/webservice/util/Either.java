@@ -54,7 +54,7 @@ public class Either<L, R> {
     /**
      * Constructs an Either containing a right value.
      *
-     * @param right  The left value to store in the either
+     * @param right  The right value to store in the either
      * @param <L>  The type of the left value
      * @param <R>  The type of the right value
      *

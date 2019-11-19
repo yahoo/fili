@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 
 import java.util.LinkedHashSet;
 
@@ -17,6 +18,7 @@ public class TestDimensionConfig implements DimensionConfig {
     private final TestApiDimensionName apiName;
     private final String physicalName;
     private final String description;
+    private final StorageStrategy storageStrategy;
 
     private LinkedHashSet<DimensionField> fields;
     private LinkedHashSet<DimensionField> defaultFields;
@@ -48,6 +50,37 @@ public class TestDimensionConfig implements DimensionConfig {
         this.searchProvider = searchProvider;
         this.fields = fields;
         this.defaultFields = defaultFields;
+        this.storageStrategy = StorageStrategy.LOADED;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param apiName  API Name of the dimension
+     * @param physicalName Physical name of the dimension
+     * @param keyValueStore  KeyValueStore for the dimension
+     * @param searchProvider  SearchProvider for the dimension
+     * @param fields  Fields of the dimension
+     * @param defaultFields  Default fields of the dimension
+     * @param storageStrategy  Storage Strategy of the dimension
+     */
+    public TestDimensionConfig(
+            TestApiDimensionName apiName,
+            String physicalName,
+            KeyValueStore keyValueStore,
+            SearchProvider searchProvider,
+            LinkedHashSet<DimensionField> fields,
+            LinkedHashSet<DimensionField> defaultFields,
+            StorageStrategy storageStrategy
+    ) {
+        this.apiName = apiName;
+        this.physicalName = physicalName;
+        this.description = apiName.asName();
+        this.keyValueStore = keyValueStore;
+        this.searchProvider = searchProvider;
+        this.fields = fields;
+        this.defaultFields = defaultFields;
+        this.storageStrategy = storageStrategy;
     }
 
     //CHECKSTYLE:OFF
@@ -128,5 +161,10 @@ public class TestDimensionConfig implements DimensionConfig {
     @Override
     public String toString() {
         return "Dimension Config: apiName: " + apiName + " physicalName: " + physicalName + " fields: " + fields;
+    }
+
+    @Override
+    public StorageStrategy getStorageStrategy() {
+        return storageStrategy;
     }
 }

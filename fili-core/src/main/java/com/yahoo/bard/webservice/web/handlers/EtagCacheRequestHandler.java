@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonRequestContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.EtagCacheResponseProcessor;
@@ -90,7 +90,6 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                             );
 
                     if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                        RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
                         RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                     }
 
@@ -99,6 +98,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
                     }
 
                     CACHE_HITS.mark(1);
+                    BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                 } else { // Current query is not in data cache
                     // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
                     context.getHeaders().putSingle(
@@ -134,7 +134,7 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
      */
     private String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
         JsonNode root = mapper.valueToTree(druidQuery);
-        Utils.omitField(root, "context", mapper);
+        Utils.canonicalize(root, mapper, false);
         return writer.writeValueAsString(root);
     }
 }

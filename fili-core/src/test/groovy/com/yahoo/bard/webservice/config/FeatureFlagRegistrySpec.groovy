@@ -35,10 +35,14 @@ class FeatureFlagRegistrySpec extends Specification {
                 .collect(Collectors.toSet()) as Set
 
         then:
-        values == ["partial_data_enabled", "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
-                   "top_n_enabled", "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
+        values == ["partial_data_enabled", "partial_data_protection", "partial_data_query_optimization",
+                   "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
+                   "cache_partial_data", "top_n_enabled", "current_macro_uses_latest",
+                   "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
-                   "druid_dimensions_loader_enabled", "case_sensitive_keys_enabled"] as Set
+                   "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
+                   "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query",
+                   "adjust_current_by_timezone", "require_all_data_request_building_stages_called"] as Set
     }
 
     @Unroll
@@ -50,6 +54,6 @@ class FeatureFlagRegistrySpec extends Specification {
         flagName << ["partial_data_enabled", "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
                      "top_n_enabled", "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                      "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
-                     "druid_dimensions_loader_enabled", "case_sensitive_keys_enabled"]
+                     "druid_dimensions_loader_enabled", "case_sensitive_keys_enabled", "default_in_filter_enabled"]
     }
 }

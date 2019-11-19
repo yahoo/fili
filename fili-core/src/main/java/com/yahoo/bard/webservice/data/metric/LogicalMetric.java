@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
  */
@@ -16,10 +18,7 @@ public class LogicalMetric {
 
     private final TemplateDruidQuery query;
     private final ResultSetMapper calculation;
-    private final String name;
-    private final String longName;
-    private final String category;
-    private final String description;
+    protected LogicalMetricInfo logicalMetricInfo;
 
     /**
      * Build a fully specified Logical Metric.
@@ -31,11 +30,9 @@ public class LogicalMetric {
      * @param category  Category of the metric
      * @param description  Description of the metric
      *
-     * @deprecated Properties, such as name, of LogicalMetric is stored in a unified object called
      * {@link com.yahoo.bard.webservice.data.metric.LogicalMetricInfo}. Use new constructor
      * {@link #LogicalMetric(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
-    @Deprecated
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
@@ -99,22 +96,19 @@ public class LogicalMetric {
     public LogicalMetric(
             TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
-            LogicalMetricInfo logicalMetricInfo
+            @NotNull LogicalMetricInfo logicalMetricInfo
     ) {
         this.calculation = calculation;
-        this.name = logicalMetricInfo.getName();
-        this.longName = logicalMetricInfo.getLongName();
-        this.category = logicalMetricInfo.getCategory();
-        this.description = logicalMetricInfo.getDescription();
+        this.logicalMetricInfo = logicalMetricInfo;
         this.query = templateDruidQuery;
     }
 
     public String getName() {
-        return this.name;
+        return logicalMetricInfo.getName();
     }
 
     public String getDescription() {
-        return description;
+        return logicalMetricInfo.getDescription();
     }
 
     public ResultSetMapper getCalculation() {
@@ -129,21 +123,25 @@ public class LogicalMetric {
         return getTemplateDruidQuery().getMetricField(getName());
     }
 
-    @Override
-    public String toString() {
-        return "LogicalMetric{\n" +
-                "name=" + name + ",\n" +
-                "templateDruidQuery=" + query + ",\n" +
-                "calculation=" + calculation + "\n" +
-                "}";
-    }
-
     public String getCategory() {
-        return category;
+        return logicalMetricInfo.getCategory();
     }
 
     public String getLongName() {
-        return longName;
+        return logicalMetricInfo.getLongName();
+    }
+
+    public String getType() {
+        return logicalMetricInfo.getType();
+    }
+
+    @Override
+    public String toString() {
+        return "LogicalMetric{\n" +
+                "name=" + logicalMetricInfo.getName() + ",\n" +
+                "templateDruidQuery=" + query + ",\n" +
+                "calculation=" + calculation + "\n" +
+                "}";
     }
 
     @Override
@@ -154,14 +152,11 @@ public class LogicalMetric {
         return
                 Objects.equals(query, that.query) &&
                 Objects.equals(calculation, that.calculation) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(longName, that.longName) &&
-                Objects.equals(category, that.category) &&
-                Objects.equals(description, that.description);
+                Objects.equals(logicalMetricInfo, that.logicalMetricInfo);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(query, calculation, name, longName, category, description);
+        return Objects.hash(query, calculation, logicalMetricInfo);
     }
 }

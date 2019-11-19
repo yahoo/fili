@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.config;
 
 import org.apache.commons.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Properties;
@@ -14,7 +16,8 @@ import javax.validation.constraints.NotNull;
  * defaulting, and use of a runtime properties interface to override configured settings.
  */
 public interface SystemConfig {
-
+    Logger LOG = LoggerFactory.getLogger(SystemConfig.class);
+    String MISSING_CONFIG_ERROR_FORMAT = "Error retrieving system property '%s'.";
     /**
      * Get a package scoped variable name.
      *
@@ -38,7 +41,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getString(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -55,7 +60,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getInt(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -72,7 +79,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getBoolean(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -89,7 +98,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getFloat(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -106,7 +117,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getDouble(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -123,7 +136,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getLong(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -143,7 +158,9 @@ public interface SystemConfig {
             //CompositeConfiguration#getList method returns a bare List that needs to be cast to the appropriate type
             return (List<T>) getMasterConfiguration().getList(key);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -161,7 +178,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getString(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -179,7 +198,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getInt(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -197,7 +218,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getBoolean(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -215,7 +238,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getFloat(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -233,7 +258,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getDouble(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -251,7 +278,9 @@ public interface SystemConfig {
         try {
             return getMasterConfiguration().getLong(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -272,7 +301,9 @@ public interface SystemConfig {
             //CompositeConfiguration#getList method returns a bare List that needs to be cast to the appropriate type
             return (List<T>) getMasterConfiguration().getList(key, defaultValue);
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 
@@ -312,7 +343,9 @@ public interface SystemConfig {
                 getRuntimeProperties().setProperty(key, value);
             }
         } catch (Exception e) {
-            throw new SystemConfigException(e);
+            String message = String.format(MISSING_CONFIG_ERROR_FORMAT, key);
+            LOG.error(message, e);
+            throw new SystemConfigException(message, e);
         }
     }
 

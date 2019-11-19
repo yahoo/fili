@@ -8,9 +8,9 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.FAIL
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus.SUCCESS;
 
 import com.yahoo.bard.webservice.async.AsyncUtils;
-import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;

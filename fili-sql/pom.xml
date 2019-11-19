@@ -4,14 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <prerequisites>
-        <maven>3.0</maven>
-    </prerequisites>
 
     <parent>
         <artifactId>fili-parent-pom</artifactId>
         <groupId>com.yahoo.fili</groupId>
-        <version>0.9-SNAPSHOT</version>
+        <version>0.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-sql</artifactId>
@@ -31,7 +28,8 @@
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
 
         <version.h2>1.4.195</version.h2>
-        <version.calcite>1.12.0</version.calcite>
+        <version.calcite>1.20.0</version.calcite>
+        <presto.version>0.226</presto.version>
     </properties>
 
     <dependencies>
@@ -53,7 +51,16 @@
             <version>${version.h2}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.facebook.presto</groupId>
+            <artifactId>presto-jdbc</artifactId>
+            <version>${presto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.10.0</version>
+        </dependency>
     </dependencies>
 
 </project>

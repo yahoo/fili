@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
@@ -41,8 +42,8 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
      * @param threshold  The threshold
      * @param metric  The TopN metric
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected TopNQuery(
             DataSource dataSource,
@@ -55,7 +56,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
             long threshold,
             TopNMetric metric,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
         super(
                 DefaultQueryType.TOP_N,
@@ -67,7 +68,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
                 postAggregations,
                 intervals,
                 context,
-                doFork
+                incrementQueryId
         );
 
         this.threshold = threshold;

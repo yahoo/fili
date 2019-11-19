@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-All notable changes to Fili will be documented here. Changes are accumulated as new paragraphs at the top of the current 
+All notable changes to Fili will be documented here. Changes are accumulated as new paragraphs at the top of the current
 major version. Each change has a link to the pull request that makes the change and to the issue that triggered the
 pull request if there was one.
 
@@ -9,11 +9,945 @@ Current
 -------
 
 ### Added:
+- [Add Presto support](https://github.com/yahoo/fili/pull/986)
+   * Fili now can connect to Presto servers.
+   * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
+   * Version bump for jackson, jackson-databind, async-http-client to address package vulnerability.
+   * Add suppression for other packages with vulnerability but without fixed version.
+
+
+- [Default implementations of new `Generator` interface](https://github.com/yahoo/fili/issues/769)
+   * All default implementations are based on the equivalent method from `ApiRequestImpl`. The
+   logic backing them is a direct copy and paste from the`ApiRequestImpl` implementation.
+   * The logic is implemented in public static methods for dependent code to use. DO NOT
+   WRITE NEW CODE REFERENCING THOSE METHODS unless you have a good reason to do so. Prefer
+   creating instances of the generator.
+   * Generators based on `DataApiRequestImpl` are not yet implemented.
+
+### Changed:
+- [Preface Logblock lazily fetches username for serialization](https://github.com/yahoo/fili/pull/465)
+    * Allows the RequestLog to wait until serializing the Preface so that the username of the client can be properly set.
+
+- [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
+   * No methods have been removed from `ApiRequestImpl`, but the implementation code has been
+   moved to the relevant default generator implementation for that resource, and the existing
+   methods now defer to public static methods on the generators.
+
+- [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
+   * Split luthier into a library package and a sample application
+   * Nested all sample applications
+   * Resolved dependecy issues around where properties files were sourced
+   * Rationalized dependencies for sample applications
+
+- [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
+   
+### Removed:
+
+### Fixed:
+
+- [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
+   * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
+   * Added handlers to the ObjectMapperSuite json mapper.
+   
+- [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
+
+### Deprecated:
+
+### Known Issues:
+
+## Contract changes:
+
+
+v0.11.79 - 2019/09/17
+=====
+
+0.11 Highlights
+-------------
+
+### Configuration - Luthier
+
+We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools).
+Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc.
+See (https://github.com/yahoo/fili/tree/master/luthier)
+
+### Configuration and Extensibility
+
+Partial data devolved into distinct features.
+
+Added custom response handling.
+
+The CURRENT macro can now be configured to resolve relative to a timezone other than UTC.
+
+### Code style
+
+We added SONARQ code quality checking and addressed discovered issues.
+
+We removed inappropriate use of Optionals from constructors and parameter types on interfaces.
+
+### Security patches
+
+We added OWASP vulnerability checking and addressed identified issues.
+(https://www.owasp.org/index.php/OWASP_Dependency_Check)  Enhancements included jackson version upgrades to address
+injection vulnerabilities.
+
+### DataApiRequest
+
+We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory
+objects to other parts of the application.  These factories are now being injected by Dependecy Injection (HK2).
+
+The corresponding methods have been deprecated and will be removed very soon.
+
+A Pojo DataApiRequest has been built as well as a Generator interface and a Builder.  These will form the basis of a
+complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to
+produce an immutable value object.
+
+### Extensibility
+
+Injectable custom response handling.
+
+
+### Added:
+
+- [Added protected method to allow injection of dimension config loading in Generic Application](https://github.com/yahoo/fili/issues/974)
+   * Made dimension config loading into a protected feature of the GenericMetricLoader
+
+- [Added groundwork classes for POJO `DataApiRequest` build path](https://github.com/yahoo/fili/issues/769)
+    * Generator contract, builder, and POJO object have all been added, along with some silent contract changes.
+    * Immutable implementations of `LinkedHashSet`, `LinkedHashMap`, and `ApiFilters` have been added.
+
+- [Adds FlagFromTagDimension](https://github.com/yahoo/fili/pull/913)
+    * `FlagFromTagDimension` is a virtual dimension that exposes a flag based interface to API users, but is actually
+    based on the presence or absence of a tag value in an underlying multivalued dimension.
+    * This implementation is based on two underlying physical columns: a filtering column which can be efficiently
+    filtered against using the default druid filter serialization, and a grouping dimension containing a comma separated
+    string of tag values, which is parsed to determined the presence of the desired tag value and then converted to the
+    appropriate truth value.
+    * The filtering behavior is supported through the new `FilterOptimizable` interface and associated request mapper.
+
+- [Add FilterOptimizable interface](https://github.com/yahoo/fili/pull/913)
+    * Adds the `FilterOptimizable` interface, which indicates that the implementing object has the ability to optimize
+    a `Collection` of `ApiFilter` objects.
+    * Adds `FilterOptimizingRequestMapper` which will check if any of the filtered on dimensions can optimize their
+    filters and performs the optimizations.
+
+- [Add ImmutableSearchProvider interface and MapSearchProvider](https://github.com/yahoo/fili/pull/913)
+    * Adds the `ImmutableSearchProvider` interface, which is a marker interface indicating that the `SearchProvider`
+    implementation is immutable.
+    * Adds `MapSearchProvider` which is an implementation of `ImmutableSearchProvider` based on a constant map.
+
+- [Add support to DataCache for key-specific expirations](https://github.com/yahoo/fili/pull/911)
+    * Adds a new method `boolean set(String key, T value, int expiration)` that allows customers to
+    to set the expiration date for a key when it is being added to the cache.
+    * The default implementation delegates to `boolean set(String key, T value)` (so throwing away the
+    expiration), so this won't affect any customers who have their own `DataCache`.
+    * The memcache-backed implementation implements the new `set`, and the old `set` delegates to it,
+    passing in the configured `EXPIRATION` constant.
+
+- [Add config parameter to control lookback on druid dimension loader](https://github.com/yahoo/fili/issues/908)
+    * Add config parameter: bard__druid_dim_loader_lookback_period to control window of time used in loading.
+
+- [Add ApiFilters to LogicalTable](https://github.com/yahoo/fili/issues/902)
+    * Add `ApiFilters` to `LogicalTable` class. These filters function as a view on the underlying physical tables
+    by restricting access to only a subset of the data present on the logical table.
+    * These filters are merged with `ApiFilters` from the api request during druid query building and on the
+    `TablesApiRequestImpl` for requests to the tables servlet.
+    * Small Patch: ApiFilters contract was breaking downstream application tests, so switched to supporting Optional
+    * Second small patch: Fix null pointer errors with TablesApiRequestImpl
+
+- [Make current macro align on the end of network day](https://github.com/yahoo/fili/issues/886)
+    * Added BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT which determines if adjustment based on timezone is needed.
+    * Added BardFeatureFlag.ADJUSTED_TIME_ZONE which tells to what timezone the macro has to be adjusted.
+    * If CURRENT_TIME_ZONE_ADJUSTMENT flag is enabled, macro is aligned on end of UTC day.
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+
+- [Add Partial Data Feature Flags to separate query planning and data protection](https://github.com/yahoo/fili/issues/879)
+    * BardFeatureFlag.PARTIAL_DATA_PROTECTION activates removal of time buckets based on availability
+    * BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION activates the use of PartialData when query planning.
+    * BardFeatureFlag.PARTIAL_DATA still activates both capabilities.
+    * If any of these flags are active partial data answers are included in responses.
+
+- [Add system config to disable requiring metrics in Api queries](https://github.com/yahoo/fili/issues/862)
+    * Added the system config `require_metrics_in_query` which toggles whether or not metrics should be required in queries
+        - this setting is turned ON by default
+    * This property is controlled through the feature flag BardFeatureFlag.REQUIRE_METRICS_QUERY
+
+- [Add more BoundFilterBuilding validation and hooks](https://github.com/yahoo/fili/issues/850)
+    * Added minimum and maximum arguments to FilterOperation
+    * Added validation on number of arguments to the bound filter builder
+    * Added hook for normalizing BoundFilterBuilder arguments
+
+- [Force update of cardinality to SearchIndexes](https://github.com/yahoo/fili/issues/846)
+    * `SearchProvider` now has method `int getDimensionCardinality(boolean refresh)`, where refresh indicates the cardinality count should be refreshed before being returned.
+        - default implementation just defers to existing method `int getDimensionCardinality()`
+        - `LuceneSearchProvider` overrides the default and refreshes the cardinality count if `refresh` is true
+
+- [Added aliases to api filter operations](https://github.com/yahoo/fili/issues/843)
+    * Filter ops now have aliases that match the relevant ops and aliases for havings.
+
+- [Added filename parameter to api query](https://github.com/yahoo/fili/issues/709)
+    * If the filename parameter is present in the request the response is assumed to be downloaded with the provided filename. The download format depends on the format provided to the format parameter.
+    * Filename parameter is currently only available to data queries.
+
+- [Ability to add Dimension objects to DimensionSpecs as a nonserialized config object](https://github.com/yahoo/fili/issues/841)
+    * DimensionSpec and relevant subclasses have had a constructor added that takes a Dimension and a getter for
+    the Dimension
+
+- [Added expected start and end dates to PhysicalTableDefiniton](https://github.com/yahoo/fili/issues/822)
+    * New constructors on `PhysicalTableDefinition` and `ConcretePhysicalTableDefinition` that take expected start and end date
+    * New public getters on `PhysicalTableDefinition` for expected start and end date
+
+- [Added expected start and end dates to availability](https://github.com/yahoo/fili/issues/822)
+    * Add methods for getting expected start and end dates given a datasource constraint to the `Availability` interface.
+        - start and end dates are optional, with an empty optional indicating no expected start or end date.
+        - the new methods default to returning an empty optional.
+    * The start and end dates are not concrete. If an availability has intervals outside of the expected range those
+    intervals are NOT suppressed.
+    * `BaseCompositeAvailability` reports its expected start and end dates as the earliest start date and latest end date
+    of its composed availabilities.
+        -   no expected start or end date supercedes any configured start or end date, so if ANY of the composed availabilities
+        has no start or end date, and empty optional is reported.
+    * Add a constructor to `StrictAvailability` that takes start and end dates, which allow for direct configuration
+    of expected start and end dates.  
+
+- [Fili can now route to one of several Druid webservices based on custom routing logic](https://github.com/yahoo/fili/pull/759)
+    * This allows customers to put Fili in front of multiple Druid clusters, and
+        then use custom logic to decide which cluster to query for each request.
+    * We introduce a new interface `DruidWebServiceSelector` that wraps the
+        routing logic, and pass an instance to the AsyncWebServiceRequestHandler
+        for it to use.
+
+- [Add Druid Bound filter support to Fili](https://github.com/yahoo/fili/pull/807)
+    * Added the `DruidBoundFilter` class to support the Bound Filter supported by Druid.
+
+- [Add static Factory build methods for BoundFilter](https://github.com/yahoo/fili/pull/807)
+    * Added static factory methods for building `lowerBound`, `upperBound`, `strictLowerBound` and `strictUpperBound`
+        Bound filters.
+
+- [Add insertion order aware method for Stream Utils](https://github.com/yahoo/fili/pull/807)
+    * Added `orderedSetMerge` that merges 2 sets in the order provided.
+
+- [Add DimensionRow transformation support with ResultSetMapper](https://github.com/yahoo/fili/issues/856)
+    * Added helper constructor to `DimensionRow`
+    * Created `MemoizingDimensionMappingResultSetMapper` to support field transform use case
+
+- [Added LogicalTable name metdata interface and BaseTableLoader methods to accept it](https://github.com/yahoo/fili/issues/872)
+    * `LogicalTable` accepts LogicalTableName as a constructor parameter
+    * `BaseTableLoader.loadLogicalTablesWithGranularities` accepts LogicalTableNames to pass to new LogicalTable constructor
+    * Changed default retention for `LogicalTable` to null rather that P1Y
+
+### Changed:
+
+- [Removed references to yahoo internal authorization system](https://github.com/yahoo/fili/issues/972)
+   * Renamed bouncer code to 'status code' and references to 'Bouncer' in class name and fields.
+
+- [Deprecated optionals on constructors for DataApiRequest implementations and related objects](https://github.com/yahoo/fili/pull/913)
+    * Some objects related to `DataApiRequest` were taking optionals as construction parameters or storing optionals
+    internally. This behvaior has been changed to more closely align with accept guidelines for using optionals
+
+- [OptionalInt has been removed from some interfaces relating to DataApiRequest and replaced with Optional<Integer>](https://github.com/yahoo/fili/pull/913)
+    * While `OptionalInt` is considered to be preferable to `Optional<Integer>` for performance reasons, it does not have
+    the same rich set of utility methods as `Optional`. The relevant code was not in a performance critical location so
+    `OptionalInt` was replaced with `Optional<Integer>` for improved usability.
+
+- [Improved user provided filename handling to truncate extra user provided file extensions](https://github.com/yahoo/fili/issues/922)
+    * If the user provided filename ends with a file extension that matches the file extension provided by the response format type,
+    that file extension is removed.
+    * Some other small refactors where do on the `ResponseUtils` class
+
+- [Upgrade to Jackson 2.9.9](https://github.com/yahoo/fili/pull/912)
+    * Addresses https://nvd.nist.gov/vuln/detail/CVE-2019-12086, a new vulnerability in jackson databind.
+
+- [Made Filter Construction more flexible](https://github.com/yahoo/fili/issues/893)
+    * Changed FilterBinder.INSTANCE from final to static with accessors
+    * Refactored FilterBinders to support chain-of-responsibility FilterFactory
+
+- [Create a TagExtractionFunctionFactory to transform comma list values into a Boolean dimension](https://github.com/yahoo/fili/issues/893)
+    * Create an extraction function to transform a comma list of values into a boolean dimension value.
+
+- [Fix security alerts & Dependency version bump](https://github.com/yahoo/fili/pull/882)
+    * Checkstyle prior to 8.18 loads external DTDs by default, which can potentially lead to denial of service attacks
+      or the leaking of confidential information.
+    * This PR upgrades `com.puppycrawl.tools` to the safe-version.
+
+- [RoleDimensionApiFilterRequestMapper builds api filters with a defined, consistent ordering](https://github.com/yahoo/fili/issues/875)
+    * The resulting set of `ApiFilter`s is backed by a linked hash set, which is ordered by the names of the dimension,
+    dimension field, and filter operation.
+    * The values in each constructed `ApiFilter` are sorted.
+
+- [Better expose lucene analyzer LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Continue to make LuceneSearchProvider internals protected over private so extending classes have an easier time
+  extending behavior.
+  * removed protected getter and setter on `LuceneSearchProvider.analyzer` field in favor of just making the field
+  protected
+
+- [LuceneSearchProvider will throw an exception if a thread spends too much time waiting on acquiring a lock](https://github.com/yahoo/fili/issues/870)
+  * Currently, if LuceneSearchProvider tries to acquire a lock it will wait forever until the lock is released. If the
+  lock is erroneously never released the requesting thread will hang forever.
+  * The new behavior is to timeout after some amount of time, throw an error, and fail the query.
+
+- [Strict Availability no longer returns no availability when queried with constraint with no columns](https://github.com/yahoo/fili/issues/862)
+  * Currently, `StrictAvailability.getAvailableIntervals(Constraint)` returns an empty interval list when called with
+  a constraint with an empty column list. This behavior is now changed to defer the call to
+  `StrictAvailability.getAvailableIntervals()`
+  * This behavior change is only relevant to StrictAvailability, all other default availability implementations are
+  composite availabilities and defer this call to their underlying availabilities.
+
+- [Change log level for several servlet](https://github.com/yahoo/fili/issues/852)
+  * `SlicesServlet`, `DimensionsServlet`, `MetricsServlet`, `TablesServlet`, `FeatureFlagsServlet` all has debug level
+  log for the entire query response. Change log level to trace to avoid log spamming.
+
+- [Better exposed dimension analyzer fields in LuceneSearchProvider](https://github.com/yahoo/fili/issues/863)
+  * Changed LuceneSearchProvider to using an analyzer field instead of a final, statically create `StandardAnalyzer`
+  * some previously private fields and methods are now either protected or public.
+
+- [Better exposed static method on DimensionsServlet to subclasses](https://github.com/yahoo/fili/issues/863)
+  * Changed `DimensionsServlet.getDescriptionKey` to `protected`
+
+- [ResponseFormatType now contains information relevant to generating response headers associated with response format](https://github.com/yahoo/fili/issues/709)
+  * `ResponseFormatType` interface exposes `getCharset()`, `getFileExtension()`, and `getContentType()` methods which
+  provide information used to build response headers
+
+- [ApiRequest interfaces exposes getDownloadFilename method](https://github.com/yahoo/fili/issues/709)
+  * `ApiRequestImpl` and other classes relating to the construction of `DataApiRequest` implementations have had
+  new constructors added to handle the filename.
+  * Constructors that don't handle filename are now deprecated.
+
+- [Added config property for SSL cipher suites](https://github.com/yahoo/fili/issues/831)
+
+- [Updated asynch http dependency to resolve security issues](https://github.com/yahoo/fili/issues/821)
+    * Moved netty to current 4.1.31.Final
+    * Moved asynch-http-client to current 2.6.0
+
+- [Truncate csv response file path length](https://github.com/yahoo/fili/issues/825)
+    ~~* Set a max size to file name for a downloaded csv report.~~
+        ~~- max length is 218 characters, which is Microsoft Excel's max file length~~
+
+- [The algorithm for PartionAvailability is changed to consider using expected start and end date](https://github.com/yahoo/fili/issues/822)
+    * Currently `PartitonAvailability` reports its availability as the intersection of all participating
+    sub availabilities
+    * `PartitionAvailability` now takes the union of available intervals from all participating availabilities
+    and subtracts from it the union of missing intervals from all participating availabilities.
+        - The current algorithm is equivalent to the new algorithm if ALL participating availabilities have
+        NO expected start AND end dates
+
+- [Configurable limit to csv filename length](https://github.com/yahoo/fili/issues/825)
+    * Created configuration parameter 'download_file_max_name_length' to truncate filename lengths
+        - Default truncation is no truncation (0)
+        - truncation happens before applying file extension
+
+- [Generifying FilterBuilder exceptions](https://github.com/yahoo/fili/issues/816)
+    * Make FilterBuilder exceptions more general and use them for non search provider exceptons.
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
+- [ApiFilter allows preserving the insertion order of filter values](https://github.com/yahoo/fili/pull/807)
+    * `Constructor` and `withValues()` method's argument changed from `Set` to `Collection`.
+    * Added `getValueList()` to return the original ordered filter values.
+
+- [RoleDimensionApiFilterRequestMapper preserves the order of insertion of ApiFilter values](https://github.com/yahoo/fili/pull/807)
+    * Changed `unionMergeFilterValues()` to be order cognizant for `ApiFilter` values.
+
+- [Cleanup DataApiRequestImpl and Builders](https://github.com/yahoo/fili/issues/803)
+  * Moved to ordered bind/validate semantics.
+  * Created interface for druid having building and moved existing builder
+  * Moved `DruidQueryBuilder` off of apiRequest.getDruidHavings to use apiRequest.getHavings().isEmpty()
+  * Moved generators into the binders subpackage of web.apirequest
+
+- [Refactored DruidHavingBuilder](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidHavingBuilder to new package
+   * Made static methods into instance methods, with a default instance
+   * Created a factory interface
+   * Injected DruidHavingBuilder into QueryBuilder
+
+- [Refactored DruidFilterBuilders](https://github.com/yahoo/fili/issues/803)  
+   * Moved DruidFilterBuilder and clients to new package
+
+- [Removed deprecations in maker classes](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+    * Removed calls to deprecated Sketch utility methods
+    * Removed unused RowNumMapper non-LMI implementation
+    * Undeprecated needed sketch utility method
+
+- [Eliminate String based metric creation](https://github.com/yahoo/fili/issues/778)
+    * Add `LogicalMetricInfo` conversion method on ApiMetricField class
+    * Moved all tests and internal uses onto LMI based construction
+
+- [Update Redison dependencies](https://github.com/yahoo/fili/issues/836)
+
+### Deprecated:
+
+### Removed:
+
+- [Removed specialized `PhysicalDataSourceConstraint` methods from `Availability`](https://github.com/yahoo/fili/issues/884)
+
+- [Disabled `TableUtilsSpec` test that only tested testcode](https://github.com/yahoo/fili/issues/884)
+
+### Fixed:
+
+- [CVSS vulernability resolution](https://github.com/yahoo/fili/issues/963)
+    * Upversion druid-api to 0.12 to stop bringing in vulnerable versions of apache and avro
+    * Upversion jetty for emedded examples to resolve transitive vulneratibilities
+    * Upversion calcite to resolve protobuf vulnerabilities
+
+- [Disabled erroring javadoc reports](https://github.com/yahoo/fili/issues/956)
+    * Disabled link following during javadoc processing that was creating many false positive warnings.
+
+- [Hardened the regex generated by `TagExtractionFunctionFactory` to fail partial matches](https://github.com/yahoo/fili/issues/961)
+    * Problem: Previously, the regex for the FlagFromTag dimension did not use start and end line characters. This means
+    that regex engines can partial match on incorrect strings (eg: desired flag value "1" can match "2,3,12").
+    * Druid uses a matching strategy that avoids this, but itis changed to always fail, even with engines that will match
+    on partial matches (which is common).
+
+- [`SystemConfigException` now extends `RuntimeException` instead of `Error`](https://github.com/yahoo/fili/issues/927)
+    * Problem: Previously, if an unexpected behaviour happens in the Class build time in
+    fili-system-config module's SystemConfig.java, an Error will be raised and bubbles up in mvn build,
+    where we suspect only Exceptions are logged.
+    * Behaviour: For example, if a fili module is missing appropriate `moduleConfig.properties` in its
+    `src/main/resources`, in runtime, we will get `java.util.NoSuchElementexception` followed by
+    `NoClassDefFound` instead of the `SystemConfigException` being correctly logged.
+    * Fix: Now the `SystemConfigException` will no longer extend Error. It extends RuntimeException instead.
+    We also log the message in-place in `SystemConfig.java` when _any_ Exception is caught.
+
+- [Reorder applying table api filters in druid filter building](https://github.com/yahoo/fili/issues/920)
+    * table api filters where not being used in query planning, moving the merge above query planning fixes this.
+
+- [Unstuck druid dimension loader in time](https://github.com/yahoo/fili/issues/908)
+    * Unstuck lookback so that the window slides forward rather than stopping at static load time.
+
+- [Reverted addition of Verizon Media Group to copyright]()
+
+- [Handle null lastLoadDate in DruidDimensionLoader](https://github.com/yahoo/fili/issues/878)
+    * Protected `DruidDimensionsLoader` from null pointer exceptions on no LastRunDate
+
+- [Filtered partial time comparison to requested intervals in `PartialTimeComprator`](https://github.com/yahoo/fili/issues/884)
+
+- [Fixed many compile warnings and other issues](https://github.com/yahoo/fili/pull/858)
+    * Many minor syntax and structual issues resolved.
+
+- [Fixed FilteredAggregation nesting behavior](https://github.com/yahoo/fili/issues/839)
+    * Currently, FilteredAggregation effectively makes a second copy of its wrapped aggregation, and the inner copy will
+    be wrapped with the filter and the outer query won't
+    * This behavior is changed to call `nest` on the wrapped query, then wrap produced inner query with the filter. The
+    filtered inner query is returned as the inner query of `nest` call, and the raw outer query is returned as the outer
+    query of the `nest` call
+
+- [Filter Code now intersects security constraints instead of unioning with requests](https://github.com/yahoo/fili/issues/812)
+    * Switched to ensure security and request filters don't merge but instead intersect
+
+- [Bump Jackson version to patch vulnerability](https://github.com/yahoo/fili/issues/865)
+    * Bumped dependency version to 2.9.8
+
+- [Bump Jackson version again to patch vulnerability](https://github.com/yahoo/fili/issues/770)
+    * Bumped dependency version to 2.9.5
+    * Made serialization order more specific in several classes
+    * Fixed bad format in error message
+    * Moved tests off of serialization of `SimplifiedIntervalList`.  That's turning out to be hard to solve.
+
+- [Bump lucene version to patch vulnerability](https://github.com/yahoo/fili/issues/819)
+    * Bumped dependency version to 7.5.0
+    * Added error in case of greater than maxint hits from Lucene
+
+- [Bump spring code to patch vulnerability](https://github.com/yahoo/fili/issues/820)
+    * Bumped dependency version to [5.1.2,)
+    * Throw validation error if excessive documents are returned from Lucene now that it supports up to long hitcounts
+
+- [Updated copyright style to include Verizon Media Group](https://github.com/yahoo/fili/issues/856)
+
+- [Fixed incorrect key for physicalTableDictionary lookup](https://github.com/yahoo/fili/pull/859)
+
+- [Log exception messages in DataApiExceptionHandler](https://github.com/yahoo/fili/issues/860)
+    * DataApiExceptionHandler clearly intended to log error messages but improperly used the sl4j log syntax.
+    * Added original URI logging to exception handling cases.
+
+- [Fixed corrupted getDefaultDimensionFields after show](https://github.com/yahoo/fili/pull/897)
+    * map merge incorrectly modified source set
+
+### Known Issues:
+
+## Contract changes:
+
+- [Allow Optional nesting in Aggregation](https://github.com/yahoo/fili/issues/847)
+  * Changed the return type of `nest` method in `Aggreagtion` class.
+  * `nest` method in `Aggregation` now returns a `Pair` of `Optional<Aggregation>`.
+
+- [ResponseUtils is now responsible for generating response headers](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` now generates the Content-Type header and the Content-Disposition header if relevant.
+  * `ResponseUtils` handles all format types instead of just building the Content-Disposition header value for CSV
+  responses
+
+- [Response is assumed to be rendered in the browser unless a filename is provided](https://github.com/yahoo/fili/issues/709)
+  * `ResponseUtils` takes a list of formats that default to download. This list can be changed or overridden
+  * By default CSV is added to the default to download list. This is to maintain backwards compatibility
+
+- [ApiRequest.getApiDruidFilters() must now not be null]()
+
+- [DataApiRequest property renames](https://github.com/yahoo/fili/issues/803)
+  * `DataApiRequest` getHaving -> getQueryHaving
+  * `DataApiRequest` getDruidFilter -> getQueryFilter
+  * Deprecate old paths
+
+- [Additional healthcheck logging on healthchck failure on data request](https://github.com/yahoo/fili/pull/809)
+  * Added user, request url, and timestamp to healthcheck error message on data request.
+
+v0.10.48 - 2018/10/04
+=====
+
+0.10 Highlights
+-------------
+
+### Extensibility improvements
+
+A number of classes which were either not extensible or very difficult to extend have been restructured.  
+
+Response building, extraction functions, Web logging and Exception handling in DataServlet are now injectable.  
+
+### Extensive deprecation cleanup
+
+A lot of tech debt has been paid down in the form of removing deprecated code and moving code off deprecated methods.
+Old sketch support has been retired in favor of the official community open source version:
+(https://datasketches.github.io/docs/Theta/ThetaSketchFramework.html)
+
+Some deprecations have been removed because the migration path off of those deprecated methods seemed less useful
+than simply supporting the older (simpler) contract.
+
+### General cleanup
+
+Some packages have been rationalized together or apart.  Some concrete classes became interfaces and vice-versa.
+
+### Externalizing filter building code
+
+Generating `ApiFilters` and Druid `Filter`s has been externalized to make it easier to reimplement with non-Regular
+Expression solutions.
+
+### Supporting Druid in-filters
+
+A general performance improvement by implementing the in filter in druid (as opposed to long chains of single value
+select filters)
+
+### Added:
+
+- [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
+    * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
+      hash values are consistent.
+    * `canonicalize` takes a boolean parameter `preserveContext` which determines if context has to be omitted.
+    * Deprecated `omitField` method in `Utils` class.
+
+- [Enforce role based security for incoming API requests](https://github.com/yahoo/fili/issues/788)
+    * Added `RoleBasedTableValidatorRequestMapper` class which checks if a user's role satisfies the predicates defined
+      for a logical table.
+
+- [HttpResponseMaker header building made extendable](https://github.com/yahoo/fili/issues/783)
+    * Added `buildAndAddResponseHeaders` method in `HttpResponseMaker` which handles building and adding headers to a
+    response builder. This logic was moved from `createResponseBuilder`.
+    * Made `createResponseBuilder` method protected to open up the class to be more extendable.
+
+- [Add factory for build ApiFilter objects](https://github.com/yahoo/fili/issues/771)
+    * `ApiFilter` changed into a simple value object.
+    * `ApiFilter` constructor using filter clause from API request moved to factory as static `build` method.
+    * `ApiFilter` union method moved to factory.
+
+- [Add interface to FilterOperation for easy extension](https://github.com/yahoo/fili/issues/771)
+    * Changed existing version of `FilterOperation` to `DefaulFilterOperation` and made `FilterOperation` into an interface.
+    * Changed code that depended on the enum to be dependent on the new interfaces instead.
+
+- [Wrapping DruidInFilterBuilder as default filter builder under a feature flag ](https://github.com/yahoo/fili/issues/765)
+    * Added `DEFAULT_IN_FILTER` feature flag.
+    * If `DEFAULT_IN_FILTER` feature flag is enabled, then `DruidInFilterBuilder` will be used as the default druid
+      query builder.
+    * If `DEFAULT_IN_FILTER` feature flag is disabled, then `DruidOrFilterBuilder` will be used as the default druid
+      query builder.
+
+- [Enable Druid In-filter in Fili](https://github.com/yahoo/fili/pull/688)
+    * `DefaultDruidFilterBuilder` is renamed to `DruidOrFilterBuilder`
+    * Implement `DruidInFilterBuilder` which turns list of selector filter generated by `DruidOrFilterBuilder` into a
+      single Druid in-filter. The in-filter resolves the [timeout issue](https://github.com/yahoo/fili/issues/687). The
+      in-filter could substantially shorten druid query, making the query more sharable and readable.
+    * Fili now uses the `DruidInFilterBuilder` as the "Default" Druid query filter builder, in stead of the old
+      `DruidOrFilterBuilder`, because the new default filter is terser and packs the query payload tighter, and in
+      proportion to the number of filters being applied.
+
+- [Move off BaseCompositePhysicalTable inheritance usage](https://github.com/yahoo/fili/pull/748)
+    * Added builder methods to `MetricUnionAvailability` and `PartitionAvailability` to save on needing to add
+      additional table classes.
+
+- [An injection point for customizing the WebLoggingFilter to use during tests](https://github.com/yahoo/fili/pull/749)
+    * Extend `JerseyTestBinder` and override `getLoggingFilter`.
+
+- [An injection point for customizing Exception handling](https://github.com/yahoo/fili/pull/742)
+    * Customers can provide their own logic for handling top level Exceptions in
+      the `DataServlet` by implementing `DataExceptionHandler`, and any other
+      servlet by implementing `MetadataExceptionHandler`.
+
+- [Add support for "case_sensitive" attribute in FragmentSearchQuerySpec](https://github.com/yahoo/fili/pull/727)
+    * Enable `FragmentSearchQuerySpec` to accept an argument for `case_sensitive` so that API users can configure this
+      attribute for JSON serialization through Fili.
+
+- [Add specs for InsensitiveContainsSearchQuerySpec & RegexSearchQuerySpec](https://github.com/yahoo/fili/pull/732)
+    * `RegexSearchQuerySpec` and `InsensitiveContainsSearchQuerySpec` have no dedicated test specs. This PR adds tests
+      for them.
+
+- [Implement ContainsSearchQuerySpec](https://github.com/yahoo/fili/pull/730)
+    * Adds serialization for `ContainsSearchQuerySpec` so that Fili API users can use that through Fili.
+
+- [Add storageStrategy as a field of the DimensionConfig class](https://github.com/yahoo/fili/issues/718)
+    * Adds getStorageStrategy as a field of the dimensionConfig class.
+    * Passes the storage strategy to the KeyValueStoreDimension Constructor
+
+- [Add more tests to RegisteredLookupMetadataLoadTask](https://github.com/yahoo/fili/pull/673)
+    * Adds tests to make sure the load tasks can update status correctly.
+
+- [Add tests to Utils](https://github.com/yahoo/fili/pull/675)
+    * Add missing tests to `Utils` class.
+
+- [Enable Druid Bound-filter in Fili](https://github.com/yahoo/fili/pull/797)
+    * Added `BoundFilter` class to support Druid Bound-filter
+
+### Changed:
+
+- [Made In Filter use sorted Set to support reliable equality](https://github.com/yahoo/fili/issues/780)
+    * In filter tested in unstable ways.  Since order doesn't matter, switched to a canonically ordered set.
+
+- [Make ConjunctionDruidFilterBuilder's protected helper methods instance methods](https://github.com/yahoo/fili/issues/792)
+
+- [Widen access privileges to suppress IDE warnings](https://github.com/yahoo/fili/issues/785)
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+
+- [Cleaned up ApiRequest contracts](https://github.com/yahoo/fili/issues/775)
+    * `DataApiRequest` default implementation of getting dimension filters
+    * Aync after nullable (to indicate unconfigured as opposed to explicitly zero)
+    * DefaultPagination removed from ApiRequest interface (ApiRequest should not be a service provider)
+    * Moved filter generation into an explicit class, defaulted implementations in subclasses using extensible methods.    
+
+- [Corrected generality on with methods](https://github.com/yahoo/fili/issues/773)
+   * Changed `DataApiRequest` methods to not refer to the implementation classes.
+   * Added getGeneratorFilter (to replace 'generate') to `DataApiRequest` (yes this contradicts the item above, but this is a transitional change.)
+
+- [Extract logic for getting pagination of dimension rows](https://github.com/yahoo/fili/issues/782)
+    * Extract the logic in `DimensionsServlet` to get pagination of dimension rows into a protected function.
+
+- [Removed deprecations](https://github.com/yahoo/fili/issues/668)
+  * Removed Pagination deprecation
+  * Removed `DataSourceConstraint` deprecation
+
+- [Bumping query id inside withIntervals of LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Returning a new `LookBackQuery` with `doFork` set to `true` which bumps query id inside `withIntervals` method.
+    * Renamed every occurrence of `doFork` to `incrementQueryId`.
+    * Removed `withDoFork` from `LookBackQuery` class.
+
+- [Change to ordered data structures for ApiRequestImpls](https://github.com/yahoo/fili/issues/753)
+    * Change Set<foo> to LinkedHashSet<foo> in most ApiRequestImpl getters
+    * Change Set<Interval> to List<Interval> in ApiRequests
+
+- [Moved ResponseFormatType from Singleton enum to interface with enum impl](https://github.com/yahoo/fili/issues/711)
+    * Refactored ResponseFormatType to allow expansion via additional interface implementors
+    * Replaced equality based matching with 'accepts' model
+
+- [Restructured Report Building out of ApiRequest](https://github.com/yahoo/fili/issues/711)
+    * Pushed UriInfo used to produce `PaginationMapper` into `RequestContext`
+    * Renamed 'getPage' to 'paginate' and refactored off `ApiRequest` and into `PageLinkBuilder`
+    * Moved pagination mostly out of individual servlet classes and into `EndpointServlet`
+    * Initialized per request `Response.ResponseBuilder` in EndpointServlet rather than `ApiRequestImpl` constructor
+    * Simplified injected classes that took both `UrlInfo` and `ContainerRequestContext` to get the one from inside the other.
+    * Pushed entire container request context to content disposition building code (prelude to https://github.com/yahoo/fili/issues/709 )
+
+- [Change `BaseCompositePhysicalTable` into a concrete class](https://github.com/yahoo/fili/pull/745)
+    * Currently `BaseCompositePhysicalTable` is an abstract class, though it has all of the functionality for a simple composite physical table. Changed to a concrete class to allow for simple composite table behavior with requiring an extension.
+    * Two simple implementations of `BaseCompositePhysicalTable`, `PartitionCompositeTable` and `MetricUnionCompositeTable` are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.
+
+- [Change availability behavior on BasePhysicalTable](https://github.com/yahoo/fili/pull/743)
+    * Currently `BasePhysicalTable` overrides `getAvailableIntervals(constraint)` and `getAllAvailableIntervals()`, and defers this behavior to its availability. This PR changes `BasePhysicalTable` to also override `getAvailableIntervals()` and defer to its availability.
+
+- [Making Custom Sketch operations possible in PostAggreations](https://github.com/yahoo/fili/issues/740)
+    * Added `PostAggregation` and `Aggregation` instance check in `asSketchEstimate(MetricField field)` method of the class `ThetaSketchFieldConverter`.
+    * `FieldAccessorPostAggregation` is called only for `Aggregation` and not for `PostAggregation`.
+
+- [Let DimensionApiRequestMapper throw RequestValidationException instead of BadApiRequestException](https://github.com/yahoo/fili/pull/715)
+    * `DimensionApiRequestMapper.apply()` is made to obey the interface contract by throwing
+      `RequestValidationException` instead of ``BadApiRequestException``
+
+- [Inject customizable extraction functions to RegisteredLookupDimension](https://github.com/yahoo/fili/pull/724)
+    * Instead of injecting registered lookup names, we inject registered lookup extraction functions for lookup
+      dimension so that downstream projects can configure all fields of registered lookup extraction functions.
+
+- [Abort request when too many Druid filters are generated](https://github.com/yahoo/fili/pull/690)
+    * In order to avoid Druid queries with too much filters on high-cardinality dimension, Fili sets a upper limit
+      on the number of filters and aborts requests if the limit is exceeded.
+
+- [Class re-organization](https://github.com/yahoo/fili/pull/694)
+    * Put `Granularity` interfaces and its implementations in the same package
+    * Put `*ApiRequest` interfaces and their implementations in the same package
+
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/677)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getVolatileIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+
+### Deprecated:
+
+- [Undeprecated pagination by collection](https://github.com/yahoo/fili/issues/711)
+    * Since we seem to be in no hurry to switch to heavier reliance on streams. (also renamed paginate and moved to `PageLinkBuilder`)
+
+- [Deprecate `PartitionCompositeTable` and `MetricUnionCompositeTable`](https://github.com/yahoo/fili/pull/745)
+    * Two simple implementations of `BaseCompositePhysicalTable` (`PartitionCompositeTable` and `MetricUnionCompositeTable`) are now deprecated. Instead, the availabilities for these tables should be created directly and passed in to `BaseCompositePhysicalTable`.
+
+### Fixed:
+
+- [ApiFilter constructor from filter query string was removed when it should have been deprecated](https://github.com/yahoo/fili/issues/794)
+    * Constructor using filter query string is restored and calls the `ApiFilterGenerator.build()` to construct itself from the string.
+
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * ThetaSketchIntersection had a bug where it wasn't collecting dependant metrics from InFilters
+
+- [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
+    * Filtered metrics should take filter values into account for equals and hashcode
+
+- [Fix name change in test logical metrics that breaks downstream tests](https://github.com/yahoo/fili/issues/786)
+    * Change test logical metric generation to use `LogicalMetricInfo` constructor which takes both long name and description.
+
+- [Fix GroovyTestUtils json parsing](https://github.com/yahoo/fili/pull/760)
+    * Properly handles json parsing failures and non-JSON expected strings.
+
+- [Fix generate intervals logic when availability is empty](https://github.com/yahoo/fili/pull/702)
+    * Logic to generate intervals when `CURRENT_MACRO_USES_LATEST` flag is turned on has a bug. The code throws `NoSuchElementException` when the table has no availabilities. This PR fixes the bug by checking if the availability of the underlying table is empty.
+
+- [Correct Druid coordinator URL in Wikipedia example](https://github.com/yahoo/fili/pull/683)
+    * Config value for Druid coordinator URL is mis-typed.
+
+- [Upgrade codenarc to recognize unused imports in Groovy](https://github.com/yahoo/fili/pull/685)
+    * There are number of unused imports sitting in tests. The cause is an out-dated codenarc version. This PR upgrades
+      the version and removes those unused imports with the new version.
+
+- [Adding withDoFork to LookBackQuery](https://github.com/yahoo/fili/issues/756)
+    * Added `withDoFork` to `LookBackQuery` class.
+    * Fixes failure of Lookback query to correctly do context forking under query split    
+
+- [Removed dependency on ApiFilter in ThetaSketchMetricsHelder](https://github.com/yahoo/fili/issues/780)
+    * Instead injecting dependency on creation (with defaulting constructor)
+
+
+- [Removed deprecated code references](https://github.com/yahoo/fili/issues/780)
+    * Renamed keys from `BardLoggingFilter` properties off deprecated refence class (this was an artifact from a bad rename)
+
+- [Removed older deprecated code](https://github.com/yahoo/fili/issues/668)
+    * Removed constructos and getters with clean replacements
+    * Stripped the remaining UI/NonUI code
+    * Cleaned up old schema classes and methods
+    * Removed orphaned metadata response data factory
+    * Removed pre-theta sketch code
+    * Removed deprecated min/max aggregations
+    * Removed loader code for metrics that don't include dimension dictionary
+    * Removed `KeyValueStoreDimension`
+
+### Known Issues:
+
+- [Improved deletion on non-existing path](https://github.com/yahoo/fili/pull/802)
+    * If path does not exist, do not run deletion on that path
+
+
+v0.9.137 - 2018/04/13
+=====
+
+0.9 Highlights
+-------------
+
+### Fili Security Added!
+Release security module for fili data security filters. Created `ChainingRequestMapper`, and a set of mappers for gatekeeping on security roles and whitelisting dimension filters.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/pull/405
+
+### DataApiRequestFactory layer
+Downstream projects now have more flexibility to construct `DataApiRequest` by using injectableFactory. An additional constructor for DataApiRequestImpl unpacks the config resources bundle to make it easier to override dictionaries.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/issues/603
+
+### Make Field Accessor PostAggregation able to reference post aggregations in adddition to aggregations
+Druid allows (but does not protect against ordering) post aggregation trees referencing columns that are also post aggregation trees.  This makes it possible to send such a query by using a field accessor to reference another query expression.  Using this capability may have some risk.
+
+Added by @michael-mclawhorn in https://github.com/yahoo/fili/pull/543
+
+### Etag Cache
+In the more recent versions of druid that are released after February 23rd, 2017. Druid added support for HTTP Etag. By including a If-None-Match header along with a druid query, druid will compute a hash as the etag in a way such that each unique response has a corresponding unique etag, the etag will be included in the header along with the response. In addition, if a query to druid includes the If-None-Match with a etag of the query, druid will check if the etag matches the response of the query, if yes, druid will return a HTTP Status 304 Content Not Modified response to indicate that the response is unchanged and matches the etag received from druid query request header. Otherwise druid will execute the query and respond normally with a new etag attached to the response header.
+
+This new feature is designed by @garyluoex . For more info, visit @garyluoex 's design at https://github.com/yahoo/fili/issues/255
+
+### More robust Lucene Search Provider and Key Value Store
+Lucene Search Provider can re-open in a bug-free way and close more cleanly
+
+Added by @garyluoex in https://github.com/yahoo/fili/pull/551 and https://github.com/yahoo/fili/pull/521
+
+### Extraction Function on selector filter
+Update Fili to accommodate the deprecated `ExtractionFilter` in druid, use selector filter with extraction function instead. Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
+
+Added by @garyluoex in https://github.com/yahoo/fili/pull/617
+
+### More controllable RequestLog
+Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier for customers to implement their own scheme for logging the `RequestLog`
+
+Added by @archolewa in https://github.com/yahoo/fili/pull/574
+
+### Druid lookup metadata load status check
+Fili now supports checking Druid lookup status as one of it's health check. It will be very easy to identify any failed lookups.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/620
+
+### Add ability to use custom rate limiting schemes
+While backward compatibility is guaranteed, Fili now allows users to rate limit(with a a new rate limiter) based on different criteria other than the default criteria.
+
+Added by @efronbs in https://github.com/yahoo/fili/pull/591
+
+### Support Time Format Extraction Function in Fili
+Druid [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function) is added to Fili. API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/611
+
+### Dimension load strategy indicator
+In order to allow clients to be notified if a dimension's values are browsable and searchable, a [storage strategy metadata](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/metadata/StorageStrategy.java) is added to dimension. A browsable and searchable dimension is denoted by `LOADED`, whereas the opposite is denoted by `NONE`. This will be very useful for UI backed by Fili on sending dimension-related queries.
+
+Added by @michael-mclawhorn, @garyluoex and @QubitPi  in https://github.com/yahoo/fili/pull/575, https://github.com/yahoo/fili/pull/589, https://github.com/yahoo/fili/pull/558, https://github.com/yahoo/fili/pull/578
+
+### Query Split Logging
+Include metrics in logging to allow for better evaluation of the impact of caching for split queries. There used to be only a binary flag (`BardQueryInfo.cached`) that is inconsistently set for split queries. Now 3 new metrics are added
+
+1. Number of split queries satisfied by cache
+2. Number of split queries actually sent to the fact store. (not satisfied by cache)
+3. Number of weight-checked queries
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/537
+
+### Configurable Metric Long Name
+Logical metric has more config-richness to not just configure metric name, but also metric long name, description, etc. MetricInstance is now created by accepting a LogicalMetricInfo which contains all these fields in addition to metric name.
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/492
+
+### Search provider can hot-swap index and key value store can hot-swap store location
+[`LuceneSearchProvider`](./fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/impl/LuceneSearchProvider.java) is able to hot swap index by replacing Lucene index by moving the old index directory to a different location, moving new indexes to a new directory with the same old name, and deleting the old index directory in file system.
+[`KeyValueStore`](fili-core/src/main/java/com/yahoo/bard/webservice/data/dimension/KeyValueStore.java) is also made to support hot-swapping key value store location
+
+Added by @QubitPi in https://github.com/yahoo/fili/pull/522
+
+### Uptime Status Metric
+A metric showing how long Fili has been running is available.
+
+Added by @mpardesh in https://github.com/yahoo/fili/pull/518
+
+### Consolidate UI & Non-UI broker configurations
+`ui_druid_broke` and `non_ui_druid_broker` are not used separately anymore. Instead, a single `druid_broker` replaces the two. For backwards compatibility, Fili checks if `druid_broker` is set. If not, Fili uses `non_ui_druid_broker` and then `ui_druid_broker`
+
+Added by @mpardesh in https://github.com/yahoo/fili/pull/489
+Amended by @gab-umich in https://github.com/yahoo/fili/pull/933
+
+Credits
+---------
+
+Thanks to everyone who contributed to this release!
+
+@michael-mclawhorn Michael Mclawhorn
+@garyluoex Gary Luo
+@archolewa Andrew Cholewa
+@QubitPi Jiaqi Liu
+@asifmansoora Asif Mansoor Amanullah
+@efronbs Ben Efron
+@deepakb91 Deepak Babu
+@tarrantzhang Tarrant Zhang
+@kevinhinterlong Kevin Hinterlong
+@mpardesh Monica Pardeshi
+@colemanProjects Neelan Coleman
+@onlinecco
+@dejan2609 Dejan Stojadinović
+
+### Added:
+
+- [Added with method for timesort to DataApiRequest](https://github.com/yahoo/fili/issues/773)
+
+- [Latest Time Macro](https://github.com/yahoo/fili/pull/697)
+    * Added `logicalTableAvailability` to `TableUtils` which returns the union of intervals for the logical table.
+    * Added `now` parameter to `generateIntervals` for which time macros will be relatively calculated.
+    * Added `CURRENT_MACRO_USES_LATEST` flag which when turned on uses the first unavailable availability to generate the intervals.
+
+- [Annotate Functional Interface](https://github.com/yahoo/fili/pull/606)
+    * Add `@FunctionalInterface` annotation to all functional interfaces.
+
+- [Implement LookupLoadTask](https://github.com/yahoo/fili/pull/620)
+    * Add capability for Fili to check load statuses of Druid lookups.
+
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Added extraction function on dimensional filter, defaults to extraction function on dimension if it exists.
+
+- [Implement TimeFormatExtractionFunction](https://github.com/yahoo/fili/pull/611)
+    * Enable [`TimeFormatExtractionFunction`](http://druid.io/docs/0.10.1/querying/dimensionspecs.html#time-format-extraction-function)
+      in Fili so that API users could interact with Druid using `TimeFormatExtractionFunction` through Fili.
+
+- [Complete DateTimeUtils tests](https://github.com/yahoo/fili/pull/595)
+    * Add tests for all un-tested methods in `DateTimeUtils`.
+
+- [Enable checkstyle to detect incorrect package header](https://github.com/yahoo/fili/pull/594)
+    * Fili was able to pass the build with wrong package headers in some source files. This needs to be fixed, and it's
+      fixed in this PR by adding PackageDeclaration checkstyle rule.
+    * In addition, checkstyle version has been bumped to the latest one(Nov, 2017), which is now able to detect more
+      styling errors.
+
+- [Add loaded strategy onto tables full view endpoint](https://github.com/yahoo/fili/pull/589)
+    * Add dimension storage strategy to table full view endpoint
+
+- [Add getter for LogicalMetricInfo in MetricInstance](https://github.com/yahoo/fili/pull/588)
+    * There are 3 instance variables inside `MetricInstance` class, two of which have getters. The one without getter,
+      `LogicalMetricInfo`, should have one, as well, so that subclass can access it without creating a duplicate
+      `LogicalMetricInfo` inside their own.
+
+- [Backwards compatible constructor for KeyValueStoreDimension around storage strategy]()
+    * Provide a backwards compatible constructor for existing implementations that don't provide storage strategies.
+
+- [Have Table Endpoint Filter Using QueryPlanningConstraint](https://github.com/yahoo/fili/pull/439)
+    * Enable tables endpoint to fiilter availabilities based on availability-constraint
+
+- [Implement dimension metadata to indicate storage strategy](https://github.com/yahoo/fili/pull/558)
+    * In order to allow clients to be notified if a dimension's values are browsable and searchable, a storage strategy
+      metadata is added to dimension.
+
+- [Refactor ApiRequest](https://github.com/yahoo/fili/pull/538)
+    * Add inteface layer to each type of API request class. The types of API request under the refactor are
+        - `TablesApiRequest`
+        - `DimensionApiRequest`
+        - `SlicesApiRequest`
+        - `MetricsApiRequest`
+        - `JobsApiRequest`
+
+- [Implement Query Split Logging](https://github.com/yahoo/fili/pull/537)
+    * Include metrics in logging to allow for better evaluation of the impact of caching for split queries.
+        - Currently there is only a binary flag (`BardQueryInfo.cached`) that is inconsistently set for split queries
+        - Three new metrics are added
+            1. Number of split queries satisfied by cache
+            2. Number of split queries actually sent to the fact store. (not satisfied by cache)
+            3. Number of weight-checked queries
+
+- [Documentation that `Dimension::getFieldByName` should throw an `IllegalArgumentException` if there is no field with the passed in name](https://github.com/yahoo/fili/pull/547)
+
+- [Evaluate format type from both URI and Accept header](https://github.com/yahoo/fili/pull/495)
+    * Add a new functional interface `ResponseFormatResolver` to coalesce Accept header format type and URI format type.
+    * Implement a concrete implementation of `ResponseFormatResolver` in `AbstractBindingFactory`.
+
+- [Add Constructor and wither for TableApiRequest](https://github.com/yahoo/fili/pull/539)
+    *  Making the TablesApiRequest similar to other ApiRequest classses so added an all argument constructor
+       and withers. The all argument constructor is made private since its used only by the withers.
 
 - [Add Code Narc to validate Groovy style](https://github.com/yahoo/fili/pull/420)
     * Checkstyle is great, but it doesn't process Groovy. Code Narc is Checkstyle for Groovy, so we should totally use
       it.
-      
+
 - [Allow Webservice to Configure Metric Long Name](https://github.com/yahoo/fili/pull/492)
     * Logical metric needs more config-richness to not just configure metric name, but also metric long name,
       description, etc. MetricInstance is now created by accepting a LogicalMetricInfo which contains all these fields
@@ -32,10 +966,10 @@ Current
     * Part of Fili translation in order to increase popularity of Fili in Chinese tech industries.
 
 - [Add Uptime Status Metric](https://github.com/yahoo/fili/pull/518)
-    * Add a metric to show how long Fili has been running 
+    * Add a metric to show how long Fili has been running
 
 - [Add `druid_broker` config parameter to replace `ui_druid_broker` and `non_ui_druid_broker`](https://github.com/yahoo/fili/pull/489)
-    
+
 - [Have Tables Endpoint Support (but not use) Additional Query Parameters](https://github.com/yahoo/fili/pull/437)
     * Make the availability consider the TablesApiRequest by passing it into the getLogicalTableFullView method
     * Move auxiliary methods from `DataApiRequest` to `ApiRequest` in order to make them sharable between
@@ -65,8 +999,81 @@ Current
 
 ### Changed:
 
-- [Preface Logblock lazily fetches username for serialization](https://github.com/yahoo/fili/pull/465)
-    * Allows the RequestLog to wait until serializing the Preface so that the username of the client can be properly set.
+- [Avoid casting to generate SimplifiedIntervalList](https://github.com/yahoo/fili/pull/658)
+    * Some downstream projects generated partial intervals as `ArrayList`, which cannot be cased to
+      `SimplifiedIntervalList` in places like `getPartialIntervalsWithDefault`. The result is a casting exception which
+      crashes downstream applications. Casting is replaced with a explicit `SimplifiedIntervalList` object creation.
+
+- [ResponseProcessor is now injectable.](https://github.com/yahoo/fili/pull/663)
+    * To add a custom `ResponseProcessor`, implement `ResponseProcessorFactory`, override
+        `AbstractBinderFactory::buildResponseProcessorFactory` to return your custom `ResponseProcessorFactory.class`.
+
+- [Add config to ignore partial/volatile intervals and cache everything in cache V2](https://github.com/yahoo/fili/pull/645)
+    * In cache V2, user should be able to decide whether partial data or volatile data should be cached or not. This PR
+      adds a config that allows the user to do this.
+
+- [Lift required override on deprecated method in MetricLoader](https://github.com/yahoo/fili/pull/609)
+    * Add default implementation to deprecated `loadMetricDictionary` in `MetricLoader` so that downstream projects are
+      able to implement the new version without worrying about the deprecated version.
+
+- [Added DataApiRequestFactory layer](https://github.com/yahoo/fili/issues/603)
+    * Replaced static construction of DataApiRequest with an injectableFactory
+    * Create an additional constructor for DataApiRequestImpl which unpacks the config resources bundle to make it easier to override dictionaries.
+
+- [Refactored HttpResponseMaker to allow for custom ResponseData implementations](https://github.com/yahoo/fili/pull/605)
+    * Currently ResponseData is being directly created in when building a response in the HttpResponseMaker. This creation
+    has been extracted to a factory method, which subclasses of HttpResponseMaker can override.
+    * Changed relevant methods fields from private to protected.
+
+- [Move makeRequest to JTB](https://github.com/yahoo/fili/pull/590)
+    * Move `makeRequest` from test to `JerseyTestBinder`
+    * Some tests uses variable name `jerseyTestBinder`; some uses `jtb`. They are all renamed to the former for naming
+      conformance
+    * Re-indent testing strings for better code formatting
+
+- [Moved availabilities to metrics construction to MetricUnionCompositeTableDefinition](https://github.com/yahoo/fili/pull/592)
+    * Currently, the availability to metrics construction is taking place even before the availability is loaded. Hence,
+      moving the construction to MetricUnionCompositeTableDefinition so that availability is loaded first.
+
+- [Better programmatic generation of metadata json in tests](https://github.com/yahoo/fili/pull/412)
+    * Rework metadata tests to be more generated from strings and more pluggable to support heavier and more expressive
+      testing. This allows for more consistency, as well as make it easier to test more cases.
+
+- [Ability to use custom rate limiting schemes](https://github.com/yahoo/fili/pull/591)
+    * Allows users to rate limit based on different criteria that the default criteria.
+    * Existing rate limiting code is now located in `DefaultRateLimiter`.
+    * Create a new rate limiter by:
+        - implementing the `RateLimiter` interface
+        - overriding the `buildRateLimiter` method in concrete implementation of `AbstractBinderFactory` to return
+          custom `RateLimiter` implementation
+        - Default token that uses a callback mechanism is available
+            * `CallbackRateLimitRequestToken` takes an implementation of the callback interface `RateLimitCleanupOnRequestComplete`. When the request is completed the token calls the `cleanup` method of the callback to handle releasing any resources associate with the inflight request that this token belongs to.
+
+- [Expose `RequestLog` `LogInfo` objects](https://github.com/yahoo/fili/pull/574)
+    * Exposes the `LogInfo` objects stored in the `RequestLog`, via `RequestLog::retrieveAll` making it easier
+        for customers to implement their own scheme for logging the `RequestLog`.
+
+- [Display corrected case on StorageStrategy serialization](https://github.com/yahoo/fili/pull/578)
+    * The default serialization of enum is `name()` which is final and thus cannot be overridden. An API method is added
+      to return the API name of a storage strategy.
+
+- [Made StorageStrategy lower case]
+
+- [Make shareable methods accessiable to all types of API requests](https://github.com/yahoo/fili/pull/565)
+    * As non-data endpoints are behaving more like data endpoints, some methods deserve to be shared among all types of
+      API requests. Methods for
+
+        - parsing and generating `LogicalMetrics`
+        - parsing and generating `LogicalTable`
+        - computing the union of constrained availabilities of constrained logical table
+
+      are made available.
+
+- [Substitute preflight method wildcard character with explicit allowed methods](https://github.com/yahoo/fili/pull/545)
+    * Modify ResponseCorsFilter Allowed Methods header to explicitly list allowed methods. Some browsers do not support a wildcard header value.
+
+- [Make Field Accessor PostAggregation able to reference post aggregations in adddition to aggregations]
+    * Druid allows (but does not protect against ordering) post aggregation trees referencing columns that are also post aggregation trees.  This makes it possible to send such a query by using a field accessor to reference another query expression.  Using this capability may have some risk.
 
 - [Include ETags on responses](https://github.com/yahoo/fili/pull/417)
     * Modify FullResponse JSON Objects to contain a flag showing whether a response is new or fetched from cache.
@@ -77,7 +1084,7 @@ Current
 
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
     * The method names `getFilter` and `getFilters` can be confusing, as well as the `filters` variable
-    
+
 - [Decoupled from static dimension lookup building]()
     * Instead of `ModelUtils`, create an interface for `ExtractionFunctionDimension` and rebase `LookupDimension` and `RegisteredLookupDimension` on that interface.
     * `LookupDimensionToDimensionSpec` now uses only the Extraction interface to decide how to serialize dimensions.
@@ -122,6 +1129,9 @@ Current
 
 ### Deprecated:
 
+- [Extraction Function on selector filter](https://github.com/yahoo/fili/pull/617)
+    * Deprecated `ExtractionFilter` since it is deprecated in druid, use selector filter with extraction function instead
+
 - [Rename filter variables and methods in DataApiRequest](https://github.com/yahoo/fili/pull/507)
     * Deprecated `getFilters` in favor of `getApiFilters` and `getFilter` in favor of `getDruidFilter`
 
@@ -133,6 +1143,56 @@ Current
 
 ### Fixed:
 
+- [Correct exception message & add missing tests](https://github.com/yahoo/fili/pull/649)
+    * Clarified exception message thrown by `StreamUtils.throwingMerger`
+
+- [Fix lookup metadata loader by pulling the RegisteredLookupDimension](https://github.com/yahoo/fili/pull/651)
+    * Lookup Metadata Health Check always return true when some Druid registered lookup are absolutely failing to be
+      loaded. Instead of checking load status of `RegisteredLookupDimension`, `RegisteredLookupMetadataLoadTask` is
+      checking the status of `LookupDimension`. This PR corrects this behavior.
+
+- [Fix 'descriptionription' mis-naming in dimension field](https://github.com/yahoo/fili/pull/655)
+    * This is caused by a "desc" -> "description" string replacement. A string handling method has been added to
+      detect "desc" and transform it to "description". If it already comes with "description", no string transformation
+      is made
+
+- [Fix caching condition](https://github.com/yahoo/fili/pull/647)
+    * We want to cache partial or volatile data when `cache_partial_data` is set to true. This is condition is currently
+      reversed. This PR shall fix it
+
+- [Add Missing perPage Param](https://github.com/yahoo/fili/pull/641)
+    * Pagination links on the first pages are missing perPage param. This PR fixes this problem.
+
+- [Having clause was nesting inward on nested queries resulting in rows that didn't exist being referenced](https://github.com/yahoo/fili/pull/614/files)
+
+- [None show clause was not being respected](https://github.com/yahoo/fili/issues/612)
+    * Changed `ResponseData` and `JsonApiResponseWriter` to suppress columns that don't have associated dimension fields.
+    * Updated tests to reflect none being hidden.
+
+- [Scoped metric dictionaries and the having clause now work together by default](https://github.com/yahoo/fili/pull/580)
+    * Add a new ApiHavingGenerator that builds a temporary metric dictionary from the set of requested metrics(not from globally scoped metric dictionary), and then using those to resolve the having clause.
+    * Add a table generating functions in BaseTableLoader that effectively allow the customer to provide a different metric dictionary at lower scope(not from the globally scoped metric dictionary) for use when building each table.
+
+- [Debug BardQueryInfo to show query split counting](https://github.com/yahoo/fili/pull/596/files)
+    * Query counter in `BardQueryInfo` does not show up in logging because the counter used to be static and JSON
+      serializer does not serialize static fields.
+    * This externalizes the state via a getter for serialization.
+
+- [Fix intermittent class scanner error on DataSourceConstraint equal](https://github.com/yahoo/fili/pull/573)
+   * Class Scanner Spec was injecting an improper dependant field due to type erasure.  Made field type explicit.
+
+- [Fix tests with wrong time offset calculation](https://github.com/yahoo/fili/pull/567)
+    * Time-checking based tests setup time offset in a wrong way. `timeZoneId.getOffset` is fixed to take the right
+      argument.
+
+- [Handle Number Format errors from empty or missing cardinality value](https://github.com/yahoo/fili/issues/549)
+
+- [Fix lucene search provider replace method](https://github.com/yahoo/fili/pull/551)
+    * Reopen the search index
+
+- [Fix ConstantMaker make method with LogicalMetricInfo class](https://github.com/yahoo/fili/pull/540)
+    * The ConstantMaker make method needs to be rewritten with the LogicalMetricInfo class.
+
 - [Slices endpoint returns druid name instead of api name](https://github.com/yahoo/fili/pull/491)
     * The slices endpoint now gives the druid name instead of the api name for dimensions.
 
@@ -141,7 +1201,7 @@ Current
       classes results in `NullPointerException` and fails tests, because some instance variables from testing [`DataApiRequest`](./fili-core/src/main/java/com/yahoo/bard/webservice/web/DataApiRequest.java)
       are null. This patch assigns non-null values to those variables.
     * The testing constructor `DataApiRequestImpl()` is now deprecated and will be removed entirely.
-      
+
 - [Fix Lucene Cardinality in New KeyValueStores](https://github.com/yahoo/fili/pull/521)
     * Fix lucene to put correct cardinality value to new key value store that does not contain the cardinality key
 
@@ -170,6 +1230,26 @@ Current
 
 
 ### Removed:
+
+- [Removed withHaving that was on DataApiRequest as a Bug](https://github.com/yahoo/fili/issues/775)
+    * withHaving was incorrectly implemented in DataApiRequest.  It should not have been added at all
+    and had no behavioral impact except to rebuild the object without changes.
+
+- [Remove testing constructor of *ApiRequestImpl](https://github.com/yahoo/fili/pull/559)
+    * It is a better practice to separate testing code with implementation. All testing constructors of the following
+      API requests are removed:
+        - `ApiRequestImpl`
+        - `DataApiRequestImpl`
+        - `DimensionsApiRequestImpl`
+        - `MetricsApiRequestImpl`
+        - `SlicesApiRequestImpl`
+        - `TablesApiRequestImpl`
+    * Meanwhile, construction of testing API request is delegated to testing class, e.g. `TestingDataApiRequestImpl`
+
+- [Reverted the druid name change in slices endpoint instead added to factName](https://github.com/yahoo/fili/pull/541)
+    * Reverting the PR-419(https://github.com/yahoo/fili/pull/419) so that the name still points to apiName and added factName which points to druidName.
+      `name` was not valid for cases when it is a Lookup dimension because it was pointing to the base dimension name , so reverted that change and added
+      `druidName` which is the actual druid fact name and `name` being the apiName
 
 - [Remove custom immutable collections in favor of Guava](https://github.com/yahoo/fili/pull/479)
     * `Utils.makeImmutable(...)` was misleading and uneeded so it has been removed. Use Guava's immutable collections.
@@ -411,7 +1491,7 @@ Removals:
     * Bound and default versions of getAvailableIntervals and getAllAvailableIntervals added to PhysicalTable interface
     * Package-private optimize tests in `DruidQueryBuilder` moved to protected
     * Immutable `NoVolatileIntervalsFunction` class made final
-    
+
 - [Moved UnionDataSource to support only single tables](https://github.com/yahoo/fili/pull/262)
     * `UnionDataSource` now accepts only single tables instead of sets of tables.
     * `DataSource` now supports `getDataSource()` operation
@@ -490,7 +1570,7 @@ Removals:
     * `TableLoader` now takes an additional constructor argument (`DataSourceMetadataService`) for creating tables
     * `PartialDataHandler::findMissingRequestTimeGrainIntervals` now takes `DataSourceConstraint`
     * Renamed `buildTableGroup` method to `buildDimensionSpanningTableGroup`
- 
+
 - [Restored flexibility about columns for query from DruidResponseParser](https://github.com/yahoo/fili/pull/198)
     * Immutable schemas prevented custom query types from changing `ResultSetSchema` columns.
     * Columns are now sourced from `DruidResponseParser` and default implemented on `DruidAggregationQuery`
@@ -593,6 +1673,9 @@ Removals:
 
 ### Deprecated:
 
+- [Revert deprecation of getAvailbleInterval with PhysicalDatasourceConstraint](https://github.com/yahoo/fili/pull/621)
+    * The method is needed in order for availability to function correctly, there is a deeper dive and planning required to actually deprecate it in favor of simpler less confusing design.
+
 - [Remove `PhysicalTable::getTableName` to use `getName` instead](https://github.com/yahoo/fili/pull/263)
     * Having more than 1 method for the same concept (ie. what's the name of this physical table) was confusing and not
       very useful.
@@ -639,6 +1722,10 @@ Removals:
 
 ### Fixed:
 
+- [Fix druid partial data and partition table incompatibility](https://github.com/yahoo/fili/pull/615)
+    * Datasource names returned by partition table now contains only datasources that are actually used in the query
+    * Fix the problem where uncovered intervals is given by druid for partition table that fili filtered out
+
 - [Fix the generic example for loading multiple tables](https://github.com/yahoo/fili/pull/309)
     * Loading multiple tables caused it to hang and eventually time out.
     * Also fixed issue causing all tables to show the same set of dimensions.
@@ -660,7 +1747,7 @@ Removals:
 - [Fixed `SegmentMetadataLoader` Unconfigured Dimension Bug](https://github.com/yahoo/fili/pull/197)
     * Immutable availability was failing when attempting to bind segment dimension columns not configured in the
       dimension dictionary.
-    * Fix to filter irrelevant column names. 
+    * Fix to filter irrelevant column names.
 
 - [Major refactor for availability and schemas and tables](https://github.com/yahoo/fili/pull/165)
     * Ordering of fields on serialization could be inconsistent if intermediate stages used `HashSet` or `HashMap`.
@@ -786,8 +1873,8 @@ Changes:
 ### Changed:
 
 - [The druid query posting timer has been removed](https://github.com/yahoo/fili/pull/141)
-    * There wasn't really a good way of stopping timing only the posting itself. Since the timer is 
-       probably not that useful, it has been removed. 
+    * There wasn't really a good way of stopping timing only the posting itself. Since the timer is
+       probably not that useful, it has been removed.
 
 - [Dimension Field Tagging and Dynamic Dimension Field Serilization](https://github.com/yahoo/fili/pull/137)
     * Changed `fili-core` dimension endpoint `DimensionField` serialization strategy from hard coded static attributes
@@ -833,7 +1920,7 @@ Changes:
     * `Response.StatusType` is the interface that `Response.Status` implements.
     * This will have no impact on current code in Fili that uses `ResponseValidationException`, and it allows customers
       to inject http codes not included in `Response.Status`.
-         
+
 - [Removed "provided" modifier for SLF4J and Logback dependencies in the Wikipedia example](https://github.com/yahoo/fili/pull/102)
 
 - [Updated dependencies](https://github.com/yahoo/fili/pull/103)
@@ -954,7 +2041,7 @@ Changes:
     * `AggregationAverageMaker` deprecated conversion method required by deprecated sketch library
 
 - [Metric configuration deprecations](https://github.com/yahoo/fili/pull/124)
-    * Deprecated superfluous constructor of `FilteredAggregator` with superfluous argument 
+    * Deprecated superfluous constructor of `FilteredAggregator` with superfluous argument
     * Deprecated MetricMaker utility method in favor of using new field accessor on Metric
 
 - [Deprecated MetricMaker.getDependentQuery lookup method in favor of simpler direct access](https://github.com/yahoo/fili/pull/124)
@@ -977,7 +2064,7 @@ Changes:
     * Discovered a bug where `user_roles` is declared but unset still reads as a list with empty string (included a temporary fix by commenting the variable declaration)
     * Refactored `RoleBasedAuthFilter` and `RoleBasedAuthFilterSpec` for better testing
 
-- [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128) 
+- [Added missing coverage for `ThetaSketchEstimate` unwrapping in `MetricMaker.getSketchField`](https://github.com/yahoo/fili/pull/128)
 
 - [`DataSource::getNames` now returns Fili identifiers, not fact store identifiers](https://github.com/yahoo/fili/pull/125/files)
 
@@ -989,7 +2076,7 @@ Changes:
 
 ### Removed:
 
-- [Removed invalid constructor from SketchRoundUpMappepr](https://github.com/yahoo/fili/pull/148) 
+- [Removed invalid constructor from SketchRoundUpMappepr](https://github.com/yahoo/fili/pull/148)
 
 
 v0.6.29 - 2016/11/16
@@ -1020,7 +2107,7 @@ New Capabilities & Enhancements:
 
 - [Added Dimension Value implementation for PartitionTableDefinition]
     * Added `DimensionIdFilter` implementation of  `DataSourceFilter`
-    * Created `DimensionListPartitionTableDefinition` 
+    * Created `DimensionListPartitionTableDefinition`
 
 - [Added 'hasAnyRows' to SearchProvider interface](https://github.com/yahoo/fili/pull/259)
     * Has Any Rows allows implementations to optimize queries which only need to identify existence of matches
@@ -1042,8 +2129,8 @@ New Capabilities & Enhancements:
     * Slice availability can be used to debug availability issues on Physical tables
 
 - [Ability to set headers for requests to Druid](https://github.com/yahoo/fili/pull/62)
-      * The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies the headers 
-        to add to the Druid data requests. This feature is made configurable through `SystemConfig` in the 
+      * The `AsyncDruidWebServiceImpl` now accepts a `Supplier<Map<String, String>>` argument which specifies the headers
+        to add to the Druid data requests. This feature is made configurable through `SystemConfig` in the
         `AbstractBinderFactory`.
 
 ### Changed:
@@ -1063,12 +2150,12 @@ New Capabilities & Enhancements:
     * This change is made to allow running multi-api request with csv format using chrome browser.
 
 - [Improves error messages when querying Druid goes wrong](https://github.com/yahoo/fili/pull/61)
-    * The `ResponseException` now includes a message that prints the `ResponseException`'s internal state 
-        (i.e. the druid query and response code) using the error messages 
+    * The `ResponseException` now includes a message that prints the `ResponseException`'s internal state
+        (i.e. the druid query and response code) using the error messages
         `ErrorMessageFormat::FAILED_TO_SEND_QUERY_TO_DRUID` and `ErrorMessageFormat::ERROR_FROM_DRUID`
-    * The druid query and status code, reason and response body are now logged at the error level in the 
-      failure and error callbacks in `AsyncDruidWebServiceImpl`  
-          
+    * The druid query and status code, reason and response body are now logged at the error level in the
+      failure and error callbacks in `AsyncDruidWebServiceImpl`
+
 - [Fili now supports custom Druid query types](https://github.com/yahoo/fili/pull/57)
     * `QueryType` has been turned into an interface, backed by an enum `DefaultQueryType`.
         - The default implementations of `DruidResponseParser` `DruidQueryBuilder`, `WeightEvaluationQuery` and
@@ -1095,9 +2182,9 @@ New Capabilities & Enhancements:
 
 - Cleaned up dependencies in pom files
     * Moved version management of dependencies up to the parent Pom's dependency management section
-    * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should 
+    * Cleaned up the parent Pom's dependency section to only be those dependencies that truly _every_ sub-project should
       depend on.
-    * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides 
+    * Cleaned up sub-project Pom dependency sections to handle and better use the dependencies the parent Pom provides
 
 ### Deprecated:
 
@@ -1128,22 +2215,22 @@ New Capabilities & Enhancements:
 
 - [Adds read locking to all attempts to read the Lucene index](https://github.com/yahoo/fili/pull/52)
     * Before, if Fili attempted to read from the Lucene indices (i.e. processing a query with filters) while loading
-      dimension indices, the request would fail and we would get a `LuceneIndexReaderAlreadyClosedException`. Now, the 
+      dimension indices, the request would fail and we would get a `LuceneIndexReaderAlreadyClosedException`. Now, the
       read locks should ensure that the query processing will wait until indexing completes (and vice versa).
 
 - [Fixes a bug where job metadata was being stored in the `ApiJobStore` even when the results came back synchronously](https://github.com/yahoo/fili/pull/49)
-    * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That 
+    * The workflow that updates the job's metadata with `success` was running even when the query was synchronous. That
       update also caused the ticket to be stored in the `ApiJobStore`.
     * The delay operator didn't stop the "update" workflow from executing because it viewed an `Observable::onCompleted`
-      call as a message for the purpose of the delay. Since the two observables that that the metadata update gated on 
+      call as a message for the purpose of the delay. Since the two observables that that the metadata update gated on
       are empty when the query is synchronous, the "update metadata" workflow was being triggered every time.
     * The delay operator was replaced by `zipWith` as a gating mechanism.
-    
+
 - [#45, removing sorting from weight check queries](https://github.com/yahoo/fili/pull/46)
 
 - [`JsonSlurper` can now handle sorting lists with mixed-type entries](https://github.com/yahoo/fili/pull/58)
     * even if the list starts with a string, number, or boolean
-  
+
 - [Broken segment metadata with Druid v0.9.1](https://github.com/yahoo/fili/issues/63)
     * Made `NumberedShardSpec` ignore unexpected properties during deserialization
     * Added tests to `DataSourceMetadataLoaderSpec` to test the v.0.9.1 optional field `shardSpec.partitionDimensions`
@@ -1162,7 +2249,7 @@ Jobs resource. Here are the highlights of what's in this release:
 - Filtering and pagination on the Jobs resource
 - A `userId` field for default Job resource representations
 - Package cleanup for the jobs-related classes
- 
+
 ### Added:
 
 - [`always` keyword for the `asyncAfter` parameter now guarantees that a query will be asynchronous](https://github.com/yahoo/fili/pull/39)
@@ -1182,7 +2269,7 @@ Jobs resource. Here are the highlights of what's in this release:
   * Added `JobRowFilter` to hold filter information
 
 - [QueryTimeLookup Functionality Testing](https://github.com/yahoo/fili/pull/34)
-  * Added two tests `LookupDimensionFilteringDataServletSpec` and `LookupDimensionGroupingDataServletSpec` to test QTL 
+  * Added two tests `LookupDimensionFilteringDataServletSpec` and `LookupDimensionGroupingDataServletSpec` to test QTL
     functionality
 
 - [Lookup Dimension Serializer](https://github.com/yahoo/fili/pull/31)
@@ -1216,7 +2303,7 @@ Jobs resource. Here are the highlights of what's in this release:
     for thread-safe tests.
 
 - [Removed `JobsApiRequest::handleBroadcastChannelNotification`](https://github.com/yahoo/fili/pull/39)
-  * That logic does not really belong in the `JobsApiRequest` (which is responsible for modeling a response, not 
+  * That logic does not really belong in the `JobsApiRequest` (which is responsible for modeling a response, not
     processing it), and has been consolidated into the `JobsServlet`.
 
 - [ISSUE-17](https://github.com/yahoo/fili/issues/17) [Added pagination parameters to `PreResponse`](https://github.com/yahoo/fili/pull/19)
@@ -1226,7 +2313,7 @@ Jobs resource. Here are the highlights of what's in this release:
   * The default job payload generated by `DefaultJobPayloadBuilder` now has a `userId`
 
 - [Removed timing component in JobsApiRequestSpec](https://github.com/yahoo/fili/pull/27)
-  * Rather than setting an async timeout, and then sleeping, `JobsApiRequestSpec::handleBroadcastChannelNotification` 
+  * Rather than setting an async timeout, and then sleeping, `JobsApiRequestSpec::handleBroadcastChannelNotification`
     returns an empty Observable if a timeout occurs before the notification is received now verifies that the Observable
     returned terminates without sending any messages.
 
@@ -1247,11 +2334,11 @@ Jobs resource. Here are the highlights of what's in this release:
   * `AbstractBinderFactory` now uses `TypeAwareDimensionLoader` instead of `KeyValueStoreDimensionLoader`
 
 - [Fix Dimension Serialization Problem with Nested Queries](https://github.com/yahoo/fili/pull/15)
-  * Modified `DimensionToDefaultDimensionSpec` serializer to serialize Dimension to apiName if it's not in the 
+  * Modified `DimensionToDefaultDimensionSpec` serializer to serialize Dimension to apiName if it's not in the
     inner-most query
   * Added `Util::hasInnerQuery` helper in serializer package to determine if query is the inner most query or not
   * Added tests for `DimensionToDefaultDimensionSpec`
-    
+
 #### General:
 
 - [Preserve collection order of dimensions, dimension fields and metrics](https://github.com/yahoo/fili/pull/25)

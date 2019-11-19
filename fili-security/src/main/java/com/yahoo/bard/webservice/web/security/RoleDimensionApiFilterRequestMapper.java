@@ -12,10 +12,12 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -23,8 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.Principal;
+import java.util.AbstractMap;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -90,7 +94,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
         validateSecurityFilters(securityContext.getUserPrincipal(), securityFilters);
 
-        Map<Dimension, Set<ApiFilter>> revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
+        ApiFilters revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
 
         return request.withFilters(revisedFilters);
     }
@@ -103,20 +107,16 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      *
      * @return  A set of request filters supplemented with filters from this request.
      */
-    protected Map<Dimension, Set<ApiFilter>> mergeSecurityFilters(
+    protected ApiFilters mergeSecurityFilters(
             Map<Dimension, Set<ApiFilter>> requestFilters,
             Set<ApiFilter> securityFilters
     ) {
-        Map<Dimension, Set<ApiFilter>> revisedFilters = new LinkedHashMap<>(requestFilters);
-        Set<ApiFilter> requestDimensionFilters = revisedFilters.getOrDefault(
-                dimension,
-                Collections.emptySet()
-        );
-        // Merge the request filters (if any) with the security filters for this dimension
-        revisedFilters.put(
-                dimension,
-                unionMergeFilterValues(Stream.concat(requestDimensionFilters.stream(), securityFilters.stream()))
-        );
+        ApiFilters revisedFilters = new ApiFilters(requestFilters.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> new LinkedHashSet<>(entry.getValue()))));
+        for (ApiFilter apiFilter : securityFilters) {
+            revisedFilters.computeIfAbsent(dimension, dimension -> new LinkedHashSet<>()).add(apiFilter);
+        }
         return revisedFilters;
     }
 
@@ -150,11 +150,11 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
      */
     protected Set<ApiFilter> buildSecurityFilters(final SecurityContext securityContext) {
         return unionMergeFilterValues(
-                    roleApiFilters.keySet().stream()
-                            .filter(securityContext::isUserInRole)
-                            .map(roleApiFilters::get)
-                            .flatMap(Set::stream)
-            );
+                roleApiFilters.keySet().stream()
+                        .filter(securityContext::isUserInRole)
+                        .map(roleApiFilters::get)
+                        .flatMap(Set::stream)
+        );
     }
 
     /**
@@ -167,7 +167,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
     protected static Set<ApiFilter> unionMergeFilterValues(Stream<ApiFilter> filterStream) {
 
         Function<ApiFilter, Triple<Dimension, DimensionField, FilterOperation>> filterGroupingIdentity = filter ->
-            new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());
+                new ImmutableTriple<>(filter.getDimension(), filter.getDimensionField(), filter.getOperation());
 
         Map<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> filterMap =
                 filterStream.collect(Collectors.groupingBy(
@@ -179,12 +179,26 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
                 ));
 
         return filterMap.entrySet().stream()
+                .sorted(Comparator.comparing(
+                        (Map.Entry<Triple<Dimension, DimensionField, FilterOperation>, Set<String>> entry) ->
+                            String.join(
+                                    ",",
+                                    entry.getKey().getLeft().getApiName(),
+                                    entry.getKey().getMiddle().getName(),
+                                    entry.getKey().getRight().getName()
+                            )
+                        )
+                )
+                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(
+                        entry.getKey(),
+                        entry.getValue().stream().sorted().collect(Collectors.toList()))
+                )
                 .map(it -> new ApiFilter(
                         it.getKey().getLeft(),
                         it.getKey().getMiddle(),
                         it.getKey().getRight(),
                         it.getValue()
                 ))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 }

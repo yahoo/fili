@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -103,7 +104,7 @@ class UIJsonResponseSpec extends Specification {
 
         and: "An expected json serialization"
         DataApiRequest apiRequest = Mock(DataApiRequest)
-        apiRequest.getFormat()  >> ResponseFormatType.JSON
+        apiRequest.getFormat()  >> DefaultResponseFormatType.JSON
         String expectedJSON = """{
             "rows":[{
                         "metricColumn1Name":1234567.1234,
@@ -142,7 +143,7 @@ class UIJsonResponseSpec extends Specification {
 
         and: "An API Request"
         DataApiRequest apiRequest = Mock(DataApiRequest)
-        apiRequest.getFormat()  >> ResponseFormatType.JSON
+        apiRequest.getFormat()  >> DefaultResponseFormatType.JSON
         LinkedHashSet<String> apiMetricColumnNames = getApiMetricColumnNames()
 
         apiRequest.getDimensionFields() >> defaultDimensionFieldsToShow

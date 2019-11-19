@@ -8,6 +8,8 @@ import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESP
 
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.CacheFeatureFlag;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
@@ -22,6 +24,7 @@ import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
@@ -40,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
@@ -55,6 +59,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static final Logger LOG = LoggerFactory.getLogger(AsyncDruidWebServiceImpl.class);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     private final AsyncHttpClient webClient;
     private final ObjectWriter writer;
     private final Meter httpErrorMeter;
@@ -67,19 +73,19 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     public static final String DRUID_WEIGHTED_QUERY_TIMER = DRUID_TIMER + "_W_";
     public static final String DRUID_SEGMENT_METADATA_TIMER = DRUID_TIMER + "_S_0";
 
+    private static final String SSL_ENABLED_CIPHER_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "org.asynchttpclient.AsyncHttpClientConfig.enabledCipherSuites"
+    );
+
     /**
      * The default JSON builder puts only response body in the JSON response.
      */
     public static final Function<Response, JsonNode> DEFAULT_JSON_NODE_BUILDER_STRATEGY =
-            new Function<Response, JsonNode>() {
-
-        @Override
-        public JsonNode apply(Response response) {
-            try {
-                return new MappingJsonFactory().createParser(response.getResponseBodyAsStream()).readValueAsTree();
-            } catch (IOException ioe) {
-                throw new IllegalStateException(ioe);
-            }
+            response -> {
+        try (JsonParser parser = new MappingJsonFactory().createParser(response.getResponseBodyAsStream())) {
+            return parser.readValueAsTree();
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
         }
     };
 
@@ -217,7 +223,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             throw new IllegalStateException(msg);
         }
 
-        LOG.info("Configured with druid server config: {}", config.toString());
+        LOG.info("Configured with druid server config: {}", config);
         this.headersToAppend = headersToAppend;
         this.webClient = asyncHttpClient;
         this.writer = mapper.writer();
@@ -237,6 +243,10 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     private static AsyncHttpClient initializeWebClient(int requestTimeout) {
 
         LOG.debug("Druid request timeout: {}ms", requestTimeout);
+        List<String> cipherSuites = SYSTEM_CONFIG.getListProperty(SSL_ENABLED_CIPHER_KEY, null);
+        String[] enabledCipherSuites = cipherSuites == null  || cipherSuites.isEmpty() ?
+                null
+                : cipherSuites.toArray(new String[cipherSuites.size()]);
 
         // Build the configuration
         AsyncHttpClientConfig config = new DefaultAsyncHttpClientConfig.Builder()
@@ -245,6 +255,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 .setConnectTimeout(requestTimeout)
                 .setConnectionTtl(requestTimeout)
                 .setPooledConnectionIdleTimeout(requestTimeout)
+                .setEnabledCipherSuites(enabledCipherSuites)
                 .setFollowRedirect(true)
                 .build();
 

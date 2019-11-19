@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.time;
 
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.util.GranularityParseException;
 import com.yahoo.bard.webservice.util.StreamUtils;
 
@@ -14,6 +12,7 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
 
 /**
  * StandardGranularityParser implements a time grain dictionary, as well as factory methods to dynamically build zoned
@@ -29,7 +28,8 @@ public class StandardGranularityParser implements GranularityParser {
      * @param dictionary  a dictionary containing names mapped to granularities
      */
     @Inject
-    public StandardGranularityParser(GranularityDictionary dictionary) {
+    public StandardGranularityParser(@NotNull GranularityDictionary dictionary) {
+        assert dictionary != null;
         namedGranularities = dictionary;
     }
 

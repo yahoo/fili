@@ -2,10 +2,10 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.mappers;
 
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.Result;
+import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,7 +15,7 @@ import java.util.Objects;
  * Mapper to round floating point values to their ceiling. If a metric is null, the original result is passed along
  * unmodified.
  */
-public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper {
+public class SketchRoundUpMapper extends ResultSetMapper {
 
     String columnName;
 
@@ -58,12 +58,6 @@ public class SketchRoundUpMapper extends ResultSetMapper implements ColumnMapper
     @Override
     protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
-    }
-
-    @Override
-    @Deprecated
-    public ResultSetMapper withColumnName(String newColumnName) {
-        return new SketchRoundUpMapper(newColumnName);
     }
 
     @Override

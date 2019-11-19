@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.table.resolver.GranularityComparator;
 
 import org.joda.time.DateTime;
@@ -88,7 +88,7 @@ public class IntervalUtils {
      * @return A set of intervals describing the time common to both sets
      */
     public static Set<Interval> getOverlappingSubintervals(Set<Interval> left, Set<Interval> right) {
-        return getOverlappingSubintervals((Collection) left, (Collection) right);
+        return getOverlappingSubintervals((Collection<Interval>) left, (Collection<Interval>) right);
     }
 
     /**

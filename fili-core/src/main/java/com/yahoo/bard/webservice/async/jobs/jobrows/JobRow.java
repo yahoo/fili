@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 /**
  * A row in the conceptual table defined by the ApiJobStore, containing the metadata about a particular job.
  */
+@SuppressWarnings("serial")
 public class JobRow extends LinkedHashMap<JobField, String> {
     private static final Logger LOG = LoggerFactory.getLogger(JobRow.class);
 
@@ -35,7 +36,9 @@ public class JobRow extends LinkedHashMap<JobField, String> {
     protected JobRow(@NotNull String jobId, Map<JobField, String> fieldValueMap) {
         super(fieldValueMap);
         if (jobId == null) {
-            LOG.error(String.format(ErrorMessageFormat.MISSING_JOB_ID.getLoggingFormat(), fieldValueMap));
+            if (LOG.isErrorEnabled()) {
+                LOG.error(String.format(ErrorMessageFormat.MISSING_JOB_ID.getLoggingFormat(), fieldValueMap));
+            }
             throw new IllegalArgumentException(ErrorMessageFormat.MISSING_JOB_ID.format(fieldValueMap));
         }
         this.jobId = jobId;
@@ -50,7 +53,7 @@ public class JobRow extends LinkedHashMap<JobField, String> {
      * @throws IllegalArgumentException if jobId is not a key in fieldValueMap
      */
     public JobRow(@NotNull JobField jobIdFieldName, @NotNull Map<JobField, String> fieldValueMap) {
-        this(fieldValueMap.get(jobIdFieldName), fieldValueMap);
+        this(fieldValueMap.get(jobIdFieldName) , fieldValueMap);
     }
 
     /**

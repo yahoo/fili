@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import org.joda.time.DateTime;
@@ -34,18 +35,23 @@ public class ConstrainedTable implements PhysicalTable {
      * @param constraint  The constraint being applied
      */
     public ConstrainedTable(ConfigPhysicalTable sourceTable, DataSourceConstraint constraint) {
+        this(sourceTable, new PhysicalDataSourceConstraint(constraint, sourceTable.getSchema()));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param sourceTable  The table being constrained
+     * @param constraint  The constraint being applied
+     */
+    public ConstrainedTable(ConfigPhysicalTable sourceTable, PhysicalDataSourceConstraint constraint) {
         this.constraint = constraint;
         this.sourceTable = sourceTable;
 
         Availability sourceAvailability = sourceTable.getAvailability();
 
-        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(
-                constraint,
-                sourceTable.getSchema()
-        );
-
         availableIntervals = new SimplifiedIntervalList(
-                sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint)
+                sourceAvailability.getAvailableIntervals(constraint)
         );
 
         allAvailableIntervals = Collections.unmodifiableMap(
@@ -55,7 +61,39 @@ public class ConstrainedTable implements PhysicalTable {
                 )
         );
         dataSourceNames = Collections.unmodifiableSet(
-                sourceAvailability.getDataSourceNames(physicalDataSourceConstraint)
+                sourceAvailability.getDataSourceNames(constraint)
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param sourceTable  The table being constrained
+     * @param queryPlanningConstraint  The constraint being applied
+     */
+    public ConstrainedTable(ConfigPhysicalTable sourceTable, QueryPlanningConstraint queryPlanningConstraint) {
+        this.constraint = queryPlanningConstraint;
+        this.sourceTable = sourceTable;
+
+        Availability sourceAvailability = sourceTable.getAvailability();
+
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(
+                constraint,
+                getSchema()
+        );
+
+        // Physical constraint is necessary to respect column sensitive tables
+        availableIntervals =
+                sourceAvailability.getAvailableIntervals(physicalDataSourceConstraint);
+
+        allAvailableIntervals = Collections.unmodifiableMap(
+                mapToSchemaAvailability(
+                        sourceAvailability.getAllAvailableIntervals(),
+                        getSchema()
+                )
+        );
+        dataSourceNames = Collections.unmodifiableSet(
+                sourceAvailability.getDataSourceNames(constraint)
         );
     }
 

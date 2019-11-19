@@ -97,7 +97,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
         resultRow.put("name", grain);
         resultRow.put("longName", StringUtils.capitalize(grain));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
-        resultRow.put("retention", logicalTable.getRetention().toString());
+        resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
         resultRow.put("dimensions", getDimensionListFullView(logicalTable.getDimensions(), uriInfo));
         resultRow.put(
                 "metrics",
@@ -136,6 +136,7 @@ public class TableFullViewProcessor implements TableMetadataFormatter {
         resultRow.put("uri", DimensionsServlet.getDimensionUrl(dimension, uriInfo));
         resultRow.put("cardinality", dimension.getCardinality());
         resultRow.put("fields", dimension.getDimensionFields());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
         return resultRow;
     }
 }

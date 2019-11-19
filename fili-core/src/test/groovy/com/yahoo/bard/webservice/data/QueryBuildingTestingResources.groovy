@@ -15,6 +15,7 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static org.joda.time.DateTimeZone.UTC
 
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
+import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestLookupDimensions
 import com.yahoo.bard.webservice.data.config.dimension.TestRegisteredLookupDimensions
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
@@ -26,6 +27,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
+import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
@@ -35,18 +37,22 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.Column
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.table.availability.StrictAvailability
@@ -55,13 +61,16 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
-public class QueryBuildingTestingResources {
+class QueryBuildingTestingResources {
 
     // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
 
     // Non-aggregatable dimensions, numbered for identification
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
+
+    // Flag from tag dimension
+    public Dimension d14, d15
 
     // Logical metrics, numbered for identification
     public LogicalMetric m1, m2, m3, m4, m5, m6
@@ -101,11 +110,15 @@ public class QueryBuildingTestingResources {
 
     public DataSourceMetadataService metadataService
 
-    public QueryBuildingTestingResources() {
+    public DruidFilterBuilder druidFilterBuilder = new DruidInFilterBuilder()
+
+    public DruidHavingBuilder druidHavingBuilder = new DefaultDruidHavingBuilder()
+
+    QueryBuildingTestingResources() {
         init()
     }
 
-    public QueryBuildingTestingResources init() {
+    QueryBuildingTestingResources init() {
 
         DateTimeZone.setDefault(UTC)
         def ages = ["1": "0-10", "2": "11-14", "3": "14-29", "4": "30-40", "5": "41-59", "6": "60+"]
@@ -190,7 +203,43 @@ public class QueryBuildingTestingResources {
         d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
         dimensionDictionary = new DimensionDictionary()
-        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10])
+        dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
+
+        // flag from tag dimensions
+        FlagFromTagDimensionConfig.Builder builder = new FlagFromTagDimensionConfig.Builder(
+                {"flagFromTagLookup"},
+                "shape", //grouping dim physical name
+                "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                "dim1", // filtering
+                "TAG_VALUE"
+        )
+        d9.getExtractionFunction().ifPresent({it -> builder.addExtractionFunction(it)})
+        FlagFromTagDimensionConfig lookupFftConfig = builder
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
+        d14 = new FlagFromTagDimension(lookupFftConfig, dimensionDictionary)
+
+        builder = new FlagFromTagDimensionConfig.Builder(
+                {"flagFromTagRegisteredLookup"},
+                "breed", // grouping dim physical name
+                 "fftDescription",
+                "fftLongName",
+                "fftCategory",
+                "dim1", // filtering
+                "TAG_VALUE"
+        )
+        FlagFromTagDimensionConfig registeredLookupFftConfig = builder
+                .extractionFunctions(d11.getRegisteredLookupExtractionFns())
+                .trueValue("TRUE_VALUE")
+                .falseValue("FALSE_VALUE")
+                .build()
+        d15 = new FlagFromTagDimension(registeredLookupFftConfig, dimensionDictionary)
+
+        dimensionDictionary.add(d14)
+        dimensionDictionary.add(d15)
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")
@@ -242,7 +291,16 @@ public class QueryBuildingTestingResources {
         t4h1.setAvailability(new StrictAvailability(DataSourceName.of(t4h1.name), new TestDataSourceMetadataService(availabilityMap1)))
         t4d1.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap1)))
 
-        t5h = new StrictPhysicalTable(TableName.of("table5d"), utcHour, [d8, d9, d10, d11, d12, d13, m1].collect{toColumn(it)} as Set, [:], metadataService)
+        t5h = new StrictPhysicalTable(
+                TableName.of("table5d"),
+                utcHour,
+                [d8, d9, d10, d11, d12, d13, d14, d15, m1].collect{toColumn(it)} as Set,
+                [
+                        flagFromTagLookup: "shape",
+                        flagFromTagRegisteredLookup: "breed"
+                ],
+                metadataService
+        )
 
         t4h2.setAvailability(new StrictAvailability(DataSourceName.of(t4h2.name), new TestDataSourceMetadataService(availabilityMap2)))
         t4d2.setAvailability(new StrictAvailability(DataSourceName.of(t4d1.name), new TestDataSourceMetadataService(availabilityMap2)))

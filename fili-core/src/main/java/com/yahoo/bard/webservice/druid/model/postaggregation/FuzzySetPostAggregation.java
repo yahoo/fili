@@ -59,7 +59,7 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
      *
      * @param fields  List of post aggregation fields
      *
-     * @return New SketchEstimatePostAggregation with provided field and only one aggregator.
+     * @return New FuzzySetPostAggregation with provided field and only one aggregator.
      */
     @JsonIgnore
     @Override

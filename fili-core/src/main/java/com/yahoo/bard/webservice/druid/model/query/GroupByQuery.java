@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
@@ -47,8 +48,8 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
      * @param intervals  The intervals
      * @param limitSpec  The limit specification
      * @param context  The context
-     * @param doFork  true to fork a new context and bump up the query id, or false to create an exact copy of the
-     * context.
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
      */
     protected GroupByQuery(
             DataSource dataSource,
@@ -61,7 +62,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
             Collection<Interval> intervals,
             LimitSpec limitSpec,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
         super(
                 DefaultQueryType.GROUP_BY,
@@ -73,7 +74,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 postAggregations,
                 intervals,
                 context,
-                doFork
+                incrementQueryId
         );
 
         this.having = having;
@@ -160,7 +161,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withInnermostDataSource(DataSource dataSource) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
@@ -205,7 +206,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
 
     @Override
     public GroupByQuery withAllIntervals(Collection<Interval> intervals) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
                 withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);

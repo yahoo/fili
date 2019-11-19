@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 
 import spock.lang.Specification
@@ -24,55 +26,52 @@ class DimensionApiRequestMapperSpec extends Specification {
         setup:
         ResourceDictionaries resourceDictionaries = jtb.configurationLoader.getDictionaries()
         DimensionApiRequestMapper dimensionApiRequestMapper = new DimensionApiRequestMapper(resourceDictionaries)
-        DimensionsApiRequest dimensionsApiRequest
+        DimensionsApiRequest apiRequest
         DimensionsApiRequest mappedDimensionApiRequest
         Exception e
 
         when:
-        dimensionsApiRequest = new DimensionsApiRequest(
+        apiRequest = new DimensionsApiRequestImpl(
                 "color",
                 "shape|desc-in[shape]",
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
-        dimensionApiRequestMapper.apply(dimensionsApiRequest, Mock(ContainerRequestContext))
+        dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 
         then:
-        e = thrown(BadApiRequestException)
+        e = thrown(RequestValidationException)
         e.getMessage().matches("Filter.*not match dimension.*")
 
         when:
-        dimensionsApiRequest = new DimensionsApiRequest(
+        apiRequest = new DimensionsApiRequestImpl(
                 "color",
                 "shape|desc-in[shape],color|desc-in[red]",
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
-        dimensionApiRequestMapper.apply(dimensionsApiRequest, Mock(ContainerRequestContext))
+        dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 
         then:
-        e = thrown(BadApiRequestException)
+        e = thrown(RequestValidationException)
         e.getMessage().matches("Filter.*not match dimension.*")
 
         when:
-        dimensionsApiRequest = new DimensionsApiRequest(
+        apiRequest = new DimensionsApiRequestImpl(
                 "color",
                 "color|desc-in[red]",
                 null,
                 "",
                 "",
-                resourceDictionaries.getDimensionDictionary(),
-                null
+                resourceDictionaries.getDimensionDictionary()
         )
-        mappedDimensionApiRequest = dimensionApiRequestMapper.apply(dimensionsApiRequest, Mock(ContainerRequestContext))
+        mappedDimensionApiRequest = dimensionApiRequestMapper.apply(apiRequest, Mock(ContainerRequestContext))
 
         then:
-        mappedDimensionApiRequest == dimensionsApiRequest
+        mappedDimensionApiRequest == apiRequest
     }
 }

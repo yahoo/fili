@@ -13,6 +13,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,6 +25,7 @@ import javax.validation.constraints.NotNull;
  * FilteredAggregation wraps aggregation with the associated filter.
  */
 public class FilteredAggregation extends Aggregation {
+
     private final Filter filter;
     private final Aggregation aggregation;
 
@@ -57,17 +60,27 @@ public class FilteredAggregation extends Aggregation {
     }
 
     /**
-     * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation. The
-     * outer aggregation is obtained by unwrapping the inner filtered aggregation and getting just the aggregation.
-     * The outer aggregation fieldName will reference the inner aggregation name. The inner aggregation is unmodified.
+     * Splits an Aggregation for 2-pass aggregation into an inner filtered aggregation &amp; outer aggregation.
+     * Specifically, FilteredAggregation delegates nesting rules to the aggregation being filtered. Then the filter is
+     * applied to the inner aggregation which is both probably efficient on the size of the aggregation performed, and
+     * also means that the filtering dimension doesn't need to be added to the grouping expression of the nested query.
      *
      * @return A pair where pair.left is the outer aggregation and pair.right is the inner.
      */
     @Override
-    public Pair<Aggregation, Aggregation> nest() {
-        String nestingName = this.getName();
-        Aggregation outer = this.getAggregation().withFieldName(nestingName);
-        return new ImmutablePair<>(outer, this);
+    public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
+        Pair<Optional<Aggregation>, Optional<Aggregation>> wrappedAggNested = this.getAggregation().nest();
+        Aggregation inner = null;
+        Aggregation outer = null;
+        if (wrappedAggNested.getRight().isPresent()) {
+            inner = this.withAggregation(wrappedAggNested.getRight().get());
+        }
+        if (wrappedAggNested.getLeft().isPresent()) {
+            outer = wrappedAggNested.getLeft().get();
+            outer = inner != null ? outer.withFieldName(inner.getName()) : outer;
+        }
+
+        return new ImmutablePair<>(Optional.ofNullable(outer), Optional.ofNullable(inner));
     }
 
     @JsonIgnore
@@ -78,7 +91,7 @@ public class FilteredAggregation extends Aggregation {
     }
 
     private Set<Dimension> getFilterDimensions() {
-        return FieldConverterSupplier.metricsFilterSetBuilder.gatherFilterDimensions(filter);
+        return FieldConverterSupplier.getMetricsFilterSetBuilder().gatherFilterDimensions(filter);
     }
 
     @JsonIgnore
@@ -149,5 +162,28 @@ public class FilteredAggregation extends Aggregation {
     @Override
     public boolean isFloatingPoint() {
         return aggregation.isFloatingPoint();
+    }
+
+    @Override
+    public String toString() {
+        return "Aggregation{type=" + getType() + ", name=" + getName() + ", fieldName=" + getFieldName() + ", " +
+                "filter=" + filter + "}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (!(o instanceof FilteredAggregation)) { return false; }
+
+        FilteredAggregation that = (FilteredAggregation) o;
+
+        return
+                super.equals(that) &&
+                        Objects.equals(filter, that.filter);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getFieldName(), getType(), getFilter());
     }
 }

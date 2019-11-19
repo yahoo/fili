@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
@@ -100,15 +100,14 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                     ) {
                         try {
                             if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
-                                RequestLog.record(new BardQueryInfo(druidQuery.getQueryType().toJson(), true));
                                 RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                             }
 
                             if (context.getNumberOfIncoming().decrementAndGet() == 0) {
                                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                             }
-
                             CACHE_HITS.mark(1);
+                            BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                             RequestLog logCtx = RequestLog.dump();
                             nextResponse.processResponse(
                                     mapper.readTree(cacheEntry.getValue()),
@@ -157,7 +156,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
      */
     protected String getKey(DruidAggregationQuery<?> druidQuery) throws JsonProcessingException {
         JsonNode root = mapper.valueToTree(druidQuery);
-        Utils.omitField(root, "context", mapper);
+        Utils.canonicalize(root , mapper, false);
         return writer.writeValueAsString(root);
     }
 }

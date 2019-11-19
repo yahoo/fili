@@ -35,7 +35,7 @@ public class DimensionToDefaultDimensionSpec extends JsonSerializer<Dimension> {
         if (physicalName.equals(apiName) || SerializerUtil.hasInnerQuery(gen)) {
             gen.writeString(apiName);
         } else {
-            gen.writeObject(new DefaultDimensionSpec(physicalName, apiName));
+            gen.writeObject(new DefaultDimensionSpec(physicalName, apiName, value));
         }
     }
 }

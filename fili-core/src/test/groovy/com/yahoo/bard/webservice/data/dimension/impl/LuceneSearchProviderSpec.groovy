@@ -7,14 +7,19 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.TimeoutException
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils
+import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RowLimitReachedException
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.apache.commons.io.FileUtils
 import org.apache.lucene.store.FSDirectory
 
+import spock.lang.Ignore
+import spock.lang.Timeout
+
 import java.nio.file.Files
 import java.nio.file.Path
+
 /**
  * Specification for behavior specific to the LuceneSearchProvider
  */
@@ -136,6 +141,19 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         1 * keyValueStore.put('cardinality_key', '14')
     }
 
+    def "refresh cardinality is called when getting cardinality with refresh"() {
+        given: "a new key value store"
+        KeyValueStore keyValueStore = Mock()
+        keyValueStore.getOrDefault(_, "0") >> "12"
+
+        when: "lucene gets a new key value store with no cardinality key"
+        searchProvider.setKeyValueStore(keyValueStore)
+        searchProvider.getDimensionCardinality(true) == 12
+
+        then: "the cardinality is set to the current lucene document count"
+        2 * keyValueStore.put('cardinality_key', '14')
+    }
+
     def "moveDirEntries moves all entries of a directory to a new directory, while keeping all old empty dirs"() {
         expect:
         Files.exists(sourcePath)
@@ -191,6 +209,47 @@ class LuceneSearchProviderSpec extends SearchProviderSpec<LuceneSearchProvider> 
         !Files.exists(file4)
     }
 
+    @Timeout(5)
+    def "If time waiting for write lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets read lock and holds it
+        Thread t = new Thread({searchProvider.readLock()})
+        t.start()
+        t.join()
+        searchProvider.writeLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
+    }
+
+    @Timeout(5)
+    def "If time waiting for read lock exceeds timeout fail query"() {
+        setup:
+        searchProvider.@searchTimeout = 2000
+
+        when:
+        // thread that just gets write lock and holds it
+        Thread t = new Thread({searchProvider.writeLock()})
+        t.start()
+        t.join()
+        searchProvider.readLock()
+
+        then:
+        Exception e = thrown(IllegalStateException)
+        e.getMessage() == String.format(
+                ErrorMessageFormat.LUCENE_LOCK_TIMEOUT.getMessageFormat(),
+                searchProvider.getDimension().getApiName()
+        )
+    }
+
+    @Ignore("This test is currently not valid because the replacement index is invalid.")
     def "replaceIndex hot-swaps Lucene indexes in place"() {
         given:
         // destination = "target/tmp/dimensionCache/animal/lucene_indexes", where we will keep indexes all the time

@@ -8,7 +8,9 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
+import com.yahoo.bard.webservice.util.DruidWebServiceSelector;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
@@ -22,7 +24,18 @@ import javax.validation.constraints.NotNull;
  */
 public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
 
-    protected final @NotNull DruidWebService druidWebService;
+    protected final @NotNull DruidWebServiceSelector druidWebServiceSelector;
+
+    /**
+     * Builds the request handler.
+     *
+     * @param druidWebServiceSelector  A function to dynamically select the Druid webservice to query
+     * @param mapper  The map for all JSON processing
+     */
+    public AsyncWebServiceRequestHandler(DruidWebServiceSelector druidWebServiceSelector, ObjectMapper mapper) {
+        super(mapper);
+        this.druidWebServiceSelector = druidWebServiceSelector;
+    }
 
     /**
      * Build the request handler.
@@ -31,8 +44,7 @@ public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
      * @param mapper  The mapper for all JSON processing
      */
     public AsyncWebServiceRequestHandler(DruidWebService druidWebService, ObjectMapper mapper) {
-        super(mapper);
-        this.druidWebService = druidWebService;
+        this((i1, i2, i3) -> druidWebService, mapper);
     }
 
     @Override
@@ -51,7 +63,9 @@ public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
         FailureCallback failure = response.getFailureCallback(druidQuery);
 
-        druidWebService.postDruidQuery(context, success, error, failure, druidQuery);
+        BardQueryInfo.incrementCountFactHits();
+        DruidWebService webService = druidWebServiceSelector.select(context, request, druidQuery);
+        webService.postDruidQuery(context, success, error, failure, druidQuery);
         return true;
     }
 }

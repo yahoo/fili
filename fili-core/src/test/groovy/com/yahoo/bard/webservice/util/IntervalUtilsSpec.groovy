@@ -7,10 +7,10 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -82,6 +82,11 @@ class IntervalUtilsSpec extends Specification {
         ["2013/2014"]              | ["2013-03-01/2014-04-01", "2014/2016"]             || ["2013-03-01/2014-01-01"]
         ["2013/2015", "2016/2018"] | ["2014/2016", "2015/2017"]                         || ["2014/2015", "2016/2017"]
         ["2013/2015"]              | ["2013-03-01/2014-04-01", "2014/2016"]             || ["2014/2015", "2013-03-01/2014-04-01"]
+    }
+
+    def "Empty interval collection returns no earliest DateTime"() {
+        expect:
+        IntervalUtils.firstMoment(Collections.emptySet()) == Optional.empty()
     }
 
     @Unroll
@@ -287,6 +292,24 @@ class IntervalUtilsSpec extends Specification {
         "2015-09-12T00:00:00.000Z/2015-09-13T00:00:00.000Z" | Optional.of(DAY)
         "2015-09-12T00:00:00.000Z/2015-09-12T01:00:00.000Z" | Optional.of(DefaultTimeGrain.HOUR)
         "2015-09-12T00:00:00.000Z/2015-09-12T00:01:00.000Z" | Optional.of(DefaultTimeGrain.MINUTE)
+    }
+
+    @Unroll
+    def "The first date time instant of '#intervals' is '#earliest'"() {
+        expect:
+        IntervalUtils.firstMoment(buildIntervals(intervals)).get() == new DateTime(earliest)
+
+        where:
+        intervals | earliest
+        [["2019/2020"], ["2021/2022"]] | "2019"
+        [["2019/2020"], ["2019/2021"]] | "2019"
+        [["2019/2021"], ["2020/2022"]] | "2019"
+    }
+
+    Collection<? extends Collection<Interval>> buildIntervals(Collection<? extends Collection<String>> intervals) {
+        return intervals.stream()
+                .map { it -> it.stream().map { interval -> new Interval(interval) }.collect(Collectors.toList()) }
+                .collect(Collectors.toList())
     }
 
     /**

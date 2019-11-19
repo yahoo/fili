@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web;
 
 
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,9 +29,9 @@ public class FiliResponseWriterSelector implements ResponseWriterSelector {
             JsonApiResponseWriter jsonApiResponseWriter
     ) {
         writers = new HashMap<>();
-        writers.put(ResponseFormatType.CSV, csvResponseWriter);
-        writers.put(ResponseFormatType.JSON, jsonResponseWriter);
-        writers.put(ResponseFormatType.JSONAPI, jsonApiResponseWriter);
+        writers.put(DefaultResponseFormatType.CSV, csvResponseWriter);
+        writers.put(DefaultResponseFormatType.JSON, jsonResponseWriter);
+        writers.put(DefaultResponseFormatType.JSONAPI, jsonApiResponseWriter);
     }
 
     /**
@@ -42,7 +44,7 @@ public class FiliResponseWriterSelector implements ResponseWriterSelector {
     public Optional<ResponseWriter> select(ApiRequest request) {
         ResponseFormatType format = request.getFormat();
         if (format == null) {
-            format = ResponseFormatType.JSON;
+            format = DefaultResponseFormatType.JSON;
         }
         return Optional.ofNullable(writers.get(format));
     }

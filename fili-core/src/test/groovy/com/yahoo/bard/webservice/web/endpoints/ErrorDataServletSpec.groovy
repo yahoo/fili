@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.endpoints
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.TOP_N
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID
@@ -22,7 +23,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDE
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.config.SystemConfig
@@ -32,7 +32,6 @@ import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
-import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -49,7 +48,7 @@ class ErrorDataServletSpec extends Specification {
 
     private static final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("non_ui_druid_broker")
+    private static final String DRUID_URL_SETTING = systemConfig.getPackageVariableName("druid_broker")
 
     @Shared boolean topNStatus
     static String saveDruidURL
@@ -130,7 +129,6 @@ class ErrorDataServletSpec extends Specification {
         // Release the test web container
         jtb.tearDown()
     }
-
 
     def "Valid druid request passes"() {
         setup:
@@ -234,7 +232,7 @@ class ErrorDataServletSpec extends Specification {
             }"""
 
         when:
-        Response r = jtb.getHarness().target("data/shapes/day/color")
+        Response r = jtb.getHarness().target("data/shapes/day/")
                 .queryParam("metrics","limbs")
                 .queryParam("dateTime","2014-09-01%2F2014-09-10")
                 .request().get()
@@ -621,7 +619,7 @@ class ErrorDataServletSpec extends Specification {
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/color")
-                .queryParam("metrics","color")
+                .queryParam("metrics","height")
                 .queryParam("dateTime","")
                 .request().get()
 

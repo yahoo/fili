@@ -215,7 +215,7 @@ public class ClassScanner {
                 boolean notnull = false;
                 Args argMode = mode;
                 for (Annotation annotation : constructor.getParameterAnnotations()[i]) {
-                    if (annotation.annotationType().isAssignableFrom(NotNull.class)) {
+                    if (NotNull.class.isInstance(annotation)) {
                         argMode = Args.VALUES;
                         notnull = true;
                         break;
@@ -243,7 +243,7 @@ public class ClassScanner {
         }
 
         // Exhausted all constructors, give up
-        throw (InstantiationException) new InstantiationException().initCause(cause);
+        throw (InstantiationException) new InstantiationException(cause.getMessage()).initCause(cause);
     }
 
     /**
@@ -302,7 +302,7 @@ public class ClassScanner {
         if (arg != null) {
             putInArgumentValueCache(arg.getClass(), arg);
         }
-        return (T) arg;
+        return arg;
     }
 
     /**
@@ -349,8 +349,7 @@ public class ClassScanner {
                 // find a subclass to construct
                 if (cls.isAssignableFrom(subclass) && !Modifier.isAbstract(subclass.getModifiers())) {
                     try {
-                        @SuppressWarnings("unchecked")
-                        T arg = constructObject((Class<T>) subclass, mode, stack);
+                        T arg = constructObject(subclass.asSubclass(cls), mode, stack);
                         if (arg != null) {
                             return arg;
                         }
@@ -376,13 +375,12 @@ public class ClassScanner {
      *
      * @return a mock if we have one, otherise just null
      */
-    @SuppressWarnings("unchecked")
     private <T> T getCachedValue(Class<T> cls) {
-        return (T) argumentValueCache.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return argumentValueCache.keySet().stream()
                 .filter(cls::isAssignableFrom)
                 .findFirst()
                 .map(argumentValueCache::get)
+                .map(StreamUtils.uncheckedCast(cls))
                 .orElse(null);
     }
 
@@ -401,7 +399,7 @@ public class ClassScanner {
      * @param cls  The class to associate with the object
      * @param value  The value being cached
      */
-    private void putInArgumentValueCache(Class cls, Object value) {
+    public void putInArgumentValueCache(Class cls, Object value) {
         argumentValueCache.put(cls, value);
     }
 }

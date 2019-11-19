@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.jobs
 
+import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_CREATED
+import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_UPDATED
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.JOB_TICKET
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.QUERY
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATUS
-import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_CREATED
-import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_UPDATED
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_ID
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobStatus
@@ -21,12 +21,12 @@ import org.joda.time.DateTimeZone
  * JobRows, and JobFields.
  */
 class JobTestUtils {
-    static final String JOB_TICKET_DATA = "123"
-    static final String QUERY_DATA = "https://host:port/v1/data/table/grain?metrics=metric"
-    static final String STATUS_DATA = DefaultJobStatus.PENDING.getName()
-    static final String DATE_CREATED_DATA = new DateTime(2016, 4, 29, 0, 0, DateTimeZone.UTC).toString()
-    static final String DATE_UPDATED_DATA = new DateTime(2016, 4, 30, 0, 0, DateTimeZone.UTC).toString()
-    static final String USER_ID_DATA = "A man with a plan"
+    public static final String JOB_TICKET_DATA = "123"
+    public static final String QUERY_DATA = "https://host:port/v1/data/table/grain?metrics=metric"
+    public static final String STATUS_DATA = DefaultJobStatus.PENDING.getName()
+    public static final String DATE_CREATED_DATA = new DateTime(2016, 4, 29, 0, 0, DateTimeZone.UTC).toString()
+    public static final String DATE_UPDATED_DATA = new DateTime(2016, 4, 30, 0, 0, DateTimeZone.UTC).toString()
+    public static final String USER_ID_DATA = "A man with a plan"
 
     /**
      * Builds a job row with the specified metadata, and provides a default value for any fields in

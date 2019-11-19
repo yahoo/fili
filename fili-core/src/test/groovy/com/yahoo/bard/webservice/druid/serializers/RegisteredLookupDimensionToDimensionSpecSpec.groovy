@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -40,7 +40,12 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         objectMapper = new ObjectMappersSuite().getMapper()
         resources = new QueryBuildingTestingResources()
         resolver = new DefaultPhysicalTableResolver(new PartialDataHandler(), new DefaultingVolatileIntervalsService())
-        builder = new DruidQueryBuilder(resources.logicalDictionary, resolver)
+        builder = new DruidQueryBuilder(
+                resources.logicalDictionary,
+                resolver,
+                resources.druidFilterBuilder,
+                resources.druidHavingBuilder
+        )
         apiRequest = Mock(DataApiRequest)
         LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 
@@ -50,10 +55,12 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         apiRequest.getLogicalMetrics() >> ([lm1])
         apiRequest.getIntervals() >> [new Interval(new DateTime("2015"), Hours.ONE)]
         apiRequest.getFilterDimensions() >> []
-        apiRequest.getTopN() >> OptionalInt.empty()
+        apiRequest.getTopN() >> Optional.empty()
         apiRequest.getSorts() >> ([])
-        apiRequest.getCount() >> OptionalInt.empty()
+        apiRequest.getCount() >> Optional.empty()
         apiRequest.getApiFilters() >> Collections.emptyMap()
+
+        apiRequest.withFilters(_) >> {apiRequest}
     }
 
     def "Given registered lookup dimension with no lookup serialize using dimension serializer"() {
@@ -94,4 +101,3 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
         serializedQuery.contains('"dimensions":["species"]')
     }
 }
-

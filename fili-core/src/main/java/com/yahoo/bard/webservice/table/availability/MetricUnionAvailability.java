@@ -3,23 +3,21 @@
 package com.yahoo.bard.webservice.table.availability;
 
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
-import com.yahoo.bard.webservice.data.metric.MetricColumn;
-import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.util.Utils;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -81,28 +79,20 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      *
      * @param availabilities  A set of <tt>Availabilities</tt> whose Dimension schemas are (typically) the same and
      * the Metric columns are unique(i.e. no overlap) on every availability
-     * @param columns  The set of all configured columns, including dimension columns, that metric union availability
+     * @param availabilitiesToMetricNames  A map of all availabilities to set of metric names
      * will respond with
      */
-    public MetricUnionAvailability(@NotNull Set<Availability> availabilities, @NotNull Set<Column> columns) {
+    public MetricUnionAvailability(
+            @NotNull Set<Availability> availabilities,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
         super(availabilities.stream());
-        metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
-                .map(MetricColumn::getName)
-                .collect(Collectors.toSet());
+        metricNames = availabilitiesToMetricNames.values()
+                .stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
 
-        // Construct a map of availability to its assigned metric
-        // by intersecting its underlying datasource metrics with table configured metrics
-        availabilitiesToMetricNames = availabilities.stream()
-                .collect(
-                        Collectors.toMap(
-                                Function.identity(),
-                                availability ->
-                                        Sets.intersection(
-                                                availability.getAllAvailableIntervals().keySet(),
-                                                metricNames
-                                        )
-                        )
-                );
+        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
@@ -118,7 +108,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
     }
 
     @Override
-    public SimplifiedIntervalList getAvailableIntervals(PhysicalDataSourceConstraint constraint) {
+    public SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
 
         Set<String> dataSourceMetricNames = availabilitiesToMetricNames.values().stream()
                 .flatMap(Set::stream)
@@ -162,8 +152,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
      *
      * @return A map from <tt>Availability</tt> to <tt>DataSourceConstraint</tt> with non-empty metric names
      */
-    private Map<Availability, PhysicalDataSourceConstraint> constructSubConstraint(
-            PhysicalDataSourceConstraint constraint
+    private Map<Availability, DataSourceConstraint> constructSubConstraint(
+            DataSourceConstraint constraint
     ) {
         return availabilitiesToMetricNames.entrySet().stream()
                 .map(entry ->
@@ -174,6 +164,25 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 )
                 .filter(entry -> !entry.getValue().getMetricNames().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    /**
+     * Produce a metric union availability.
+     *
+     * @param physicalTables  The physical tables to source metrics and dimensions from.
+     * @param availabilitiesToMetricNames  The map of availabilities to the metric columns in the union schema.
+     *
+     * @return A metric union availability decorated with an official aggregate.
+     */
+
+    public static MetricUnionAvailability build(
+            @NotNull Collection<ConfigPhysicalTable> physicalTables,
+            @NotNull Map<Availability, Set<String>> availabilitiesToMetricNames
+    ) {
+        return new MetricUnionAvailability(
+                physicalTables.stream().map(ConfigPhysicalTable::getAvailability).collect(Collectors.toSet()),
+                availabilitiesToMetricNames
+        );
     }
 
     @Override

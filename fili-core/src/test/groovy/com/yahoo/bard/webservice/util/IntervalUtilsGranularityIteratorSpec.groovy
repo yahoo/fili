@@ -6,9 +6,9 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -32,7 +32,7 @@ class IntervalUtilsGranularityIteratorSpec extends Specification {
         List<Interval> intervals = buildListOfIntervalsFromStrings(intervalList)
         List<Interval> expectedIntervals = buildListOfIntervalsFromStrings(expected)
 
-        Granularity<String> grain = new AllGranularity();
+        Granularity grain = new AllGranularity();
         Iterator iterator = grain.intervalsIterator(intervals)
         expect:
         expectedIntervals.equals( iterator.collect() )
@@ -52,7 +52,7 @@ class IntervalUtilsGranularityIteratorSpec extends Specification {
         setup:
         List<Interval> intervals = buildListOfIntervalsFromStrings(intervalList)
         List<Interval> expectedIntervals = buildListOfIntervalsFromStrings(expected)
-        Granularity<TimeGrain> grain = timeGrain
+        Granularity grain = timeGrain
 
         Iterator iterator = grain.intervalsIterator(intervals)
         expect:

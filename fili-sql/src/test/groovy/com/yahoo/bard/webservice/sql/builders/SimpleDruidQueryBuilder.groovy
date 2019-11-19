@@ -45,7 +45,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadata
@@ -56,10 +56,10 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable
 import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.SqlPhysicalTable
-import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.availability.PermissiveAvailability
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -153,10 +153,10 @@ class SimpleDruidQueryBuilder {
     }
 
     public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections) {
-        return getSort(columns, sortDirections, OptionalInt.empty())
+        return getSort(columns, sortDirections, Optional.empty())
     }
 
-    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, OptionalInt limit) {
+    public static LimitSpec getSort(List<String> columns, List<SortDirection> sortDirections, Optional<Integer> limit) {
         LinkedHashSet<OrderByColumn> sorts = []
         for (int i = 0; i < columns.size(); i++) {
             sorts.add(
@@ -220,7 +220,7 @@ class SimpleDruidQueryBuilder {
                                 getDimensions(dimensions) as Set,
                                 dimensions as Set,
                                 metricsAndDimensions,
-                                [:]
+                                new ApiFilters()
                         )
                 )
         )

@@ -10,11 +10,12 @@ import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
+import com.yahoo.bard.webservice.table.BaseCompositePhysicalTable
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
-import com.yahoo.bard.webservice.table.PartitionCompositeTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
 import com.yahoo.bard.webservice.table.availability.Availability
+import com.yahoo.bard.webservice.table.availability.PartitionAvailability
 import com.yahoo.bard.webservice.table.resolver.DimensionIdFilter
 
 import spock.lang.Specification
@@ -84,13 +85,18 @@ class DimensionListPartitionTableDefinitionSpec extends Specification {
 
         DataSourceMetadataService service = Mock(DataSourceMetadataService)
 
-        PartitionCompositeTable expected = new PartitionCompositeTable(
+        BaseCompositePhysicalTable expected = new BaseCompositePhysicalTable(
                 TableName.of("partition"),
                 DAY_UTC,
                 [] as Set,
+                [part1, part2] as Set,
                 [:],
-                [(part1): new DimensionIdFilter([(testDimension): (["part1Value"] as Set)]),
-                 (part2): new DimensionIdFilter([(testDimension): (["part2Value"] as Set)])]
+                PartitionAvailability.build(
+                        [
+                                (part1): new DimensionIdFilter([(testDimension): (["part1Value"] as Set)]),
+                                (part2): new DimensionIdFilter([(testDimension): (["part2Value"] as Set)])
+                        ] as Map
+                )
         )
 
         expect:

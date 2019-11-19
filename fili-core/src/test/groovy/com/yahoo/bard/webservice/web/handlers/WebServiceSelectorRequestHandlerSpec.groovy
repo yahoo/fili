@@ -7,8 +7,8 @@ import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
 import com.yahoo.bard.webservice.druid.client.DruidWebService
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
-import com.yahoo.bard.webservice.web.DataApiRequest
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.ObjectMapper

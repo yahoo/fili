@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.yahoo.fili</groupId>
+        <artifactId>fili-parent-pom</artifactId>
+        <version>0.12-SNAPSHOT</version>
+        <relativePath>../..</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>luthier-sample-app</artifactId>
+    <packaging>jar</packaging>
+
+    <name>Fili: Luthier Sample Application</name>
+    <description>
+        Luthier provides a complete external configuration system.
+    </description>
+
+    <properties>
+        <checkstyle.config.location>../../checkstyle-style.xml</checkstyle.config.location>
+        <checkstyle.suppressions.location>../../checkstyle-suppressions.xml</checkstyle.suppressions.location>
+        <skipLuthierTests>true</skipLuthierTests>
+        <version.fili>0.12-SNAPSHOT</version.fili>
+    </properties>
+
+    <profiles>
+        <profile>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/local/bin/lua      -->
+            <id>lua-installed-local-bin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/local/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                </plugins>
+            </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
+        </profile>
+        <profile>
+            <!--      run tests and generate-test-resources if Lua is installed to /usr/bin/lua      -->
+            <id>lua-installed-bin</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/bin/lua</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                </plugins>
+            </build>
+            <properties>
+                <skipLuthierTests>false</skipLuthierTests>
+            </properties>
+        </profile>
+    </profiles>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>luthier</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yahoo.fili</groupId>
+            <artifactId>sample-applications</artifactId>
+            <version>${version.fili}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1</version>
+                <executions>
+                    <execution>
+                        <id>run-luthier-main</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.yahoo.bard.webservice.application.LuthierMain</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipLuthierTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

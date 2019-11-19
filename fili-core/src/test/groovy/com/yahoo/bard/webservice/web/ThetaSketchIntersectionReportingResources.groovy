@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationHelper
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchSetOperationMaker
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName
+import com.yahoo.bard.webservice.data.config.names.TableName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -30,6 +31,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.filter.InFilter
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
@@ -42,14 +44,13 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 
 import spock.lang.Specification
-
 /**
  * This class is a resource container for intersection report tests.
  */
@@ -162,7 +163,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         columns.add(lmc)
 
         PhysicalTable physicalTable = new StrictPhysicalTable(
-                "NETWORK",
+                TableName.of("NETWORK"),
                 DAY.buildZonedTimeGrain(UTC),
                 columns,
                 ["property": "property", "country": "country"],
@@ -177,6 +178,8 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         JsonNode jsonobject = metricJsonObjArray.get(0)
         filterObj = jsonobject.get("filter")
 
+        filter = new InFilter(countryDim, ["US", "IN"])
+
         fooPostAggregation = foos.make().templateDruidQuery.getPostAggregations().first()
 
         dayAvgFoosTdq = dayAvgFoos.make().templateDruidQuery;
@@ -184,11 +187,31 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         fooNoBarAggregation = fooNoBarInstance.make().templateDruidQuery.aggregations.first()
         Aggregation regFoosAggregation = regFoosInstance.make().templateDruidQuery.aggregations.first()
 
-        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, fooNoBarAggregation, dimensionDict, table, new DataApiRequestImpl())
-        fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "fooNoBar", new ArrayList<>(fooNoBarFilteredAggregationSet))
+        fooNoBarFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(
+                filterObj,
+                fooNoBarAggregation,
+                dimensionDict,
+                table,
+                new TestingDataApiRequestImpl()
+        )
+        fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
+                SketchSetOperationPostAggFunction.INTERSECT,
+                "fooNoBar",
+                new ArrayList<>(fooNoBarFilteredAggregationSet)
+        )
 
-        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(filterObj, regFoosAggregation, dimensionDict, table, new DataApiRequestImpl())
-        fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(SketchSetOperationPostAggFunction.INTERSECT, "regFoos", new ArrayList<>(fooRegFoosFilteredAggregationSet))
+        fooRegFoosFilteredAggregationSet = FieldConverterSupplier.metricsFilterSetBuilder.getFilteredAggregation(
+                filterObj,
+                regFoosAggregation,
+                dimensionDict,
+                table,
+                new TestingDataApiRequestImpl()
+        )
+        fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
+                SketchSetOperationPostAggFunction.INTERSECT,
+                "regFoos",
+                new ArrayList<>(fooRegFoosFilteredAggregationSet)
+        )
 
         interimPostAggDictionary = [:]
         interimPostAggDictionary.put(fooNoBarAggregation.getName(), fooNoBarFilteredAggregationSet as List)

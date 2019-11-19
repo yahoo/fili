@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.util.DateTimeUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.StreamUtils;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -41,16 +42,16 @@ import java.util.stream.Stream;
  */
 public class ResponseData {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ResponseData.class);
-    private static final Map<Dimension, Map<DimensionField, String>> DIMENSION_FIELD_COLUMN_NAMES = new HashMap<>();
+    protected static final Logger LOG = LoggerFactory.getLogger(ResponseData.class);
+    protected static final Map<Dimension, Map<DimensionField, String>> DIMENSION_FIELD_COLUMN_NAMES = new HashMap<>();
 
-    private final ResultSet resultSet;
-    private final LinkedHashSet<MetricColumn> apiMetricColumns;
-    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
-    private final SimplifiedIntervalList missingIntervals;
-    private final SimplifiedIntervalList volatileIntervals;
-    private final Pagination pagination;
-    private final Map<String, URI> paginationLinks;
+    protected final ResultSet resultSet;
+    protected final LinkedHashSet<MetricColumn> apiMetricColumns;
+    protected final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
+    protected final SimplifiedIntervalList missingIntervals;
+    protected final SimplifiedIntervalList volatileIntervals;
+    protected final Pagination pagination;
+    protected final Map<String, URI> paginationLinks;
 
     /**
      * Constructor.
@@ -153,7 +154,7 @@ public class ResponseData {
      *
      * @return set of metric columns
      */
-    private LinkedHashSet<MetricColumn> generateApiMetricColumns(Set<String> apiMetricColumnNames) {
+    protected LinkedHashSet<MetricColumn> generateApiMetricColumns(Set<String> apiMetricColumnNames) {
         // Get the metric columns from the schema
         Map<String, MetricColumn> metricColumnMap = resultSet.getSchema().getColumns(MetricColumn.class).stream()
                 .collect(StreamUtils.toLinkedDictionary(MetricColumn::getName));
@@ -173,10 +174,9 @@ public class ResponseData {
      */
     public Stream<String> generateDimensionColumnHeaders(Map.Entry<Dimension, LinkedHashSet<DimensionField>> entry) {
         if (entry.getValue().isEmpty()) {
-            return Stream.of(entry.getKey().getApiName());
-        } else {
-            return entry.getValue().stream().map(dimField -> getDimensionColumnName(entry.getKey(), dimField));
+            return Stream.empty();
         }
+        return entry.getValue().stream().map(dimField -> getDimensionColumnName(entry.getKey(), dimField));
     }
 
     /**
@@ -200,11 +200,7 @@ public class ResponseData {
             if (requestedApiDimensionFields.get(dimension) != null) {
                 requestedDimensionFields = requestedApiDimensionFields.get(dimension);
 
-                // When no fields are requested, show the key field
-                if (requestedDimensionFields.isEmpty()) {
-                    // When no fields are requested, show the key field
-                    row.put(dimension.getApiName(), drow.get(dimension.getKey()));
-                } else {
+                if (!requestedDimensionFields.isEmpty()) {
                     // Otherwise, show the fields requested, with the pipe-separated name
                     for (DimensionField dimensionField : requestedDimensionFields) {
                         row.put(getDimensionColumnName(dimension, dimensionField), drow.get(dimensionField));
@@ -242,22 +238,22 @@ public class ResponseData {
             // Get the pieces we need out of the map entry
             Dimension dimension = dimensionColumnEntry.getKey().getDimension();
             DimensionRow dimensionRow = dimensionColumnEntry.getValue();
+            Set<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
 
-            if (requestedApiDimensionFields.get(dimension) != null) {
+            if (requestedDimensionFields == null || requestedDimensionFields.isEmpty())
+            {
                 // add sidecar only if at-least one field needs to be shown
-                Set<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
-                if (!requestedDimensionFields.isEmpty()) {
-                    // The key field is required
-                    requestedDimensionFields.add(dimension.getKey());
-
-                    //
-                    Map<DimensionField, String> dimensionFieldToValueMap = requestedDimensionFields.stream()
-                            .collect(StreamUtils.toLinkedMap(Function.identity(), dimensionRow::get));
-
-                    // Add the dimension row's requested fields to the sidecar map
-                    sidecars.get(dimension).add(dimensionFieldToValueMap);
-                }
+                continue;
             }
+
+            // The key field is required
+            requestedDimensionFields.add(dimension.getKey());
+
+            Map<DimensionField, String> dimensionFieldToValueMap = requestedDimensionFields.stream()
+                    .collect(StreamUtils.toLinkedMap(Function.identity(), dimensionRow::get));
+
+            // Add the dimension row's requested fields to the sidecar map
+            sidecars.get(dimension).add(dimensionFieldToValueMap);
 
             // Put the dimension name and dimension row's key value into the row map
             row.put(dimension.getApiName(), dimensionRow.get(dimension.getKey()));
@@ -291,7 +287,7 @@ public class ResponseData {
      *
      * @return The name for the dimension and column as it will appear in the response document
      */
-    private static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
+    public static String getDimensionColumnName(Dimension dimension, DimensionField dimensionField) {
         Map<DimensionField, String> columnNamesForDimensionFields;
         columnNamesForDimensionFields = DIMENSION_FIELD_COLUMN_NAMES.computeIfAbsent(
                 dimension,

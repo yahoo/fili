@@ -83,6 +83,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     FILTER_DIMENSION_NOT_IN_TABLE("Filter dimension '%s' is not supported by the table '%s'."),
     FILTER_FIELD_NOT_IN_DIMENSIONS("Filter dimension field '%s' is not supported by the dimension '%s'."),
     FILTER_OPERATOR_INVALID("Filter operator '%s' is invalid."),
+    FILTER_WRONG_NUMBER_OF_VALUES("Filter operator '%s' expects %s argument(s).  Found %d in '%s'."),
     FILTER_SUBSTRING_OPERATIONS_DISABLED(
             "Filter operations 'startswith' and 'contains' are disabled for data requests.",
             "Filter operations 'startswith' and 'contains' are disabled for data requests. Enable by setting feature" +
@@ -142,7 +143,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),
-    UNABLE_TO_SERIALIZE("Unable to serialize the % object"),
+    UNABLE_TO_SERIALIZE("Unable to serialize the %s object"),
     METRIC_VALUE_CLASS_NOT_FOUND("Metric value type class %s is not found"),
 
     UNAUTHORIZED_WITH_RETRY("Not authorized to access the resource for given id %s. Retrying again %s more times"),
@@ -154,7 +155,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
     LOG_UNABLE_TO_DESERIALIZE("Unable to deserialize results for job %s from %s"),
 
-    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. %s"),
+    RESOURCE_RETRIEVAL_FAILURE("Unable to retrieve the resource for given resource name: %s. Info: %s"),
     RESOURCE_STORAGE_FAILURE("Unable to store the resource for resource name %s. %s"),
     RESOURCE_DELETION_FAILURE("Unable to delete the resource for resource name %s. %s"),
 
@@ -247,6 +248,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     ETAG_MISSING_FROM_RESPONSE("JSON response is missing response etag"),
 
+    INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING("Internal server error. JsonProcessingException : %s"),
+
     INTERNAL_SERVER_ERROR_REASON_PHRASE(
             "The server encountered an unexpected condition which prevented it from fulfilling the request."
     ),
@@ -257,9 +260,22 @@ public enum ErrorMessageFormat implements MessageFormatter {
                                               "%s operator needs %d parameters but found %d"),
     HAVING_OPERATOR_IMPROPER_RANGE("Upper range cannot be less than the lower range for %s operator."),
 
+    TOO_MANY_DRUID_FILTERS(
+            "Too many filtering dimension values found. Request is aborted because it will significantly slows down " +
+                    "or timeout Druid query.",
+            "DruidFilterBuilder generated too many filters. Request is aborted."
+    ),
+
     UNABLE_TO_CREATE_DIR("Unable to create directory %s."),
     UNABLE_TO_DELETE_DIR("Unable to delete directory %s."),
-    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipe Lucene index at directory: %s")
+    FAIL_TO_WIPTE_LUCENE_INDEX_DIR("Failed to wipte Lucene index at directory: %s"),
+
+    REQUEST_PROCESSING_EXCEPTION("Exception processing request: %s"),
+
+    TWO_VALUES_OF_THE_SAME_KEY("Values %s and %s are associated with the same key"),
+
+    LUCENE_LOCK_TIMEOUT("Waiting for lock timed out in LuceneSearchProvider for dimension %s"),
+    LUCENE_LOCK_INTERRUPTED("Waiting for lock was interrupted in LuceneSearchProvider for dimension %s")
     ;
 
     private final String messageFormat;

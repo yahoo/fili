@@ -13,19 +13,19 @@ import spock.lang.Timeout
 
 @Timeout(30)    // Fail test if hangs
 class SlicesServletSpec extends Specification {
-    JerseyTestBinder jtb
+    JerseyTestBinder jerseyTestBinder
     Interval interval = new Interval("2010-01-01/2500-12-31")
 
     def setup() {
         // Create the test web container to test the resources
-        jtb = new JerseyTestBinder(SlicesServlet.class)
+        jerseyTestBinder = new JerseyTestBinder(SlicesServlet.class)
 
-        AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jtb, interval)
+        AvailabilityTestingUtils.populatePhysicalTableCacheIntervals(jerseyTestBinder, interval)
     }
 
     def cleanup() {
         // Release the test web container
-        jtb.tearDown()
+        jerseyTestBinder.tearDown()
     }
 
     def "Slices endpoint returns correct rows to a GET query"() {
@@ -33,20 +33,20 @@ class SlicesServletSpec extends Specification {
         String expectedResponse = """{
             "rows":
             [
-                {"timeGrain":"hour", "name":"color_shapes_hourly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes_hourly"},
-                {"timeGrain":"day", "name":"color_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes"},
-                {"timeGrain":"month", "name":"color_shapes_monthly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_shapes_monthly"},
-                {"timeGrain":"day", "name":"color_size_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_size_shapes"},
-                {"timeGrain":"day", "name":"color_size_shape_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/color_size_shape_shapes"},
-                {"timeGrain":"day", "name":"all_pets", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/all_pets"},
-                {"timeGrain":"day", "name":"all_shapes", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/all_shapes"},
-                {"timeGrain":"month", "name":"monthly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/monthly"},
-                {"timeGrain":"hour", "name":"hourly", "uri":"http://localhost:${jtb.getHarness().getPort()}/slices/hourly"}
+                {"timeGrain":"hour", "name":"color_shapes_hourly", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/color_shapes_hourly"},
+                {"timeGrain":"day", "name":"color_shapes", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/color_shapes"},
+                {"timeGrain":"month", "name":"color_shapes_monthly", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/color_shapes_monthly"},
+                {"timeGrain":"day", "name":"color_size_shapes", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/color_size_shapes"},
+                {"timeGrain":"day", "name":"color_size_shape_shapes", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/color_size_shape_shapes"},
+                {"timeGrain":"day", "name":"all_pets", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/all_pets"},
+                {"timeGrain":"day", "name":"all_shapes", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/all_shapes"},
+                {"timeGrain":"month", "name":"monthly", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/monthly"},
+                {"timeGrain":"hour", "name":"hourly", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/slices/hourly"}
             ]
         }"""
 
         when: "We send a request"
-        String result = makeRequest("/slices")
+        String result = jerseyTestBinder.makeRequest("/slices").get(String.class)
 
         then: "what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
@@ -60,9 +60,9 @@ class SlicesServletSpec extends Specification {
             "timeZone":"UTC",
             "dimensions":
             [
-                {"name":"breed", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/breed", "intervals":["$interval"]},
-                {"name":"class", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/species", "intervals":["$interval"]},
-                {"name":"sex", "uri":"http://localhost:${jtb.getHarness().getPort()}/dimensions/sex", "intervals":["$interval"]}
+                {"name":"breed","factName":"breed", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/breed", "intervals":["$interval"]},
+                {"name":"species","factName":"class", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/species", "intervals":["$interval"]},
+                {"name":"sex","factName":"sex", "uri":"http://localhost:${jerseyTestBinder.getHarness().getPort()}/dimensions/sex", "intervals":["$interval"]}
             ],
             "segmentInfo": {},
             "metrics":
@@ -72,17 +72,9 @@ class SlicesServletSpec extends Specification {
         }"""
 
         when: "We send a request"
-        String result = makeRequest("/slices/all_pets")
+        String result = jerseyTestBinder.makeRequest("/slices/all_pets").get(String.class)
 
         then: "what we expect"
         GroovyTestUtils.compareJson(result, expectedResponse, JsonSortStrategy.SORT_BOTH)
-    }
-
-    String makeRequest(String target) {
-        // Set target of call
-        def httpCall = jtb.getHarness().target(target)
-
-        // Make the call
-        httpCall.request().get(String.class)
     }
 }

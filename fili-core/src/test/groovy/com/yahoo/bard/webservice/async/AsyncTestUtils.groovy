@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async
 
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.DATE_CREATED
@@ -8,7 +10,6 @@ import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.STATU
 import static com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField.USER_ID
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
-
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 

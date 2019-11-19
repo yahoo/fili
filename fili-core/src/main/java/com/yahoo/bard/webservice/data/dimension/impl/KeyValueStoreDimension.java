@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -65,6 +66,7 @@ public class KeyValueStoreDimension implements Dimension {
     private final DimensionField key;
 
     private final boolean isAggregatable;
+    private final StorageStrategy storageStrategy;
 
     /**
      * Constructor.
@@ -78,6 +80,8 @@ public class KeyValueStoreDimension implements Dimension {
      * @param searchProvider  Search provider over the metadata for the dimension
      * @param defaultDimensionFields  Default fields for the dimension
      * @param isAggregatable  Whether the dimension is aggregatable
+     * @param storageStrategy  Strategy of how dimension is loaded. See
+     * {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}
      */
     public KeyValueStoreDimension(
             String dimensionName,
@@ -88,7 +92,8 @@ public class KeyValueStoreDimension implements Dimension {
             @NotNull KeyValueStore keyValueStore,
             SearchProvider searchProvider,
             @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
-            boolean isAggregatable
+            boolean isAggregatable,
+            StorageStrategy storageStrategy
     ) {
         this.apiName = dimensionName;
         this.longName = longName;
@@ -112,6 +117,46 @@ public class KeyValueStoreDimension implements Dimension {
         this.searchProvider.setKeyValueStore(keyValueStore);
 
         this.isAggregatable = isAggregatable;
+        this.storageStrategy = storageStrategy;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dimensionName  API Name of the dimension
+     * @param longName  Long API Name of the dimension
+     * @param category  Category of the dimension
+     * @param description  Description of the dimension
+     * @param dimensionFields  Metadata fields of the dimension
+     * @param keyValueStore  Metadata store for the dimension
+     * @param searchProvider  Search provider over the metadata for the dimension
+     * @param defaultDimensionFields  Default fields for the dimension
+     * @param isAggregatable  Whether the dimension is aggregatable
+     * {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}
+     */
+    public KeyValueStoreDimension(
+            String dimensionName,
+            String longName,
+            String category,
+            String description,
+            @NotNull LinkedHashSet<DimensionField> dimensionFields,
+            @NotNull KeyValueStore keyValueStore,
+            SearchProvider searchProvider,
+            @NotNull LinkedHashSet<DimensionField> defaultDimensionFields,
+            boolean isAggregatable
+    ) {
+        this(
+                dimensionName,
+                longName,
+                category,
+                description,
+                dimensionFields,
+                keyValueStore,
+                searchProvider,
+                defaultDimensionFields,
+                isAggregatable,
+                StorageStrategy.LOADED
+        );
     }
 
     /**
@@ -142,7 +187,8 @@ public class KeyValueStoreDimension implements Dimension {
                 keyValueStore,
                 searchProvider,
                 new LinkedHashSet<>(),
-                true
+                true,
+                StorageStrategy.LOADED
         );
     }
 
@@ -175,14 +221,15 @@ public class KeyValueStoreDimension implements Dimension {
                 keyValueStore,
                 searchProvider,
                 new LinkedHashSet<>(),
-                isAggregatable
+                isAggregatable,
+                StorageStrategy.LOADED
         );
     }
 
     /**
      * Constructor.
      * <p>
-     * It constructs an aggregatable dimension that defaults the Long Api Name to the Api Name and sets the Category
+     * Build an aggregatable dimension that defaults the Long Api Name to the Api Name and sets the Category
      * to the default category.
      *
      * @param dimensionName  API Name of the dimension
@@ -243,7 +290,8 @@ public class KeyValueStoreDimension implements Dimension {
                 keyValueStore,
                 searchProvider,
                 new LinkedHashSet<>(),
-                true
+                true,
+                StorageStrategy.LOADED
         );
         this.addAllDimensionRows(dimensionRows);
     }
@@ -263,7 +311,8 @@ public class KeyValueStoreDimension implements Dimension {
                 dimensionConfig.getKeyValueStore(),
                 dimensionConfig.getSearchProvider(),
                 dimensionConfig.getDefaultDimensionFields(),
-                dimensionConfig.isAggregatable()
+                dimensionConfig.isAggregatable(),
+                dimensionConfig.getStorageStrategy()
         );
     }
 
@@ -345,6 +394,11 @@ public class KeyValueStoreDimension implements Dimension {
     }
 
     @Override
+    public StorageStrategy getStorageStrategy() {
+        return storageStrategy;
+    }
+
+    @Override
     public int getCardinality() {
         return searchProvider.getDimensionCardinality();
     }
@@ -371,6 +425,10 @@ public class KeyValueStoreDimension implements Dimension {
     @Override
     public SearchProvider getSearchProvider() {
         return searchProvider;
+    }
+
+    public KeyValueStore getKeyValueStore() {
+        return keyValueStore;
     }
 
     @Override
@@ -435,14 +493,13 @@ public class KeyValueStoreDimension implements Dimension {
                     this
             );
             throw new IllegalArgumentException(error);
-        } else {
-            Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
-            for (DimensionField dimensionField : getDimensionFields()) {
-                dimensionFieldValueMap.put(dimensionField, "");
-            }
-            dimensionFieldValueMap.put(getKey(), keyFieldValue);
-            return new DimensionRow(key, dimensionFieldValueMap);
         }
+        Map<DimensionField, String> dimensionFieldValueMap = new HashMap<>();
+        for (DimensionField dimensionField : getDimensionFields()) {
+            dimensionFieldValueMap.put(dimensionField, "");
+        }
+        dimensionFieldValueMap.put(getKey(), keyFieldValue);
+        return new DimensionRow(key, dimensionFieldValueMap);
     }
 
     @Override
@@ -478,7 +535,6 @@ public class KeyValueStoreDimension implements Dimension {
         try {
             String dimRowIndexes = keyValueStore.get(DimensionStoreKeyUtils.getAllValuesKey());
             if (dimRowIndexes == null) {
-                LOG.debug("Null value for dimension {} while deleting: ", apiName);
                 return;
             }
 
@@ -511,7 +567,7 @@ public class KeyValueStoreDimension implements Dimension {
 
     @Override
     public DimensionRow parseDimensionRow(Map<String, String> fieldNameValueMap) {
-        // This rewrite need to be removed once description is normalized in legacy implementations
+        // TODO: This rewrite need to be removed once description is normalized in legacy implementations
         String desc = fieldNameValueMap.remove("description");
         if (desc != null) {
             fieldNameValueMap.put("desc", desc);
@@ -540,6 +596,29 @@ public class KeyValueStoreDimension implements Dimension {
     @Override
     public boolean isAggregatable() {
         return isAggregatable;
+    }
+
+    /**
+     * Constructs a new KeyValueStoreDimension with specified
+     * {@link com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy}.
+     *
+     * @param storageStrategy  The specified StorageStrategy
+     *
+     * @return the new KeyValueStoreDimension with the specified StorageStrategy
+     */
+    public KeyValueStoreDimension withStorageStrategy(StorageStrategy storageStrategy) {
+        return new KeyValueStoreDimension(
+                apiName,
+                longName,
+                category,
+                description,
+                dimensionFields,
+                keyValueStore,
+                searchProvider,
+                defaultDimensionFields,
+                isAggregatable,
+                storageStrategy
+        );
     }
 
     @Override

@@ -6,8 +6,11 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
@@ -18,7 +21,6 @@ import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.druid.model.query.TimeSeriesQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
@@ -30,13 +32,15 @@ import com.yahoo.bard.webservice.table.TableIdentifier;
 import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -51,17 +55,28 @@ public class DruidQueryBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(DruidQueryBuilder.class);
     protected final LogicalTableDictionary tableDictionary;
     protected final PhysicalTableResolver resolver;
+    protected final DruidFilterBuilder druidFilterBuilder;
+    protected final DruidHavingBuilder druidHavingBuilder;
 
     /**
      * Constructor.
      *
      * @param tableDictionary  Dictionary of logical tables used to look up table groups
      * @param resolver  Strategy for resolving the physical table
+     * @param druidFilterBuilder  A factory methods for druid filters
+     * @param druidHavingBuilder  A factory methods for druid havings
      */
     @Inject
-    public DruidQueryBuilder(LogicalTableDictionary tableDictionary, PhysicalTableResolver resolver) {
+    public DruidQueryBuilder(
+            LogicalTableDictionary tableDictionary,
+            PhysicalTableResolver resolver,
+            DruidFilterBuilder druidFilterBuilder,
+            DruidHavingBuilder druidHavingBuilder
+    ) {
         this.tableDictionary = tableDictionary;
         this.resolver = resolver;
+        this.druidFilterBuilder = druidFilterBuilder;
+        this.druidHavingBuilder = druidHavingBuilder;
         LOG.trace("Table dictionary: {} \nPhysical table resolver: {}", tableDictionary, resolver);
     }
 
@@ -72,13 +87,13 @@ public class DruidQueryBuilder {
      * @param template  TemplateDruidQuery to build out the query with
      *
      * @return a DruidAggregationQuery
-     * @throws DimensionRowNotFoundException if the filters filter out all dimension rows
+     * @throws FilterBuilderException if filters cannot be built or resolve to no rows
      * @throws NoMatchFoundException if no PhysicalTable satisfies this request
      */
     public DruidAggregationQuery<?> buildQuery(
             DataApiRequest request,
             TemplateDruidQuery template
-    ) throws DimensionRowNotFoundException, NoMatchFoundException {
+    ) throws FilterBuilderException, NoMatchFoundException {
 
         LOG.trace("Building druid query with DataApiRequest: {} and TemplateDruidQuery: {}", request, template);
 
@@ -115,40 +130,50 @@ public class DruidQueryBuilder {
         LogicalTable logicalTable = tableDictionary.get(TableIdentifier.create(request));
         TableGroup group = logicalTable.getTableGroup();
 
+        // combine the filters on the requested logical table with the api query filters
+        DataApiRequest tableFilteredRequest = request.withFilters(
+                logicalTable.getFilters()
+                        .map(f -> ApiFilters.union(f, request.getApiFilters()))
+                        .orElse(request.getApiFilters())
+        );
+
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
-        QueryPlanningConstraint constraint = new QueryPlanningConstraint(request, template);
+        QueryPlanningConstraint constraint = new QueryPlanningConstraint(tableFilteredRequest, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
+
+
+        Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
         return druidTopNMetric != null ?
             buildTopNQuery(
                     template,
                     table,
-                    request.getGranularity(),
-                    request.getTimeZone(),
-                    request.getDimensions(),
-                    request.getDruidFilter(),
-                    request.getIntervals(),
+                    tableFilteredRequest.getGranularity(),
+                    tableFilteredRequest.getTimeZone(),
+                    tableFilteredRequest.getDimensions(),
+                    filter,
+                    tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
-                    request.getTopN().getAsInt()
+                    tableFilteredRequest.getTopN().get()
             ) :
-             canOptimizeTimeSeries(request, template) ?
+             canOptimizeTimeSeries(tableFilteredRequest, template) ?
                 buildTimeSeriesQuery(
                         template,
                         table,
-                        request.getGranularity(),
-                        request.getTimeZone(),
-                        request.getDruidFilter(),
-                        request.getIntervals()
+                        tableFilteredRequest.getGranularity(),
+                        tableFilteredRequest.getTimeZone(),
+                        filter,
+                        tableFilteredRequest.getIntervals()
                 ) :
                 buildGroupByQuery(
                         template,
                         table,
-                        request.getGranularity(),
-                        request.getTimeZone(),
-                        request.getDimensions(),
-                        request.getDruidFilter(),
-                        request.getHaving(),
-                        request.getIntervals(),
+                        tableFilteredRequest.getGranularity(),
+                        tableFilteredRequest.getTimeZone(),
+                        tableFilteredRequest.getDimensions(),
+                        filter,
+                        druidHavingBuilder.buildHavings(tableFilteredRequest.getHavings()),
+                        tableFilteredRequest.getIntervals(),
                         druidOrderBy
                 );
     }
@@ -176,7 +201,7 @@ public class DruidQueryBuilder {
             Set<Dimension> groupByDimensions,
             Filter filter,
             Having having,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             LimitSpec druidOrderBy
     ) {
         LOG.trace(
@@ -211,7 +236,7 @@ public class DruidQueryBuilder {
         } else {
             LOG.trace("Building a multi pass druid groupBy query");
             // Build the inner query without an order by, since we only want to do that at the top level
-            // Sorts don't apply to inner queries and Filters only apply to the innermost query
+            // Sorts and Having don't apply to inner queries and Filters only apply to the innermost query
             GroupByQuery query = buildGroupByQuery(
                     template.getInnerQuery().get(),
                     table,
@@ -219,7 +244,7 @@ public class DruidQueryBuilder {
                     timeZone,
                     groupByDimensions,
                     mergedFilter,
-                    having,
+                    (Having) null,
                     intervals,
                     (LimitSpec) null
             );
@@ -279,7 +304,7 @@ public class DruidQueryBuilder {
             DateTimeZone timeZone,
             Set<Dimension> groupByDimension,
             Filter filter,
-            Set<Interval> intervals,
+            List<Interval> intervals,
             TopNMetric metricSpec,
             int topN
     ) {
@@ -345,7 +370,7 @@ public class DruidQueryBuilder {
             Granularity granularity,
             DateTimeZone timeZone,
             Filter filter,
-            Set<Interval> intervals
+            List<Interval> intervals
     ) {
         LOG.trace(
                 "Building druid timeseries query with following parameters \n" +
@@ -393,7 +418,7 @@ public class DruidQueryBuilder {
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
                 BardFeatureFlag.TOP_N.isOn() &&
-                apiRequest.getHaving() == null;
+                apiRequest.getHavings().isEmpty();
     }
 
     /**
@@ -409,6 +434,6 @@ public class DruidQueryBuilder {
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&
-                apiRequest.getHaving() == null;
+                apiRequest.getHavings().isEmpty();
     }
 }

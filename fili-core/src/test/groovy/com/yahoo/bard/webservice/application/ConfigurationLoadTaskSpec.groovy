@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application
 
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
@@ -19,18 +21,18 @@ import com.yahoo.bard.webservice.data.config.table.TestTableLoader
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.query.Granularity
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
-import com.yahoo.bard.webservice.druid.util.SketchFieldConverter
+import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -52,10 +54,10 @@ class ConfigurationLoadTaskSpec extends Specification {
     static FieldConverters oldFieldConverter = FieldConverterSupplier.sketchConverter
 
     def setupSpec() {
-        FieldConverterSupplier.sketchConverter = new SketchFieldConverter()
+        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter()
         LinkedHashSet<DimensionConfig> dimensions = new TestDimensions().getAllDimensionConfigurations()
 
-        loader = new ConfigurationLoader(
+        loader = new DefaultConfigurationLoader(
                 new TypeAwareDimensionLoader(dimensions),
                 new TestMetricLoader(),
                 new TestTableLoader(new TestDataSourceMetadataService())
@@ -96,7 +98,7 @@ class ConfigurationLoadTaskSpec extends Specification {
     def "test sketch metric"() {
         given: "A set of expected aggregations"
         Set<Aggregation> expected = []
-        expected << new SketchCountAggregation(
+        expected << new ThetaSketchAggregation(
                 TestApiMetricName.A_USERS.asName(),
                 TestDruidMetricName.USERS.asName(),
                 16384
@@ -153,7 +155,7 @@ class ConfigurationLoadTaskSpec extends Specification {
     @Unroll
     def "test logical table dictionary load"() {
         setup:
-        Granularity<TimeGrain> granularity = tableIdGrain
+        Granularity granularity = tableIdGrain
 
         expect:
         logicalTableDictionary.get(new TableIdentifier(tableIdName, granularity)).getName() == logicalTableName

@@ -14,8 +14,7 @@ class AggregationSpec extends Specification {
 
     def setupSpec() {
         baseAggregations = [DoubleSumAggregation, DoubleMaxAggregation, DoubleMinAggregation,
-                            LongSumAggregation, LongMaxAggregation, LongMinAggregation,
-                            MaxAggregation, MinAggregation]
+                            LongSumAggregation, LongMaxAggregation, LongMinAggregation]
     }
 
     @Unroll
@@ -25,9 +24,11 @@ class AggregationSpec extends Specification {
         Aggregation original = testClass.newInstance(["name", "fieldName"].toArray())
         Aggregation outer = testClass.newInstance(["name", "name"].toArray())
         Aggregation inner = testClass.newInstance(["name", "fieldName"].toArray())
+        Optional<Aggregation> outerOptional = Optional.of(outer);
+        Optional<Aggregation> innerOptional = Optional.of(inner);
 
         expect:
-        original.nest().equals(Pair.of(outer, inner))
+        original.nest().equals(Pair.of(outerOptional, innerOptional))
 
         where:
         baseAggregation << baseAggregations

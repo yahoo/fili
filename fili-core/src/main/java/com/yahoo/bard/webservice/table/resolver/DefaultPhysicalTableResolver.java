@@ -61,7 +61,7 @@ public class DefaultPhysicalTableResolver extends BasePhysicalTableResolver {
     public BinaryOperator<PhysicalTable> getBetterTableOperator(QueryPlanningConstraint requestConstraint) {
         List<Comparator<PhysicalTable>> comparators = new ArrayList<>();
 
-        if (BardFeatureFlag.PARTIAL_DATA.isOn()) {
+        if (BardFeatureFlag.PARTIAL_DATA.isOn() || BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION.isOn()) {
             comparators.add(
                     new PartialTimeComparator(requestConstraint, partialDataHandler));
             comparators.add(

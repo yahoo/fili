@@ -28,22 +28,11 @@ public class RowNumMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(String metricName, List<String> dependentMetrics) {
-        return new LogicalMetric(
-                null,
-                ROW_NUM_MAPPER,
-                metricName,
-                "Generator for Row Numbers"
-        );
-    }
-
-    @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new LogicalMetric(
                 null,
                 ROW_NUM_MAPPER,
-                logicalMetricInfo.getName(),
-                "Generator for Row Numbers"
+                logicalMetricInfo
         );
     }
 

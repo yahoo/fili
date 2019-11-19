@@ -2,31 +2,40 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.MaxAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchCountAggregation
-import com.yahoo.bard.webservice.druid.model.aggregation.SketchMergeAggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import spock.lang.Specification
+import spock.lang.Stepwise
 
+@Stepwise
 class TemplateDruidQueryMergerSpec extends Specification {
+
+    String backup
+
+    def cleanup() {
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
+    }
+
     def "Verify merger.merge"() {
         setup:
             Aggregation q1_agg1 = new LongSumAggregation("field1", "field1")
-            Aggregation q1_agg2 = new MaxAggregation("field2", "field2")
+            Aggregation q1_agg2 = new LongMaxAggregation("field2", "field2")
             Aggregation nested_agg1 = new DoubleSumAggregation("field3", "field3")
             Aggregation q2_agg1 = new LongSumAggregation("field4", "field4")
             //TODO resolve this
-            Aggregation q3_agg1 = new SketchCountAggregation("foo", "bar", 1000)
+            Aggregation q3_agg1 = new ThetaSketchAggregation("foo", "bar", 1000)
 
             PostAggregation q1_postagg1 = new ArithmeticPostAggregation("field3", ArithmeticPostAggregationFunction.PLUS,
                     [
@@ -58,25 +67,47 @@ class TemplateDruidQueryMergerSpec extends Specification {
             (1 .. _) * request.getLogicalMetrics() >> [m1,m2,m3].toSet()
 
             //q3_agg1 should be nested where the outer query is a sketch count (name=foo, fieldName=foo)
-            merged.getAggregations().sort() == [q1_agg1,q1_agg2,q2_agg1,new SketchCountAggregation("foo", "foo", 1000)].sort()
+            merged.getAggregations().sort() == [q1_agg1,q1_agg2,q2_agg1,new ThetaSketchAggregation("foo", "foo", 1000)].sort()
             merged.getPostAggregations().sort() == [q1_postagg1, q2_postagg1].sort()
             //q3_agg1 should be nested where the inner query is a sketch merge (name=foo, fieldName=bar)
-            merged.getInnerQuery().get().getAggregations().sort() == [q2_agg1,new SketchMergeAggregation("foo", "bar", 1000),nested_agg1].sort()
+            merged.getInnerQuery().get().getAggregations().sort() == [q2_agg1,new ThetaSketchAggregation("foo", "bar", 1000),nested_agg1].sort()
             merged.getInnerQuery().get().getPostAggregations().sort() == [nested_postagg1]
             merged.depth() == 2
     }
 
-
-    def "Verify merger.merge throws exception for empty list of metric"() {
+    def "if require metrics in queries is turned ON, merger.merge throws exception for empty list of metric"() {
         setup:
-            DataApiRequest request = Mock(DataApiRequest)
-            TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(true)
+
+        DataApiRequest request = Mock(DataApiRequest)
+        TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
 
         when:
-            TemplateDruidQuery merged = merger.merge(request)
+        merger.merge(request)
 
         then:
-            (1 .. _) * request.getLogicalMetrics() >> [].toSet()
-            thrown(IllegalStateException)
+        (1 .. _) * request.getLogicalMetrics() >> [].toSet()
+        thrown(IllegalStateException)
+
+    }
+
+    def "If require metrics in queries is turned OFF, a merge with no metrics will return an empty TDQ"() {
+        setup:
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
+
+        DataApiRequest request = Mock(DataApiRequest)
+        TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()
+
+        when:
+        TemplateDruidQuery merged = merger.merge(request)
+
+        then:
+        (1 .. _) * request.getLogicalMetrics() >> [].toSet()
+        with(merged) {
+            getAggregations().isEmpty()
+            getPostAggregations().isEmpty()
+            timeGrain == null
+            !isNested()
+        }
     }
 }

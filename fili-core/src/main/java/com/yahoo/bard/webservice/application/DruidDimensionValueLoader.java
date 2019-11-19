@@ -7,13 +7,13 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.DruidSearchQuery;
 import com.yahoo.bard.webservice.druid.model.query.RegexSearchQuerySpec;
 import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
@@ -23,7 +23,7 @@ import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
-import org.joda.time.Years;
+import org.joda.time.Period;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -42,9 +42,17 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_dimensions");
     public static final String DRUID_DIM_LOADER_ROW_LIMIT =
             SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_row_limit");
+
+    public static final String DRUID_DIM_LOADER_LOOKBACK_PERIOD =
+            SYSTEM_CONFIG.getPackageVariableName("druid_dim_loader_lookback_period");
+
     private static final Integer ROW_LIMIT = SYSTEM_CONFIG.getIntProperty(DRUID_DIM_LOADER_ROW_LIMIT, 1000);
 
-    private static final Interval INTERVAL = new Interval(Years.years(10), DateTime.now());
+    private static final Period LOOKBACK = new Period(SYSTEM_CONFIG.getStringProperty(
+            DRUID_DIM_LOADER_LOOKBACK_PERIOD,
+            "P10Y"
+    ));
+
     private static final String ANY_MATCH_PATTERN = ".*";
     private static final SearchQuerySpec SEARCH_QUERY_SPEC = new RegexSearchQuerySpec(ANY_MATCH_PATTERN);
 
@@ -129,11 +137,13 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
         // Success callback will update the dimension cache
         SuccessCallback success = buildDruidDimensionsSuccessCallback(dimension);
 
+        Interval interval = new Interval(LOOKBACK, DateTime.now());
+
         DruidSearchQuery druidSearchQuery = new DruidSearchQuery(
                 dataSource,
                 AllGranularity.INSTANCE,
                 null,
-                Collections.singletonList(INTERVAL),
+                Collections.singletonList(interval),
                 Collections.singletonList(dimension),
                 SEARCH_QUERY_SPEC,
                 null,

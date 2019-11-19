@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.data.metric.mappers.TopNResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
-import com.yahoo.bard.webservice.web.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
@@ -36,7 +36,7 @@ public class TopNMapperRequestHandler implements DataRequestHandler {
             ResponseProcessor response
     ) {
         if (request.getTopN().isPresent() && !(druidQuery instanceof TopNQuery)) {
-            TopNResultSetMapper mapper = new TopNResultSetMapper(request.getTopN().getAsInt());
+            TopNResultSetMapper mapper = new TopNResultSetMapper(request.getTopN().get());
             // Add topN mapper after partial data mapper and before any other mapper
             try {
                 // Index is 1 because we assume that partial data result set mapper has been injected already

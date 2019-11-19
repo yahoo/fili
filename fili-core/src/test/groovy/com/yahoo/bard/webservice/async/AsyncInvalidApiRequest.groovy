@@ -1,3 +1,5 @@
+// Copyright 2016 Yahoo Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async
 
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -31,18 +33,18 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
             }"""
 
     @Override
-    Map<String, Closure<String>> getResultsToTargetFunctions() {
+    LinkedHashMap<String, Closure<String>> getResultsToTargetFunctions() {
         [ data: { "data/shapes/day" } ]
     }
 
     @Override
-    Map<String, Closure<Void>> getResultAssertions() {
+    LinkedHashMap<String, Closure<Void>> getResultAssertions() {
         [ data: { assert GroovyTestUtils.compareErrorPayload(it.readEntity(String), EXPECTED_ERROR_MESSAGE) } ]
 
     }
 
     @Override
-    Map<String, Closure<Map<String, List<String>>>> getQueryParameters() {
+    LinkedHashMap<String, Closure<Map<String, List<String>>>> getQueryParameters() {
         [
                 data: { [
                         asyncAfter: ["always"],

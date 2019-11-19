@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.web.ApiFilter
 
 import org.joda.time.DateTime
+
 import spock.lang.Specification
 
 class NoOpSearchProviderSpec extends Specification {

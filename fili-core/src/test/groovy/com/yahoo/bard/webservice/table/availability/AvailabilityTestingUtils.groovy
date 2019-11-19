@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
 import org.joda.time.Interval
@@ -15,7 +17,6 @@ import spock.lang.Specification
 
 import java.util.stream.Collectors
 import java.util.stream.Stream
-
 /**
  * Contains a collection of utility methods to aid in testing functionality that relies on table availability, like
  * partial data and volatility.
@@ -37,10 +38,20 @@ class AvailabilityTestingUtils extends Specification {
         }
 
         @Override
+        Set<DataSourceName> getDataSourceNames(DataSourceConstraint constraint) {
+            return getDataSourceNames()
+        }
+
+        @Override
         Map<String, SimplifiedIntervalList> getAllAvailableIntervals() {
             intervals.entrySet().collectEntries {
                 [(it.key): new SimplifiedIntervalList(it.value)]
             }
+        }
+
+        @Override
+        SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
+            return (constraint instanceof QueryPlanningConstraint) ? getAvailableIntervals().intersect(SimplifiedIntervalList.simplifyIntervals(constraint.intervals)) : getAvailableIntervals()
         }
     }
 

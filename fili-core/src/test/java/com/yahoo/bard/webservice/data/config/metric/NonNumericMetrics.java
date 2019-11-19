@@ -12,10 +12,11 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_ST
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
-import com.yahoo.bard.webservice.druid.model.aggregation.MinAggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.LongMinAggregation;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -45,41 +46,61 @@ public class NonNumericMetrics {
                              * the same name as the complex metric so that the correct metric is extracted from the
                              * injected query.
                              */
-                            Collections.singleton(new MinAggregation(A_STRING_METRIC.asName(), A_HEIGHT.getApiName())),
+                            Collections.singleton(new LongMinAggregation(
+                                    A_STRING_METRIC.asName(),
+                                    A_HEIGHT.getApiName()
+                            )),
                             Collections.emptySet()
                     ),
                     new StringMetricMapper(),
-                    A_STRING_METRIC.getApiName(),
-                    "ImAStringISwear"
+                    new LogicalMetricInfo(
+                            A_STRING_METRIC.getApiName(),
+                            A_STRING_METRIC.getApiName(),
+                            "ImAStringISwear"
+                    )
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
-                            Collections.singleton(new MinAggregation(A_BOOLEAN_METRIC.asName(), A_HEIGHT.getApiName())),
+                            Collections.singleton(new LongMinAggregation(
+                                    A_BOOLEAN_METRIC.asName(),
+                                    A_HEIGHT.getApiName()
+                            )),
                             Collections.emptySet()
                     ),
                     new BooleanMetricMapper(),
-                    A_BOOLEAN_METRIC.getApiName(),
-                    "ImBooleanISwear"
+                    new LogicalMetricInfo(
+                            A_BOOLEAN_METRIC.getApiName(),
+                            A_BOOLEAN_METRIC.getApiName(),
+                            "ImBooleanISwear")
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
                             Collections.singleton(
-                                    new MinAggregation(A_JSON_NODE_METRIC.asName(), A_HEIGHT.getApiName())
+                                    new LongMinAggregation(A_JSON_NODE_METRIC.asName(), A_HEIGHT.getApiName())
                             ),
                             Collections.emptySet()
                     ),
                     new JsonNodeMetricMapper(),
-                    A_JSON_NODE_METRIC.getApiName(),
-                    "ImAJsonNodeISwear"
+                    new LogicalMetricInfo(
+                            A_JSON_NODE_METRIC.getApiName(),
+                            A_JSON_NODE_METRIC.getApiName(),
+                            "ImAJsonNodeISwear"
+                    )
             ),
             new LogicalMetric(
                     new TemplateDruidQuery(
-                            Collections.singleton(new MinAggregation(A_NULL_METRIC.asName(), A_HEIGHT.getApiName())),
+                            Collections.singleton(new LongMinAggregation(
+                                    A_NULL_METRIC.asName(),
+                                    A_HEIGHT.getApiName()
+                            )),
                             Collections.emptySet()
                     ),
                     new NullMetricMapper(),
-                    A_NULL_METRIC.getApiName(),
-                    "ImNullISwear"
+                    new LogicalMetricInfo(
+                            A_NULL_METRIC.getApiName(),
+                            A_NULL_METRIC.getApiName(),
+                            "ImNullISwear"
+                    )
             )
         );
     }

@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.data.dimension;
 /**
  * Exception when a dimension row is not found.
  */
-public class DimensionRowNotFoundException extends Exception {
+public class DimensionRowNotFoundException extends FilterBuilderException {
 
     /**
      * Constructor that accepts a message.

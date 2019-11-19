@@ -10,6 +10,7 @@ import com.codahale.metrics.health.HealthCheck;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -17,6 +18,11 @@ import javax.validation.constraints.NotNull;
  * HealthCheck that verifies all dimensions have had a lastUpdated time set.
  */
 public class AllDimensionsLoadedHealthCheck extends HealthCheck {
+
+    /**
+     * A filtering string that indicates that a dimension has not been loaded.
+     */
+    private static final String NEVER = "never";
 
     private final DimensionDictionary dimensionDictionary;
 
@@ -36,13 +42,21 @@ public class AllDimensionsLoadedHealthCheck extends HealthCheck {
                 .collect(
                         StreamUtils.toLinkedMap(
                                 Dimension::getApiName,
-                                dim -> dim.getLastUpdated() == null ? "never" : dim.getLastUpdated().toString()
+                                dim -> dim.getLastUpdated() == null ? NEVER : dim.getLastUpdated().toString()
                         )
                 );
 
         // Signal health
-        if (dimensionLastUpdated.containsValue("never")) {
-            return Result.unhealthy(String.format("Dimensions have not all been loaded: %s", dimensionLastUpdated));
+        if (dimensionLastUpdated.containsValue(NEVER)) {
+            return Result.unhealthy(
+                    String.format(
+                            "These dimensions have not been loaded: %s",
+                            dimensionLastUpdated.entrySet().stream()
+                                    .filter(entry -> NEVER.equals(entry.getValue()))
+                                    .map(Map.Entry::getKey)
+                                    .collect(Collectors.toSet())
+                    )
+            );
         } else {
             return Result.healthy(String.format("Dimensions have all been loaded: %s", dimensionLastUpdated));
         }

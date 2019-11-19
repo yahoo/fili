@@ -10,6 +10,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * A container for state gathered by the web container and used to handle requests.
@@ -72,5 +73,9 @@ public class RequestContext {
 
     public AtomicLong getNumberOfOutgoing() {
         return numberOfOutgoing;
+    }
+
+    public UriBuilder getUriBuilder() {
+        return containerRequestContext.getUriInfo().getRequestUriBuilder();
     }
 }

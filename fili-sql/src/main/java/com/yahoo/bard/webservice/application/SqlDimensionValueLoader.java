@@ -9,13 +9,13 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
@@ -32,7 +32,7 @@ import org.joda.time.Years;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -90,7 +90,7 @@ public class SqlDimensionValueLoader implements DimensionValueLoader {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.singletonList(INTERVAL),
-                new LimitSpec(Utils.asLinkedHashSet(), OptionalInt.of(ROW_LIMIT))
+                new LimitSpec(Utils.asLinkedHashSet(), Optional.of(ROW_LIMIT))
         );
 
         sqlBackedClient.executeQuery(groupByQuery, successCallback, failureCallback);

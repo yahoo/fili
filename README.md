@@ -3,7 +3,8 @@ Fili
 
 *Read this in other languages: [中文](./translations/zh/README-zh.md).*
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
+[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)  
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=alert_status)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=coverage)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=ncloc)](https://sonarcloud.io/dashboard?id=yahoo_fili)
 
 Fili is a Java-based framework that makes it easy to build and maintain RESTful web services for time series reporting 
 and analytics. Fili's HTTP GET-based [reporting API](docs/end-user-api.md) is clean and user-friendly, hiding the 
@@ -117,7 +118,7 @@ dependencies {
 
 The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
 
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.8.69-blue.svg)](https://bintray.com/yahoo/maven/fili/0.8.69)
+The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.9.137-blue.svg)](https://bintray.com/yahoo/maven/fili/0.9.128)
 
 
 Extending
@@ -126,6 +127,12 @@ Extending
 Fili's easy to extend! It has a bunch of hooks already ([`AbstractBinderFactory`](https://github.com/yahoo/fili/blob/master/fili-core/src/main/java/com/yahoo/bard/webservice/application/AbstractBinderFactory.java))! 
 There's a module system for config and modules depending on other modules! There's lots more to say here, but the time
 the time, look at the time!
+
+
+Documentation
+-------------
+
+More information about Fili can be found at [fili.io](http://fili.io).
 
 
 Contributing [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)

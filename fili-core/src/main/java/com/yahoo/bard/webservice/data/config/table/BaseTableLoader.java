@@ -5,11 +5,12 @@ package com.yahoo.bard.webservice.data.config.table;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.names.ApiMetricName;
 import com.yahoo.bard.webservice.data.config.names.FieldName;
+import com.yahoo.bard.webservice.data.config.names.LogicalTableName;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
@@ -20,11 +21,11 @@ import com.yahoo.bard.webservice.table.TableGroup;
 import com.yahoo.bard.webservice.table.TableIdentifier;
 
 import org.joda.time.DateTimeZone;
-import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -63,14 +64,6 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
-     * Load user configured tables into resource dictionary.
-     *
-     * @param dictionaries dictionary to be loaded with configured tables
-     */
-    @Override
-    public abstract void loadTableDictionary(ResourceDictionaries dictionaries);
-
-    /**
      * Builds a table group that derive its dimensions by taking the union of all the underlying physical dimensions.
      * <p>
      * Builds and loads the physical tables from table definitions for the current table group.
@@ -91,8 +84,6 @@ public abstract class BaseTableLoader implements TableLoader {
         Map<String, PhysicalTableDefinition> availableTableDefinitions = buildPhysicalTableDefinitionDictionary(
                 tableDefinitions
         );
-
-        PhysicalTableDictionary physicalTableDictionary = dictionaries.getPhysicalDictionary();
 
         // Get the physical table from physical table dictionary, if not exist, build it and put it in dictionary
         LinkedHashSet<PhysicalTable> physicalTables = currentTableGroupTableNames.stream()
@@ -116,9 +107,10 @@ public abstract class BaseTableLoader implements TableLoader {
     }
 
     /**
-     * Load several logical tables into the logicalDictionary.
+     * Load several logical tables into the logicalDictionary, all with the globally-scoped metric dictionary.
      * <p>
      * Note: This builds the logical tables as well.
+     * This builds a default set of dictionaries
      *
      * @param nameGroupMap  A map of logical table name to table group information
      * @param validGrains  The accepted grains for the logical table
@@ -129,18 +121,80 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<? extends Granularity> validGrains,
             ResourceDictionaries dictionaries
     ) {
-        // For every logical table name, group pair
+        loadLogicalTablesWithGranularities(
+                nameGroupMap,
+                validGrains,
+                dictionaries.getLogicalDictionary(),
+                nameGroupMap.keySet().stream()
+                        .collect(Collectors.toMap(Function.identity(), i -> dictionaries.getMetricDictionary()))
+        );
+    }
+
+    /**
+     * Load several logical tables into the logicalDictionary, each with their own scoped metric dictionary.
+     * <p>
+     * Note: This builds the logical tables as well.
+     *
+     * @param nameGroupMap  A map of logical table name to table group information
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The logical table dictionary to be populated
+     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     */
+    public void loadLogicalTablesWithGranularities(
+            Map<String, TableGroup> nameGroupMap,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            Map<String, MetricDictionary> scopedMetrics
+    ) {
         for (Map.Entry<String, TableGroup> entry : nameGroupMap.entrySet()) {
-            String logicalTableName = entry.getKey();
+            LogicalTableName logicalTableName = LogicalTableName.forName(entry.getKey());
             TableGroup group = entry.getValue();
 
-            loadLogicalTableWithGranularities(logicalTableName, group, validGrains, dictionaries);
+            loadLogicalTableWithGranularities(
+                    logicalTableName,
+                    group,
+                    validGrains,
+                    tableDictionary,
+                    scopedMetrics.get(logicalTableName.asName())
+            );
+        }
+    }
+
+    /**
+     * Load several logical tables into the logicalDictionary, each with their own scoped metric dictionary.
+     * <p>
+     * Note: This builds the logical tables as well.
+     *
+     * @param logicalTableNames a list of LogicalTableNames to be constructed
+     * @param nameGroupMap  A map of logical table name to table group information
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The logical table dictionary to be populated
+     * @param scopedMetrics  A mapping from table name to the scoped MetricDictionary to use for that table
+     */
+    public void loadLogicalTablesWithGranularities(
+            List<LogicalTableName> logicalTableNames,
+            Map<String, TableGroup> nameGroupMap,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            Map<String, MetricDictionary> scopedMetrics
+    ) {
+        for (LogicalTableName logicalTableName : logicalTableNames) {
+                TableGroup group = nameGroupMap.get(logicalTableName.asName());
+
+                loadLogicalTableWithGranularities(
+                        logicalTableName,
+                        group,
+                        validGrains,
+                        tableDictionary,
+                        scopedMetrics.get(logicalTableName.asName())
+                );
         }
     }
 
     /**
      * Load a logical table into the logicalDictionary.
      * <p>
+     * Use a default LogicalTableName based on the string name
      * Note: This builds the logical table as well.
      *
      * @param logicalTableName  The logical table name
@@ -154,16 +208,64 @@ public abstract class BaseTableLoader implements TableLoader {
             Set<? extends Granularity> validGrains,
             ResourceDictionaries dictionaries
     ) {
-        LogicalTableDictionary logicalDictionary = dictionaries.getLogicalDictionary();
-        MetricDictionary metricDictionary = dictionaries.getMetricDictionary();
+        loadLogicalTableWithGranularities(
+                LogicalTableName.forName(logicalTableName),
+                nameGroup,
+                validGrains,
+                dictionaries.getLogicalDictionary(),
+                dictionaries.getMetricDictionary()
+        );
+    }
 
+    /**
+     * Load a logical table into the logicalDictionary.
+     * <p>
+     * Note: This builds the logical table as well.
+     *
+     * @param logicalTableName  The logical table name
+     * @param nameGroup  The table group information for the logical table
+     * @param validGrains  The accepted grains for the logical table
+     * @param dictionaries  The resource dictionaries for reading and storing configuration
+     */
+    public void loadLogicalTableWithGranularities(
+            LogicalTableName logicalTableName,
+            TableGroup nameGroup,
+            Set<? extends Granularity> validGrains,
+            ResourceDictionaries dictionaries
+    ) {
+        loadLogicalTableWithGranularities(
+                logicalTableName,
+                nameGroup,
+                validGrains,
+                dictionaries.getLogicalDictionary(),
+                dictionaries.getMetricDictionary()
+        );
+    }
+
+    /**
+     * Load a logical table into the logicalDictionary.
+     * <p>
+     * Note: This builds the logical table as well.
+     *
+     * @param logicalTableName  The logical table name
+     * @param nameGroup  The table group information for the logical table
+     * @param validGrains  The accepted grains for the logical table
+     * @param tableDictionary  The dictionary to load the logical table into
+     * @param metricDictionary  The dictionary to use when looking up metrics for this table
+     */
+    public void loadLogicalTableWithGranularities(
+            LogicalTableName logicalTableName,
+            TableGroup nameGroup,
+            Set<? extends Granularity> validGrains,
+            LogicalTableDictionary tableDictionary,
+            MetricDictionary metricDictionary
+    ) {
         // For every legal grain
         for (Granularity grain : validGrains) {
             // Build the logical table
             LogicalTable logicalTable = new LogicalTable(logicalTableName, grain, nameGroup, metricDictionary);
-
             // Load it into the dictionary
-            logicalDictionary.put(new TableIdentifier(logicalTable), logicalTable);
+            tableDictionary.put(new TableIdentifier(logicalTable), logicalTable);
         }
     }
 
@@ -208,7 +310,7 @@ public abstract class BaseTableLoader implements TableLoader {
         currentTableDefinition.getDependentTableNames()
                 .forEach(
                         tableName -> {
-                            if (!physicalTableDictionary.containsKey(tableName)) {
+                            if (!physicalTableDictionary.containsKey(tableName.asName())) {
                                 physicalTableDictionary.put(
                                         tableName.asName(),
                                         buildPhysicalTableWithDependency(
@@ -221,7 +323,7 @@ public abstract class BaseTableLoader implements TableLoader {
                         }
                 );
 
-        LOG.debug("Table Loader Building Physical Table {}");
+        LOG.debug("Table Loader Building Physical Table {}", currentTableName);
 
         // Build the current physical table using physical table dictionary to resolve dependency
         ConfigPhysicalTable currentTableBuilt = currentTableDefinition.build(
@@ -312,106 +414,5 @@ public abstract class BaseTableLoader implements TableLoader {
                 dictionaries,
                 apiMetrics
         );
-    }
-
-    /**
-     * Build a logical table, supplying it with a name, grain, table group, and metrics, the default category and
-     * longName set to the name.
-     * <p>
-     * Note: This builds a logical table with all valid metrics for the grain of the table
-     *
-     * @param name  The name for this logical table
-     * @param granularity  The granularity for this logical table
-     * @param group  The group of physical tables for this logical table
-     * @param metrics  The dictionary of all metrics
-     *
-     * @return The logical table built
-     *
-     * @deprecated use new LogicalTable(...) by preferences
-     */
-    @Deprecated
-    public LogicalTable buildLogicalTable(
-            String name,
-            Granularity granularity,
-            TableGroup group,
-            MetricDictionary metrics
-    ) {
-        return buildLogicalTable(
-                name,
-                granularity,
-                LogicalTable.DEFAULT_CATEGORY,
-                name,
-                LogicalTable.DEFAULT_RETENTION,
-                name,
-                group,
-                metrics
-        );
-    }
-
-    /**
-     * Build a logical table, supplying it with a name, grain, table group, and metrics.
-     * <p>
-     * Note: This builds a logical table with all valid metrics for the grain of the table
-     *
-     * @param name  The name for this logical table
-     * @param granularity  The granularity for this logical table
-     * @param category  The category for this logical table
-     * @param longName  The long name for this logical table
-     * @param retention  The retention for this logical table
-     * @param description  The description for this logical table
-     * @param group  The group of physical tables for this logical table
-     * @param metrics  The dictionary of all metrics
-     *
-     * @return The logical table built
-     *
-     * @deprecated The LogicalTable constructor is being mirrored here, can be referenced directly
-     */
-    @Deprecated
-    public LogicalTable buildLogicalTable(
-            String name,
-            Granularity granularity,
-            String category,
-            String longName,
-            ReadablePeriod retention,
-            String description,
-            TableGroup group,
-            MetricDictionary metrics
-    ) {
-        return new LogicalTable(
-                name,
-                category,
-                longName,
-                granularity,
-                retention,
-                description,
-                group,
-                metrics
-        );
-    }
-
-    /**
-     * Builds a table group.
-     * <p>
-     * Builds and loads the physical tables for the physical table definitions as well.
-     *
-     * @param logicalTableName  The logical table for the table group
-     * @param apiMetrics  The set of metric names surfaced to the api
-     * @param druidMetrics  Names of druid datasource metric columns
-     * @param tableDefinitions  A list of config objects for physical tables
-     * @param dictionaries  The container for all the data dictionaries
-     *
-     * @return A table group binding all the tables for a logical table view together.
-     *
-     * @deprecated logicalTableName is not used in TableGroup, use buildDimensionSpanningTableGroup instead
-     */
-    @Deprecated
-    public TableGroup buildTableGroup(
-            String logicalTableName,
-            Set<ApiMetricName> apiMetrics,
-            Set<FieldName> druidMetrics,
-            Set<PhysicalTableDefinition> tableDefinitions,
-            ResourceDictionaries dictionaries
-    ) {
-        return buildDimensionSpanningTableGroup(apiMetrics, druidMetrics, tableDefinitions, dictionaries);
     }
 }

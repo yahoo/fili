@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.AbstractDruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidFactQuery;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 
 import org.joda.time.Interval;
@@ -90,7 +90,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withInnermostDataSource(DataSource dataSource) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
@@ -135,7 +135,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withAllIntervals(Collection<Interval> intervals) {
-        Optional<DruidFactQuery<?>> innerQuery = (Optional<DruidFactQuery<?>>) this.dataSource.getQuery();
+        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
         return !innerQuery.isPresent() ?
                 withIntervals(intervals) :
                 withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);

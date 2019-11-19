@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query;
 
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,7 +16,7 @@ import java.util.Optional;
 /**
  * Common interface for Druid Fact Query classes.
  *
- * @param <Q> class that extends DruidQuery
+ * @param <Q> class that implements DruidFactQuery
  */
 public interface DruidFactQuery<Q extends DruidFactQuery<? super Q>> extends DruidQuery<Q> {
 
@@ -81,7 +82,7 @@ public interface DruidFactQuery<Q extends DruidFactQuery<? super Q>> extends Dru
     @Override
     @JsonIgnore
     default Optional<? extends DruidFactQuery> getInnerQuery() {
-        return (Optional<? extends DruidFactQuery>) DruidQuery.super.getInnerQuery();
+        return DruidQuery.super.getInnerQuery().map(DruidFactQuery.class::cast);
     }
 
     @Override

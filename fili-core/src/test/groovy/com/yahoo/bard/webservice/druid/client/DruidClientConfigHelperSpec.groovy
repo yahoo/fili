@@ -12,91 +12,51 @@ class DruidClientConfigHelperSpec extends Specification {
 
     private static final SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
-    private static final String UI_URL_SETTING_KEY =
-            systemConfig.getPackageVariableName("ui_druid_broker")
+    private static final String DRUID_REQUEST_TIMEOUT_KEY = systemConfig.getPackageVariableName(
+            "druid_request_timeout"
+    )
 
-    private static final String NON_UI_URL_SETTING_KEY = systemConfig.getPackageVariableName("non_ui_druid_broker")
+    private static final String expectedUrl = "http://broker"
 
-    private static final String UI_DRUID_REQUEST_TIMEOUT_KEY = systemConfig.getPackageVariableName(
-            "ui_druid_request_timeout"
-    );
+    private static final String expectedRequestTimeout ="600000"
 
-    private static final String NON_UI_DRUID_REQUEST_TIMEOUT_KEY =
-        systemConfig.getPackageVariableName("non_ui_druid_request_timeout");
-
-    private static final String expectedUiUrl = "http://ui-broker"
-    private static final String expectedNonUiUrl = "http://nonui-broker"
-
-    private static final String expectedUiRequestTimeout ="600000"
-    private static final String expectedNonUiRequestTimeout ="300000"
-
-    @Shared def uiUrl
-    @Shared def nonUiUrl
-    @Shared def uiRequestTimeout
-    @Shared def nonUiRequestTimeout
+    @Shared def url
+    @Shared def requestTimeout
 
     def setupSpec() {
-        uiUrl = systemConfig.getStringProperty(UI_URL_SETTING_KEY)
-        nonUiUrl = systemConfig.getStringProperty(NON_UI_URL_SETTING_KEY)
-        assert uiUrl != null : "Property: " + UI_URL_SETTING_KEY
-        assert nonUiUrl != null : "Property: " + NON_UI_URL_SETTING_KEY
+        url = systemConfig.getStringProperty(DruidClientConfigHelper.DRUID_BROKER_URL_KEY)
 
-        uiRequestTimeout = systemConfig.getStringProperty(UI_DRUID_REQUEST_TIMEOUT_KEY, null)
-        if (uiRequestTimeout == null) {
-            systemConfig.setProperty(UI_DRUID_REQUEST_TIMEOUT_KEY, expectedUiRequestTimeout)
-        }
-
-        nonUiRequestTimeout = systemConfig.getStringProperty(NON_UI_DRUID_REQUEST_TIMEOUT_KEY, null)
-        if (nonUiRequestTimeout == null) {
-            systemConfig.setProperty(NON_UI_DRUID_REQUEST_TIMEOUT_KEY, expectedNonUiRequestTimeout)
+        requestTimeout = systemConfig.getStringProperty(DRUID_REQUEST_TIMEOUT_KEY, null)
+        if (requestTimeout == null) {
+            systemConfig.setProperty(DRUID_REQUEST_TIMEOUT_KEY, expectedRequestTimeout)
         }
     }
 
     def cleanupSpec() {
-        if (uiUrl == null) {
-            systemConfig.clearProperty(UI_URL_SETTING_KEY)
+        if (url == null) {
+            systemConfig.clearProperty(DruidClientConfigHelper.DRUID_BROKER_URL_KEY)
         } else {
-            systemConfig.setProperty(UI_URL_SETTING_KEY , uiUrl)
+            systemConfig.setProperty(DruidClientConfigHelper.DRUID_BROKER_URL_KEY , url)
         }
 
-        if (nonUiUrl == null) {
-            systemConfig.clearProperty(NON_UI_URL_SETTING_KEY)
+        if (requestTimeout == null) {
+            systemConfig.clearProperty(DRUID_REQUEST_TIMEOUT_KEY)
         } else {
-            systemConfig.setProperty(NON_UI_URL_SETTING_KEY , nonUiUrl)
-        }
-
-        if (uiRequestTimeout == null) {
-            systemConfig.clearProperty(UI_DRUID_REQUEST_TIMEOUT_KEY)
-        } else {
-            systemConfig.setProperty(UI_DRUID_REQUEST_TIMEOUT_KEY , uiRequestTimeout)
-        }
-
-        if (nonUiRequestTimeout == null) {
-            systemConfig.clearProperty(NON_UI_DRUID_REQUEST_TIMEOUT_KEY)
-        } else {
-            systemConfig.setProperty(NON_UI_DRUID_REQUEST_TIMEOUT_KEY , nonUiRequestTimeout)
+            systemConfig.setProperty(DRUID_REQUEST_TIMEOUT_KEY , requestTimeout)
         }
     }
 
-    def "check if appropriate UI druid broker url is fetched"() {
+    def "check if appropriate druid broker url is fetched"() {
         expect:
-        DruidClientConfigHelper.getDruidUiUrl() == expectedUiUrl
+        DruidClientConfigHelper.getDruidUrl() == expectedUrl
     }
 
-    def "check if appropriate non-UI druid broker url is fetched"() {
+
+    def "check if appropriate druid request timeout is fetched"() {
         expect:
-        DruidClientConfigHelper.getDruidNonUiUrl() == expectedNonUiUrl
+        DruidClientConfigHelper.getDruidTimeout() == Integer.parseInt(expectedRequestTimeout)
     }
 
-    def "check if appropriate UI druid request timeout is fetched"() {
-        expect:
-        DruidClientConfigHelper.getDruidUiTimeout() == Integer.parseInt(expectedUiRequestTimeout)
-    }
-
-    def "check if appropriate non-UI druid request timeout is fetched"() {
-        expect:
-        DruidClientConfigHelper.getDruidNonUiTimeout() == Integer.parseInt(expectedNonUiRequestTimeout)
-    }
 
     def "invalid url will throw illegal exception"() {
         when:

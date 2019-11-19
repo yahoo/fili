@@ -26,6 +26,7 @@ import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService;
 import com.yahoo.bard.webservice.data.volatility.NoVolatileIntervalsFunction;
@@ -58,6 +59,9 @@ import java.util.UUID;
 
 /**
  * Bard test app configuration binder.
+ *
+ * TODO we can possibly make a provider version of this class for easy test level custom bindings that get wiped on
+ * each run.
  */
 public class TestBinderFactory extends AbstractBinderFactory {
 
@@ -78,7 +82,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
         dimensionConfig = new TestDimensions().getDimensionConfigurationsByApiName(SIZE, COLOR, SHAPE);
         metricLoader = new MetricLoader() {
             @Override
-            public void loadMetricDictionary(MetricDictionary dictionary) {
+            public void loadMetricDictionary(MetricDictionary dictionary, DimensionDictionary dimensionDictionary) {
                 // Empty
             }
         };

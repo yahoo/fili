@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 /**
  * Defines the core interactions for loading dimensions into a dimension dictionary.
  */
+@FunctionalInterface
 public interface DimensionLoader {
 
     /**

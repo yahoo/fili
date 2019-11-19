@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web;
 
 
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+
 import java.util.Optional;
 
 /**
@@ -13,6 +15,7 @@ import java.util.Optional;
  * sole purpose is to take a `DataApiRequest` and return the `ResponseWriter` that should be used
  * to write the response.
  */
+@FunctionalInterface
 public interface ResponseWriterSelector {
     /**
      * Select ResponseWriter given certain type of format from DataApiRequest.

@@ -2,7 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -16,7 +21,7 @@ public class RegexFilteredDimensionSpec extends DimensionSpec {
      * Constructor.
      *
      * @param delegate  dimension spec provided by user.
-     * @param pattern  regex patter to be used for filtering.
+     * @param pattern  regex pattern to be used for filtering.
      */
     public RegexFilteredDimensionSpec(DimensionSpec delegate, Pattern pattern) {
         super(DefaultDimensionSpecType.REGEX_FILTERED);
@@ -30,6 +35,12 @@ public class RegexFilteredDimensionSpec extends DimensionSpec {
 
     public Pattern getPattern() {
         return pattern;
+    }
+
+    @JsonIgnore
+    @Override
+    public Optional<Dimension> getConfigDimension() {
+        return getDelegate().getConfigDimension();
     }
 
     // CHECKSTYLE:OFF

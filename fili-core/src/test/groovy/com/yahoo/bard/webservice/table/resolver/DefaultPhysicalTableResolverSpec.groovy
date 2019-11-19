@@ -8,21 +8,21 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static org.joda.time.DateTimeZone.UTC
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
+import com.yahoo.bard.webservice.data.time.AllGranularity
+import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity
-import com.yahoo.bard.webservice.druid.model.query.Granularity
 import com.yahoo.bard.webservice.table.PhysicalTable
-import com.yahoo.bard.webservice.web.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import org.joda.time.Interval
 
-import spock.lang.IgnoreIf
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -416,10 +416,10 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         resources.t1hShort | resources.t1h | resources.t1hShort | HOUR
     }
 
-    @IgnoreIf({!PARTIAL_DATA.isOn()})
     @Unroll
     def "select table with least missing data from group #table1.name #table2.name #grain #interval"() {
         setup:
+        BardFeatureFlag.PARTIAL_DATA.setOn(true)
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
@@ -433,6 +433,9 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         expect:
         [(PhysicalTable) table1, (PhysicalTable) table2].stream().reduce(betterTable).get() == [table1, table1, table2].get(which)
         [(PhysicalTable) table2, (PhysicalTable) table1].stream().reduce(betterTable).get() == [table2, table1, table2].get(which)
+
+        cleanup:
+        BardFeatureFlag.PARTIAL_DATA.reset()
 
         where:
         interval                | table1         | table2         | which | grain
@@ -468,10 +471,11 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         "2014-07-07/2014-07-14" | resources.t4h2 | resources.t4d2 | 2     | DAY
     }
 
-    @IgnoreIf({!PARTIAL_DATA.isOn()})
     @Unroll
     def "Multiinterval: Table #expected.name is selected with Granularity #grain, #intervals interval"() {
         setup:
+        BardFeatureFlag.PARTIAL_DATA.setOn(true)
+
         List<Interval> intervalList = intervals.collect { new Interval(it) }
         queryPrototype['dependantFieldNames'] = metricNamesSet123
         TemplateDruidQuery query = buildQuery(queryPrototype);
@@ -484,6 +488,9 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         expect:
         resolver.resolve(resources.tg1All.physicalTables, new QueryPlanningConstraint(apiRequest, query)) == expected
+
+        cleanup:
+        BardFeatureFlag.PARTIAL_DATA.reset()
 
         where:
         intervals                  | grain || expected
@@ -499,10 +506,11 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         ["2014/2015", "2016/2017"] | all   || resources.emptyFirst
     }
 
-    @IgnoreIf({!PARTIAL_DATA.isOn()})
     @Unroll
     def "Table #expected.name is selected with Granularity #grain, #interval interval"() {
         setup:
+        BardFeatureFlag.PARTIAL_DATA.setOn(true)
+
         queryPrototype['dependantFieldNames'] = metricNamesSet123
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
@@ -514,6 +522,9 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         expect:
         resolver.resolve(resources.tg1All.physicalTables, new QueryPlanningConstraint(apiRequest, query)) == expected
+
+        cleanup:
+        PARTIAL_DATA.reset()
 
         where:
         interval    | grain || expected
@@ -528,10 +539,11 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         "2015/2017" | all   || resources.emptyFirst
     }
 
-    @IgnoreIf({!PARTIAL_DATA.isOn()})
     @Unroll
     def "Table #expected.name is selected with Granularity #grain, availability #availability, and volatility #volatility"() {
         given: "The local resolver that uses a volatility intervals service we can modify"
+        BardFeatureFlag.PARTIAL_DATA.setOn(true)
+
         resources.setupVolatileTables([
                 [resources.volatileHourTable, new Interval(hourAvailable), new Interval(hourVolatile)],
                 [resources.volatileDayTable, new Interval(dayAvailable), new Interval(dayVolatile)]
@@ -554,6 +566,9 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         expect: "The table with more data available is preferred"
         localResolver.resolve([resources.volatileHourTable, resources.volatileDayTable], new QueryPlanningConstraint(apiRequest, query)) == expected
 
+        cleanup:
+        BardFeatureFlag.PARTIAL_DATA.reset()
+
         where:
         hourAvailable           | hourVolatile            | dayAvailable            | dayVolatile             | grain || expected
         // Hour has more data available in the volatile request bucket (it goes further into the year)
@@ -567,6 +582,107 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         availability = expected == resources.volatileHourTable ? hourAvailable : dayAvailable
         volatility = expected == resources.volatileHourTable ? hourVolatile : dayVolatile
+    }
+
+    @Unroll
+    def "When partial data is off, lower grain table is always selected"() {
+        given: "The local resolver that uses a volatility intervals service we can modify"
+        BardFeatureFlag.PARTIAL_DATA.setOn(false)
+
+        resources.setupVolatileTables([
+                [resources.volatileHourTable, new Interval(hourAvailable), new Interval(hourVolatile)],
+                [resources.volatileDayTable, new Interval(dayAvailable), new Interval(dayVolatile)]
+        ])
+        PhysicalTableResolver localResolver = new DefaultPhysicalTableResolver(
+                new PartialDataHandler(),
+                resources.volatileIntervalsService
+        )
+
+        and: "The query information needed to resolve tables"
+        queryPrototype['dependantFieldNames'] = [resources.m1.name]
+        TemplateDruidQuery query = buildQuery(queryPrototype);
+
+        apiRequestPrototype['dimensions'] = [resources.d1]
+        apiRequestPrototype['intervals'] = [new Interval("2015/2017")]
+        apiRequestPrototype['granularity'] = grain
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
+
+        expect: "The table with more data available is preferred"
+        localResolver.resolve([resources.volatileHourTable, resources.volatileDayTable], new QueryPlanningConstraint(apiRequest, query)) == expected
+
+        cleanup:
+        BardFeatureFlag.PARTIAL_DATA.reset()
+
+        where:
+        hourAvailable           | hourVolatile            | dayAvailable            | dayVolatile             | grain || expected
+        // Hour has more data available in the volatile request bucket (it goes further into the year)
+        "2015-01-01/2016-12-05" | "2016-12-05/2016-12-06" | "2015-01-01/2016-12-01" | "2016-12-01/2017-01-01" | MONTH || resources.volatileDayTable
+        // Day has more data available in the volatile request bucket (it starts earlier in the year)
+        "2015-02-01/2016-12-05" | "2016-12-05/2016-12-06" | "2015-01-01/2016-12-01" | "2016-12-01/2017-01-01" | MONTH || resources.volatileDayTable
+        // Hour has more data available in the volatile request bucket (it goes further into the year), request is day grain
+        "2015-01-01/2016-12-05" | "2016-12-05/2016-12-06" | "2015-01-01/2016-12-01" | "2016-12-01/2017-01-01" | DAY   || resources.volatileDayTable
+        // Hour has more data available in the volatile request bucket (it goes further into the year), request is all grain
+        "2015-01-01/2016-12-05" | "2016-12-05/2016-12-06" | "2015-01-01/2016-12-01" | "2016-12-01/2017-01-01" | all   || resources.volatileDayTable
+
+        availability = expected == resources.volatileHourTable ? hourAvailable : dayAvailable
+        volatility = expected == resources.volatileHourTable ? hourVolatile : dayVolatile
+    }
+
+
+    @Unroll
+    def "Partial data is driven by the either partial data or query optimization"() {
+        given: "The local resolver that uses a volatility intervals service we can modify"
+        String hourAvailable = "2015-01-01/2016-12-05"
+        String hourVolatile = "2016-12-05/2016-12-06"
+        String dayAvailable = "2015-01-01/2016-12-01"
+        String dayVolatile = "2016-12-01/2017-01-01"
+
+        Granularity grain = AllGranularity.INSTANCE
+
+        BardFeatureFlag.PARTIAL_DATA.setOn(partial)
+        BardFeatureFlag.PARTIAL_DATA_PROTECTION.setOn(protection)
+        BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION.setOn(queryPlanning)
+
+        resources.setupVolatileTables([
+                [resources.volatileHourTable, new Interval(hourAvailable), new Interval(hourVolatile)],
+                [resources.volatileDayTable, new Interval(dayAvailable), new Interval(dayVolatile)]
+        ])
+        PhysicalTableResolver localResolver = new DefaultPhysicalTableResolver(
+                new PartialDataHandler(),
+                resources.volatileIntervalsService
+        )
+
+        and: "The query information needed to resolve tables"
+        queryPrototype['dependantFieldNames'] = [resources.m1.name]
+        TemplateDruidQuery query = buildQuery(queryPrototype);
+
+        apiRequestPrototype['dimensions'] = [resources.d1]
+        apiRequestPrototype['intervals'] = [new Interval("2015/2017")]
+        apiRequestPrototype['granularity'] = grain
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
+
+        expect: "The table with more data available is preferred"
+        localResolver.resolve([resources.volatileHourTable, resources.volatileDayTable], new QueryPlanningConstraint(apiRequest, query)) == expected
+
+        cleanup:
+        BardFeatureFlag.PARTIAL_DATA.reset()
+        BardFeatureFlag.PARTIAL_DATA_PROTECTION.reset()
+        BardFeatureFlag.PARTIAL_DATA_QUERY_OPTIMIZATION.reset()
+
+        where:
+        partial | queryPlanning | protection || expected
+        // Hour has more data available in the volatile request bucket (it goes further into the year)
+        true  | true  | true  || resources.volatileHourTable
+        true  | true  | false || resources.volatileHourTable
+        true  | false | true  || resources.volatileHourTable
+        true  | false | false  || resources.volatileHourTable
+
+        false | true  | true  || resources.volatileHourTable
+        false | true  | false  || resources.volatileHourTable
+        false | false | true  || resources.volatileDayTable
+        false | false | false || resources.volatileDayTable
     }
 
     @Unroll

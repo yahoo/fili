@@ -3,32 +3,32 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.MetricRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.web.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
+import com.yahoo.bard.webservice.web.ResponseFormatResolver;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -58,6 +58,8 @@ public class MetricsServlet extends EndpointServlet {
     private final MetricDictionary metricDictionary;
     private final LogicalTableDictionary logicalTableDictionary;
     private final RequestMapper requestMapper;
+    private final ResponseFormatResolver formatResolver;
+    private final MetadataExceptionHandler exceptionHandler;
 
     /**
      * Constructor.
@@ -66,18 +68,24 @@ public class MetricsServlet extends EndpointServlet {
      * @param logicalTableDictionary  Logical tables to know about
      * @param requestMapper  Mapper to change the API request if needed
      * @param objectMappers  JSON tools
+     * @param formatResolver  The formatResolver for determining correct response format
+     * @param exceptionHandler  Injection point for handling response exceptions
      */
     @Inject
     public MetricsServlet(
             MetricDictionary metricDictionary,
             LogicalTableDictionary logicalTableDictionary,
             @Named(MetricsApiRequest.REQUEST_MAPPER_NAMESPACE) RequestMapper requestMapper,
-            ObjectMappersSuite objectMappers
+            ObjectMappersSuite objectMappers,
+            ResponseFormatResolver formatResolver,
+            @Named(MetricsApiRequest.EXCEPTION_HANDLER_NAMESPACE) MetadataExceptionHandler exceptionHandler
     ) {
         super(objectMappers);
         this.metricDictionary = metricDictionary;
         this.logicalTableDictionary = logicalTableDictionary;
         this.requestMapper = requestMapper;
+        this.formatResolver = formatResolver;
+        this.exceptionHandler = exceptionHandler;
     }
 
     /**
@@ -86,7 +94,8 @@ public class MetricsServlet extends EndpointServlet {
      * @param perPage  number of values to return per page
      * @param page  the page to start from
      * @param format  The name of the output format type
-     * @param uriInfo  UriInfo of the request
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The list of logical metrics
@@ -104,62 +113,52 @@ public class MetricsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
-        Supplier<Response> responseSender;
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
+        MetricsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest("all"));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(
+            apiRequest = new MetricsApiRequestImpl(
                     null,
-                    format,
+                    formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
                     perPage,
                     page,
-                    metricDictionary,
-                    uriInfo
+                    metricDictionary
             );
 
             if (requestMapper != null) {
-                apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (MetricsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Stream<Map<String, String>> result = apiRequest.getPage(
-                    getLogicalMetricListSummaryView(apiRequest.getMetrics(), uriInfo)
-            );
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    getLogicalMetricListSummaryView(apiRequest.getMetrics(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "metrics" : "rows",
                     null
             );
-            LOG.debug("Metrics Endpoint Response: {}", response.getEntity());
-            responseSender = () -> response;
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException e) {
-            String msg = String.format("Internal server error. IOException : %s", e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            LOG.trace("Metrics Endpoint Response: {}", response.getEntity());
+            return response;
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
-
-        return responseSender.get();
     }
 
     /**
      * Get the details of a specific logical metric.
      *
      * @param metricName  Logical metric name
-     * @param uriInfo  UriInfo of the request
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The logical metric
@@ -171,15 +170,22 @@ public class MetricsServlet extends EndpointServlet {
     @Path("/{metricName}")
     public Response getMetric(
             @PathParam("metricName") String metricName,
-            @Context UriInfo uriInfo,
             @Context final ContainerRequestContext containerRequestContext
     ) {
+        UriInfo uriInfo = containerRequestContext.getUriInfo();
         Supplier<Response> responseSender;
+        MetricsApiRequest apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            MetricsApiRequest apiRequest = new MetricsApiRequest(metricName, null, "", "", metricDictionary, uriInfo);
+            apiRequest = new MetricsApiRequestImpl(
+                    metricName,
+                    null,
+                    "",
+                    "",
+                    metricDictionary
+            );
 
             if (requestMapper != null) {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
@@ -192,19 +198,14 @@ public class MetricsServlet extends EndpointServlet {
             );
 
             String output = objectMappers.getMapper().writeValueAsString(result);
-            LOG.debug("Metric Endpoint Response: {}", output);
+            LOG.trace("Metric Endpoint Response: {}", output);
             responseSender = () -> Response.status(Status.OK).entity(output).build();
-        } catch (RequestValidationException e) {
-            LOG.debug(e.getMessage(), e);
-            responseSender = () -> Response.status(e.getStatus()).entity(e.getErrorHttpMsg()).build();
-        } catch (IOException e) {
-            String msg = String.format("Internal server error. IOException : %s", e.getMessage());
-            LOG.error(msg, e);
-            responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
-        } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
-            LOG.info(msg, e);
-            responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+        } catch (Throwable t) {
+            return exceptionHandler.handleThrowable(
+                    t,
+                    Optional.ofNullable(apiRequest),
+                    containerRequestContext
+            );
         } finally {
             RequestLog.stopTiming(this);
         }
@@ -242,6 +243,7 @@ public class MetricsServlet extends EndpointServlet {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
+        resultRow.put("type", logicalMetric.getType());
         resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }

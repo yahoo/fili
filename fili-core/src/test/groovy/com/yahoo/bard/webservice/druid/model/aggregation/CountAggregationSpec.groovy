@@ -16,10 +16,10 @@ class CountAggregationSpec extends Specification {
             Aggregation inner = new CountAggregation("name")
 
         when:
-        Pair<Aggregation, Aggregation> nested = a1.nest()
+        Pair<Optional<Aggregation>, Optional<Aggregation>> nested = a1.nest()
 
         then:
-        nested.getLeft() == outer
-        nested.getRight() == inner
+        nested.getLeft().get() == outer
+        nested.getRight().get() == inner
     }
 }

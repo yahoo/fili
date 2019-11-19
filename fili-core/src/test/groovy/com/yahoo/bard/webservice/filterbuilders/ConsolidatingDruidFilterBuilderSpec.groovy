@@ -2,20 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.filterbuilders
 
-import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.NOT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.AND
+import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.NOT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.OR
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.SELECTOR
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
-import com.yahoo.bard.webservice.data.filterbuilders.DruidFilterBuilder
-import com.yahoo.bard.webservice.data.filterbuilders.ConsolidatingDruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.ConsolidatingDruidFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -27,6 +28,7 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
 
     Map<String, ApiFilter> apiFilters
     DruidFilterBuilder filterBuilder
+    FilterBinders filterBinders = FilterBinders.instance
 
     def setupSpec() {
         resources = new QueryBuildingTestingResources()
@@ -41,7 +43,9 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
                 ageIdNotin56   : "ageBracket|id-notin[5,6]",
                 ageDescNotin1429: "ageBracket|desc-notin[14-29]"
         ]
-        apiFilters = filterSpecs.collectEntries {[(it.key): new ApiFilter(it.value, resources.dimensionDictionary)]}
+        apiFilters = filterSpecs.collectEntries {
+            [(it.key): filterBinders.generateApiFilter(it.value, resources.dimensionDictionary)]
+        }
     }
 
     def "If there are no filters to build, then the the filter builder returns null"(){
@@ -52,7 +56,7 @@ class ConsolidatingDruidFilterBuilderSpec extends Specification {
     @Unroll
     def "#filterString is a #filterType-filter on #selectorDimension, with #orFilterSize or-clauses of selectors"() {
         setup:
-        ApiFilter filter = new ApiFilter(filterString, resources.dimensionDictionary)
+        ApiFilter filter = filterBinders.generateApiFilter(filterString, resources.dimensionDictionary)
 
         when: "We build a single filter term"
         // resources.d3 is the ageBracket dimension.

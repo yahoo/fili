@@ -5,10 +5,10 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
-
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 
@@ -47,6 +47,6 @@ class ThetaSketchMakerSpec extends Specification {
         MetricMaker maker = new ThetaSketchMaker(new MetricDictionary(), SKETCH_SIZE)
 
         expect:
-        maker.make(metricName, [dependentMetricName]) == expectedMetric
+        maker.make(new LogicalMetricInfo(metricName), [dependentMetricName]) == expectedMetric
     }
 }

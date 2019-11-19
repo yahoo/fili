@@ -1,14 +1,20 @@
 <project xsi:schemaLocation="http://maven.apache.org/DECORATION/1.6.0 http://maven.apache.org/xsd/decoration-1.6.0.xsd"
          xmlns="http://maven.apache.org/DECORATION/1.6.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         name="Bard">
+         name="Fili">
     <bannerLeft>
-        <name>Bard</name>
+	<name>${project.name}</name>
     </bannerLeft>
+    <version position="right"/>
+
     <publishDate />
-    <version />
     <body>
-        <menu ref="parent" />
-        <menu ref="reports" />
+	    <breadcrumbs>
+		    <item name="Fili ${project.version}" href="./" />
+	    </breadcrumbs>
+
+        <menu ref="parent" inherit="top"/>
+        <menu ref="reports" inherit="top"/>
+	<menu ref="modules" inherit="top"/>
     </body>
 </project>

@@ -2,10 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.volatility;
 
-import com.yahoo.bard.webservice.druid.model.query.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.Granularity;
+import com.yahoo.bard.webservice.data.time.AllGranularity;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.PhysicalTable;
-import com.yahoo.bard.webservice.util.DefaultingDictionary;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
@@ -49,20 +48,6 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
      */
     public DefaultingVolatileIntervalsService(VolatileIntervalsFunction defaultIntervalsFunction) {
         this(defaultIntervalsFunction, Collections.emptyMap());
-    }
-
-    /**
-     * Use the map of specific functions for physical tables.
-     *
-     * @param intervalsFunctions  the map of specific functions for physical tables
-     *
-     * @deprecated Simply use maps and default values
-     */
-    @Deprecated
-    public DefaultingVolatileIntervalsService(
-                DefaultingDictionary<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
-    ) {
-        this(intervalsFunctions.getDefaultValue(), intervalsFunctions);
     }
 
     /**

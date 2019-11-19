@@ -366,6 +366,5 @@ public class WikitickerEntry implements Serializable {
     public void setAdditionalProperty(String name, String value) {
         this.additionalProperties.put(name, value);
     }
-
 }
 //CHECKSTYLE:ON

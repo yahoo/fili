@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.query;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -42,7 +43,7 @@ public class DruidSearchQuery extends AbstractDruidFactQuery<DruidSearchQuery> {
      * @param sort  Sort definition for the query
      * @param limit  Limit definition for the query
      * @param context  Query context
-     * @param doFork  Should this query count it's fork
+     * @param incrementQueryId  Should this query count it's fork
      */
     protected DruidSearchQuery(
             DataSource dataSource,
@@ -54,9 +55,9 @@ public class DruidSearchQuery extends AbstractDruidFactQuery<DruidSearchQuery> {
             SearchSortDirection sort,
             Integer limit,
             QueryContext context,
-            boolean doFork
+            boolean incrementQueryId
     ) {
-        super(DefaultQueryType.SEARCH, dataSource, granularity, filter, intervals, context, doFork);
+        super(DefaultQueryType.SEARCH, dataSource, granularity, filter, intervals, context, incrementQueryId);
         this.searchDimensions = searchDimensions;
         this.query = query;
         this.sort = sort;

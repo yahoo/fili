@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.druid.client.DruidWebService
+
 import spock.lang.Specification
 
 import javax.ws.rs.container.ContainerRequestContext

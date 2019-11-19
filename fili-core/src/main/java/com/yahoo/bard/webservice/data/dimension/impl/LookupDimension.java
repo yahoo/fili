@@ -9,9 +9,8 @@ import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.Lookup
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.NamespaceLookup;
 import com.yahoo.bard.webservice.druid.serializers.LookupDimensionToDimensionSpec;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +22,10 @@ import javax.validation.constraints.NotNull;
 
 /**
  * LookupDimension creates a Look up dimension based on the namespace chain.
+ * <p>
+ * {@link LookupDimension} is essentially a special case of {@link RegisteredLookupDimension} using namespace. Hence
+ * this class ONLY applies to the Druid namespace lookup serialization. See
+ * http://druid.io/docs/latest/querying/dimensionspecs.html#lookup-extraction-function for more details.
  */
 @JsonSerialize(using = LookupDimensionToDimensionSpec.class)
 public class LookupDimension extends KeyValueStoreDimension implements ExtractionFunctionDimension {

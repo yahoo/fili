@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProviderManager;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProviderManager;
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProvider;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 import com.yahoo.bard.webservice.util.EnumUtils;
 import com.yahoo.bard.webservice.util.Utils;
 
@@ -52,7 +53,7 @@ public class TestDimensions {
         dimensionNameConfigs = new LinkedHashMap<>();
         dimensionNameConfigs.put(SIZE, TestDimensions.buildStandardDimensionConfig(SIZE));
         dimensionNameConfigs.put(SHAPE, TestDimensions.buildStandardDimensionConfig(SHAPE));
-        dimensionNameConfigs.put(COLOR, TestDimensions.buildStandardDimensionConfig(COLOR));
+        dimensionNameConfigs.put(COLOR, TestDimensions.buildNonLoadedDimensionConfig(COLOR));
         dimensionNameConfigs.put(OTHER,
             new TestDimensionConfig(
                 OTHER,
@@ -106,6 +107,25 @@ public class TestDimensions {
                 getDefaultSearchProvider(),
                 getDefaultFields(),
                 getDefaultFields()
+        );
+    }
+
+    /**
+     * Build a non-loaded dimension config.
+     *
+     * @param dimensionName  Name of the dimension to build
+     *
+     * @return the standard dimension config
+     */
+    protected static TestDimensionConfig buildNonLoadedDimensionConfig(TestApiDimensionName dimensionName) {
+        return new TestDimensionConfig(
+                dimensionName,
+                dimensionName.asName(),
+                getDefaultKeyValueStore(dimensionName),
+                getDefaultSearchProvider(),
+                getDefaultFields(),
+                getDefaultFields(),
+                StorageStrategy.NONE
         );
     }
 

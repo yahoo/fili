@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.config.FeatureFlag;
 import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.FeatureFlagRequest;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 
 import com.codahale.metrics.annotation.Timed;
@@ -22,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,10 +33,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * Web service endpoint to return the current status of feature flags.
@@ -69,10 +69,24 @@ public class FeatureFlagsServlet extends EndpointServlet {
          * @param format  Format of the request
          * @param perPage  How many items to show per page
          * @param page  Which page to show
-         * @param uriInfo  URL information about the request
+         * @deprecated prefer constructor with downloadFilename
          */
-        FeatureFlagApiRequest(String format, String perPage, String page, UriInfo uriInfo) {
-            super(format, perPage, page, uriInfo);
+        @Deprecated
+        FeatureFlagApiRequest(String format, String perPage, String page) {
+            super(format, perPage, page);
+        }
+
+        /**
+         * Constructor.
+         *
+         * @param format  Format of the request
+         * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client
+         * with the provided filename. Otherwise indicates the response should be rendered in the browser.
+         * @param perPage  How many items to show per page
+         * @param page  Which page to show
+         */
+        FeatureFlagApiRequest(String format, String downloadFilename, String perPage, String page) {
+            super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
         }
     }
 
@@ -101,7 +115,9 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * @param perPage the number per page to return
      * @param page the page to start from
      * @param format the format to use
-     * @param uriInfo the injected UriInfo
+     * @param downloadFilename If present, indicates the response should be downloaded by the client with the provided
+     * filename. Otherwise indicates the response should be rendered in the browser.
+     * @param containerRequestContext the request context needed to process responses
      *
      * @return Response Format:
      * <pre><code>
@@ -122,31 +138,36 @@ public class FeatureFlagsServlet extends EndpointServlet {
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @QueryParam("filename") String downloadFilename,
+            @Context ContainerRequestContext containerRequestContext
     ) {
         Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest("all"));
 
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, perPage, page, uriInfo);
+            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(
+                    format,
+                    downloadFilename,
+                    perPage,
+                    page
+            );
 
             List<FeatureFlagEntry> status = flags.getValues().stream()
                     .map(flag -> new FeatureFlagEntry(flag.getName(), flag.isOn()))
                     .collect(Collectors.toList());
 
-            Stream<FeatureFlagEntry> result = apiRequest.getPage(status);
-
-            Response response = formatResponse(
+            Response response = paginateAndFormatResponse(
                     apiRequest,
-                    result,
+                    containerRequestContext,
+                    status,
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "feature flags" : "rows",
                     Arrays.asList("name", "value")
             );
-            LOG.debug("Feature Flags Endpoint Response: {}", response.getEntity());
+            LOG.trace("Feature Flags Endpoint Response: {}", response.getEntity());
             responseSender = () -> response;
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {
@@ -160,8 +181,6 @@ public class FeatureFlagsServlet extends EndpointServlet {
      * Get the status of a specific feature flag.
      *
      * @param flagName The feature flag
-     * @param format  The format to return results in
-     * @param uriInfo  The injected UriInfo
      *
      * @return Response Format:
      * <pre><code>
@@ -178,30 +197,26 @@ public class FeatureFlagsServlet extends EndpointServlet {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{flagName}")
     public Response getFeatureFlagStatus(
-            @PathParam("flagName") String flagName,
-            @QueryParam("format") String format,
-            @Context UriInfo uriInfo
+            @PathParam("flagName") String flagName
     ) {
         Supplier<Response> responseSender;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new FeatureFlagRequest(flagName));
 
-            FeatureFlagApiRequest apiRequest = new FeatureFlagApiRequest(format, "", "", uriInfo);
-
             FeatureFlag flag = flags.forName(flagName);
             FeatureFlagEntry status = new FeatureFlagEntry(flag.getName(), flag.isOn());
 
             String output = objectMappers.getMapper().writeValueAsString(status);
 
-            LOG.debug("Feature Flags Endpoint Response: {}", output);
+            LOG.trace("Feature Flags Endpoint Response: {}", output);
             responseSender = () -> Response.status(Response.Status.OK).entity(output).build();
         } catch (JsonProcessingException e) {
-            String msg = String.format("Internal server error. JsonProcessingException : %s", e.getMessage());
+            String msg = ErrorMessageFormat.INTERNAL_SERVER_ERROR_ON_JSON_PROCESSING.format(e.getMessage());
             LOG.error(msg, e);
             responseSender = () -> Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } catch (Error | Exception e) {
-            String msg = String.format("Exception processing request: %s", e.getMessage());
+            String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.info(msg, e);
             responseSender = () -> Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
         } finally {

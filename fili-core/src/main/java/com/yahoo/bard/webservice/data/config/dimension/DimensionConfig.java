@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension;
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy;
 
 import java.util.LinkedHashSet;
 
@@ -49,6 +50,13 @@ public interface DimensionConfig {
      * @return A description of the dimension and its meaning
      */
     String getDescription();
+
+    /**
+     * The storage strategy for this dimension.
+     *
+     * @return The storage strategy of the dimension
+     */
+    StorageStrategy getStorageStrategy();
 
     /**
      * The set of fields for this dimension.

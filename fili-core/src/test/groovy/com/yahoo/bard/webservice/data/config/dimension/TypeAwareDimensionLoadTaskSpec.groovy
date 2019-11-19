@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.data.config.dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.data.dimension.metadata.StorageStrategy
+
 import spock.lang.Specification
 
 /**
@@ -40,6 +42,19 @@ class TypeAwareDimensionLoadTaskSpec extends Specification {
 
         then:
         dimensionDictionary.findByApiName("color").getClass() == KeyValueStoreDimension.class
+
+    }
+
+    def "Test dimension loader for dimension with storageStrategy none"() {
+        given: "A Type Aware Dimension LoadTask with a list of dimension configurations"
+        TypeAwareDimensionLoader typeAwareDimensionLoader = new TypeAwareDimensionLoader(dimensionConfigurations)
+
+        when:
+        typeAwareDimensionLoader.loadDimensionDictionary(dimensionDictionary)
+
+        then:
+        dimensionDictionary.findByApiName("color").getStorageStrategy() == StorageStrategy.NONE
+        dimensionConfigurations.find({it.apiName == 'color'}).getStorageStrategy() == StorageStrategy.NONE
     }
 
     def "Test dimension loader for a dimension type that is not defined"() {

@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Shared
 import spock.lang.Timeout
-
 /**
  * Checks that all of the table/grain pairs have the dimensions and columns expected.
  */
+@spock.lang.Ignore
 @Timeout(30)    // Fail test if hangs
 class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
 
@@ -27,7 +27,6 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
         // Hook with test appender
         logAppender = new TestLogAppender()
     }
-
 
     def cleanup() {
         logAppender.clear()
@@ -56,7 +55,6 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
         return ["format": ["fullview"]]
     }
 
-
     @Override
     String getExpectedApiResponse() {
         """{
@@ -75,6 +73,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -93,11 +92,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly day grain",
@@ -107,6 +107,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -125,11 +126,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly hour grain",
@@ -139,6 +141,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -157,11 +160,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "hour",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly month grain",
@@ -171,6 +175,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -189,11 +194,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly week grain",
@@ -203,6 +209,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -221,11 +228,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -243,6 +251,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -261,17 +270,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly day grain",
@@ -281,6 +292,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -299,17 +311,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly hour grain",
@@ -319,6 +333,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -337,11 +352,12 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "hour",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly month grain",
@@ -351,6 +367,7 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -369,17 +386,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The hourly_monthly week grain",
@@ -389,6 +408,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -407,17 +428,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -435,6 +458,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -453,17 +478,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly day grain",
@@ -473,6 +500,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -491,17 +520,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly month grain",
@@ -511,6 +542,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -529,17 +562,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The monthly week grain",
@@ -549,6 +584,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -567,17 +604,19 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -595,6 +634,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -611,6 +652,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -627,6 +670,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -645,23 +690,26 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets day grain",
@@ -671,6 +719,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -687,6 +737,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -703,6 +755,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -721,23 +775,26 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets month grain",
@@ -747,6 +804,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -763,6 +822,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -779,6 +840,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -797,23 +860,26 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The pets week grain",
@@ -823,6 +889,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "breed",
                       "name": "breed",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -839,6 +907,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "sex",
                       "name": "sex",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -855,6 +925,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "species",
                       "name": "species",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -873,23 +945,26 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "dayAvgLimbs",
                       "name": "dayAvgLimbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgLimbs"
                     },
                     {
                       "category": "General",
                       "longName": "limbs",
                       "name": "limbs",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/limbs"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             },
@@ -907,6 +982,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"none",
+
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -932,6 +1009,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -948,6 +1027,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -964,6 +1045,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -980,6 +1063,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -998,89 +1083,110 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "type": "number",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "all",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes day grain",
@@ -1090,6 +1196,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"none",
+
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1115,6 +1223,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1131,6 +1241,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1147,6 +1259,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1163,6 +1277,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1181,77 +1297,96 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "type": "number",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "day",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes month grain",
@@ -1261,6 +1396,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"none",
+
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1286,6 +1423,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1302,6 +1441,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1318,6 +1459,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1334,6 +1477,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1352,89 +1497,110 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "type": "number",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "month",
-                  "retention": "P1Y"
+                  "retention": ""
                 },
                 {
                   "description": "The shapes week grain",
@@ -1444,6 +1610,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "color",
                       "name": "color",
+                      "storageStrategy":"none",
+
                       "fields": [
                         {
                           "description":"Blue pigment",
@@ -1469,6 +1637,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "model",
                       "name": "model",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1485,6 +1655,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "shape",
                       "name": "shape",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1501,6 +1673,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "size",
                       "name": "size",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1517,6 +1691,8 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "other",
                       "name": "other",
+                      "storageStrategy":"loaded",
+
                       "fields": [
                         {
                           "description":"Dimension Description",
@@ -1535,89 +1711,110 @@ class ExpectedTablesFullViewEndpointSpec extends BaseTableServletComponentSpec {
                       "category": "General",
                       "longName": "area",
                       "name": "area",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/area"
                     },
                     {
                       "category": "General",
                       "longName": "booleanMetric",
                       "name": "booleanMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/booleanMetric"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgOtherUsers",
                       "name": "dayAvgOtherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgOtherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "dayAvgUsers",
                       "name": "dayAvgUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/dayAvgUsers"
                     },
                     {
                       "category": "General",
                       "longName": "depth",
                       "name": "depth",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/depth"
                     },
                     {
                       "category": "General",
                       "longName": "height",
                       "name": "height",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/height"
                     },
                     {
                       "category": "General",
                       "longName": "jsonNodeMetric",
                       "name": "jsonNodeMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/jsonNodeMetric"
                     },
                     {
                       "category": "General",
                       "longName": "nullMetric",
                       "name": "nullMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/nullMetric"
                     },
                     {
                       "category": "General",
                       "longName": "otherUsers",
                       "name": "otherUsers",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/otherUsers"
                     },
                     {
                       "category": "General",
                       "longName": "rowNum",
                       "name": "rowNum",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/rowNum"
                     },
                     {
                       "category": "General",
                       "longName": "stringMetric",
                       "name": "stringMetric",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/stringMetric"
                     },
                     {
                       "category": "General",
                       "longName": "users",
                       "name": "users",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/users"
                     },
                     {
                       "category": "General",
                       "longName": "volume",
                       "name": "volume",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/volume"
                     },
                     {
                       "category": "General",
                       "longName": "width",
                       "name": "width",
+                      "type": "number",
                       "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/width"
+                    },
+                    {
+                      "category": "General",
+                      "longName": "scopedWidth",
+                      "name": "scopedWidth",
+                      "type": "number",
+                      "uri": "http://localhost:${jtb.getHarness().getPort()}/metrics/scopedWidth"
                     }
                   ],
                   "name": "week",
-                  "retention": "P1Y"
+                  "retention": ""
                 }
               ]
             }
