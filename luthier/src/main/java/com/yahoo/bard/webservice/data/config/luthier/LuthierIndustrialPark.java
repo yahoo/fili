@@ -26,7 +26,11 @@ import com.yahoo.bard.webservice.data.config.luthier.table.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMaxMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongMaxMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
@@ -521,13 +525,13 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             addAliasesToFactory(
                     metricMakerFactoryMap,
                     new LongMaxMakerFactory(),
-                    LongSumMaker.class,
+                    LongMaxMaker.class,
                     "longMax"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
                     new LongMinMakerFactory(),
-                    DoubleSumMaker.class,
+                    LongMinMaker.class,
                     "longMin"
             );
             addAliasesToFactory(
@@ -539,13 +543,13 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             addAliasesToFactory(
                     metricMakerFactoryMap,
                     new DoubleMaxMakerFactory(),
-                    DoubleSumMaker.class,
+                    DoubleMaxMaker.class,
                     "doubleMax"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
                     new DoubleMinMakerFactory(),
-                    DoubleSumMaker.class,
+                    DoubleMinMaker.class,
                     "doubleMin"
             );
             addAliasesToFactory(

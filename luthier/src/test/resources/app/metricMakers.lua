@@ -38,11 +38,25 @@ M.count = {
 M.constant = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.ConstantMaker"
 }
+
 M.longSum = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker"
 }
+M.longMax = {
+    type = "com.yahoo.bard.webservice.data.config.metric.makers.LongMaxMaker"
+}
+M.longMin = {
+    type = "com.yahoo.bard.webservice.data.config.metric.makers.LongMinMaker"
+}
+
 M.doubleSum = {
     type = "com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker"
+}
+M.doubleMax = {
+    type = "com.yahoo.bard.webservice.data.config.metric.makers.DoubleMaxMaker"
+}
+M.doubleMin = {
+    type = "com.yahoo.bard.webservice.data.config.metric.makers.DoubleMinMaker"
 }
 
 -- A complexMaker is a maker that depends on one or more other Fili metrics.

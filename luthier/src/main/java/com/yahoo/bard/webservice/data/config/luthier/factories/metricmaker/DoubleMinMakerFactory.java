@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker;
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.Factory;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
-import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMaxMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 
