@@ -109,7 +109,11 @@ M.physical = {
         type = "strict",
         metrics = {
             "added",
+            "addedMax",
+            "addedMin",
             "delta",
+            "deltaMax",
+            "deltaMin",
             "deleted"
         },
         dimensions = wikipedia_dimensions,
@@ -205,7 +209,13 @@ M.logical = {
         description = "wikipedia description",
         retention = "P2Y",
         metrics =  {
-            "count", "added", "delta", "deleted"
+            "added",
+            "addedMax",
+            "addedMin",
+            "delta",
+            "deltaMax",
+            "deltaMin",
+            "deleted"
         },
         dimensions = wikipedia_dimensions,
         granularities = {
