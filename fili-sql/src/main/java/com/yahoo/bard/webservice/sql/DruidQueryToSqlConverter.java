@@ -437,7 +437,6 @@ public class DruidQueryToSqlConverter {
                             sqlAggregation.getSqlAggFunction(),
                             false,
                             null,
-                            // TODO: Investigate why ApiToFieldMapper doesn't work here
                             sqlAggregation.getSqlAggregationAsName(),
                             builder.field(sqlAggregation.getSqlAggregationFieldName())
                     );

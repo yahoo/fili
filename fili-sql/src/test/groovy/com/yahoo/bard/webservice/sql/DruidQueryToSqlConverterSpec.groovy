@@ -9,10 +9,12 @@ import static com.yahoo.bard.webservice.database.Database.ADDED
 import static com.yahoo.bard.webservice.database.Database.DELETED
 import static com.yahoo.bard.webservice.database.Database.IS_ROBOT
 import static com.yahoo.bard.webservice.database.Database.METRO_CODE
+import static com.yahoo.bard.webservice.database.Database.COUNT
 import static com.yahoo.bard.webservice.database.Database.TIME
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.ASC
 import static com.yahoo.bard.webservice.druid.model.orderby.SortDirection.DESC
 import static com.yahoo.bard.webservice.data.time.AllGranularity.INSTANCE
+import static com.yahoo.bard.webservice.sql.builders.Aggregator.count
 import static com.yahoo.bard.webservice.sql.builders.Aggregator.sum
 import static com.yahoo.bard.webservice.sql.builders.Intervals.interval
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
@@ -55,6 +57,24 @@ class DruidQueryToSqlConverterSpec extends Specification {
         )
     }
 
+    private static GroupByQuery getGroupByQueryWithCount(
+            Granularity timeGrain,
+            List<String> dimensions,
+            LimitSpec limitSpec
+    ) {
+        return new GroupByQuery(
+                getWikitickerDatasource(API_PREPEND, ""),
+                timeGrain,
+                getDimensions(dimensions.collect { API_PREPEND + it }),
+                null,
+                null,
+                [sum(ADDED), sum(DELETED), count()],
+                [],
+                [interval(START, END)],
+                limitSpec
+        )
+    }
+
     @Unroll
     def "test sorting on #dims with #metrics by #metricDirections"() {
         setup:
@@ -72,5 +92,32 @@ class DruidQueryToSqlConverterSpec extends Specification {
         YEAR     | [METRO_CODE]           | []               | []               | """ ORDER BY YEAR("${TIME}"), "${METRO_CODE}" """
         MONTH    | []                     | []               | []               | """ ORDER BY YEAR("${TIME}"), MONTH("${TIME}") """
         INSTANCE | []                     | []               | []               | """ ORDER BY "${TIME}" """
+    }
+
+    def "test COUNT(*) in SELECT"() {
+        setup:
+        DruidQuery query = getGroupByQueryWithCount(grain, dims, null)
+        def sql = druidQueryToSqlConverter.buildSqlQuery(query, apiToFieldMapper)
+
+        expect:
+        sql.startsWith(expectedOutput.trim())
+
+        where:
+        grain    | dims                    | expectedOutput
+        DAY      | [METRO_CODE]            | """ SELECT "${METRO_CODE}", YEAR("${TIME}") AS "\$f21", DAYOFYEAR("${TIME}") AS "\$f22", SUM("${ADDED}") AS "${ADDED}", SUM("deleted") AS "deleted", COUNT(*) AS "count" """
+    }
+
+    def "test COUNT(*) in ORDER BY"() {
+        setup:
+        DruidQuery query = getGroupByQueryWithCount(grain, dims, SimpleDruidQueryBuilder.getSort(metrics, metricDirections))
+        def sql = druidQueryToSqlConverter.buildSqlQuery(query, apiToFieldMapper)
+
+        expect:
+        sql.endsWith(expectedOutput.trim())
+
+        where:
+        grain    | dims                   | metrics          | metricDirections | expectedOutput
+        DAY      | [METRO_CODE]           | [COUNT]          | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), COUNT(*) DESC NULLS FIRST, "${METRO_CODE}" """
+        DAY      | [METRO_CODE]           | [ADDED, COUNT]   | [DESC, DESC]     | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM("${ADDED}") DESC NULLS FIRST, COUNT(*) DESC NULLS FIRST, "${METRO_CODE}" """
     }
 }
