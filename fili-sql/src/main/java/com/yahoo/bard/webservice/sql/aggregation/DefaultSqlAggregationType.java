@@ -43,6 +43,6 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
 
     @Override
     public SqlAggregation getSqlAggregation(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
-        return new SqlAggregation(apiToFieldMapper.apply(aggregation.getFieldName()), sqlAggFunction);
+        return new SqlAggregation(aggregation.getName(), aggregation.getFieldName(), sqlAggFunction);
     }
 }

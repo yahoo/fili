@@ -48,7 +48,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 getDimensions(dimensions.collect { API_PREPEND + it }),
                 null,
                 null,
-                [sum(API_PREPEND + ADDED), sum(API_PREPEND + DELETED)],
+                [sum(ADDED), sum(DELETED)],
                 [],
                 [interval(START, END)],
                 limitSpec

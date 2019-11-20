@@ -423,19 +423,25 @@ public class DruidQueryToSqlConverter {
     ) {
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> druidSqlAggregationConverter.apply(aggregation, apiToFieldMapper))
+                .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
                     LOG.debug(msg);
                     return new RuntimeException(msg);
                 }))
-                .map(sqlAggregation -> builder.aggregateCall(
-                        sqlAggregation.getSqlAggFunction(),
-                        false,
-                        null,
-                        sqlAggregation.getSqlAggregationAsName(),
-                        builder.field(sqlAggregation.getSqlAggregationFieldName())
-                ))
+                .map(sqlAggregation -> {
+                    if (sqlAggregation.getSqlAggFunction() == SqlStdOperatorTable.COUNT) {
+                        return builder.countStar(sqlAggregation.getSqlAggregationAsName());
+                    }
+                    return builder.aggregateCall(
+                            sqlAggregation.getSqlAggFunction(),
+                            false,
+                            null,
+                            // TODO: Investigate why ApiToFieldMapper doesn't work here
+                            sqlAggregation.getSqlAggregationAsName(),
+                            builder.field(sqlAggregation.getSqlAggregationFieldName())
+                    );
+                })
                 .collect(Collectors.toList());
     }
 

@@ -18,8 +18,6 @@ import com.yahoo.bard.webservice.sql.aggregation.SqlAggregation;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
-import com.google.common.base.CaseFormat;
-
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
@@ -137,50 +135,6 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
                 .collect(Collectors.toList());
     }
-
-    /**
-     * Find all druid aggregations and convert them to {@link org.apache.calcite.tools.RelBuilder.AggCall}.
-     * Difference between this and the base class is the special column lower underscore to lower camel case conversion
-     * for Druid column names
-     * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The druid query to get the aggregations of.
-     * @param apiToFieldMapper  The mapping from api to physical name.
-     *
-     * @return the list of aggregations.
-     */
-    @Override
-    protected List<RelBuilder.AggCall> getAllQueryAggregations(
-            RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper apiToFieldMapper
-    ) {
-        return druidQuery.getAggregations()
-                .stream()
-                .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
-                .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
-                    String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
-                    LOG.debug(msg);
-                    return new RuntimeException(msg);
-                }))
-                .map(sqlAggregation -> {
-                    if (sqlAggregation.getSqlAggFunction() == SqlStdOperatorTable.COUNT) {
-                        return builder.countStar("count");
-                    }
-                    return builder.aggregateCall(
-                            sqlAggregation.getSqlAggFunction(),
-                            false,
-                            null,
-                            // TODO: Investigate why ApiToFieldMapper doesn't work here
-                            CaseFormat.LOWER_UNDERSCORE.to(
-                                    CaseFormat.LOWER_CAMEL,
-                                    sqlAggregation.getSqlAggregationAsName()
-                            ),
-                            builder.field(sqlAggregation.getSqlAggregationFieldName())
-                    );
-                })
-                .collect(Collectors.toList());
-    }
-
 
     /**
      * Determines whether or not a query is able to be processed using
