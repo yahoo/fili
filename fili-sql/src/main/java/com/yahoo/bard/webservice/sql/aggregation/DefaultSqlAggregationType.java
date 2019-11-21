@@ -17,7 +17,8 @@ import java.util.Set;
 public enum DefaultSqlAggregationType implements SqlAggregationType {
     SUM(SqlStdOperatorTable.SUM, "longSum", "doubleSum"),
     MIN(SqlStdOperatorTable.MIN, "longMin", "doubleMin"),
-    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax");
+    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax"),
+    COUNT(SqlStdOperatorTable.COUNT, "count");
     // todo avg
 
     private final Set<String> validDruidAggregations;
@@ -42,6 +43,6 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
 
     @Override
     public SqlAggregation getSqlAggregation(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
-        return new SqlAggregation(apiToFieldMapper.apply(aggregation.getFieldName()), sqlAggFunction);
+        return new SqlAggregation(aggregation.getName(), aggregation.getFieldName(), sqlAggFunction);
     }
 }

@@ -54,6 +54,7 @@ public class Database {
     public static final String DELTA = "delta";
     public static final String ID = "ID";
     public static final String METRO_CODE = "metroCode";
+    public static final String COUNT = "count";
 
     /**
      * Gets an in memory database with the {@link WikitickerEntry} from the example data.

@@ -241,6 +241,8 @@ public class SqlResultSetProcessor {
                                         return Long::parseLong;
                                     } else if (aggType.contains("double")) {
                                         return Double::parseDouble;
+                                    } else if (aggType.contains("count")) {
+                                        return Long::parseLong;
                                     }
                                     return null;
                                 }

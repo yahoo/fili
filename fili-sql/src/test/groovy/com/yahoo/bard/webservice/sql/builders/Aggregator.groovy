@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.builders
 
+import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -33,5 +34,9 @@ class Aggregator {
 
     public static LongMinAggregation longMin(String name) {
         return new LongMinAggregation(name, name)
+    }
+
+    public static CountAggregation count() {
+        return new CountAggregation("count")
     }
 }
