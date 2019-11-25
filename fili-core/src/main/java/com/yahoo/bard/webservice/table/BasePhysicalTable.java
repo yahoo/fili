@@ -112,7 +112,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     @Override
     public String getPhysicalColumnName(String logicalName) {
         if (!getSchema().containsLogicalName(logicalName)) {
-            LOG.warn(
+            LOG.trace(
                     "No mapping found for logical name '{}' to physical name on table '{}'. Will use logical name as " +
                             "physical name. This is unexpected and should not happen for properly configured " +
                             "dimensions.",

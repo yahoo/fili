@@ -44,6 +44,11 @@ Current
     - This method creates a new view of the constraint that is filtered with a provided predicate.
     - This method is meant to be the dimension version of the already existing `withMetricIntersection` method.   
 
+- [Reduced Warning Severity on unmapped columns]()
+   * Many external loaders don't want to have to map columns by default per physical table.  This warning should 
+   probably be removed, but it definitely doesn't rate being log.warn.
+   
+   
 - [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
    * No methods have been removed from `ApiRequestImpl`, but the implementation code has been
    moved to the relevant default generator implementation for that resource, and the existing
@@ -56,7 +61,7 @@ Current
    * Rationalized dependencies for sample applications
 
 - [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
-   
+
 ### Removed:
 
 ### Fixed:
