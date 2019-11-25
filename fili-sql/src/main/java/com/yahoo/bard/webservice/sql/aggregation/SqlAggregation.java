@@ -9,15 +9,18 @@ import org.apache.calcite.sql.SqlAggFunction;
  */
 public class SqlAggregation {
     private final String fieldName;
+    private final String name;
     private final SqlAggFunction sqlAggFunction;
 
     /**
      * Constructor.
      *
+     * @param name The api name of the field being aggregated on.
      * @param fieldName  The name of the field being aggregated on.
      * @param sqlAggFunction  The sql aggregation to be done on the field.
      */
-    public SqlAggregation(String fieldName, SqlAggFunction sqlAggFunction) {
+    public SqlAggregation(String name, String fieldName, SqlAggFunction sqlAggFunction) {
+        this.name = name;
         this.fieldName = fieldName;
         this.sqlAggFunction = sqlAggFunction;
     }
@@ -28,7 +31,7 @@ public class SqlAggregation {
      * @return the alias name for the aggregation.
      */
     public String getSqlAggregationAsName() {
-        return getSqlAggregationFieldName();
+        return name;
     }
 
     /**
