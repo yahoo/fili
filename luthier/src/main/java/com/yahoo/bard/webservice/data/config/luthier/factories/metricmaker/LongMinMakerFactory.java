@@ -14,6 +14,6 @@ import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 public class LongMinMakerFactory implements Factory<MetricMaker> {
     @Override
     public MetricMaker build(String name, LuthierConfigNode configTable, LuthierIndustrialPark resourceFactories) {
-        return new LongMaxMaker(resourceFactories.getMetricDictionary());
+        return new LongMinMaker(resourceFactories.getMetricDictionary());
     }
 }
