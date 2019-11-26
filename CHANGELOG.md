@@ -28,6 +28,8 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Preface Logblock lazily fetches username for serialization](https://github.com/yahoo/fili/pull/465)
+    * Allows the RequestLog to wait until serializing the Preface so that the username of the client can be properly set.
 
 - [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
    * No methods have been removed from `ApiRequestImpl`, but the implementation code has been
