@@ -42,8 +42,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
     /**
      * Creates a sql converter using the given database and datasource.
      *
-     * @param dataSource The presto datasource used for connection.
-     * @param objectMapper  The mapper for all JSON processing.
+     * @param dataSource   The presto datasource used for connection.
+     * @param objectMapper The mapper for all JSON processing.
      */
     public PrestoSqlBackedClient(DataSource dataSource, ObjectMapper objectMapper) {
         try {
@@ -89,8 +89,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * execute it against the database, process the results
      * and return a jsonNode in the format of a druid response.
      *
-     * @param druidQuery  The druid query to build and process.
-     *
+     * @param druidQuery The druid query to build and process.
      * @return a druid-like response to the query.
      */
     private JsonNode executeAndProcessQuery(DruidAggregationQuery<?> druidQuery) {
@@ -141,9 +140,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * </ul>
      *
      * @param sqlQuery The sql query converted from druid query.
-     *
      * @return a presto compatible sql dialect.
-     * */
+     */
     protected static String sqlQueryToPrestoQuery(String sqlQuery) {
         if (sqlQuery == null || sqlQuery.isEmpty()) {
             throw new IllegalStateException("Input sqlQuery is null or empty");
@@ -210,7 +208,34 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             fixQuotePrestoQuery = fixCatalogPrestoQuery.substring(0, orderbyIndex) + orderByClause;
         }
 
-        String limitPrestoQuery = fetchToLimitHelper(fixQuotePrestoQuery);
+        String fixFilterPrestoQuery = fixQuotePrestoQuery;
+        // find the where clause
+        String whereClause = "";
+        for (String line : fixFilterPrestoQuery.split("\n")) {
+            if (line.trim().substring(0, 5).equals("WHERE")) {
+                whereClause = line;
+                break;
+            }
+        }
+        whereClause = whereClause.substring(5);
+        String[] filterClauses = whereClause.split(" AND ");
+        String fieldName;
+        String fieldValue;
+        String filterClause;
+        String filterClauseFixed;
+        int equalSignIndex;
+        for (int i = 2; i < filterClauses.length; i++) {
+            filterClause = filterClauses[i];
+            if (filterClauses[i].contains("=")) {
+                equalSignIndex = filterClause.indexOf("=");
+                fieldName = filterClause.substring(0, equalSignIndex).trim().replace("\"", "");
+                fieldValue = filterClause.substring(equalSignIndex + 1).trim();
+                filterClauseFixed = String.format("(CAST %s AS varchar) = %s", fieldName, fieldValue);
+                fixFilterPrestoQuery = fixFilterPrestoQuery.replace(filterClause, filterClauseFixed);
+            }
+        }
+
+        String limitPrestoQuery = fetchToLimitHelper(fixFilterPrestoQuery);
         return limitPrestoQuery;
     }
 
@@ -220,9 +245,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * but prestodb does not have support for FETCH NEXT.
      *
      * @param fixQuotePrestoQuery The intermediate sqlToPrestoQuery.
-     *
      * @return a presto query with LIMIT fix.
-     * */
+     */
     private static String fetchToLimitHelper(String fixQuotePrestoQuery) {
         String limitPrestoQuery = fixQuotePrestoQuery;
         int index = limitPrestoQuery.indexOf("FETCH NEXT");
