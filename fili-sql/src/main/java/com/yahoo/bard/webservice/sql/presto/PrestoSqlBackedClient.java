@@ -223,20 +223,30 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         String fieldValue;
         String filterClause;
         String filterClauseFixed;
-        int equalSignIndex;
+        int equalIndex;
+        int notEqualIndex;
+        int comparatorIndex;
+        // could be either <> or =
+        String comparator;
         for (int i = 2; i < filterClauses.length; i++) {
             filterClause = filterClauses[i];
-            if (filterClauses[i].contains("=")) {
-                equalSignIndex = filterClause.indexOf("=");
-                fieldName = filterClause.substring(0, equalSignIndex).trim();
-                fieldValue = filterClause.substring(equalSignIndex + 1).trim();
-                filterClauseFixed = String.format("CAST(%s AS varchar) = %s", fieldName, fieldValue);
-                fixFilterPrestoQuery = fixFilterPrestoQuery.replace(filterClause, filterClauseFixed);
+            equalIndex = filterClause.indexOf("=");
+            notEqualIndex = filterClause.indexOf("<>");
+            if (equalIndex == -1 && notEqualIndex == -1) {
+                continue;
+            } else if (equalIndex == -1 || (notEqualIndex != -1 && notEqualIndex < equalIndex)) {
+                comparatorIndex = notEqualIndex;
+                comparator = "<>";
+            } else {
+                comparatorIndex = equalIndex;
+                comparator = "=";
             }
+            fieldName = filterClause.substring(0, comparatorIndex).trim();
+            fieldValue = filterClause.substring(comparatorIndex + comparator.length()).trim();
+            filterClauseFixed = String.format("CAST(%s AS varchar) %s %s", fieldName, comparator, fieldValue);
+            fixFilterPrestoQuery = fixFilterPrestoQuery.replace(filterClause, filterClauseFixed);
         }
-
-        String limitPrestoQuery = fetchToLimitHelper(fixFilterPrestoQuery);
-        return limitPrestoQuery;
+        return fetchToLimitHelper(fixFilterPrestoQuery);
     }
 
     /**
