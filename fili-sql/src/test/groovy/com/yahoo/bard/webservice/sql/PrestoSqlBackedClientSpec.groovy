@@ -15,7 +15,7 @@ class PrestoSqlBackedClientSpec extends Specification {
         expect:
         toPrestoQuery == """SELECT "source", SUBSTRING(datestamp,1,4) AS "\$f23", DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')) AS "\$f24", SUBSTRING(datestamp,9,2) AS "\$f25", SUM("revenue") AS "revenue"
 FROM "catalog"."schema"."table"
-WHERE "datestamp" > '201909011400000' AND "datestamp" < '201909021400000' AND (CAST comment AS varchar) = "1=2====3" AND (CAST advertiser_id AS varchar) = "456"
+WHERE "datestamp" > '201909011400000' AND "datestamp" < '201909021400000' AND CAST("comment" AS varchar) = "1=2====3" AND CAST("advertiser_id" AS varchar) = "456"
 GROUP BY "source", SUBSTRING(datestamp,1,4), DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')), SUBSTRING(datestamp,9,2)
 ORDER BY SUBSTRING(datestamp,1,4) NULLS FIRST, DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')) NULLS FIRST, SUBSTRING(datestamp,9,2) NULLS FIRST, "source" NULLS FIRST"""
 
