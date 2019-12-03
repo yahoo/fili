@@ -228,9 +228,9 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             filterClause = filterClauses[i];
             if (filterClauses[i].contains("=")) {
                 equalSignIndex = filterClause.indexOf("=");
-                fieldName = filterClause.substring(0, equalSignIndex).trim().replace("\"", "");
+                fieldName = filterClause.substring(0, equalSignIndex).trim();
                 fieldValue = filterClause.substring(equalSignIndex + 1).trim();
-                filterClauseFixed = String.format("(CAST %s AS varchar) = %s", fieldName, fieldValue);
+                filterClauseFixed = String.format("CAST(%s AS varchar) = %s", fieldName, fieldValue);
                 fixFilterPrestoQuery = fixFilterPrestoQuery.replace(filterClause, filterClauseFixed);
             }
         }
