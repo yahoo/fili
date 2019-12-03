@@ -8,6 +8,10 @@ pull request if there was one.
 Current
 -------
 
+### Fixed:
+- [Fix Presto query on filtering](https://github.com/yahoo/fili/pull/995)
+    * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing  
+
 ### Added:
 - [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
    * When there is a `count` metric that uses `countMaker`, it will be translated into a COUNT(\*) in SQL query.
