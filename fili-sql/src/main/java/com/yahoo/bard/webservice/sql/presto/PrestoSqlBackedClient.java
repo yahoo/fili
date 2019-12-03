@@ -232,14 +232,14 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             filterClause = filterClauses[i];
             equalIndex = filterClause.indexOf("=");
             notEqualIndex = filterClause.indexOf("<>");
-            if (equalIndex == -1 && notEqualIndex == -1) {
-                continue;
-            } else if (equalIndex == -1 || (notEqualIndex != -1 && notEqualIndex < equalIndex)) {
+            if (equalIndex != -1 && (notEqualIndex == -1 || equalIndex < notEqualIndex)){
+                comparatorIndex = equalIndex;
+                comparator = "=";
+            } else if (notEqualIndex != -1 && (equalIndex == -1 || notEqualIndex < equalIndex)){
                 comparatorIndex = notEqualIndex;
                 comparator = "<>";
             } else {
-                comparatorIndex = equalIndex;
-                comparator = "=";
+                continue;
             }
             fieldName = filterClause.substring(0, comparatorIndex).trim();
             fieldValue = filterClause.substring(comparatorIndex + comparator.length()).trim();
