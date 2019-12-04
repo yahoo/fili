@@ -1,23 +1,23 @@
 // Copyright 2019 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.data.config.luthier.factories;
+package com.yahoo.bard.webservice.data.config.luthier.factories.physicaltable;
 
 import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark;
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
-import com.yahoo.bard.webservice.table.StrictPhysicalTable;
+import com.yahoo.bard.webservice.table.PermissivePhysicalTable;
 
 /**
  * A factory that is used by default to support Simple (non-Composite) Physical Table.
  *
- * A strictPhysicalTable is available if and only if all of the columns
- * are available. This contrasts with the PermissivePhysicalTable where only
- * one column's availability has to be met.
+ * A permissivePhysicalTable is available as long as one column's availability
+ * is met. This contrasts with the PermissivePhysicalTable where all of
+ * the columns' availabilities need to be met.
  */
-public class StrictPhysicalTableFactory extends SingleDataSourcePhysicalTableFactory {
+public class PermissivePhysicalTableFactory extends SingleDataSourcePhysicalTableFactory {
 
     /**
-     * Build a StrictPhysicalTable instance.
+     * Build a PermissivePhysicalTable instance.
      *
      * @param name  the config dictionary name (normally the apiName)
      * @param configTable  the json tree describing this config entity
@@ -32,7 +32,7 @@ public class StrictPhysicalTableFactory extends SingleDataSourcePhysicalTableFac
             LuthierIndustrialPark resourceFactories
     ) {
         LuthierPhysicalTableParams params = buildParams(name, configTable, resourceFactories);
-        return new StrictPhysicalTable(
+        return new PermissivePhysicalTable(
                 params.tableName,
                 params.timeGrain,
                 params.columns,

@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.application.luthier.LuthierConfigNode;
 public interface Factory<T> {
 
     /**
-     * Build a dimension instance.
+     * Build an instance of a config entity.
      *
      * @param name  the config dictionary name (normally the apiName)
      * @param configTable  the json tree describing this config entity

@@ -42,7 +42,7 @@ class DefaultLogicalTableGroupFactorySpec extends Specification {
             wikipediaDayTable.getRetention() == Period.parse("P2Y")
             wikipediaDayTable.getDimensions() == wikiticker.getDimensions()
             wikipediaDayTable.getGranularity() == expectedZonedDayGrain
-            wikipediaDayTable.getLogicalMetrics().size() == 4
+            wikipediaDayTable.getLogicalMetrics().size() == 7
             wikipediaDayTable.getLogicalMetrics().forEach({ metric -> expectedMetricNames.contains(metric.name) })
             // transitively test on physicalTable content correctness
             wikipediaDayTable.tableGroup.physicalTables.contains(wikiticker)

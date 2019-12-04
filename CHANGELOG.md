@@ -8,7 +8,20 @@ pull request if there was one.
 Current
 -------
 
+### Fixed:
+- [Fix Presto query on filtering](https://github.com/yahoo/fili/pull/995)
+    * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing  
+
 ### Added:
+- [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
+   * When there is a `count` metric that uses `countMaker`, it will be translated into a COUNT(\*) in SQL query.
+   
+- [Add Presto support](https://github.com/yahoo/fili/pull/986)
+   * Fili now can connect to Presto servers.
+   * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
+   * Version bump for jackson, jackson-databind, async-http-client to address package vulnerability.
+   * Add suppression for other packages with vulnerability but without fixed version.
+
 
 - [Default implementations of new `Generator` interface](https://github.com/yahoo/fili/issues/769)
    * All default implementations are based on the equivalent method from `ApiRequestImpl`. The
@@ -39,10 +52,16 @@ Current
    * Resolved dependecy issues around where properties files were sourced
    * Rationalized dependencies for sample applications
 
+- [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
+   
 ### Removed:
 
 ### Fixed:
 
+- [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
+   * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
+   * Added handlers to the ObjectMapperSuite json mapper.
+   
 - [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
 
 ### Deprecated:

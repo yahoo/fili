@@ -34,11 +34,11 @@ public class LuthierBinderFactory extends AbstractBinderFactory {
 
         LuthierIndustrialPark.Builder builder = new LuthierIndustrialPark.Builder(resourceDictionaries);
         builder.withGranularityDictionary(granularityDictionary);
-        getDimensionFactories().ifPresent(it -> builder.withFactories(ConceptType.DIMENSION, it));
-        getSearchProviderFactories().ifPresent(it -> builder.withFactories(ConceptType.SEARCH_PROVIDER, it));
-        getKeyValueStoreFactories().ifPresent(it -> builder.withFactories(ConceptType.KEY_VALUE_STORE, it));
-        getMetricMakerFactories().ifPresent(it -> builder.withFactories(ConceptType.METRIC_MAKER, it));
-        getPhysicalTableFactories().ifPresent(it -> builder.withFactories(ConceptType.PHYSICAL_TABLE, it));
+        getDimensionFactories().ifPresent(it -> builder.addFactories(ConceptType.DIMENSION, it));
+        getSearchProviderFactories().ifPresent(it -> builder.addFactories(ConceptType.SEARCH_PROVIDER, it));
+        getKeyValueStoreFactories().ifPresent(it -> builder.addFactories(ConceptType.KEY_VALUE_STORE, it));
+        getMetricMakerFactories().ifPresent(it -> builder.addFactories(ConceptType.METRIC_MAKER, it));
+        getPhysicalTableFactories().ifPresent(it -> builder.addFactories(ConceptType.PHYSICAL_TABLE, it));
         return builder.build();
     }
 

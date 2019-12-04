@@ -4,25 +4,33 @@ package com.yahoo.bard.webservice.data.config.luthier;
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.data.config.luthier.factories.AggregationAverageMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.ArithmeticMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.CountMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.DefaultLogicalTableGroupFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.DefaultMetricFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.DoubleSumMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.KeyValueStoreDimensionFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.LongSumMakerFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.LuceneSearchProviderFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.MapKeyValueStoreFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.NoOpSearchProviderFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.PermissivePhysicalTableFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.ScanSearchProviderFactory;
-import com.yahoo.bard.webservice.data.config.luthier.factories.StrictPhysicalTableFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.AggregationAverageMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.ArithmeticMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.CountMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.logicaltable.DefaultLogicalTableGroupFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.logicalmetric.DefaultMetricFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleMaxMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleMinMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.DoubleSumMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.dimension.KeyValueStoreDimensionFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongMaxMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongMinMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.metricmaker.LongSumMakerFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.searchprovider.LuceneSearchProviderFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.keyvaluestore.MapKeyValueStoreFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.searchprovider.NoOpSearchProviderFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.physicaltable.PermissivePhysicalTableFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.searchprovider.ScanSearchProviderFactory;
+import com.yahoo.bard.webservice.data.config.luthier.factories.physicaltable.StrictPhysicalTableFactory;
 import com.yahoo.bard.webservice.data.config.luthier.table.LogicalTableGroup;
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.ArithmeticMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.CountMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMaxMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.DoubleMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.DoubleSumMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongMaxMaker;
+import com.yahoo.bard.webservice.data.config.metric.makers.LongMinMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker;
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker;
 import com.yahoo.bard.webservice.data.config.names.DataSourceName;
@@ -516,9 +524,33 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
+                    new LongMaxMakerFactory(),
+                    LongMaxMaker.class,
+                    "longMax"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new LongMinMakerFactory(),
+                    LongMinMaker.class,
+                    "longMin"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
                     new DoubleSumMakerFactory(),
                     DoubleSumMaker.class,
                     "doubleSum"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleMaxMakerFactory(),
+                    DoubleMaxMaker.class,
+                    "doubleMax"
+            );
+            addAliasesToFactory(
+                    metricMakerFactoryMap,
+                    new DoubleMinMakerFactory(),
+                    DoubleMinMaker.class,
+                    "doubleMin"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
@@ -526,7 +558,7 @@ public class LuthierIndustrialPark implements ConfigurationLoader {
                     AggregationAverageMaker.class,
                     "avg",
                     "average",
-                    "aggregateAverage"
+                    "aggregationAverage"
             );
             addAliasesToFactory(
                     metricMakerFactoryMap,
