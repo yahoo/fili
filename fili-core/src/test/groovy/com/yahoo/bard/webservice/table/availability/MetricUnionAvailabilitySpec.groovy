@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.BaseDataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.filters.ApiFilters
@@ -191,7 +191,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
@@ -227,7 +227,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
@@ -276,7 +276,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,

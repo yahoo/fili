@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Data source constraint containing physical name of the columns.
  */
-public class PhysicalDataSourceConstraint extends DataSourceConstraint {
+public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
 
     private final Set<String> allColumnPhysicalNames;
 
@@ -65,7 +65,7 @@ public class PhysicalDataSourceConstraint extends DataSourceConstraint {
      * a user provided set of metric names
      *
      * @param metricNames  The set of metric columns that are to be intersected with metric names in
-     * <tt>this DataSourceConstraint</tt>
+     * <tt>this BaseDataSourceConstraint</tt>
      *
      * @return the new <tt>PhysicalDataSourceConstraint</tt> instance with a new subset of metric names
      */
