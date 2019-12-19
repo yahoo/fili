@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Constraints used to match and resolve the best table for a given query.
  */
-public class QueryPlanningConstraint extends DataSourceConstraint {
+public class QueryPlanningConstraint extends BaseDataSourceConstraint {
 
     private final LogicalTable logicalTable;
     private final List<Interval> intervals;

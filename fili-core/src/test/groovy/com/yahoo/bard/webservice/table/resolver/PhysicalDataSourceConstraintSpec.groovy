@@ -14,13 +14,13 @@ import spock.lang.Specification
  */
 class PhysicalDataSourceConstraintSpec extends Specification {
 
-    DataSourceConstraint dataSourceConstraint
+    BaseDataSourceConstraint dataSourceConstraint
     PhysicalTableSchema physicalTableSchema
     PhysicalDataSourceConstraint physicalDataSourceConstraint
     ApiFilters apiFilters = new ApiFilters()
 
     def setup() {
-        dataSourceConstraint =  new DataSourceConstraint(
+        dataSourceConstraint =  new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,

@@ -7,13 +7,13 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DataSourceConstraintSpec extends Specification {
+class BaseDataSourceConstraintSpec extends Specification {
 
     ApiFilters apiFilters = new ApiFilters()
     @Unroll
     def "#metricNames intersected with #other produces #newMetricNames"() {
         given:
-        DataSourceConstraint newDataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint newDataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
