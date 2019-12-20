@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver
 
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.PhysicalTableSchema
@@ -19,10 +20,33 @@ class PhysicalDataSourceConstraintSpec extends Specification {
     PhysicalDataSourceConstraint physicalDataSourceConstraint
     ApiFilters apiFilters = new ApiFilters()
 
+    String dim1Name
+    String dim2Name
+    String dim3Name
+    String dim4Name
+
+    Dimension dim1
+    Dimension dim2
+    Dimension dim3
+    Dimension dim4
+
+
     def setup() {
+        dim1Name = "dim1"
+        dim1 = Mock(Dimension) {getApiName() >> {dim1Name}}
+
+        dim2Name = "dim2"
+        dim2 = Mock(Dimension) {getApiName() >> {dim2Name}}
+
+        dim3Name = "dim3"
+        dim3 = Mock(Dimension) {getApiName() >> {dim3Name}}
+
+        dim4Name = "dim4"
+        dim4 = Mock(Dimension) {getApiName() >> {dim4Name}}
+
         dataSourceConstraint =  new BaseDataSourceConstraint(
-                [] as Set,
-                [] as Set,
+                [dim1, dim2] as Set,
+                [dim3, dim4] as Set,
                 [] as Set,
                 ['columnThree', 'columnFour', 'columnFive'] as Set,
                 [] as Set,
@@ -47,5 +71,16 @@ class PhysicalDataSourceConstraintSpec extends Specification {
         expect:
         subConstraint.getMetricNames() == ['columnFour'] as Set
         subConstraint.withMetricIntersection(['columnFour'] as Set).getAllColumnPhysicalNames() == ['column_one', 'column_two', 'columnFour'] as Set
+    }
+
+    def "withDimensionFilter properly removes filtered dimensions"() {
+        given:
+        PhysicalDataSourceConstraint filtered = physicalDataSourceConstraint.withDimensionFilter({[dim1Name, dim3Name].contains(it.getApiName())})
+
+        expect:
+        filtered.getAllDimensionNames() == [dim1Name, dim3Name] as Set
+        filtered.getRequestDimensions() == [dim1] as Set
+        filtered.getFilterDimensions() == [dim3] as Set
+        filtered.getMetricDimensions() == [] as Set
     }
 }

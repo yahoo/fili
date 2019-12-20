@@ -18,7 +18,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidSearchQuery;
 import com.yahoo.bard.webservice.druid.model.query.RegexSearchQuerySpec;
 import com.yahoo.bard.webservice.druid.model.query.SearchQuerySpec;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
-import com.yahoo.bard.webservice.table.resolver.BaseDataSourceConstraint;
+import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 
 import org.joda.time.DateTime;
@@ -105,7 +105,7 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         this.dataSources = physicalTableDictionary.values().stream()
-                .map(table -> table.withConstraint(BaseDataSourceConstraint.unconstrained(table)))
+                .map(table -> table.withConstraint(DataSourceConstraint.unconstrained(table)))
                 .map(TableDataSource::new)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 

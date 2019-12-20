@@ -10,7 +10,9 @@ Current
 
 ### Fixed:
 - [Fix Presto query on filtering](https://github.com/yahoo/fili/pull/995)
-    * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing  
+    * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing
+- [`MetricUnionAvailability` properly defensively copies availability map]()
+    * `MetricUnionAvailability` previously did not create a defensive copy of the `availabilitiesToMetricNames` parameter. This has been fixed.   
 
 ### Added:
 - [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
@@ -32,6 +34,15 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Extracted `DataSourceConstraint` into an interface](https://github.com/yahoo/fili/issues/996)
+   * `DataSourceConstraint` is now an interface.
+    - Migration path documented in the linked issue.
+    - All public methods on the original base class are defined on the interface
+    - The original base class implementation has been renamed to `BaseDataSourceConstraint`.
+    - The class hierarchy has otherwise been maintained
+   * The method `withDimensionFilter` has been added to the `DataSourceConstraint` interface.
+    - This method creates a new view of the constraint that is filtered with a provided predicate.
+    - This method is meant to be the dimension version of the already existing `withMetricIntersection` method.   
 
 - [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
    * No methods have been removed from `ApiRequestImpl`, but the implementation code has been

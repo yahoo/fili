@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
@@ -12,6 +11,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -179,7 +179,7 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
      * @return the new <tt>BaseDataSourceConstraint</tt> instance with a new subset of metric names
      */
     @Override
-    public DataSourceConstraint withMetricIntersection(Set<String> metricNames) {
+    public BaseDataSourceConstraint withMetricIntersection(Set<String> metricNames) {
         return new BaseDataSourceConstraint(
                 requestDimensions,
                 filterDimensions,
@@ -190,6 +190,17 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
                 allDimensions,
                 allDimensionNames,
                 allColumnNames,
+                apiFilters
+        );
+    }
+
+    @Override
+    public BaseDataSourceConstraint withDimensionFilter(Predicate<Dimension> filter) {
+        return new BaseDataSourceConstraint(
+                requestDimensions.stream().filter(filter).collect(Collectors.toSet()),
+                filterDimensions.stream().filter(filter).collect(Collectors.toSet()),
+                metricDimensions.stream().filter(filter).collect(Collectors.toSet()),
+                metricNames,
                 apiFilters
         );
     }
