@@ -9,6 +9,9 @@ Current
 -------
 
 ### Fixed:
+- [Fix contains filter behavior](https://github.com/yahoo/fili/pull/998)
+    * When there is a Contains filter applied to a non-cached dimension, it will be translated into a `SeachFilter` instead of `SelectorFilter`.
+    
 - [Fix Presto query on filtering](https://github.com/yahoo/fili/pull/995)
     * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing
 - [`MetricUnionAvailability` properly defensively copies availability map](https://github.com/yahoo/fili/pull/997)
