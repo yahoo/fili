@@ -193,7 +193,6 @@ class DruidOrFilterBuilderSpec extends Specification {
         ApiFilter filter = filterBinders.generateApiFilter(filterString, resources.dimensionDictionary)
 
         when: "We build a single selector filter"
-        //resources.d3 is the ageBracket dimension.
         Filter outerFilter = filterBuilder.buildFilters([(resources.d16): [filter] as Set])
 
         and: "Extract the constructed or-filter"
