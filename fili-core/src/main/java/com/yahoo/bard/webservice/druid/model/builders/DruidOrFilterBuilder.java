@@ -47,7 +47,6 @@ public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
                 normalizedFilter = filter.withOperation(DefaultFilterOperation.in);
             }
 
-
             Filter disjunction = null;
             if (dimension.getSearchProvider() instanceof NoOpSearchProvider &&
                     filter.getOperation() == DefaultFilterOperation.contains) {
