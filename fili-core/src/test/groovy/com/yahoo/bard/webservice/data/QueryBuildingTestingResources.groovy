@@ -30,6 +30,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
+import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
@@ -71,6 +72,9 @@ class QueryBuildingTestingResources {
 
     // Flag from tag dimension
     public Dimension d14, d15
+
+    // NoOpSearchProvider dimension
+    public Dimension d16
 
     // Logical metrics, numbered for identification
     public LogicalMetric m1, m2, m3, m4, m5, m6
@@ -202,6 +206,7 @@ class QueryBuildingTestingResources {
         d12 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(1))
         d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
+
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
 
@@ -240,6 +245,16 @@ class QueryBuildingTestingResources {
 
         dimensionDictionary.add(d14)
         dimensionDictionary.add(d15)
+
+        d16 = new KeyValueStoreDimension(
+                "dim16",
+                "dim16",
+                dimensionFields,
+                MapStoreManager.getInstance("dim16"),
+                new NoOpSearchProvider(1),
+                false
+        )
+        dimensionDictionary.add(d16)
 
         m1 = new LogicalMetric(null, null, "metric1")
         m2 = new LogicalMetric(null, null, "metric2")

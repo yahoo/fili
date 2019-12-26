@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.Extrac
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.ExtractionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
@@ -231,6 +232,18 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
 
         return rows.stream()
                 .map(finalFilterBuilder::apply)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Given a dimension and its contains filter values, return a list of Contains SearchFilters.
+     * @param dimension the dimension to search for
+     * @param values the contains value
+     * @return the list of SearchFilters
+     */
+    protected List<Filter> buildContainsSearchFilters(Dimension dimension, List<String> values) {
+        return values.stream()
+                .map(value -> new SearchFilter(dimension, SearchFilter.QueryType.Contains, value))
                 .collect(Collectors.toList());
     }
 }
