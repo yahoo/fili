@@ -218,7 +218,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             }
         }
         whereClause = whereClause.substring(5);
-        String[] filterClauses = whereClause.split(" AND ");
+        String[] filterClauses = whereClause.split(" AND | OR ");
         String fieldName;
         String fieldValue;
         String filterClause;
