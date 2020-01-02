@@ -8,7 +8,7 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
-- [Further fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/1000)
+- [Further fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/1002)
     * The `()` are used to enforce precedence of the logical where claus. Address the situation where `()`s are used for Presto support 
 - [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999)
     * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
