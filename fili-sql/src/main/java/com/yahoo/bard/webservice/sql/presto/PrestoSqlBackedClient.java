@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -221,7 +222,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         }
         whereClause = whereClause.substring(5);
         String[] andClauses = whereClause.split(" AND ");
-        ArrayList<String> filterClauses = new ArrayList<>();
+        List<String> filterClauses = new ArrayList<>();
         for (String andClause : andClauses) {
             if (andClause.charAt(0) == '(') {
                 andClause = andClause.substring(1);
