@@ -7,9 +7,10 @@ pull request if there was one.
 
 Current
 -------
-### Fixed:
-- [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999)
+### Fixed: 
+- [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999 and https://github.com/yahoo/fili/pull/1002)
     * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
+    * Add support to use of `()` in the filter clause
 ### Fixed:
 - [Fix contains filter behavior](https://github.com/yahoo/fili/pull/998)
     * When there is a Contains filter applied to a non-cached dimension, it will be translated into a `SearchFilter` instead of `SelectorFilter`.

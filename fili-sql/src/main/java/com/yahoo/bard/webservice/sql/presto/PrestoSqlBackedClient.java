@@ -23,6 +23,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -218,7 +221,17 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             }
         }
         whereClause = whereClause.substring(5);
-        String[] filterClauses = whereClause.split(" AND | OR ");
+        String[] andClauses = whereClause.split(" AND ");
+        List<String> filterClauses = new ArrayList<>();
+        for (String andClause : andClauses) {
+            if (andClause.charAt(0) == '(') {
+                andClause = andClause.substring(1);
+            }
+            if (andClause.charAt(andClause.length() - 1) == ')') {
+                andClause = andClause.substring(0, andClause.length() - 1);
+            }
+            filterClauses.addAll(Arrays.asList(andClause.split(" OR ")));
+        }
         String fieldName;
         String fieldValue;
         String filterClause;
@@ -228,8 +241,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         int comparatorIndex;
         // could be either <> or =
         String comparator;
-        for (int i = 2; i < filterClauses.length; i++) {
-            filterClause = filterClauses[i];
+        for (int i = 2; i < filterClauses.size(); i++) {
+            filterClause = filterClauses.get(i);
             equalIndex = filterClause.indexOf("=");
             notEqualIndex = filterClause.indexOf("<>");
             if (equalIndex != -1 && (notEqualIndex == -1 || equalIndex < notEqualIndex)) {
