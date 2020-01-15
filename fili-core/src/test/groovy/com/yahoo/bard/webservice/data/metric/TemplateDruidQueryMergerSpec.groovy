@@ -53,9 +53,9 @@ class TemplateDruidQueryMergerSpec extends Specification {
             TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set, (ZonelessTimeGrain) null)
             TemplateDruidQuery q3 = new TemplateDruidQuery([q3_agg1] as Set, [] as Set, (ZonelessTimeGrain) null)
 
-            LogicalMetric m1 = new LogicalMetric(q1, null, "Metric1", null)
-            LogicalMetric m2 = new LogicalMetric(q2, null, "Metric2", null)
-            LogicalMetric m3 = new LogicalMetric(q3, null, "Metric3", null)
+            LogicalMetric m1 = new LogicalMetricImpl(q1, null, "Metric1", null)
+            LogicalMetric m2 = new LogicalMetricImpl(q2, null, "Metric2", null)
+            LogicalMetric m3 = new LogicalMetricImpl(q3, null, "Metric3", null)
 
             DataApiRequest request = Mock(DataApiRequest)
             TemplateDruidQueryMerger merger = new TemplateDruidQueryMerger()

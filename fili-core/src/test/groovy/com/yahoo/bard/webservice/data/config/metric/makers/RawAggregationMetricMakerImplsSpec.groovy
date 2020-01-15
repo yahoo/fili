@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
@@ -62,7 +62,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
        metric can't be more accurate than this and the test primarily tests the subclasses integrating correctly.
      */
     def makeNumericMetric(Aggregation aggregation) {
-        new LogicalMetric(
+        new LogicalMetricImpl(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 MetricMaker.NO_OP_MAPPER,
                 aggregation.getName()
@@ -70,7 +70,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
     }
 
     def makeSketchMetric(Aggregation aggregation) {
-        new LogicalMetric(
+        new LogicalMetricImpl(
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 new SketchRoundUpMapper(aggregation.getName()),
                 aggregation.getName()

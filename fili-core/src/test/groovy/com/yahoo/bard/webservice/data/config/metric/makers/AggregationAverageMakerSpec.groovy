@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
@@ -123,7 +124,7 @@ class AggregationAverageMakerSpec extends Specification{
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new LogicalMetricImpl(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -173,6 +174,6 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new LogicalMetricImpl(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
     }
 }
