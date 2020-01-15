@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -51,7 +52,7 @@ public class ConstantMaker extends MetricMaker {
                     new Double(dependentMetrics.get(0))
             ));
 
-            return new LogicalMetric(
+            return new LogicalMetricImpl(
                     new TemplateDruidQuery(Collections.emptySet(), postAggregations),
                     NO_OP_MAPPER,
                     logicalMetricInfo

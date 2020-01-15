@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
@@ -22,7 +23,7 @@ class ConstantMakerSpec extends Specification {
             [] as Set,
             [postAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetric expectedMetric = new LogicalMetricImpl(
             constantQuery,
             new NoOpResultSetMapper(),
             AGGREGATION_NAME

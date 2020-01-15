@@ -2,11 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
-import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
-        .ArithmeticPostAggregationFunction.DIVIDE;
+import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE;
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -75,7 +75,9 @@ public class AggregationAverageMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         // Get the Metric that is being averaged over
         LogicalMetric dependentMetric = metrics.get(dependentMetrics.get(0));
-
+        if (dependentMetric.supportsRegeneration()) {
+            //dependentMetric =
+        }
         // Get the field being subtotalled in the inner query
         MetricField sourceMetric = convertToSketchEstimateIfNeeded(dependentMetric.getMetricField());
 
@@ -83,7 +85,7 @@ public class AggregationAverageMaker extends MetricMaker {
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
         TemplateDruidQuery outerQuery = buildOuterQuery(logicalMetricInfo.getName(), sourceMetric, innerQuery);
 
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, logicalMetricInfo);
+        return new LogicalMetricImpl(outerQuery, NO_OP_MAPPER, logicalMetricInfo);
     }
 
     /**

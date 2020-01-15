@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 
 import spock.lang.Specification
@@ -16,9 +17,9 @@ class ApiHavingSpec extends Specification {
     LogicalMetric metric3
 
     def setup() {
-        metric1 = new LogicalMetric(null, null, "metric1")
-        metric2 = new LogicalMetric(null, null, "metric2")
-        metric3 = new LogicalMetric(null, null, "metric3")
+        metric1 = new LogicalMetricImpl(null, null, "metric1")
+        metric2 = new LogicalMetricImpl(null, null, "metric2")
+        metric3 = new LogicalMetricImpl(null, null, "metric3")
 
         metricStore = new MetricDictionary()
         metricStore.add(metric1)

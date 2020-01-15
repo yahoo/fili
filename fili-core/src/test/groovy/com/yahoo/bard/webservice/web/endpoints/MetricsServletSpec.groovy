@@ -6,6 +6,7 @@ import static com.yahoo.bard.webservice.util.JsonSortStrategy.SORT_BOTH
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.util.GroovyTestUtils
@@ -31,7 +32,7 @@ class MetricsServletSpec extends Specification {
         ["metricA", "metricB", "metricC"].each { String metricName ->
             jerseyTestBinder.configurationLoader.metricDictionary.put(
                     metricName,
-                    new LogicalMetric(
+                    new LogicalMetricImpl(
                             null,
                             mapper,
                             new LogicalMetricInfo(metricName, metricName, DEFAULT_CATEGORY, metricName, metricName)

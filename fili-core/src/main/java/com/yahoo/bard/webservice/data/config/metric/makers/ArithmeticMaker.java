@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -82,7 +83,7 @@ public class ArithmeticMaker extends MetricMaker {
         ));
 
         TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-        return new LogicalMetric(
+        return new LogicalMetricImpl(
                 query,
                 resultSetMapperSupplier.apply(logicalMetricInfo.getName()),
                 logicalMetricInfo

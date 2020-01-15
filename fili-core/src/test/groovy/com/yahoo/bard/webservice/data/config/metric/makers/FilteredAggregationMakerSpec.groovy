@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -41,7 +42,7 @@ public class FilteredAggregationMakerSpec extends Specification{
 
         and: "The expected metric"
         Aggregation expectedAgg = new FilteredAggregation(FILTER_METRIC_INFO, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new LogicalMetric(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILTER_METRIC_INFO)
+        LogicalMetric expectedMetric = new LogicalMetricImpl(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILTER_METRIC_INFO)
 
         expect:
         maker.make(new LogicalMetricInfo(FILTER_METRIC_INFO), ["longSum"]) == expectedMetric

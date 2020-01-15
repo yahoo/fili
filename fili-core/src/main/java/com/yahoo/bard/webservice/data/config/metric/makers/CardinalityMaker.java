@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -76,7 +77,11 @@ public class CardinalityMaker extends MetricMaker {
                 new CardinalityAggregation(logicalMetricInfo.getName(), dimensions, byRow)
         );
 
-        return new LogicalMetric(new TemplateDruidQuery(aggs, Collections.emptySet()), NO_OP_MAPPER, logicalMetricInfo);
+        return new LogicalMetricImpl(
+                new TemplateDruidQuery(aggs, Collections.emptySet()),
+                NO_OP_MAPPER,
+                logicalMetricInfo
+        );
     }
 
     @Override

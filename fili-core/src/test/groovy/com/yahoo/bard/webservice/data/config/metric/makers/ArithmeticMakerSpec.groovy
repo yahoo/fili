@@ -6,6 +6,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.config.metric.MetricInstance
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -131,7 +133,7 @@ class ArithmeticMakerSpec extends Specification {
                 aggregations,
                 [sumPostAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetric expectedMetric = new LogicalMetricImpl(
             expectedQuery,
             MetricMaker.NO_OP_MAPPER,
             metricName

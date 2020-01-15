@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -34,7 +35,7 @@ public class CountMaker extends MetricMaker {
                 Collections.emptySet()
         );
 
-        return new LogicalMetric(query, NO_OP_MAPPER, logicalMetricInfo);
+        return new LogicalMetricImpl(query, NO_OP_MAPPER, logicalMetricInfo);
     }
 
     @Override

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -37,7 +38,7 @@ class ThetaSketchMakerSpec extends Specification {
 
         and: "The logical metric the maker is expected to build"
         Set aggregations = [new ThetaSketchAggregation(metricName, dependentMetricName, SKETCH_SIZE)] as Set
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetric expectedMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery(aggregations, [] as Set),
                 new SketchRoundUpMapper(metricName),
                 metricName
