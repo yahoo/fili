@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.table.resolver;
 /**
  * An exception for PhysicalTableMatchers when they return no matches.
  */
-public class NoMatchFoundException extends Exception {
+public class NoMatchFoundException extends RuntimeException {
     /**
      * Constructor.
      *

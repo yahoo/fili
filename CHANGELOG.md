@@ -40,6 +40,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Makes NoMatchFoundException a RuntimeException.](https://github.com/yahoo/fili/pull/1004)
+    - By making NoMatchFoundException a RuntimeException, it can be used in places other than
+        the DataServlet without losing the nice error message provided by the `FiliDataExceptionHandler`.
 - [Extracted `DataSourceConstraint` into an interface](https://github.com/yahoo/fili/issues/996)
    * `DataSourceConstraint` is now an interface.
     - Migration path documented in the linked issue.
