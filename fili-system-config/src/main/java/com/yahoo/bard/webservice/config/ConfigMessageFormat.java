@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.MessageFormatter;
  */
 public enum ConfigMessageFormat implements MessageFormatter {
 
-    //CHECKSTYLE:OFF
+    // CHECKSTYLE:OFF
     MODULE_IO_EXCEPTION (
             "IoException while loading modules: %s"
     ),
