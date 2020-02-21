@@ -102,7 +102,7 @@
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
-        <version.netty>4.1.42.Final</version.netty>
+        <version.netty>4.1.45.Final</version.netty>
         <version.jetty>9.4.20.v20190813</version.jetty>
 
         <version.lombok>1.18.8</version.lombok>
