@@ -10,13 +10,9 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
-import com.yahoo.bard.webservice.data.dimension.impl.ExtractionFunctionDimension;
-import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
-import com.yahoo.bard.webservice.druid.model.filter.ExtractionFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter;
-import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.exception.TooManyDruidFiltersException;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
@@ -33,9 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -198,41 +192,6 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
         }
 
         return rows;
-    }
-
-    /**
-     * Builds a list of Druid selector or extraction filters.
-     *
-     * @param dimension  The dimension to build the list of Druid selector filters from
-     * @param rows  The set of dimension rows that need selector filters built around
-     *
-     * @return a list of Druid selector filters
-     */
-    protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
-
-        Function<DimensionRow, Filter> filterBuilder = row -> new SelectorFilter(
-                dimension,
-                row.get(dimension.getKey())
-        );
-
-        if (dimension instanceof ExtractionFunctionDimension) {
-
-            Optional<ExtractionFunction> extractionFunction = ((ExtractionFunctionDimension) dimension)
-                    .getExtractionFunction();
-            if (extractionFunction.isPresent()) {
-                filterBuilder = row -> new ExtractionFilter(
-                        dimension,
-                        row.get(dimension.getKey()),
-                        extractionFunction.get()
-                );
-            }
-        }
-
-        final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
-
-        return rows.stream()
-                .map(finalFilterBuilder::apply)
-                .collect(Collectors.toList());
     }
 
     /**

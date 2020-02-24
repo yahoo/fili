@@ -161,22 +161,6 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "buildSelectorFilters constructs one selector filter for each id #ids"() {
-        expect:
-        filterBuilder.buildSelectorFilters(resources.d3, getDimensionRows(ids)) == getSelectorFilters(ids)
-
-        where:
-        ids                  | _
-        []                   | _
-        ["1"]                | _
-        ["2", "3"]           | _
-        ["1", "2", "3", "4"] | _
-        ["1", "3", "4"]      | _
-
-
-    }
-
-    @Unroll
     def "buildContainsSearchFilters constructs a list of SearchFilters for #values"() {
         expect:
         filterBuilder.buildContainsSearchFilters(resources.d16, values) == getSearchFilters(values)
@@ -195,7 +179,4 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
         return ids.collect {resources.d3.findDimensionRowByKeyValue(it)} as TreeSet<DimensionRow>
     }
 
-    List<Filter> getSelectorFilters(List<String> ids) {
-        ids.collect { new SelectorFilter(resources.d3, it)}
-    }
 }

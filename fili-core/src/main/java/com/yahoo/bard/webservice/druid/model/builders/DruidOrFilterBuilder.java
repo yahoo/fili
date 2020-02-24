@@ -3,12 +3,14 @@
 package com.yahoo.bard.webservice.druid.model.builders;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
 import com.yahoo.bard.webservice.druid.model.filter.OrFilter;
+import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * A DruidOrFilterBuilder builds a conjunction of disjunctions for each Dimension, where each disjunction
@@ -66,5 +70,27 @@ public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
         Filter newFilter = orFilters.size() == 1 ? orFilters.get(0) : new AndFilter(orFilters);
         LOG.trace("Filter: {}", newFilter);
         return newFilter;
+    }
+
+    /**
+     * Builds a list of Druid selector or extraction filters.
+     *
+     * @param dimension  The dimension to build the list of Druid selector filters from
+     * @param rows  The set of dimension rows that need selector filters built around
+     *
+     * @return a list of Druid selector filters
+     */
+    protected List<Filter> buildSelectorFilters(Dimension dimension, Set<DimensionRow> rows) {
+
+        Function<DimensionRow, Filter> filterBuilder = row -> new SelectorFilter(
+                dimension,
+                row.get(dimension.getKey())
+        );
+
+        final Function<DimensionRow, Filter> finalFilterBuilder = filterBuilder;
+
+        return rows.stream()
+                .map(finalFilterBuilder::apply)
+                .collect(Collectors.toList());
     }
 }

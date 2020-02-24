@@ -82,24 +82,14 @@ class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSp
             "filter": {
                 "fields": [
                     {
-                        "fields": [
-                            {
-                                "dimension": "misc",
-                                "type": "selector",
-                                "value": "other1"
-                            }
-                        ],
-                        "type": "or"
+                        "dimension": "misc",
+                        "type": "in",
+                        "values": ["other1"]
                     },
                     {
-                        "fields": [
-                            {
-                                "dimension": "misc",
-                                "type": "selector",
-                                "value": "other2Desc"
-                            }
-                        ],
-                        "type": "or"
+                        "dimension": "misc",
+                        "type": "in",
+                        "values": ["other2Desc"]
                     }
                 ],
                 "type": "and"
