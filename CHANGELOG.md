@@ -11,7 +11,6 @@ Current
 - [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999 and https://github.com/yahoo/fili/pull/1002)
     * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
     * Add support to use of `()` in the filter clause
-### Fixed:
 - [Fix contains filter behavior](https://github.com/yahoo/fili/pull/998)
     * When there is a Contains filter applied to a non-cached dimension, it will be translated into a `SearchFilter` instead of `SelectorFilter`.
     
@@ -19,6 +18,7 @@ Current
     * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing
 - [`MetricUnionAvailability` properly defensively copies availability map](https://github.com/yahoo/fili/pull/997)
     * `MetricUnionAvailability` previously did not create a defensive copy of the `availabilitiesToMetricNames` parameter. This has been fixed.   
+- [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
 - [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
