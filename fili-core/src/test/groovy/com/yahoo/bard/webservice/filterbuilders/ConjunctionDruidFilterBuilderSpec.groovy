@@ -178,5 +178,4 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     TreeSet<DimensionRow> getDimensionRows(List<String> ids) {
         return ids.collect {resources.d3.findDimensionRowByKeyValue(it)} as TreeSet<DimensionRow>
     }
-
 }
