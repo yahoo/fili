@@ -300,9 +300,9 @@ abstract class BaseDataServletComponentSpec extends Specification {
 
         // Make the call
         Response response = httpCall.request().headers(additionalApiRequestHeaders).get()
-        if (response.status != 200) {
+        /*if (response.status != 200) {
             LOG.trace("***  *** Response status: ${response.status}: ${response.readEntity(String)}")
-        }
+        }*/
         response
     }
 

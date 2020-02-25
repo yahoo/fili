@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.web.ApiFilter
+import com.yahoo.bard.webservice.web.BadFilterException
 
 import org.joda.time.DateTime
 
@@ -42,12 +43,34 @@ class NoOpSearchProviderSpec extends Specification {
         noOpSearchProvider.findAllOrderedDimensionRows().empty
     }
 
-    def "findFilteredDimensionRows with simple filters returns expected row"() {
+    def "findFilteredDimensionRows with simple filters with non key filters throws error"() {
+
+        given: "A set of ApiFilters and an expected row"
+        ApiFilter apiFilter = Mock(ApiFilter)
+        apiFilter.getDimension() >> keyValueStoreDimension
+        apiFilter.getDimensionField() >> BardDimensionField.DESC
+        apiFilter.getValues() >> ["row1Desc"]
+        DimensionRow expectedRow = BardDimensionField.makeDimensionRow(keyValueStoreDimension, "row1Desc", "row1Desc")
+        apiFilter.getDimensionField() >> expectedRow
+
+        when: "A filter is made using a non key field."
+        noOpSearchProvider.findFilteredDimensionRows([apiFilter] as Set) == [expectedRow] as Set<DimensionRow>
+
+        then: "An exception is thrown because noop search provider only manages key fields."
+        Exception e = thrown(IllegalArgumentException)
+        e.cause instanceof BadFilterException
+
+    }
+
+    def "findFilteredDimensionRows with simple filters returns expected row with key filters"() {
 
         given: "A set of ApiFilters and an expected row"
         ApiFilter apiFilter = Mock(ApiFilter)
         apiFilter.getValues() >> ["row1Desc"]
+        apiFilter.getDimension() >> keyValueStoreDimension
+        apiFilter.getDimensionField() >> keyValueStoreDimension.getKey()
         DimensionRow expectedRow = BardDimensionField.makeDimensionRow(keyValueStoreDimension, "row1Desc", "row1Desc")
+
 
         expect: "We get the expected row when we find filtered dimension rows"
         noOpSearchProvider.findFilteredDimensionRows([apiFilter] as Set) == [expectedRow] as Set<DimensionRow>
@@ -58,12 +81,18 @@ class NoOpSearchProviderSpec extends Specification {
         given: "A set of ApiFilters and an expected row"
         ApiFilter apiFilter1 = Mock(ApiFilter)
         apiFilter1.getValues() >> ["row1Desc"] // say filter query is like: dim|desc-in[row1Desc]
+        apiFilter1.getDimension() >> keyValueStoreDimension
+        apiFilter1.getDimensionField() >> keyValueStoreDimension.key
 
         ApiFilter apiFilter2 = Mock(ApiFilter)
         apiFilter2.getValues() >> ["row2"] // say filter query is like: dim|id-notin[row2]
+        apiFilter2.getDimension() >> keyValueStoreDimension
+        apiFilter2.getDimensionField() >> keyValueStoreDimension.key
 
         ApiFilter apiFilter3 = Mock(ApiFilter)
         apiFilter3.getValues() >> ["row3Name"] // say filter query is like: dim|name-contains[row3Name]
+        apiFilter3.getDimension() >> keyValueStoreDimension
+        apiFilter3.getDimensionField() >> keyValueStoreDimension.key
 
         DimensionRow expectedRow1 = BardDimensionField.makeDimensionRow(keyValueStoreDimension, "row1Desc", "row1Desc")
         DimensionRow expectedRow2 = BardDimensionField.makeDimensionRow(keyValueStoreDimension, "row2", "row2")

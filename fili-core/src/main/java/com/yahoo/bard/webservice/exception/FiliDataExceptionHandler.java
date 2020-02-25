@@ -50,21 +50,21 @@ public class FiliDataExceptionHandler implements DataExceptionHandler {
             RequestValidationException rve = (RequestValidationException) e;
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(rve.getStatus(), rve, writer));
         } else if (e instanceof NoMatchFoundException) {
-            LOG.info(
+            LOG.error(
                     "Exception processing request: {}.  Request: {}",
                     e.getMessage(),
                     containerRequestContext.getUriInfo().getRequestUri().toString()
             );
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(INTERNAL_SERVER_ERROR, e, writer));
         } else if (e instanceof TimeoutException) {
-            LOG.info(
+            LOG.error(
                     "Exception processing request: {}.  Request: {}",
                     e.getMessage(),
                     containerRequestContext.getUriInfo().getRequestUri().toString()
             );
             asyncResponse.resume(RequestHandlerUtils.makeErrorResponse(GATEWAY_TIMEOUT, e, writer));
         } else {
-            LOG.info(
+            LOG.error(
                     "Exception processing request: {}.  Request: {}",
                     e.getMessage(),
                     containerRequestContext.getUriInfo().getRequestUri().toString()

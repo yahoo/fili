@@ -31,7 +31,7 @@ class SingleDimensionNoRowsFilterDataServletSpec extends BaseDataServletComponen
         [
                 "metrics" : ["width"],
                 "dateTime": ["2014-06-02%2F2014-06-09"],
-                "filters" : ["other|id-in[other1]", "other|desc-in[other2Desc]"]
+                "filters" : ["other|id-in[other1]", "other|id-in[other2]"]
         ]
     }
 
@@ -91,7 +91,7 @@ class SingleDimensionNoRowsFilterDataServletSpec extends BaseDataServletComponen
                             {
                                 "dimension": "misc",
                                 "type": "selector",
-                                "value": "other2Desc"
+                                "value": "other2"
                             }
                         ],
                         "type": "or"

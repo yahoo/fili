@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension.impl;
 
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
+
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -11,7 +13,11 @@ import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +33,7 @@ import java.util.stream.Collectors;
  * it would just return a new dimension row matching the filter.
  */
 public class NoOpSearchProvider implements SearchProvider {
+    private static final Logger LOG = LoggerFactory.getLogger(NoOpSearchProvider.class);
 
     private final int queryWeightLimit;
 
@@ -126,6 +133,20 @@ public class NoOpSearchProvider implements SearchProvider {
             Set<ApiFilter> filters,
             PaginationParameters paginationParameters
     ) {
+        for (ApiFilter apiFilter: filters) {
+            Dimension d = apiFilter.getDimension();
+            DimensionField dimensionField = apiFilter.getDimensionField();
+            if (d.getKey() != dimensionField) {
+                String logMessage = FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(
+                        dimensionField,
+                        d.getApiName()
+                ) + " NoOp Search provider only supports key fields.";
+                LOG.error(logMessage);
+                String error = FILTER_FIELD_NOT_IN_DIMENSIONS.format(dimensionField, d.getApiName());
+                throw new IllegalArgumentException(new BadFilterException(error));
+            }
+        }
+
         return new AllPagesPagination<>(
                 filters.stream()
                         .flatMap(f -> f.getValues().stream())
