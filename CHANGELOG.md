@@ -62,6 +62,8 @@ Current
    * Rationalized dependencies for sample applications
 
 - [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
+
+- [Extracts the logic for deciding which Druid query to build in the DruidQueryBuilder protected method for easily overriding.](https://github.com/yahoo/fili/pull/1008)
    
 ### Removed:
 
