@@ -170,4 +170,13 @@ public interface Dimension {
      * @return  true if this dimension is aggregatable
      */
     boolean isAggregatable();
+
+    /**
+     * Test whether this dimension has only a key field.
+     *
+     * @return true if this dimension doesn't need to join to any other dimension storage.
+     */
+    default boolean isDegenerate() {
+        return getDimensionFields().size() == 1 && getDimensionFields().contains(getKey());
+    }
 }

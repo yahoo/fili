@@ -23,6 +23,17 @@ import javax.validation.constraints.NotNull;
 public interface SearchProvider {
 
     /**
+     * Check if this search provider index backed and thus supports filter processing.
+     *
+     * If not, findFilteredDimensionRows should not be called.
+     *
+     * @return true if the findRows are capable of resolving
+     */
+    default boolean supportsFilterProcessing() {
+        return true;
+    }
+
+    /**
      * Setter for dimension.
      *
      * @param dimension  Dimension the SearchProvider is searching

@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.BadFilterException;
+import com.yahoo.bard.webservice.web.FilterOperation;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.slf4j.Logger;
@@ -52,6 +53,9 @@ public class NoOpSearchProvider implements SearchProvider {
 
     @Override
     public void setDimension(Dimension dimension) {
+        if (! dimension.isDegenerate()) {
+            throw new IllegalArgumentException("NoOp search provider cannot provide api filter processing.");
+        }
         this.dimension = dimension;
     }
 
@@ -60,6 +64,17 @@ public class NoOpSearchProvider implements SearchProvider {
         // do nothing
     }
 
+    /**
+     * NoOpSearch provider is the definitively non backed search provider.
+     *
+     * Future work could remove the necessity for this class if the Dimension interface changes in some major ways.
+     *
+     * @return false, this dimension is not backed by an index.
+     */
+    @Override
+    public boolean supportsFilterProcessing() {
+        return false;
+    }
     /**
      * Get cardinality for the dimension
      * <p>
@@ -91,18 +106,26 @@ public class NoOpSearchProvider implements SearchProvider {
     @Override
     public void refreshIndex(String rowId, DimensionRow dimensionRow, DimensionRow dimensionRowOld) {
         // do nothing
+        // This may want to become an UnsupportedOperationException
     }
 
     @Override
     public void refreshIndex(Map<String, HashDataCache.Pair<DimensionRow, DimensionRow>> changedRows) {
         // do nothing
+        // This may want to become an UnsupportedOperationException
     }
 
     @Override
     public void clearDimension() {
         //do nothing
+        // This may want to become an UnsupportedOperationException
     }
 
+    /**
+     * A NoOpSearchProvider cannot enter into an unhealthy state because it has no state.
+     *
+     * @return true, always true
+     */
     @Override
     public boolean isHealthy() {
         return true;
@@ -133,10 +156,28 @@ public class NoOpSearchProvider implements SearchProvider {
             Set<ApiFilter> filters,
             PaginationParameters paginationParameters
     ) {
+        /*
         for (ApiFilter apiFilter: filters) {
             Dimension d = apiFilter.getDimension();
             DimensionField dimensionField = apiFilter.getDimensionField();
             if (d.getKey() != dimensionField) {
+                String logMessage = FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(
+                        dimensionField,
+                        d.getApiName()
+                ) + " NoOp Search provider only supports key fields.";
+                LOG.error(logMessage);
+                String error = FILTER_FIELD_NOT_IN_DIMENSIONS.format(dimensionField, d.getApiName());
+                throw new IllegalArgumentException(new BadFilterException(error));
+            }
+        }
+
+        for (ApiFilter apiFilter: filters) {
+            FilterOperation op = apiFilter.getOperation();
+
+
+            Dimension d = apiFilter.getDimension();
+            DimensionField dimensionField = apiFilter.getDimensionField();
+            if (d.() != dimensionField) {
                 String logMessage = FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(
                         dimensionField,
                         d.getApiName()
@@ -153,6 +194,8 @@ public class NoOpSearchProvider implements SearchProvider {
                         .map(this::makeDimensionRow)
                         .collect(Collectors.toCollection(TreeSet::new)),
                 paginationParameters
-        );
+
+        ); */
+        throw new UnsupportedOperationException("NoOpSearchProvider should never be asked to provide indexed filters.");
     }
 }

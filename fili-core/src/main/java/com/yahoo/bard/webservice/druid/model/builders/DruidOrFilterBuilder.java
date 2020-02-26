@@ -40,6 +40,10 @@ public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
             throws DimensionRowNotFoundException {
         LOG.trace("Building dimension filter using dimension: {} \n\n and set of filter: {}", dimension, filters);
 
+        if (! dimension.getSearchProvider().supportsFilterProcessing() ) {
+
+        }
+
         List<Filter> orFilters = new ArrayList<>();
         for (ApiFilter filter : filters) {
             ApiFilter normalizedFilter = filter;

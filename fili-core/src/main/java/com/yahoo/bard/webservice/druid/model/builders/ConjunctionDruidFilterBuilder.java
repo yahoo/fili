@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOO_MANY_DRUID_FI
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -236,7 +238,8 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
     }
 
     /**
-     * Given a dimension and its contains filter values, return a list of Contains SearchFilters.
+     * Given a dimension and its contains filter values, return a list of Contains Druid SearchFilters.
+     *
      * @param dimension the dimension to search for
      * @param values the contains value
      * @return the list of SearchFilters
@@ -246,4 +249,20 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
                 .map(value -> new SearchFilter(dimension, SearchFilter.QueryType.Contains, value))
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Make a DimensionRow by setting all of the field values to the given value.
+     *
+     * @param value Value for dimension fields
+     * @return a DimensionRow
+     */
+    private DimensionRow buildDimensionRow(Dimension dimension, String value) {
+        LinkedHashMap<DimensionField, String> map = new LinkedHashMap<>();
+        for (DimensionField dimensionField: dimension.getDimensionFields()) {
+            map.put(dimensionField, value);
+        }
+
+        return new DimensionRow(dimension.getKey(), map);
+    }
+
 }

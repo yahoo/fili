@@ -16,7 +16,6 @@ public interface FilterOperation {
      */
     String getName();
 
-
     /**
      * Gets the minimum number of values for this operation.
      *
