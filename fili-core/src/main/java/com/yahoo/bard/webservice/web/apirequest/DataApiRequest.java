@@ -391,6 +391,17 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withAsyncAfter(long asyncAfter);
 
+    /**
+     * Whether or not to attempt to build an optimal backend query (i.e. topN or timeSeries in the case of Druid) if possible.
+     *
+     * @return True if the backend query built from this request can be safely optimized (i.e. converted into a topN 
+     * or timeseries query when hitting Druid), false if a naive query should be built (i.e. groupBy in the 
+     * case of Druid)
+     */
+    default boolean optimizeBackendQuery() {
+        return true;
+    }
+
     // Builder with methods
 
     @Deprecated
