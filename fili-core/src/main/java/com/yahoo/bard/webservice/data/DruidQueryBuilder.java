@@ -414,7 +414,8 @@ public class DruidQueryBuilder {
      * @return true if the optimization can be done, false if it can't
      */
     protected boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
-        return apiRequest.getDimensions().size() == 1 &&
+        return apiRequest.optimizeBackendQuery() &&
+                apiRequest.getDimensions().size() == 1 &&
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
                 BardFeatureFlag.TOP_N.isOn() &&
@@ -430,7 +431,8 @@ public class DruidQueryBuilder {
      * @return true if the optimization can be done, false if it can't
      */
     protected boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
-        return apiRequest.getDimensions().isEmpty() &&
+        return apiRequest.optimizeBackendQuery() &&
+            apiRequest.getDimensions().isEmpty() &&
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&

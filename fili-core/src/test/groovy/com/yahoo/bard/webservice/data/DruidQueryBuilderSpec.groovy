@@ -351,7 +351,7 @@ class DruidQueryBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "A #topNDruid query is built when there #isIsNot a having clause"() {
+    def "A #topNDruid query is built when there #isIsNot a having clause, and #cannot optimize"() {
         setup:
         apiRequest = Mock(DataApiRequest)
 
@@ -361,6 +361,7 @@ class DruidQueryBuilderSpec extends Specification {
                 SortDirection.DESC
         )] as Set)
         apiRequest.havings >> havingMap
+        apiRequest.optimizeBackendQuery() >> canOptimize
 
         initDefault(apiRequest)
 
@@ -371,9 +372,11 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.getQueryType() == queryType
 
         where:
-        queryType                 | havingMap                         | topNDruid | isIsNot
-        DefaultQueryType.TOP_N    | [:]                               | "topN"    | "is not"
-        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"
+        queryType                 | havingMap                         | topNDruid | isIsNot  | cannot   | canOptimize
+        DefaultQueryType.TOP_N    | [:]                               | "topN"    | "is not" | "can"    | true
+        DefaultQueryType.GROUP_BY | [:]                               | "groupBy" | "is not" | "cannot" | false
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"     | "can"    | true
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | "groupBy" | "is"     | "cannot" | false
 
     }
 
@@ -448,13 +451,14 @@ class DruidQueryBuilderSpec extends Specification {
     }
 
     @Unroll
-    def "A #tsDruid query is built when there #isIsNot a having clause"() {
+    def "A #tsDruid query is built when there #isIsNot a having clause and the request #cancannot be optimized"() {
         setup:
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([] as Set)
         apiRequest.logicalMetrics >> ([resources.m1] as Set)
         apiRequest.havings >> havingMap
         apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
+        apiRequest.optimizeBackendQuery() >> canOptimize
 
         initDefault(apiRequest)
 
@@ -465,15 +469,18 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.queryType == queryType
 
         where:
-        queryType                   | havingMap                         | tsDruid      | isIsNot
-        DefaultQueryType.TIMESERIES | [:]                               | "timeSeries" | "is not"
-        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"
+        queryType                   | havingMap                         | tsDruid      | isIsNot    | cancannot | canOptimize
+        DefaultQueryType.TIMESERIES | [:]                               | "timeSeries" | "is not"   | "can"     | true
+        DefaultQueryType.GROUP_BY   | [:]                               | "timeSeries" | "is not"   | "cannot"  | false
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"       | "can"     | true
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"       | "cannot"  | false
     }
 
     @Unroll
-    def "TopN maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, topN flag:#flag, havingMap:#havingMap"() {
+    def "TopN maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, topN flag:#flag, havingMap:#havingMap and canOptimize: #canOptimize"() {
         setup:
         apiRequest = Mock(DataApiRequest)
+        apiRequest.optimizeBackendQuery() >> canOptimize
 
         apiRequest.dimensions >> { nDims > 1 ? ([resources.d1, resources.d2] as Set) : [resources.d1] as Set }
         apiRequest.topN >> Optional.of(5)
@@ -501,19 +508,26 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.queryType == queryType
 
         where:
-        queryType                 | havingMap                         | nDims | nested | nSorts | flag  | query
-        DefaultQueryType.TOP_N    | [:]                               | 1     | false  | 1      | true  | "topN"
-        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | [:]                               | 2     | false  | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | [:]                               | 1     | true   | 1      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 2      | true  | "groupBy"
-        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 1      | false | "groupBy"
+        queryType                 | havingMap                         | nDims | nested | nSorts | flag  | canOptimize   | query
+        DefaultQueryType.TOP_N    | [:]                               | 1     | false  | 1      | true  | true          | "topN"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 1      | true  | false         | "groupBy"
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | true          | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 2     | false  | 1      | true  | true          | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | true   | 1      | true  | true          | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 2      | true  | true          | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 1      | false | true          | "groupBy"
+        DefaultQueryType.GROUP_BY | [(resources.m1): [having] as Set] | 1     | false  | 1      | true  | false         | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 2     | false  | 1      | true  | false         | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | true   | 1      | true  | false         | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 2      | true  | false         | "groupBy"
+        DefaultQueryType.GROUP_BY | [:]                               | 1     | false  | 1      | false | false         | "groupBy"
     }
 
     @Unroll
-    def "TimeSeries maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, havingMap:#havingMap"() {
+    def "TimeSeries maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, havingMap:#havingMap and canOptimize: #canOptimize"() {
         setup:
         apiRequest = Mock(DataApiRequest)
+        apiRequest.optimizeBackendQuery() >> canOptimize
 
         apiRequest.dimensions >> { nDims > 0 ? [resources.d1] as Set : [] as Set }
 
@@ -536,12 +550,17 @@ class DruidQueryBuilderSpec extends Specification {
         dq?.queryType == queryType
 
         where:
-        queryType                   | havingMap                         | nDims | nested | nSorts | query
-        DefaultQueryType.TIMESERIES | [:]                               | 0     | false  | 0      | "timeSeries"
-        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | [:]                               | 1     | false  | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | "groupBy"
-        DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | "groupBy"
+        queryType                   | havingMap                         | nDims | nested | nSorts | canOptimize | query
+        DefaultQueryType.TIMESERIES | [:]                               | 0     | false  | 0      | true        | "timeSeries"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 0      | false       | "groupBy"
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | true        | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 1     | false  | 0      | true        | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | true        | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | true        | "groupBy"
+        DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | 0     | false  | 0      | false       | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 1     | false  | 0      | false       | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | true   | 0      | false       | "groupBy"
+        DefaultQueryType.GROUP_BY   | [:]                               | 0     | false  | 1      | false       | "groupBy"
     }
 
     def "LogicalTable filters and ApiRequest filters merge properly"() {
