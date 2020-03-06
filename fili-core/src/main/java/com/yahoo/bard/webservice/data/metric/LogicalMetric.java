@@ -5,8 +5,6 @@ package com.yahoo.bard.webservice.data.metric;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
-import java.util.Collection;
-
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
  */
@@ -71,20 +69,9 @@ public interface LogicalMetric {
     String getType();
 
     /**
-     * Does this metric support being rebuilt.
+     * The collected metadata of this metric.
      *
-     * @return true if this metric supports a regeneration contract.
+     * @return A collection of metric identity metadata.
      */
-    boolean supportsRegeneration();
-
-    /**
-     * Does this metric accept these parameters.
-     *
-     * @param parameters  The names of parameters that this metric will accept.
-     *
-     * @return true if some of these parameters are accepted by the underlying metric
-     */
-    default boolean acceptsParameters(Collection<String> parameters) {
-        return false;
-    }
+    LogicalMetricInfo getLogicalMetricInfo();
 }

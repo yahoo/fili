@@ -3,10 +3,10 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.mappers.RowNumMapper;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 
 import java.util.List;
 
@@ -30,10 +30,10 @@ public class RowNumMaker extends MetricMaker {
 
     @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
-        return new LogicalMetricImpl(
+        return new ProtocolMetricImpl(
+                logicalMetricInfo,
                 null,
-                ROW_NUM_MAPPER,
-                logicalMetricInfo
+                ROW_NUM_MAPPER
         );
     }
 

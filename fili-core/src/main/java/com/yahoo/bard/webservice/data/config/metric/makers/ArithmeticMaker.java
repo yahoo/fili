@@ -3,11 +3,13 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
@@ -24,7 +26,7 @@ import java.util.stream.Collectors;
 /**
  * Metric maker for performing binary arithmetic operations on metrics.
  */
-public class ArithmeticMaker extends MetricMaker {
+public class ArithmeticMaker extends BaseProtocolMetricMaker {
 
     private static final int DEPENDENT_METRICS_REQUIRED = 2;
 
@@ -39,6 +41,27 @@ public class ArithmeticMaker extends MetricMaker {
      *
      * @param metricDictionary  The dictionary used to resolve dependent metrics when building the LogicalMetric
      * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
+     * @param resultSetMapperSupplier  A function that takes a metric column name and produces at build time, a
+     * result set mapper.
+     * @param baseProtocolSupport The protocols to support before removing any blacklisted dependencies
+     *
+     */
+    public ArithmeticMaker(
+            MetricDictionary metricDictionary,
+            ArithmeticPostAggregationFunction function,
+            Function<String, ResultSetMapper> resultSetMapperSupplier,
+            ProtocolSupport baseProtocolSupport
+    ) {
+        super(metricDictionary, baseProtocolSupport);
+        this.function = function;
+        this.resultSetMapperSupplier = resultSetMapperSupplier;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param metricDictionary  The dictionary used to resolve dependent metrics when building the LogicalMetric
+     * @param function  The arithmetic operation performed by the LogicalMetrics constructed by this maker
      * @param resultSetMapperSupplier  A function that takes a metric column name and produces at build time, a result
      * set mapper.
      */
@@ -47,9 +70,12 @@ public class ArithmeticMaker extends MetricMaker {
             ArithmeticPostAggregationFunction function,
             Function<String, ResultSetMapper> resultSetMapperSupplier
     ) {
-        super(metricDictionary);
-        this.function = function;
-        this.resultSetMapperSupplier = resultSetMapperSupplier;
+        this(
+                metricDictionary,
+                function,
+                resultSetMapperSupplier,
+                DefaultSystemMetricProtocols.getStandardProtocolSupport()
+        );
     }
 
     /**
@@ -67,10 +93,16 @@ public class ArithmeticMaker extends MetricMaker {
     }
 
     @Override
-    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
-        // Get the ArithmeticPostAggregation operands from the dependent metrics
+    public ResultSetMapper makeCalculation(LogicalMetricInfo logicalMetricInfo, List<LogicalMetric> dependentMetric) {
+        return resultSetMapperSupplier.apply(logicalMetricInfo.getName());
+    }
+
+    @Override
+    public TemplateDruidQuery makePartialQuery(
+            LogicalMetricInfo logicalMetricInfo,
+            List<LogicalMetric> dependentMetrics
+    ) {
         List<PostAggregation> operands = dependentMetrics.stream()
-                .map(metrics::get)
                 .map(LogicalMetric::getMetricField)
                 .map(MetricMaker::getNumericField)
                 .collect(Collectors.toList());
@@ -81,13 +113,23 @@ public class ArithmeticMaker extends MetricMaker {
                 function,
                 operands
         ));
+        return getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
+    }
 
-        TemplateDruidQuery query = getMergedQuery(dependentMetrics).withPostAggregations(postAggregations);
-        return new LogicalMetricImpl(
-                query,
-                resultSetMapperSupplier.apply(logicalMetricInfo.getName()),
-                logicalMetricInfo
-        );
+    @Override
+    public ProtocolSupport makeProtocolSupport(
+            LogicalMetricInfo logicalMetricInfo,
+            List<LogicalMetric> dependentMetrics
+    ) {
+        List<ProtocolSupport> supportsOfDependents =
+                dependentMetrics.stream()
+                        .filter(metric -> metric instanceof ProtocolMetric)
+                        .map(metric -> (ProtocolMetric) metric)
+                        .map(ProtocolMetric::getProtocolSupport)
+                        .collect(Collectors.toList());
+
+        // Any blacklisted protocols in dependencies should roll upward
+        return DefaultSystemMetricProtocols.getStandardProtocolSupport().mergeBlacklists(supportsOfDependents);
     }
 
     @Override

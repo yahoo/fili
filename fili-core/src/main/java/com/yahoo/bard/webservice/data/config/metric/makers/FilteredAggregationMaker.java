@@ -4,10 +4,10 @@
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
@@ -64,14 +64,14 @@ public class FilteredAggregationMaker extends MetricMaker {
                 filter
         );
 
-        return new LogicalMetricImpl(
+        return new ProtocolMetricImpl(
+                logicalMetricInfo,
                 new TemplateDruidQuery(
                         ImmutableSet.of(filteredAggregation),
                         Collections.emptySet(),
                         sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null)
                 ),
-                sourceMetric.getCalculation(),
-                logicalMetricInfo
+                sourceMetric.getCalculation()
         );
     }
 

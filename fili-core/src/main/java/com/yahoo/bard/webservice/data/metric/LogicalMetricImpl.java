@@ -32,14 +32,14 @@ public class LogicalMetricImpl implements LogicalMetric {
      * {@link #LogicalMetricImpl(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
     public LogicalMetricImpl(
-            TemplateDruidQuery templateDruidQuery,
+            @NotNull TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
-            String name,
+            @NotNull String name,
             String longName,
             String category,
             String description
     ) {
-        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, longName, category, description));
+        this(new LogicalMetricInfo(name, longName, category, description), templateDruidQuery, calculation);
     }
 
     /**
@@ -58,12 +58,12 @@ public class LogicalMetricImpl implements LogicalMetric {
      */
     @Deprecated
     public LogicalMetricImpl(
-            TemplateDruidQuery templateDruidQuery,
+            @NotNull TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
-            String name,
+            @NotNull String name,
             String description
     ) {
-        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, description));
+        this(new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, description), templateDruidQuery, calculation);
     }
 
     /**
@@ -80,8 +80,12 @@ public class LogicalMetricImpl implements LogicalMetric {
      * {@link #LogicalMetricImpl(TemplateDruidQuery, ResultSetMapper, LogicalMetricInfo)} instead.
      */
     @Deprecated
-    public LogicalMetricImpl(TemplateDruidQuery templateDruidQuery, ResultSetMapper calculation, String name) {
-        this(templateDruidQuery, calculation, new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, name));
+    public LogicalMetricImpl(
+            @NotNull TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            @NotNull String name
+    ) {
+        this(new LogicalMetricInfo(name, name, DEFAULT_CATEGORY, name), templateDruidQuery, calculation);
     }
 
     /**
@@ -90,14 +94,34 @@ public class LogicalMetricImpl implements LogicalMetric {
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param logicalMetricInfo  Logical Metric info provider
+     *
+     * @deprecated use {@link #LogicalMetricImpl(LogicalMetricInfo, TemplateDruidQuery, ResultSetMapper)}
      */
+    @Deprecated
     public LogicalMetricImpl(
-            TemplateDruidQuery templateDruidQuery,
+            @NotNull TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
             @NotNull LogicalMetricInfo logicalMetricInfo
     ) {
         this.calculation = calculation;
         this.logicalMetricInfo = logicalMetricInfo;
+        this.query = templateDruidQuery;
+    }
+
+    /**
+     * Constructor. Builds a Logical Metric whose instance variables are provided by a LogicalMetricInfo object.
+     *
+     * @param logicalMetricInfo  Logical Metric info provider
+     * @param templateDruidQuery  Query the metric needs
+     * @param calculation  Mapper for the metric
+     */
+    public LogicalMetricImpl(
+            @NotNull LogicalMetricInfo logicalMetricInfo,
+            @NotNull TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation
+    ) {
+        this.logicalMetricInfo = logicalMetricInfo;
+        this.calculation = calculation;
         this.query = templateDruidQuery;
     }
 
@@ -142,8 +166,8 @@ public class LogicalMetricImpl implements LogicalMetric {
     }
 
     @Override
-    public boolean supportsRegeneration() {
-        return false;
+    public LogicalMetricInfo getLogicalMetricInfo() {
+        return logicalMetricInfo;
     }
 
     @Override
