@@ -29,7 +29,7 @@
 
         <version.h2>1.4.195</version.h2>
         <version.calcite>1.20.0</version.calcite>
-        <presto.version>0.226</presto.version>
+        <presto.version>0.232</presto.version>
     </properties>
 
     <dependencies>

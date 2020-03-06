@@ -560,6 +560,13 @@ select filters)
 
 ### Added:
 
+
+-- [MAJOR FEATURE: Protocol Metrics](https://github.com/yahoo/fili/issues/1014)]
+    * Split `LogicalMetric` into an interface and an implementation: `LogicalMetricImpl`
+    * Added `Protocol`, `ProtocolSupport` and `MetricTransformer` to support metric self-trasnformation.
+    * Added `DefaultSystemMetricProtocols` and `ProtocolDictionary` to support protocol configuration.
+    * Updated `ArithmeticMaker` and `AggregationAverageMaker` to produce protocol metrics. 
+
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
     * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that
       hash values are consistent.
