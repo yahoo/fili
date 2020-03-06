@@ -41,7 +41,7 @@ public class ThetaSketchSetOperationMaker extends MetricMaker {
     @Override
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
 
-        TemplateDruidQuery mergedQuery = getMergedQuery(dependentMetrics);
+        TemplateDruidQuery mergedQuery = getMergedQuery(metrics, dependentMetrics);
 
         // Get the ThetaSketchSetOperationPostAggregation operands from the dependent metrics
         List<PostAggregation> sketchPostAggregations = dependentMetrics.stream()

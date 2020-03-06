@@ -3,9 +3,11 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleMinAggregation
@@ -24,6 +26,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
 
     public static String NAME = "FOO"
     public static String FIELD_NAME = "BAR"
+    LogicalMetricInfo info = new LogicalMetricInfo(NAME)
 
     @Unroll
     def "Expected numeric aggregation is produced for #makerClass.simpleName"() {
@@ -52,9 +55,8 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         maker.make(NAME, FIELD_NAME) == makeSketchMetric(aggregation)
 
         where:
-        makerClass     | aggregation
+        makerClass       | aggregation
         ThetaSketchMaker | new ThetaSketchAggregation(NAME, FIELD_NAME, 5)
-
     }
 
     /*
@@ -62,18 +64,18 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
        metric can't be more accurate than this and the test primarily tests the subclasses integrating correctly.
      */
     def makeNumericMetric(Aggregation aggregation) {
-        new LogicalMetricImpl(
+        new ProtocolMetricImpl(
+                info,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 MetricMaker.NO_OP_MAPPER,
-                aggregation.getName()
         );
     }
 
     def makeSketchMetric(Aggregation aggregation) {
-        new LogicalMetricImpl(
+        new ProtocolMetricImpl(
+                info,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                new SketchRoundUpMapper(aggregation.getName()),
-                aggregation.getName()
+                new SketchRoundUpMapper(aggregation.getName())
         );
     }
 }

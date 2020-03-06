@@ -190,14 +190,34 @@ public abstract class MetricMaker {
     /**
      * A helper function returning the resulting aggregation set from merging one or more template druid queries.
      *
-     * @param names  Names of the metrics to fetch and merge the aggregation clauses from
+     * @param dictionary  The dictionary used to resolve these named
+     * @param names The names of metrics to fetch and merge the aggregation clauses from
      *
      * @return The merged query
      */
-    protected TemplateDruidQuery getMergedQuery(List<String> names) {
+    protected static TemplateDruidQuery getMergedQuery(MetricDictionary dictionary, List<String> names) {
         // Merge in any additional queries
         return names.stream()
-                .map(metrics::get)
+                .map(dictionary::get)
+                .map(LogicalMetric::getTemplateDruidQuery)
+                .reduce(TemplateDruidQuery::merge)
+                .orElseThrow(() -> {
+                    String message = "At least 1 name is needed to merge aggregations";
+                    LOG.error(message);
+                    return new IllegalArgumentException(message);
+                });
+    }
+
+    /**
+     * A helper function returning the resulting aggregation set from merging one or more template druid queries.
+     *
+     * @param logicalMetrics The names of metrics to fetch and merge the aggregation clauses from
+     *
+     * @return The merged query
+     */
+    protected TemplateDruidQuery getMergedQuery(List<LogicalMetric> logicalMetrics) {
+        // Merge in any additional queries
+        return logicalMetrics.stream()
                 .map(LogicalMetric::getTemplateDruidQuery)
                 .reduce(TemplateDruidQuery::merge)
                 .orElseThrow(() -> {

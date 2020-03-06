@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
@@ -25,7 +26,7 @@ public class FilteredAggregationMakerSpec extends Specification{
 
     private static final String DEPENDENT_METRIC_NAME = "totalPageViews"
     private static final String FILT_METRIC_NAME = "filteredPageViews"
-    private static final String FILTER_METRIC_INFO = new LogicalMetricInfo(FILT_METRIC_NAME)
+    private static final LogicalMetricInfo FILTER_METRIC_INFO = new LogicalMetricInfo(FILT_METRIC_NAME)
 
     MetricDictionary metricDictionary = new MetricDictionary();
     LongSumMaker longSumMaker = new LongSumMaker(metricDictionary)
@@ -41,10 +42,10 @@ public class FilteredAggregationMakerSpec extends Specification{
         metricDictionary.put("longSum", metric);
 
         and: "The expected metric"
-        Aggregation expectedAgg = new FilteredAggregation(FILTER_METRIC_INFO, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new LogicalMetricImpl(new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), FILTER_METRIC_INFO)
+        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(FILTER_METRIC_INFO, new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper())
 
         expect:
-        maker.make(new LogicalMetricInfo(FILTER_METRIC_INFO), ["longSum"]) == expectedMetric
+        maker.make(FILTER_METRIC_INFO, ["longSum"]) == expectedMetric
     }
 }
