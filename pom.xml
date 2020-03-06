@@ -97,6 +97,7 @@
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
+        <version.asynchttp>2.11.0</version.asynchttp>
         <version.jersey>2.24</version.jersey>
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
@@ -108,7 +109,7 @@
         <version.lombok>1.18.8</version.lombok>
 
 
-        <version.spring>5.1.9.RELEASE</version.spring>
+        <version.spring>5.1.13.RELEASE</version.spring>
         <version.groovy>2.4.15</version.groovy>
         <version.jackson>2.10.0</version.jackson>
         <version.jackson-databind>2.10.0</version.jackson-databind>
@@ -376,6 +377,12 @@
                 <groupId>io.druid</groupId>
                 <artifactId>druid-api</artifactId>
                 <version>${version.druid.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Json Parsing -->
@@ -420,12 +427,12 @@
                 <!-- TODO: Move to only redison dependency -->
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
-                <version>2.9.0</version>
+                <version>3.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
-                <version>3.8.0</version>
+                <version>3.8.2</version>
             </dependency>
 
             <!-- JodaTime -->
@@ -439,18 +446,18 @@
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
-                <version>2.10.4</version>
+                <version>${version.asynchttp}</version>
             </dependency>
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client-netty-utils</artifactId>
-                <version>2.10.4</version>
+                <version>${version.asynchttp}</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
+                <artifactId>netty-codec-dns</artifactId>
                 <version>${version.netty}</version>
             </dependency>
             <dependency>
@@ -468,10 +475,22 @@
                 <artifactId>netty-handler</artifactId>
                 <version>${version.netty}</version>
             </dependency>
+
+            <!-- Dependencies pegged to overwrite redisson versions.  Remove when redisson is removed or updated. -->
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty</artifactId>
-                <version>3.10.6.Final</version>
+                <artifactId>netty-buffer</artifactId>
+                <version>${version.netty}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-resolver-dns</artifactId>
+                <version>${version.netty}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec</artifactId>
+                <version>${version.netty}</version>
             </dependency>
 
             <!-- ReactiveX -->
@@ -790,7 +809,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>5.2.1</version>
+                <version>5.3.0</version>
                 <configuration>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
