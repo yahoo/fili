@@ -155,7 +155,7 @@ public class ProtocolSupport {
      *
      * @return The Protocol for this protocol name
      */
-    Protocol getProtocol(String protocolName) {
+    public Protocol getProtocol(String protocolName) {
         return protocolMap.get(protocolName);
     }
 
