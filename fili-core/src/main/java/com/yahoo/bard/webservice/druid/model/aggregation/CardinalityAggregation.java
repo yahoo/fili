@@ -66,7 +66,7 @@ public class CardinalityAggregation extends Aggregation {
     public String getType() {
         return "cardinality";
     }
-    
+
     @Override
     public boolean isFloatingPoint() {
         return false;
