@@ -34,7 +34,7 @@ public class LongSumAggregation extends Aggregation {
         return new LongSumAggregation(getName(), fieldName);
     }
 
-    @JsonIgnore
+    @Override
     public boolean isFloatingPoint() {
         return false;
     }

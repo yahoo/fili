@@ -66,6 +66,11 @@ public class CardinalityAggregation extends Aggregation {
     public String getType() {
         return "cardinality";
     }
+    
+    @Override
+    public boolean isFloatingPoint() {
+        return false;
+    }
 
     public Set<Dimension> getDependentDimensions() {
         return dimensions;
@@ -113,11 +118,6 @@ public class CardinalityAggregation extends Aggregation {
     @Override
     public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
         return new ImmutablePair<>(Optional.of(this), Optional.empty());
-    }
-
-    @JsonIgnore
-    public boolean isFloatingPoint() {
-        return false;
     }
 
     @Override

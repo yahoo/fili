@@ -34,7 +34,7 @@ public class LongMinAggregation extends Aggregation {
         return new LongMinAggregation(getName(), fieldName);
     }
 
-    @JsonIgnore
+    @Override
     public boolean isFloatingPoint() {
         return false;
     }

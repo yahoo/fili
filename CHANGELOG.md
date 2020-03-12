@@ -8,7 +8,7 @@ pull request if there was one.
 Current
 -------
 ### Fixed: 
-- [Fix bug where some Aggregation model types were incorrectly reporting precision]()
+- [Fix bug where some Aggregation model types were incorrectly reporting precision](https://github.com/yahoo/fili/pull/1017)
     * CardinalityAggregation, LongMaxAggregation, and LongMinAggregation were incorrectly reporting their precision as
       floating point by not overriding the Aggregation#isFloatingPoint method to return "false".  
 

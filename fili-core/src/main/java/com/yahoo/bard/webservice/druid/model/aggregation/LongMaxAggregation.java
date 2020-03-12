@@ -34,7 +34,7 @@ public class LongMaxAggregation extends Aggregation {
         return new LongMaxAggregation(getName(), fieldName);
     }
 
-    @JsonIgnore
+    @Override
     public boolean isFloatingPoint() {
         return false;
     }
