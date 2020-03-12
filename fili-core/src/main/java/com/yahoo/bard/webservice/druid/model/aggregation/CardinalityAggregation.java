@@ -115,6 +115,11 @@ public class CardinalityAggregation extends Aggregation {
         return new ImmutablePair<>(Optional.of(this), Optional.empty());
     }
 
+    @JsonIgnore
+    public boolean isFloatingPoint() {
+        return false;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (o instanceof CardinalityAggregation) {

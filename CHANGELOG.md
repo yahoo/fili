@@ -8,6 +8,10 @@ pull request if there was one.
 Current
 -------
 ### Fixed: 
+- [Fix bug where some Aggregation model types were incorrectly reporting precision]()
+    * CardinalityAggregation, LongMaxAggregation, and LongMinAggregation were incorrectly reporting their precision as
+      floating point by not overriding the Aggregation#isFloatingPoint method to return "false".  
+
 - [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999 and https://github.com/yahoo/fili/pull/1002)
     * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
     * Add support to use of `()` in the filter clause
