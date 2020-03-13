@@ -24,6 +24,31 @@ import java.util.function.Function;
 
 /**
  * Metric maker produces new metrics from existing metrics or raw configuration.
+ *
+ * <p>Conceptually, metric makers are similar to a function on a metric. Makers consume one or more dependent metrics,
+ * any other information required to perform the calculation, and produce a new metric that is a transformation on the base
+ * metric. Dependent metrics can be simple aggregations of a single column in the target data store, or can be existing
+ * complex calculations themselves based on other metrics. Ultimately, {@link LogicalMetric}s are serialized into aggregations against
+ * the final data store. MetricMakers are intended to aid in building the {@link LogicalMetric}s that represent the
+ * complex calculations that can be done. MetricMakers can be thought of as preparing a formula for the target
+ * target datasource to then evaluate.
+ *
+ * <p><b>Metric makers are a configuration time concept.</b> In standard cases they are run to configure the set of
+ * metrics in the system and are not used afterwards. In this way, the set of calculations that can be done against the
+ * target data store is defined by configuration and cannot change once the system is running.
+ *
+ * <p>Instances of a MetricMaker are intended to represent a single instance of a calculation, which can then be applied
+ * to multiple different base metrics. For example, say we have a ConstantAdditionMaker. The ConstantAdditionMaker
+ * consumes a base metric and produces a metric whose value is a constant + the result of the aggregation over the base
+ * metric. An instance of the ConstantAdditionMaker would be created with a constant. That instance could then be
+ * repeatedly applied over a any amount of other metrics. If we wanted to create a metric that added 5 to the result of
+ * an aggregation, we would write code similar to the following:
+ * {@code MetricMaker add5Maker = new ConstantAdditionMaker(5)}
+ * We could then apply add5Maker to any base metric.
+ * {@code LogicalMetric usersPlusFive = add5Maker.make(usersPlusFiveMetadata, Collections.singletonList(users)}
+ * where {@code users} is the metric representing an aggregation against the users column. In this way we are closing
+ * over the desired constant to add, and allowing the formula that adds 5 to any metric to be reused against any
+ * applicable metric in the client system.
  */
 public abstract class MetricMaker {
 

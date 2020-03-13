@@ -22,6 +22,8 @@ import java.util.stream.Stream;
  */
 public class ProtocolSupport {
 
+    private static final String UNNAMED = "";
+
     /**
      * Contracts which should not be supported on this metric or metrics that depend on it.
      */
@@ -33,6 +35,11 @@ public class ProtocolSupport {
     private final Map<String, Protocol> protocolMap;
 
     /**
+     * Name of the ProtocolSupport instance. Name is optional and exists solely as a convenience for metadata
+     */
+    private final String name;
+
+    /**
      * Constructor.
      *
      * @param protocols A collection of protocols to support.
@@ -40,7 +47,7 @@ public class ProtocolSupport {
     public ProtocolSupport(
             Collection<Protocol> protocols
     ) {
-        this(protocols, Collections.emptySet());
+        this(protocols, Collections.emptySet(), UNNAMED);
     }
 
     /**
@@ -53,8 +60,23 @@ public class ProtocolSupport {
             Collection<Protocol> protocols,
             Set<String> blacklist
     ) {
+        this(protocols, blacklist, UNNAMED);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param protocols  A collection of protocols to support.
+     * @param blacklist  Protocols that will not be supported and should not be supported by depending metrics.
+     */
+    public ProtocolSupport(
+            Collection<Protocol> protocols,
+            Set<String> blacklist,
+            String name
+    ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
         this.blacklist = blacklist;
+        this.name = name;
     }
 
     /**
@@ -157,6 +179,16 @@ public class ProtocolSupport {
      */
     public Protocol getProtocol(String protocolName) {
         return protocolMap.get(protocolName);
+    }
+
+    /**
+     * Returns this name of this Protocol support. Name is simply a convenience for exposing ProtocolSupports in
+     * metadata or for clients to track ProtocolSupports. Names are optional and have no format restrictions.
+     *
+     * @return the name of the ProtocolSupport or empty string if the ProtocolSupport is unnamed.
+     */
+    public String getName() {
+        return name;
     }
 
     @Override
