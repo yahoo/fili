@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.metric.protocol;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
 import java.util.Map;
 
@@ -22,20 +23,24 @@ public interface MetricTransformer {
      * @return A new metric based on the signal;
      * @throws UnknownProtocolValueException if this transformer doesn't know how to accept this signal
      */
-    LogicalMetric apply(LogicalMetric logicalMetric, Protocol protocol, Map<String, String> parameterValues)
-            throws UnknownProtocolValueException;
+    LogicalMetric apply(
+            LogicalMetricInfo resultMetadata,
+            LogicalMetric logicalMetric,
+            Protocol protocol,
+            Map<String, String> parameterValues
+    ) throws UnknownProtocolValueException;
 
     /**
      * Implemented here to illustrate test flows for errors.
      */
-    MetricTransformer ERROR_THROWING_TRANSFORM = (metric, protocol, map) -> {
+    MetricTransformer ERROR_THROWING_TRANSFORM = (lmi, metric, protocol, map) -> {
         throw new UnknownProtocolValueException(protocol, map);
     };
 
     /**
      * Implemented here to illustrate non mutating flows.
      */
-    MetricTransformer IDENTITY_TRANSFORM = (metric, protocol, map) -> {
+    MetricTransformer IDENTITY_TRANSFORM = (lmi, metric, protocol, map) -> {
         return metric;
     };
 }

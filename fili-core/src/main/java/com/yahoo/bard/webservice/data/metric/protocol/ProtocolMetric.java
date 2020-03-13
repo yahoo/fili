@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.metric.protocol;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
 import java.util.Map;
 
@@ -36,7 +37,11 @@ public interface ProtocolMetric extends LogicalMetric {
      *
      * @throws UnknownProtocolValueException if the values passed for the protocol is invalid for that protocol.
      */
-    LogicalMetric accept(String protocolName, Map<String, String> parameters) throws UnknownProtocolValueException;
+    LogicalMetric accept(
+            LogicalMetricInfo resultMetadata,
+            String protocolName,
+            Map<String, String> parameters
+    ) throws UnknownProtocolValueException;
 
     /**
      * Get the underlying protocol support for this metric.
