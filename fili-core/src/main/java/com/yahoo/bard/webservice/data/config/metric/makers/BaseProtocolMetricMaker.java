@@ -8,15 +8,17 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 
 import java.util.List;
 
 /**
- * Protocol Metrics can be transformed by accepting parameters for a protocol they support.
+ * An expansion on the the base {@link MetricMaker} contract that leverages the functionality of {@link ProtocolMetric}.
  *
- * A protocol in this case is a category of contract of transformation.
+ * While extensions of the base MakerMetric class are intended to be used only at configuration time, extensions of
+ * BaseProtocolMetricMaker are intended to be used both at configuration time and at query time.
  */
 public abstract class BaseProtocolMetricMaker extends MetricMaker implements MakeFromMetrics {
 

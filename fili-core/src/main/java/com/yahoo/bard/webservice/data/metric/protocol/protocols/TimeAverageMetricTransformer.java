@@ -25,16 +25,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * An interface for transforming metrics into other metrics.
+ * Transformer for applying TimeAverage transformation at runtime using the Protocol Metric API. The details of the
+ * time average algorithm are specified in the {@link AggregationAverageMaker} class.
  */
 public class TimeAverageMetricTransformer implements MetricTransformer {
 
     private static final MetricDictionary EMPTY_METRIC_DICTIONARY = new MetricDictionary();
     public final static TimeAverageMetricTransformer INSTANCE = new TimeAverageMetricTransformer();
-
-    private static final String NAME_FORMAT = "%s%s";
-    private static final String LONG_NAME_FORMAT = "%s (%s)";
-    private static final String DESCRIPTION_FORMAT = "The %s of %s.";
 
     private Map<String, TimeAverageMetricMakerConfig> makerConfigMap;
 
@@ -86,7 +83,12 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         );
     }
     @Override
-    public LogicalMetric apply(LogicalMetric logicalMetric, Protocol protocol, Map<String, String> parameterValues)
+    public LogicalMetric apply(
+            LogicalMetricInfo resultMetadata,
+            LogicalMetric logicalMetric,
+            Protocol protocol,
+            Map<String, String> parameterValues
+    )
             throws UnknownProtocolValueException {
 
         String parameterValue = parameterValues.get(protocol.getCoreParameterName());
@@ -101,23 +103,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
                 key -> buildMaker(metricMakerConfig)
         );
 
-        LogicalMetricInfo info = makeNewLogicalMetricInfo(logicalMetric.getLogicalMetricInfo(), metricMakerConfig);
-        return maker.makeInnerWithResolvedDependencies(info, Collections.singletonList(logicalMetric));
-    }
-
-    /**
-     * Build the new identity metadata for the transformed metric.
-     *
-     * @param info  The identity metadata from the existing metric
-     * @param config The descriptors for the maker type being built
-     *
-     * @return  A metric info for a time-ly logical metric.
-     */
-    protected LogicalMetricInfo makeNewLogicalMetricInfo(LogicalMetricInfo info, TimeAverageMetricMakerConfig config) {
-        String name = String.format(NAME_FORMAT, config.getNamePrefix(), info.getName());
-        String longName = String.format(LONG_NAME_FORMAT, info.getLongName(), config.getLongNameSuffix());
-        String description = String.format(DESCRIPTION_FORMAT, config.getLongNameSuffix(), info.getDescription());
-        return new LogicalMetricInfo(name, longName, info.getCategory(), description, info.getType());
+        return maker.makeInnerWithResolvedDependencies(resultMetadata, Collections.singletonList(logicalMetric));
     }
 
     /**
@@ -131,28 +117,20 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         public static Map<String, TimeAverageMetricMakerConfig> timeMakerConfigs = new LinkedHashMap<>();
 
         private final String parameterValue;
-        private final String namePrefix;
-        private final String longNameSuffix;
         private final ZonelessTimeGrain grain;
 
         public static final TimeAverageMetricMakerConfig DAY_AVERAGE = new TimeAverageMetricMakerConfig(
                 "dayAvg",
-                "dayAvg",
-                "Daily Average",
                 DAY
         );
 
         public static final TimeAverageMetricMakerConfig WEEK_AVERAGE = new TimeAverageMetricMakerConfig(
                 "weekAvg",
-                "weekAvg",
-                "Weekly Average",
                 WEEK
         );
 
         public static final TimeAverageMetricMakerConfig MONTH_AVERAGE = new TimeAverageMetricMakerConfig(
                 "monthAvg",
-                "monthAvg",
-                "Monthly Average",
                 MONTH
         );
 
@@ -174,24 +152,6 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         /**
          * Getter.
          *
-         * @return The name added to the logical metric info name.
-         */
-        public String getNamePrefix() {
-            return namePrefix;
-        }
-
-        /**
-         * Getter.
-         *
-         * @return The longName added to the logical metric info long name and description.
-         */
-        public String getLongNameSuffix() {
-            return longNameSuffix;
-        }
-
-        /**
-         * Getter.
-         *
          * @return The grain of the metric maker for this config.
          */
         public ZonelessTimeGrain getGrain() {
@@ -202,19 +162,13 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
          * Build a configuration bean that helps configure grain specific reaggregation.
          *
          * @param parameterValue  The value of the parameter that uses this config.
-         * @param namePrefix   The prefix added to the metric apiName.
-         * @param longNameSuffix  The suffix added to longNames.
          * @param granularity  The granularity of reaggregation.
          */
         TimeAverageMetricMakerConfig(
                 String parameterValue,
-                String namePrefix,
-                String longNameSuffix,
                 ZonelessTimeGrain granularity
         ) {
             this.parameterValue = parameterValue;
-            this.namePrefix = namePrefix;
-            this.longNameSuffix = longNameSuffix;
             this.grain = granularity;
         }
     }
