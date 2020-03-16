@@ -32,7 +32,8 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 (PaginationParameters) null,
                 (ResponseFormatType) null,
                 "",
-                Long.MAX_VALUE // asynchAfter
+                Long.MAX_VALUE, // asyncAfter
+                true // Whether or not to try to build the optimal druid query
         )
     }
 }

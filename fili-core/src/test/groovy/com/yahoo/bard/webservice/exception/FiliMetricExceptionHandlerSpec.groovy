@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.exception
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -21,7 +22,7 @@ class FiliMetricExceptionHandlerSpec extends Specification {
 
     FiliMetricExceptionHandler metricsExceptionHandler = new FiliMetricExceptionHandler()
 
-    LogicalMetric metric = new LogicalMetric(
+    LogicalMetric metric = new LogicalMetricImpl(
             Stub(TemplateDruidQuery),
             new NoOpResultSetMapper(),
             new LogicalMetricInfo("metric")

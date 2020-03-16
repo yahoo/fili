@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException
 import com.yahoo.bard.webservice.druid.model.builders.ConjunctionDruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.filter.SearchFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
@@ -173,6 +174,21 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
         ["1", "3", "4"]      | _
 
 
+    }
+
+    @Unroll
+    def "buildContainsSearchFilters constructs a list of SearchFilters for #values"() {
+        expect:
+        filterBuilder.buildContainsSearchFilters(resources.d16, values) == getSearchFilters(values)
+
+        where:
+        values              | _
+        []                  | _
+        ['v1', 'v2', 'v3']  | _
+    }
+
+    List<Filter> getSearchFilters(List<String> values) {
+        return values.collect {new SearchFilter(resources.d16, SearchFilter.QueryType.Contains, it)}
     }
 
     TreeSet<DimensionRow> getDimensionRows(List<String> ids) {

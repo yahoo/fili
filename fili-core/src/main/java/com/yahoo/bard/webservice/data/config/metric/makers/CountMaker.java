@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation;
 
 import java.util.Collections;
@@ -34,7 +35,11 @@ public class CountMaker extends MetricMaker {
                 Collections.emptySet()
         );
 
-        return new LogicalMetric(query, NO_OP_MAPPER, logicalMetricInfo);
+        return new ProtocolMetricImpl(
+                logicalMetricInfo,
+                query,
+                NO_OP_MAPPER
+        );
     }
 
     @Override

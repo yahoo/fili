@@ -2,13 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import static com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
-import com.yahoo.bard.webservice.data.time.TimeGrain
+import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
@@ -30,7 +34,7 @@ class AggregationAverageMakerSpec extends Specification{
     static final String ESTIMATE_NAME = "users_estimate"
     static final String ESTIMATE_SUM_NAME = "users_estimate_sum"
     static final int SKETCH_SIZE = 16000
-    static final TimeGrain INNER_GRAIN = DAY
+    static final ZonelessTimeGrain INNER_GRAIN = DAY
 
     @Shared
     FieldConverters converter = FieldConverterSupplier.sketchConverter
@@ -67,9 +71,10 @@ class AggregationAverageMakerSpec extends Specification{
                 new FieldAccessorPostAggregation(userSketchCount)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric actual = maker.make(NAME, NAME)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        actual.equals(expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed a sketch merge and sketch estimate"(){
@@ -123,7 +128,12 @@ class AggregationAverageMakerSpec extends Specification{
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new ProtocolMetricImpl(
+                new LogicalMetricInfo(NAME, DESCRIPTION),
+                dependentQuery,
+                new NoOpResultSetMapper(),
+                DefaultSystemMetricProtocols.getStandardProtocolSupport()
+        )
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -173,6 +183,11 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new ProtocolMetricImpl(
+                new LogicalMetricInfo(NAME, DESCRIPTION),
+                outerQuery,
+                new NoOpResultSetMapper(),
+                DefaultSystemMetricProtocols.getStandardProtocolSupport().blacklistProtocol(REAGGREGATION_CONTRACT_NAME)
+        )
     }
 }

@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import java.util.Collections;
@@ -52,10 +53,10 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         String metricName = logicalMetricInfo.getName();
         Aggregation aggregation = aggregationFactory.apply(metricName, dependentMetrics.get(0));
-        return new LogicalMetric(
+        return new ProtocolMetricImpl(
+                logicalMetricInfo,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                getResultSetMapper(metricName),
-                logicalMetricInfo
+                getResultSetMapper(metricName)
         );
     }
 

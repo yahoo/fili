@@ -111,7 +111,7 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        super(format, downloadFilename, SYNCHRONOUS_REQUEST_FLAG, perPage, page);
+        super(format, downloadFilename, ApiRequest.SYNCHRONOUS_REQUEST_FLAG, perPage, page);
         this.slices = generateSlices(tableDictionary, uriInfo);
 
         this.slice = sliceName != null ? generateSlice(

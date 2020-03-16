@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOpe
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -73,31 +74,31 @@ class MetricMakerSpec extends Specification {
 
         TemplateDruidQuery queryTemplate
         queryTemplate = new TemplateDruidQuery([] as Set, [number] as Set)
-        constantMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), constantName)
+        constantMetric = new LogicalMetricImpl(queryTemplate, new NoOpResultSetMapper(), constantName)
 
         Aggregation longSum = new LongSumAggregation(sumName, "columnName")
         queryTemplate = new TemplateDruidQuery([longSum] as Set, [] as Set)
-        longSumMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), longSum.name)
+        longSumMetric = new LogicalMetricImpl(queryTemplate, new NoOpResultSetMapper(), longSum.name)
 
         longSumFieldAccessor = new FieldAccessorPostAggregation(longSum)
         PostAggregation square = new ArithmeticPostAggregation(squareName, MULTIPLY, [longSumFieldAccessor, longSumFieldAccessor])
 
         queryTemplate = new TemplateDruidQuery([longSum] as Set, [square] as Set)
-        squareMetric = new LogicalMetric(queryTemplate, new NoOpResultSetMapper(), square.name)
+        squareMetric = new LogicalMetricImpl(queryTemplate, new NoOpResultSetMapper(), square.name)
 
         // Theta Sketches
         Aggregation sketchAggregation = new ThetaSketchAggregation(sketchName, "columnName", 16000)
         PostAggregation postAggregation = new ThetaSketchEstimatePostAggregation(sketchName, square)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [] as Set)
-        sketchAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name)
-        sketchPostAggregationMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(postAggregation.name), postAggregation.name)
+        sketchAggregationMetric = new LogicalMetricImpl(queryTemplate, new SketchRoundUpMapper(sketchAggregation.name), sketchAggregation.name)
+        sketchPostAggregationMetric = new LogicalMetricImpl(queryTemplate, new SketchRoundUpMapper(postAggregation.name), postAggregation.name)
 
         PostAggregation sketchEstimateAggregation = CONVERTER.asSketchEstimate((MetricField)sketchAggregation)
 
         sketchFieldAccessor = sketchEstimateAggregation.getField()
 
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchEstimateAggregation] as Set)
-        sketchEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchEstimateAggregation.name), sketchEstimateAggregation.name)
+        sketchEstimateMetric = new LogicalMetricImpl(queryTemplate, new SketchRoundUpMapper(sketchEstimateAggregation.name), sketchEstimateAggregation.name)
 
         PostAggregation sketchSetAggregation = new ThetaSketchSetOperationPostAggregation(
                 sketchUnionName,
@@ -105,11 +106,11 @@ class MetricMakerSpec extends Specification {
                 [sketchFieldAccessor, sketchFieldAccessor]
         )
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetAggregation] as Set)
-        sketchUnionMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetAggregation.name), sketchSetAggregation.name)
+        sketchUnionMetric = new LogicalMetricImpl(queryTemplate, new SketchRoundUpMapper(sketchSetAggregation.name), sketchSetAggregation.name)
 
         PostAggregation sketchSetEstimate = CONVERTER.asSketchEstimate(sketchSetAggregation)
         queryTemplate = new TemplateDruidQuery([sketchAggregation] as Set, [sketchSetEstimate] as Set)
-        sketchUnionEstimateMetric = new LogicalMetric(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
+        sketchUnionEstimateMetric = new LogicalMetricImpl(queryTemplate, new SketchRoundUpMapper(sketchSetEstimate.name), sketchSetEstimate.name)
 
         squareMetricWithSketch = new MetricField() {
             @Override
@@ -138,7 +139,7 @@ class MetricMakerSpec extends Specification {
         FieldConverterSupplier.sketchConverter = originalConverter
     }
 
-    private static final LogicalMetric DEFAULT_METRIC = new LogicalMetric(
+    private static final LogicalMetric DEFAULT_METRIC = new LogicalMetricImpl(
             new TemplateDruidQuery([] as Set, [] as Set),
             new NoOpResultSetMapper(),
             "no name",
@@ -184,7 +185,7 @@ class MetricMakerSpec extends Specification {
      */
     Map<String, LogicalMetric> makeEmptyMetrics(List<String> metricNames){
         metricNames.collectEntries {
-            [(it): new LogicalMetric(null, null, it)]
+            [(it): new LogicalMetricImpl(null, null, it)]
         }
     }
 

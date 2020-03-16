@@ -18,9 +18,12 @@ import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.aggregation.SqlAggregation;
 import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
 import com.yahoo.bard.webservice.sql.evaluator.HavingEvaluator;
+import com.yahoo.bard.webservice.sql.evaluator.PostAggregationEvaluator;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 import com.yahoo.bard.webservice.table.SqlPhysicalTable;
+
+import com.google.common.collect.ImmutableList;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
@@ -47,11 +50,12 @@ import java.util.stream.Collectors;
  */
 public class DruidQueryToSqlConverter {
     private static final Logger LOG = LoggerFactory.getLogger(DruidQueryToSqlConverter.class);
-    private final CalciteHelper calciteHelper;
+    protected final CalciteHelper calciteHelper;
     private final SqlTimeConverter sqlTimeConverter;
     private final BiFunction<Aggregation, ApiToFieldMapper, Optional<SqlAggregation>> druidSqlAggregationConverter;
     private final HavingEvaluator havingEvaluator;
     private final FilterEvaluator filterEvaluator;
+    private final PostAggregationEvaluator postAggregationEvaluator;
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
 
@@ -68,8 +72,27 @@ public class DruidQueryToSqlConverter {
         this.calciteHelper = calciteHelper;
         this.sqlTimeConverter = buildSqlTimeConverter();
         this.druidSqlAggregationConverter = buildDruidSqlTypeConverter();
-        this.havingEvaluator = new HavingEvaluator();
-        this.filterEvaluator = new FilterEvaluator();
+        this.havingEvaluator = buildHavingEvaluator();
+        this.filterEvaluator = buildFilterEvaluator();
+        this.postAggregationEvaluator = buildPostAggregationEvaluator();
+    }
+
+    /**
+     * Builds a HavingEvaluator.
+     *
+     * @return a having evaluator
+     */
+    protected HavingEvaluator buildHavingEvaluator() {
+        return new HavingEvaluator();
+    }
+
+    /**
+     * Builds a filterEvaluator.
+     *
+     * @return a filter evaluator
+     */
+    protected FilterEvaluator buildFilterEvaluator() {
+        return new FilterEvaluator();
     }
 
     /**
@@ -80,6 +103,15 @@ public class DruidQueryToSqlConverter {
      */
     protected SqlTimeConverter buildSqlTimeConverter() {
         return new SqlTimeConverter();
+    }
+
+    /**
+     * Builds a PostAggregationEvaluator.
+     *
+     * @return a post aggregation evaluator
+     */
+    protected PostAggregationEvaluator buildPostAggregationEvaluator() {
+        return new PostAggregationEvaluator();
     }
 
     /**
@@ -129,8 +161,9 @@ public class DruidQueryToSqlConverter {
                 .getSourceTable();
 
         LOG.debug(
-                "Querying table {} with schema {} using timestampColumn {}",
+                "Querying table {} with catalog: {}, schema {}, using timestampColumn {}",
                 sqlTable.getName(),
+                sqlTable.getCatalog(),
                 sqlTable.getSchemaName(),
                 sqlTable.getTimestampColumn()
         );
@@ -144,6 +177,7 @@ public class DruidQueryToSqlConverter {
 
     /**
      * Converts the druid query to a {@link RelNode}.
+     * Additional project step compare to methid in base class.
      *
      * @param druidQuery  The query to convert to sql.
      * @param apiToFieldMapper  The mapping between api and physical names for the query.
@@ -151,13 +185,14 @@ public class DruidQueryToSqlConverter {
      *
      * @return the sql equivalent of the query.
      */
-    private RelNode convertDruidQueryToRelNode(
+    protected RelNode convertDruidQueryToRelNode(
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
-        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName());
-        return builder.scan(sqlTable.getName())
+        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
+        builder = builder.scan(sqlTable.getName());
+        return builder
                 .filter(
                         getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
                 )
@@ -170,6 +205,12 @@ public class DruidQueryToSqlConverter {
                         )),
                         getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
                 )
+                .project(
+                        (Iterable) ImmutableList.builder()
+                                .addAll(builder.fields())
+                                .addAll(getPostAggregations(builder, druidQuery, apiToFieldMapper))
+                                .build()
+                )
                 .filter(
                         getHavingFilter(builder, druidQuery, apiToFieldMapper)
                 )
@@ -179,6 +220,27 @@ public class DruidQueryToSqlConverter {
                         getSort(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
                 )
                 .build();
+    }
+
+    /**
+     * Returns the post-aggregations of the query.
+     *
+     * @param builder the RelBuilder
+     * @param druidQuery the source druid query
+     * @param apiToFieldMapper api column to logic column name mapping
+     * @return a list of RexNode representing the post aggregation
+     */
+    private List<RexNode> getPostAggregations(
+            RelBuilder builder,
+            DruidAggregationQuery<?> druidQuery,
+            ApiToFieldMapper apiToFieldMapper
+    ) {
+        List<RexNode> postAggregationFields = new ArrayList<>();
+        druidQuery.getPostAggregations().stream()
+                .map(postAggregation -> getPostAggregationEvaluator()
+                        .evaluatePostAggregation(postAggregation, builder, apiToFieldMapper))
+                .forEach(postAggregationFields::add);
+        return postAggregationFields;
     }
 
     /**
@@ -231,7 +293,6 @@ public class DruidQueryToSqlConverter {
                         .map(orderByColumn -> {
                             String orderByField = apiToFieldMapper.apply(orderByColumn.getDimension());
                             limitSpecColumns.add(orderByField);
-
                             RexNode sort = builder.field(orderByField);
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
@@ -309,7 +370,7 @@ public class DruidQueryToSqlConverter {
         );
 
         if (druidQuery.getFilter() != null) {
-            RexNode druidQueryFilter = filterEvaluator.evaluateFilter(
+            RexNode druidQueryFilter = getFilterEvaluator().evaluateFilter(
                     druidQuery.getFilter(),
                     builder,
                     apiToFieldMapper
@@ -339,7 +400,7 @@ public class DruidQueryToSqlConverter {
             Having having = ((GroupByQuery) druidQuery).getHaving();
 
             if (having != null) {
-                filter = havingEvaluator.evaluateHaving(having, builder, apiToFieldMapper);
+                filter = getHavingEvaluator().evaluateHaving(having, builder, apiToFieldMapper);
             }
         }
 
@@ -362,19 +423,24 @@ public class DruidQueryToSqlConverter {
     ) {
         return druidQuery.getAggregations()
                 .stream()
-                .map(aggregation -> druidSqlAggregationConverter.apply(aggregation, apiToFieldMapper))
+                .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
                     LOG.debug(msg);
                     return new RuntimeException(msg);
                 }))
-                .map(sqlAggregation -> builder.aggregateCall(
-                        sqlAggregation.getSqlAggFunction(),
-                        false,
-                        null,
-                        sqlAggregation.getSqlAggregationAsName(),
-                        builder.field(sqlAggregation.getSqlAggregationFieldName())
-                ))
+                .map(sqlAggregation -> {
+                    if (sqlAggregation.getSqlAggFunction() == SqlStdOperatorTable.COUNT) {
+                        return builder.countStar(sqlAggregation.getSqlAggregationAsName());
+                    }
+                    return builder.aggregateCall(
+                            sqlAggregation.getSqlAggFunction(),
+                            false,
+                            null,
+                            sqlAggregation.getSqlAggregationAsName(),
+                            builder.field(sqlAggregation.getSqlAggregationFieldName())
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
@@ -426,5 +492,21 @@ public class DruidQueryToSqlConverter {
 
     public SqlTimeConverter getTimeConverter() {
         return sqlTimeConverter;
+    }
+
+    protected BiFunction<Aggregation, ApiToFieldMapper, Optional<SqlAggregation>> getDruidSqlAggregationConverter() {
+        return druidSqlAggregationConverter;
+    }
+
+    protected HavingEvaluator getHavingEvaluator() {
+        return havingEvaluator;
+    }
+
+    protected FilterEvaluator getFilterEvaluator() {
+        return filterEvaluator;
+    }
+
+    protected PostAggregationEvaluator getPostAggregationEvaluator() {
+        return postAggregationEvaluator;
     }
 }

@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.druid.model.builders;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRowNotFoundException;
+import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider;
 import com.yahoo.bard.webservice.druid.model.filter.AndFilter;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter;
@@ -45,10 +46,20 @@ public class DruidOrFilterBuilder extends ConjunctionDruidFilterBuilder {
             if (normalizedFilter.getOperation().equals(DefaultFilterOperation.notin)) {
                 normalizedFilter = filter.withOperation(DefaultFilterOperation.in);
             }
-            Filter disjunction = new OrFilter(buildSelectorFilters(
-                    dimension,
-                    getFilteredDimensionRows(dimension, Collections.singleton(normalizedFilter))
-            ));
+
+            Filter disjunction = null;
+            if (dimension.getSearchProvider() instanceof NoOpSearchProvider &&
+                    filter.getOperation() == DefaultFilterOperation.contains) {
+                disjunction = new OrFilter(buildContainsSearchFilters(
+                        dimension,
+                        filter.getValuesList()
+                ));
+            } else {
+                disjunction = new OrFilter(buildSelectorFilters(
+                        dimension,
+                        getFilteredDimensionRows(dimension, Collections.singleton(normalizedFilter))
+                ));
+            }
             orFilters.add(normalizedFilter == filter ? disjunction : new NotFilter(disjunction));
         }
 

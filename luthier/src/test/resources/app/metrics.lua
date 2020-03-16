@@ -2,7 +2,7 @@
 -- Licensed under the terms of the Apache license. Please see LICENSE.md file
 -- distributed with this work for terms.
 
---[[ 
+--[[
 This is where we define the metrics for Fili. Metrics are formulas (for
 example, formulas of aggregations and post-aggregations that we send down to
 Druid). These formulas are constructed by taking Makers (which can be thought
@@ -74,8 +74,24 @@ local metrics = {
         maker = "doubleSum",
         druidMetric="added"
     },
+    addedMax = {
+        maker = "doubleMax",
+        druidMetric="added"
+    },
+    addedMin = {
+        maker = "doubleMin",
+        druidMetric="added"
+    },
     delta = {
         maker = "doubleSum",
+        druidMetric="delta"
+    },
+    deltaMax = {
+        maker = "longMax",
+        druidMetric="delta"
+    },
+    deltaMin = {
+        maker = "longMin",
         druidMetric="delta"
     },
     deleted = {
@@ -91,11 +107,11 @@ local metrics = {
         druidMetric = "NO2"
     },
     averageCOPerDay = {
-        maker = "aggregateAverageByDay",
+        maker = "aggregationAverageByDay",
         dependencies = {"COM"}
     },
     averageNO2PerDay = {
-        maker = "aggregateAverageByDay",
+        maker = "aggregationAverageByDay",
         dependencies = {"NO2M"}
     }
 }

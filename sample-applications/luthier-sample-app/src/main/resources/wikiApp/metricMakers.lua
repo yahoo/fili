@@ -56,7 +56,7 @@ for _, operation in ipairs({"PLUS","MINUS","MULTIPLY","DIVIDE"}) do
 end
 
 for _, grain in ipairs {"Hour", "Day"} do
-    M["aggregateAverageBy" .. grain] = {
+    M["aggregationAverageBy" .. grain] = {
         type = "com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker",
         innerGrain = grain
     }

@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -24,7 +25,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Constraints used to match and resolve the best table for a given query.
  */
-public class QueryPlanningConstraint extends DataSourceConstraint {
+public class QueryPlanningConstraint extends BaseDataSourceConstraint {
 
     private final LogicalTable logicalTable;
     private final List<Interval> intervals;
@@ -131,6 +132,40 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
 
     public Granularity getRequestGranularity() {
         return requestGranularity;
+    }
+
+    @Override
+    public QueryPlanningConstraint withMetricIntersection(Set<String> metricNames) {
+        return new QueryPlanningConstraint(
+                getRequestDimensions(),
+                getFilterDimensions(),
+                getMetricDimensions(),
+                metricNames.stream()
+                        .filter(getMetricNames()::contains)
+                        .collect(Collectors.toSet()),
+                getApiFilters(),
+                getLogicalTable(),
+                getIntervals(),
+                getLogicalMetrics(),
+                getMinimumGranularity(),
+                getRequestGranularity()
+        );
+    }
+
+    @Override
+    public QueryPlanningConstraint withDimensionFilter(Predicate<Dimension> filter) {
+        return new QueryPlanningConstraint (
+                getRequestDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getFilterDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getMetricDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getMetricNames(),
+                getApiFilters(),
+                getLogicalTable(),
+                getIntervals(),
+                getLogicalMetrics(),
+                getMinimumGranularity(),
+                getRequestGranularity()
+        );
     }
 
     @Override

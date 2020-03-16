@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -92,18 +93,25 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
                 .flatMap(Set::stream)
                 .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
 
-        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
+        this.availabilitiesToMetricNames = availabilitiesToMetricNames.entrySet().stream()
+                .collect(Collectors.collectingAndThen(
+                        Collectors.toMap(
+                                Map.Entry::getKey,
+                                e -> Collections.unmodifiableSet(new HashSet<>(e.getValue()))
+                        ),
+                        Collections::unmodifiableMap
+                ));
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
         if (!isMetricUnique(availabilitiesToMetricNames)) {
-                String message = String.format(
-                        "Metric columns must be unique across the metric union data sources, but duplicate was found " +
-                                "across the following data sources: %s",
-                        getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
-                );
-                LOG.error(message);
-                throw new RuntimeException(message);
+            String message = String.format(
+                    "Metric columns must be unique across the metric union data sources, but duplicate was found " +
+                            "across the following data sources: %s",
+                    getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
+            );
+            LOG.error(message);
+            throw new RuntimeException(message);
         }
     }
 
@@ -187,7 +195,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
     @Override
     public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
+        return String.format(
+                "MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
                 getDataSourceNames().stream()
                         .map(DataSourceName::asName)
                         .collect(Collectors.joining(", ")),

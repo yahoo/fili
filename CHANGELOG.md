@@ -7,8 +7,41 @@ pull request if there was one.
 
 Current
 -------
+### Fixed: 
+- [Fix bug where some Aggregation model types were incorrectly reporting precision](https://github.com/yahoo/fili/pull/1017)
+    * CardinalityAggregation, LongMaxAggregation, and LongMinAggregation were incorrectly reporting their precision as
+      floating point by not overriding the Aggregation#isFloatingPoint method to return "false".  
+
+- [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999 and https://github.com/yahoo/fili/pull/1002)
+    * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
+    * Add support to use of `()` in the filter clause
+- [Fix contains filter behavior](https://github.com/yahoo/fili/pull/998)
+    * When there is a Contains filter applied to a non-cached dimension, it will be translated into a `SearchFilter` instead of `SelectorFilter`.
+    
+- [Fix Presto query on filtering](https://github.com/yahoo/fili/pull/995)
+    * When translating from sql query to Presto query, there is no type information available for table columns. To make filtering `WHERE` clauses works in Presto, cast coulmns to varchar before comparing
+- [`MetricUnionAvailability` properly defensively copies availability map](https://github.com/yahoo/fili/pull/997)
+    * `MetricUnionAvailability` previously did not create a defensive copy of the `availabilitiesToMetricNames` parameter. This has been fixed.   
+- [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add COUNT(\*) support in fili-sql](https://github.com/yahoo/fili/pull/992)
+   * When there is a `count` metric that uses `countMaker`, it will be translated into a COUNT(\*) in SQL query.
+   
+- [Add Presto support](https://github.com/yahoo/fili/pull/986)
+   * Fili now can connect to Presto servers.
+   * Fixed Druid metadata deserialization issue with the newer druid-api-0.12.1.
+   * Version bump for jackson, jackson-databind, async-http-client to address package vulnerability.
+   * Add suppression for other packages with vulnerability but without fixed version.
+
+
+- [Default implementations of new `Generator` interface](https://github.com/yahoo/fili/issues/769)
+   * All default implementations are based on the equivalent method from `ApiRequestImpl`. The
+   logic backing them is a direct copy and paste from the`ApiRequestImpl` implementation.
+   * The logic is implemented in public static methods for dependent code to use. DO NOT
+   WRITE NEW CODE REFERENCING THOSE METHODS unless you have a good reason to do so. Prefer
+   creating instances of the generator.
+   * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 - [Add custom ssl context support to druid AsyncHttp requests](https://github.com/yahoo/fili/pull/943)
   * Added new Constructors in `AsyncDruidWebServiceImpl` class that accept custom `SslContext` as additional argument. 
@@ -16,17 +49,37 @@ Current
   * Added `getSSLContext()` method in `AbstractBinderFactory` class that returns null as default. Custom Ssl Context is passed by overriding this method. 
     
 ### Changed:
+- [Extracted `DataSourceConstraint` into an interface](https://github.com/yahoo/fili/issues/996)
+   * `DataSourceConstraint` is now an interface.
+    - Migration path documented in the linked issue.
+    - All public methods on the original base class are defined on the interface
+    - The original base class implementation has been renamed to `BaseDataSourceConstraint`.
+    - The class hierarchy has otherwise been maintained
+   * The method `withDimensionFilter` has been added to the `DataSourceConstraint` interface.
+    - This method creates a new view of the constraint that is filtered with a provided predicate.
+    - This method is meant to be the dimension version of the already existing `withMetricIntersection` method.   
+
+- [Methods in `ApiRequestImpl` for constructing ApiRequest resources have been moved to relevant generators](https://github.com/yahoo/fili/issues/769)
+   * No methods have been removed from `ApiRequestImpl`, but the implementation code has been
+   moved to the relevant default generator implementation for that resource, and the existing
+   methods now defer to public static methods on the generators.
 
 - [Refactored sample applications into distinct submodules](https://github.com/yahoo/fili/issues/977)
    * Split luthier into a library package and a sample application
    * Nested all sample applications
    * Resolved dependecy issues around where properties files were sourced
    * Rationalized dependencies for sample applications
+
+- [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
    
 ### Removed:
 
 ### Fixed:
 
+- [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
+   * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
+   * Added handlers to the ObjectMapperSuite json mapper.
+   
 - [Version bump jackson to resolve security vulernability](https://github.com/yahoo/fili/issues/979)
 
 ### Deprecated:
@@ -44,8 +97,8 @@ v0.11.79 - 2019/09/17
 
 ### Configuration - Luthier
 
-We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools). 
-Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc. 
+We added an external configuration system that resolves dependencies using Lua (with Json interopability via tools).
+Luthier provides concise and scriptable means to configure tables, metrics, dimensions, etc.
 See (https://github.com/yahoo/fili/tree/master/luthier)
 
 ### Configuration and Extensibility
@@ -64,19 +117,19 @@ We removed inappropriate use of Optionals from constructors and parameter types 
 
 ### Security patches
 
-We added OWASP vulnerability checking and addressed identified issues. 
+We added OWASP vulnerability checking and addressed identified issues.
 (https://www.owasp.org/index.php/OWASP_Dependency_Check)  Enhancements included jackson version upgrades to address
 injection vulnerabilities.
 
 ### DataApiRequest
 
-We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory 
+We deprecated many methods related to  DataApiRequest being used to build of druid model objects and to carry factory
 objects to other parts of the application.  These factories are now being injected by Dependecy Injection (HK2).
 
 The corresponding methods have been deprecated and will be removed very soon.
 
 A Pojo DataApiRequest has been built as well as a Generator interface and a Builder.  These will form the basis of a
-complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to 
+complete replacement of the existing DataApiRequestImpl in the next version, using a Factory+Builder pattern to
 produce an immutable value object.
 
 ### Extensibility
@@ -515,6 +568,13 @@ A general performance improvement by implementing the in filter in druid (as opp
 select filters)
 
 ### Added:
+
+
+-- [MAJOR FEATURE: Protocol Metrics](https://github.com/yahoo/fili/issues/1014)]
+    * Split `LogicalMetric` into an interface and an implementation: `LogicalMetricImpl`
+    * Added `Protocol`, `ProtocolSupport` and `MetricTransformer` to support metric self-trasnformation.
+    * Added `DefaultSystemMetricProtocols` and `ProtocolDictionary` to support protocol configuration.
+    * Updated `ArithmeticMaker` and `AggregationAverageMaker` to produce protocol metrics. 
 
 - [Sorting JSON objects before caching](https://github.com/yahoo/fili/issues/795)
     * Added `canonicalize` method in `Utils` class which sorts the `JSON` objects of druid query before hashing so that

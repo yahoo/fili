@@ -31,4 +31,9 @@ public class LongMaxAggregation extends Aggregation {
     public Aggregation withFieldName(String fieldName) {
         return new LongMaxAggregation(getName(), fieldName);
     }
+
+    @Override
+    public boolean isFloatingPoint() {
+        return false;
+    }
 }

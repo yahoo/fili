@@ -2,14 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers;
 
-import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
-        .ArithmeticPostAggregationFunction.DIVIDE;
+import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE;
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
+import com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
@@ -49,15 +51,21 @@ import javax.validation.constraints.NotNull;
  *    <li>finally, a post aggregation in the outer query dividing the sum by the count</li>
  * </ul>
  */
-public class AggregationAverageMaker extends MetricMaker {
+public class AggregationAverageMaker extends BaseProtocolMetricMaker {
 
     private static final int DEPENDENT_METRICS_REQUIRED = 1;
+
+    public static final String PROTOCOL_NAME = ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME;
 
     public static final PostAggregation COUNT_INNER = new ConstantPostAggregation("one", 1);
     public static final @NotNull Aggregation COUNT_OUTER = new LongSumAggregation("count", "one");
     public static final PostAggregation COUNT_FIELD_OUTER = new FieldAccessorPostAggregation(COUNT_OUTER);
 
     private final ZonelessTimeGrain innerGrain;
+
+    protected int getDependentMetricsRequired() {
+        return DEPENDENT_METRICS_REQUIRED;
+    }
 
     /**
      * Constructor.
@@ -67,36 +75,51 @@ public class AggregationAverageMaker extends MetricMaker {
      * @param innerGrain  The time grain across which queries should aggregate.
      */
     public AggregationAverageMaker(MetricDictionary metrics, ZonelessTimeGrain innerGrain) {
-        super(metrics);
+        this(metrics, innerGrain, DefaultSystemMetricProtocols.getStandardProtocolSupport());
+    }
+
+    /**
+     * Constructor.
+     *
+     * Any aggregation average maker will disable the protocol {@link ReaggregationProtocol#INSTANCE}
+     *
+     * @param metrics  A mapping of metric names to the corresponding LogicalMetrics. Used to resolve metric names
+     * when making the logical metric.
+     * @param innerGrain  The time grain across which queries should aggregate.
+     * @param protocolSupport The base protocol support for this system
+     */
+    public AggregationAverageMaker(
+            MetricDictionary metrics,
+            ZonelessTimeGrain innerGrain,
+            ProtocolSupport protocolSupport
+    ) {
+        super(metrics, protocolSupport.blacklistProtocol(PROTOCOL_NAME));
         this.innerGrain = innerGrain;
     }
 
     @Override
-    protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
-        // Get the Metric that is being averaged over
-        LogicalMetric dependentMetric = metrics.get(dependentMetrics.get(0));
-
-        // Get the field being subtotalled in the inner query
+    protected TemplateDruidQuery makePartialQuery(
+            final LogicalMetricInfo logicalMetricInfo,
+            final List<LogicalMetric> dependentMetrics
+    ) {
+        LogicalMetric dependentMetric = dependentMetrics.get(0);
         MetricField sourceMetric = convertToSketchEstimateIfNeeded(dependentMetric.getMetricField());
 
-        // Build the TemplateDruidQuery for the metric
         TemplateDruidQuery innerQuery = buildInnerQuery(sourceMetric, dependentMetric.getTemplateDruidQuery());
-        TemplateDruidQuery outerQuery = buildOuterQuery(logicalMetricInfo.getName(), sourceMetric, innerQuery);
-
-        return new LogicalMetric(outerQuery, NO_OP_MAPPER, logicalMetricInfo);
+        return buildOuterQuery(logicalMetricInfo.getName(), sourceMetric, innerQuery);
     }
 
     /**
      * Build the outer query for the average. It will have a sum, a count, and a post agg to divide them.
      *
-     * @param metricDictionary  The metric dictionary name for the metric being created (usually an api name)
+     * @param metricName  The metric dictionary name for the metric being created (usually an api name)
      * @param sourceMetric  The metric in the inner query being averaged
      * @param innerQuery  The inner template query being summed over
      *
      * @return The query for creating a logical metric
      */
     private TemplateDruidQuery buildOuterQuery(
-            String metricDictionary,
+            String metricName,
             MetricField sourceMetric,
             TemplateDruidQuery innerQuery
     ) {
@@ -107,7 +130,7 @@ public class AggregationAverageMaker extends MetricMaker {
         // Build the average post aggregation
         FieldAccessorPostAggregation sumPost = new FieldAccessorPostAggregation(sum);
         PostAggregation average = new ArithmeticPostAggregation(
-                metricDictionary,
+                metricName,
                 DIVIDE,
                 Arrays.asList(sumPost, COUNT_FIELD_OUTER)
         );
@@ -137,38 +160,6 @@ public class AggregationAverageMaker extends MetricMaker {
     }
 
     /**
-     * If the aggregation being averaged is a sketch, the inner query must convert it to a numerical type so that it
-     * can be summed.
-     *
-     * @param originalSourceMetric  The metric being target for sums
-     *
-     * @return Either the original MetricField, or a new SketchEstimate post aggregation
-     */
-    private MetricField convertToSketchEstimateIfNeeded(MetricField originalSourceMetric) {
-        return originalSourceMetric instanceof SketchAggregation ?
-                getSketchConverter().asSketchEstimate((SketchAggregation) originalSourceMetric) :
-                originalSourceMetric;
-    }
-
-    /**
-     * Copy a set of aggregations, replacing any sketch aggregations with sketchMerge aggregations.
-     * This is an artifact of earlier sketch code which didn't have a single sketch type that could be used without
-     * finalization in inner queries.
-     *
-     * @param originalAggregations  The read-only original aggregations
-     *
-     * @return The new aggregation set
-     *
-     * @deprecated This will become unnecessary when the old sketch library is removed
-     */
-    @Deprecated
-    private Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
-        return originalAggregations.stream()
-                .map(agg -> agg.isSketch() ? getSketchConverter().asInnerSketch((SketchAggregation) agg) : agg)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
      * Create an Aggregation for summing on a metric from an inner query.
      * <p>
      * If the original metric that is being averaged is used together in a query with the averaging metric, then both
@@ -192,12 +183,6 @@ public class AggregationAverageMaker extends MetricMaker {
         return innerMetric.isFloatingPoint() ?
                 new DoubleSumAggregation(outerSummingName, innerMetric.getName()) :
                 new LongSumAggregation(outerSummingName, innerMetric.getName());
-
-    }
-
-    @Override
-    protected int getDependentMetricsRequired() {
-        return DEPENDENT_METRICS_REQUIRED;
     }
 
     /**
@@ -207,5 +192,37 @@ public class AggregationAverageMaker extends MetricMaker {
      */
     private TemplateDruidQuery buildTimeGrainCounterQuery() {
         return new TemplateDruidQuery(Collections.emptySet(), Collections.singleton(COUNT_INNER), innerGrain);
+    }
+
+    /**
+     * Copy a set of aggregations, replacing any sketch aggregations with sketchMerge aggregations.
+     * This is an artifact of earlier sketch code which didn't have a single sketch type that could be used without
+     * finalization in inner queries.
+     *
+     * @param originalAggregations  The read-only original aggregations
+     *
+     * @return The new aggregation set
+     *
+     * @deprecated This will become unnecessary when the old sketch library is removed
+     */
+    @Deprecated
+    protected Set<Aggregation> convertSketchesToSketchMerges(Set<Aggregation> originalAggregations) {
+        return originalAggregations.stream()
+                .map(agg -> agg.isSketch() ? getSketchConverter().asInnerSketch((SketchAggregation) agg) : agg)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * If the aggregation being averaged is a sketch, the inner query must convert it to a numerical type so that it
+     * can be summed.
+     *
+     * @param originalSourceMetric  The metric being target for sums
+     *
+     * @return Either the original MetricField, or a new SketchEstimate post aggregation
+     */
+    private MetricField convertToSketchEstimateIfNeeded(MetricField originalSourceMetric) {
+        return originalSourceMetric instanceof SketchAggregation ?
+                getSketchConverter().asSketchEstimate((SketchAggregation) originalSourceMetric) :
+                originalSourceMetric;
     }
 }
