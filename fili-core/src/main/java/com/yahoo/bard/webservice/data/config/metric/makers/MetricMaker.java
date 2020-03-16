@@ -25,30 +25,33 @@ import java.util.function.Function;
 /**
  * Metric maker produces new metrics from existing metrics or raw configuration.
  *
- * <p>Conceptually, metric makers are similar to a function on a metric. Makers consume one or more dependent metrics,
- * any other information required to perform the calculation, and produce a new metric that is a transformation on the
- * base metric. Dependent metrics can be simple aggregations of a single column in the target data store, or can be
- * existing complex calculations themselves based on other metrics. Ultimately, {@link LogicalMetric}s are serialized
- * into aggregations against the final data store. MetricMakers are intended to aid in building the
- * {@link LogicalMetric}s that represent the complex calculations that can be done. MetricMakers can be thought of as
- * preparing a formula for the target target datasource to then evaluate.
+ * <p>Metric makers conceptually describe a mapping function on metrics. Makers are initialized with any secondary 
+ * parameters or code and then at time of use are passed one or more dependent metrics (or physical columns in the 
+ * case of raw aggretations) to produce a new metric with a transformed calculation on the base metric. 
+ * Dependent metrics can be simple aggregations of a single column in the target data store, or can be existing complex 
+ * calculations themselves based on other metrics.
+ * At query building time, {@link LogicalMetric}s are merged and serialized into aggregations against the 
+ * physical data store. MetricMakers are a core approach to building the {@link LogicalMetric}s that represent 
+ * the complex reporting calculations that can be done. MetricMakers can be thought of as describing a formula 
+ * used in a query.
  *
- * <p><b>Metric makers are a configuration time concept.</b> In standard cases they are run to configure the set of
- * metrics in the system and are not used afterwards. In this way, the set of calculations that can be done against the
- * target data store is defined by configuration and cannot change once the system is running.
+ * <p><b>Metric makers are a primarily a configuration concept.</b> At application initialization they are run to 
+ * configure the set of metrics in the system and are not used afterwards. In this way, the set of calculations 
+ * that can be done against the target data store is defined by configuration and are not expected to change once 
+ * the system is running.
  *
- * <p>Instances of a MetricMaker are intended to represent a single instance of a calculation, which can then be applied
- * to multiple different base metrics. For example, say we have a ConstantAdditionMaker. The ConstantAdditionMaker
- * consumes a base metric and produces a metric whose value is a constant + the result of the aggregation over the base
- * metric. An instance of the ConstantAdditionMaker would be created with a constant. That instance could then be
- * repeatedly applied over a any amount of other metrics. If we wanted to create a metric that added 5 to the result of
- * an aggregation, we would write code similar to the following:
- * {@code MetricMaker add5Maker = new ConstantAdditionMaker(5)}
- * We could then apply add5Maker to any base metric.
- * {@code LogicalMetric usersPlusFive = add5Maker.make(usersPlusFiveMetadata, Collections.singletonList(users)}
- * where {@code users} is the metric representing an aggregation against the users column. In this way we are closing
- * over the desired constant to add, and allowing the formula that adds 5 to any metric to be reused against any
- * applicable metric in the client system.
+ * <p>Instances of a MetricMaker represent a single instance of a calculation, which can then be applied to multiple 
+ * different configured metrics. For example, say we have a ConstantDivisionMaker and we initialized it with the value 
+ * '60'. The intended result would be to create metrics smaller than others by a factor of sixty. 
+ * Such a MetricMaker instance could be built once and be repeatedly applied over many other metrics. 
+ * (e.g. it could be used both to convert metrics in seconds to minutes or those in minutes to hours). 
+ * To use it, we would write code 
+ * similar to the following: {@code MetricMaker divide60Maker = new ConstantDivisonMaker(60)}
+ * We could then apply divide60Maker to an existing metric:  
+ * {@code LogicalMetric totalTimeSpentMinutes = divide60Maker.make(totalTimeMinutesMetadata, 
+ * Collections.singletonList(totalTimeSpent)} where {@code totalTimeSpent} is a metric representing an aggregation 
+ * against the timeSpent column. In this way we are closing over the desired constant to add, and allowing the 
+ * formula that divides by sixty to any metric to be reused against any applicable metric in the client system.
  */
 public abstract class MetricMaker {
 
