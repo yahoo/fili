@@ -53,10 +53,14 @@ public interface ProtocolMetric extends LogicalMetric {
     boolean accepts(String protocolName);
 
     /**
-     * Apply this protocol with these parameters to this metric and return a (typically different) metric.
+     * <p>Apply this protocol with these parameters to this metric and return a (typically different) metric. Because
+     * the result metric is inherently different than the input metric, the result must have a new (minimal) set of
+     * metadata associated with it. The output metadata should at least contain a new apiName to annotate the result
+     * set with.
      *
-     * The transformed metric is not necessarily a protocol metric.
+     * <p>The transformed metric is not necessarily a protocol metric.
      *
+     * @param resultMetadata  The metadata of the metric produced as a result of applying the calculation
      * @param protocolName  The name of the protocol to apply
      * @param parameters  A map of keys and values representing the transformation.
      *

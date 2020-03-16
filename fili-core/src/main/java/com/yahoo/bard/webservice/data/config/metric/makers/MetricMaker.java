@@ -26,12 +26,12 @@ import java.util.function.Function;
  * Metric maker produces new metrics from existing metrics or raw configuration.
  *
  * <p>Conceptually, metric makers are similar to a function on a metric. Makers consume one or more dependent metrics,
- * any other information required to perform the calculation, and produce a new metric that is a transformation on the base
- * metric. Dependent metrics can be simple aggregations of a single column in the target data store, or can be existing
- * complex calculations themselves based on other metrics. Ultimately, {@link LogicalMetric}s are serialized into aggregations against
- * the final data store. MetricMakers are intended to aid in building the {@link LogicalMetric}s that represent the
- * complex calculations that can be done. MetricMakers can be thought of as preparing a formula for the target
- * target datasource to then evaluate.
+ * any other information required to perform the calculation, and produce a new metric that is a transformation on the
+ * base metric. Dependent metrics can be simple aggregations of a single column in the target data store, or can be
+ * existing complex calculations themselves based on other metrics. Ultimately, {@link LogicalMetric}s are serialized
+ * into aggregations against the final data store. MetricMakers are intended to aid in building the
+ * {@link LogicalMetric}s that represent the complex calculations that can be done. MetricMakers can be thought of as
+ * preparing a formula for the target target datasource to then evaluate.
  *
  * <p><b>Metric makers are a configuration time concept.</b> In standard cases they are run to configure the set of
  * metrics in the system and are not used afterwards. In this way, the set of calculations that can be done against the

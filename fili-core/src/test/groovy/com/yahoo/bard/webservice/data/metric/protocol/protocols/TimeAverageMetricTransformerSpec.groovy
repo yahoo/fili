@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.config.metric.makers.LongSumMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.MetricMaker
 import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -35,11 +36,13 @@ class TimeAverageMetricTransformerSpec extends Specification {
         MetricMaker sketchMaker = new ThetaSketchMaker(metricDictionary, 128)
 
         LogicalMetric longSum = maker.make("foo", "bar")
+        LogicalMetricInfo longSumOutLmi = new LogicalMetricInfo("longSumResult")
         LogicalMetric sketchUnion = sketchMaker.make("foo", "bar")
+        LogicalMetricInfo sketchOutLmi = new LogicalMetricInfo("sketchUnionResult")
         Map params = [(protocol.coreParameterName): value]
 
-        LogicalMetric averageMetric = timeAverageTransformer.apply(longSum, protocol, params)
-        LogicalMetric sketchAverage = timeAverageTransformer.apply(sketchUnion, protocol, params)
+        LogicalMetric averageMetric = timeAverageTransformer.apply(longSumOutLmi, longSum, protocol, params)
+        LogicalMetric sketchAverage = timeAverageTransformer.apply(sketchOutLmi, sketchUnion, protocol, params)
 
         expect:
         TemplateDruidQuery innerQuery = averageMetric.templateDruidQuery.getInnermostQuery()
@@ -55,33 +58,6 @@ class TimeAverageMetricTransformerSpec extends Specification {
         ((DoubleSumAggregation) sketchAverage.
                 templateDruidQuery.
                 getMetricField("foo_estimate_sum")).fieldName == "foo_estimate"
-
-        where:
-        value      | grain                  | longNameBase
-        "dayAvg"   | DefaultTimeGrain.DAY   | "Daily Average"
-        "weekAvg"  | DefaultTimeGrain.WEEK  | "Weekly Average"
-        "monthAvg" | DefaultTimeGrain.MONTH | "Monthly Average"
-    }
-
-    @Unroll
-    def "LogicalName transformer"() {
-        setup:
-        TimeAverageMetricTransformer timeAverageTransformer = TimeAverageMetricTransformer.INSTANCE
-        TimeAverageMetricTransformer.TimeAverageMetricMakerConfig config = new TimeAverageMetricTransformer.TimeAverageMetricMakerConfig(value, value, longNameBase, DefaultTimeGrain.DAY)
-        MetricDictionary metricDictionary = new MetricDictionary();
-
-        String longName = "foo (" + longNameBase + ")"
-
-        MetricMaker maker = new LongSumMaker(metricDictionary)
-        LogicalMetric longSum = maker.make("foo", "bar")
-        Map params = [(protocol.coreParameterName): value]
-
-        LogicalMetricInfo info = timeAverageTransformer.makeNewLogicalMetricInfo(longSum.logicalMetricInfo, config)
-
-        expect:
-        info.getName().startsWith(value)
-        info.getLongName() == longName
-        info.getDescription().contains(longNameBase)
 
         where:
         value      | grain                  | longNameBase

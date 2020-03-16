@@ -68,6 +68,8 @@ public class ProtocolSupport {
      *
      * @param protocols  A collection of protocols to support.
      * @param blacklist  Protocols that will not be supported and should not be supported by depending metrics.
+     * @param name  The name of this ProtocolSupport. Name is a metadata and organizational concept, it is not used
+     *              internally to identify ProtocolSupport instances.
      */
     public ProtocolSupport(
             Collection<Protocol> protocols,

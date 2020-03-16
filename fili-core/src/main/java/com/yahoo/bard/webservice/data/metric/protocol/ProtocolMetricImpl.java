@@ -64,10 +64,10 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
     }
 
     @Override
-    public LogicalMetric accept(String protocolName, Map<String, String> parameters)
+    public LogicalMetric accept(LogicalMetricInfo resultMetadata, String protocolName, Map<String, String> parameters)
             throws UnknownProtocolValueException {
         Protocol protocol = protocolSupport.getProtocol(protocolName);
-        return protocol.getMetricTransformer().apply(this, protocol, parameters);
+        return protocol.getMetricTransformer().apply(resultMetadata, this, protocol, parameters);
     }
 
     @Override

@@ -25,11 +25,12 @@ class ReaggregationProtocolSpec extends Specification {
         Aggregation agg = new LongSumAggregation("foo", "bar")
         TemplateDruidQuery templateDruidQuery = new TemplateDruidQuery([agg], [])
         LogicalMetric logicalMetric = new LogicalMetricImpl(templateDruidQuery, new NoOpResultSetMapper(), "foo");
+        LogicalMetricInfo resultLmi = new LogicalMetricInfo("result")
 
         Map params = [(ReaggregationProtocol.REAGG_CORE_PARAMETER): acceptedValue]
 
         when:
-        LogicalMetric a = protocol.getMetricTransformer().apply(logicalMetric, protocol, params)
+        LogicalMetric a = protocol.getMetricTransformer().apply(resultLmi, logicalMetric, protocol, params)
 
         then:
         a.templateDruidQuery.innermostQuery.granularity != null

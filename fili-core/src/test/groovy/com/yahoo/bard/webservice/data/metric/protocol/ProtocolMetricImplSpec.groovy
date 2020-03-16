@@ -28,6 +28,7 @@ class ProtocolMetricImplSpec extends Specification {
     def "Accept invokes the protocol support and applies the attached transformer"() {
         setup:
         LogicalMetric expected = Mock(LogicalMetric)
+        LogicalMetricInfo outLmi = Mock(LogicalMetricInfo)
         MetricTransformer metricTransformer = Mock(MetricTransformer)
         protocolSupport.getProtocol(protocolName) >> protocol
         protocol.getMetricTransformer() >> metricTransformer
@@ -35,16 +36,17 @@ class ProtocolMetricImplSpec extends Specification {
         Map values = [:]
 
         when:
-        LogicalMetric result = protocolMetric.accept(protocolName, values)
+        LogicalMetric result = protocolMetric.accept(outLmi, protocolName, values)
 
         then:
-        1* metricTransformer.apply(protocolMetric, protocol, values) >> expected
+        1* metricTransformer.apply(outLmi, protocolMetric, protocol, values) >> expected
         result == expected
     }
 
     def "Accept throws an exception with a bad values"() {
         setup:
         LogicalMetric expected = Mock(LogicalMetric)
+        LogicalMetricInfo outLmi = Mock(LogicalMetricInfo)
         MetricTransformer metricTransformer = Mock(MetricTransformer)
         protocolSupport.getProtocol(protocolName) >> protocol
         protocol.getCoreParameterName() >> protocolName
@@ -53,11 +55,11 @@ class ProtocolMetricImplSpec extends Specification {
         Map values = ["foo": "bar"]
 
         when:
-        LogicalMetric result = protocolMetric.accept(protocolName, values)
+        LogicalMetric result = protocolMetric.accept(outLmi, protocolName, values)
 
         then:
         UnknownProtocolValueException exception = thrown(UnknownProtocolValueException)
-        1 * metricTransformer.apply(protocolMetric, protocol, values) >> {
+        1 * metricTransformer.apply(outLmi, protocolMetric, protocol, values) >> {
             throw new UnknownProtocolValueException(protocol, values)
         }
         exception.getParameterValues() == values
