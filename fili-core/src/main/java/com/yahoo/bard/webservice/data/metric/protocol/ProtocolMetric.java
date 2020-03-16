@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
+import com.yahoo.bard.webservice.data.MetadataDescribable;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 
@@ -40,7 +41,7 @@ import java.util.Map;
  * <p>{@link ProtocolMetricImpl} is the default implementation of this contract, and should be a sufficient
  * implementation for most use cases.
  */
-public interface ProtocolMetric extends LogicalMetric {
+public interface ProtocolMetric extends LogicalMetric, MetadataDescribable {
 
     /**
      * Tests whether this metric is transformable under the provided metric contract. This method must return false if

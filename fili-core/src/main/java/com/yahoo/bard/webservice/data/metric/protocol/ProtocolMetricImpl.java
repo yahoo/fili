@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
+import com.yahoo.bard.webservice.data.config.SimpleMetadata;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
@@ -19,6 +20,7 @@ import javax.validation.constraints.NotNull;
 public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMetric {
 
     protected final ProtocolSupport protocolSupport;
+    private final SimpleMetadata metadata;
 
     /**
      * Constructor.
@@ -54,8 +56,25 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
             ResultSetMapper calculation,
             ProtocolSupport protocolSupport
     ) {
+        this(
+                logicalMetricInfo,
+                templateDruidQuery,
+                calculation,
+                protocolSupport,
+                SimpleMetadata.builder(logicalMetricInfo.getName()).build()
+        );
+    }
+
+    public ProtocolMetricImpl(
+            @NotNull LogicalMetricInfo logicalMetricInfo,
+            @NotNull TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            ProtocolSupport protocolSupport,
+            SimpleMetadata metadata
+    ) {
         super(logicalMetricInfo, templateDruidQuery, calculation);
         this.protocolSupport = protocolSupport;
+        this.metadata = metadata;
     }
 
     @Override
@@ -95,5 +114,10 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
                 super.toString() +
                 ", protocolSupport=" + protocolSupport +
                 '}';
+    }
+
+    @Override
+    public SimpleMetadata getMetadata() {
+        return metadata;
     }
 }

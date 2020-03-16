@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
+import com.yahoo.bard.webservice.data.MetadataDescribable;
+import com.yahoo.bard.webservice.data.config.SimpleMetadata;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,7 +23,7 @@ import java.util.stream.Stream;
  * A Protocol support has a map of protocols keyed by the contract name of the protocol.  It also has a blacklist
  * which defines protocols which are explicitly not supported for metrics which depend on this metric.
  */
-public class ProtocolSupport {
+public class ProtocolSupport implements MetadataDescribable {
 
     private static final String UNNAMED = "";
 
@@ -35,9 +38,9 @@ public class ProtocolSupport {
     private final Map<String, Protocol> protocolMap;
 
     /**
-     * Name of the ProtocolSupport instance. Name is optional and exists solely as a convenience for metadata
+     * Metadata describing a ProtocolSupport instance which can be exposed through metadata endpoints.
      */
-    private final String name;
+    private final SimpleMetadata metadata;
 
     /**
      * Constructor.
@@ -47,7 +50,7 @@ public class ProtocolSupport {
     public ProtocolSupport(
             Collection<Protocol> protocols
     ) {
-        this(protocols, Collections.emptySet(), UNNAMED);
+        this(protocols, Collections.emptySet());
     }
 
     /**
@@ -61,7 +64,7 @@ public class ProtocolSupport {
             Collection<Protocol> protocols,
             Set<String> blacklist
     ) {
-        this(protocols, blacklist, UNNAMED);
+        this(protocols, blacklist, SimpleMetadata.builder(UNNAMED).build());
     }
 
     /**
@@ -69,17 +72,17 @@ public class ProtocolSupport {
      *
      * @param protocols  A collection of protocols to support.
      * @param blacklist  Protocols that will not be supported and should not be supported by depending metrics.
-     * @param name  The name of this ProtocolSupport. Name is a metadata and organizational concept, it is not used
-     *              internally to identify ProtocolSupport instances.
+     * @param metadata  Metadata object used to describe and identify ProtocolSupport instances through metadata
+     *                  endpoints.
      */
     public ProtocolSupport(
             Collection<Protocol> protocols,
             Set<String> blacklist,
-            String name
+            SimpleMetadata metadata
     ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
         this.blacklist = blacklist;
-        this.name = name;
+        this.metadata = metadata;
     }
 
     /**
@@ -185,13 +188,13 @@ public class ProtocolSupport {
     }
 
     /**
-     * Returns this name of this Protocol support. Name is simply a convenience for exposing ProtocolSupports in
-     * metadata or for clients to track ProtocolSupports. Names are optional and have no format restrictions.
+     * Returns the metadata describing this ProtocolSupport.
      *
-     * @return the name of the ProtocolSupport or empty string if the ProtocolSupport is unnamed.
+     * @return the metadata object
      */
-    public String getName() {
-        return name;
+    @Override
+    public SimpleMetadata getMetadata() {
+        return metadata;
     }
 
     @Override
