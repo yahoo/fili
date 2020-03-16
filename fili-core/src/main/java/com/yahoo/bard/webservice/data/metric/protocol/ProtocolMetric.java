@@ -9,11 +9,11 @@ import java.util.Map;
 
 /**
  * <p>Protocol metrics are metrics that have the ability to have transformations applied to them at query time. Protocol
- * metrics themselves represent valid metrics even if no calculations are applied.
+ * metrics should generally represent valid metrics even if no calculations are applied.
  *
  * <p>This is a key feature in reducing the number of configured metric on a system while supporting a wide range of
- * calculations. By passing parameter value to a metric at the API, a chain of Protocols can by applied to a metric to
- * transform it into one of many calculation permutations.
+ * calculations. By passing parameter values to a metric at the API, a chain of Protocols can by applied to a metric to
+ * transform it into one of many calculated permutations.
  *
  * <p>For example, consider a case where you track the amount of unique users that visit your website in your datastore
  * under the fact column "unique_users". You represent this in your Fili instance as the metric "users". This allows you
@@ -23,8 +23,9 @@ import java.util.Map;
  * have visited your website in the past week since the queried day. This calculation can be statically configured in
  * your system as a separate metric ("pastWeekAvgUsers"), or you could leverage the ProtocolMetric API to allow the
  * "users" metric to be queryable on its own, or transformable into a daily average calculation at query time. In this
- * way, you will only have 1 metric ("users") instead of 2 ("users", "pastWeekAvgUsers"), and configuring "users" to
- * support additional calculations will not increase the amount of metrics you support.
+ * way, you would only have to configure 1 metric ("users") instead of 2 ("users", "pastWeekAvgUsers"), and configuring
+ * "users" to support additional calculations would not increase the amount of metrics you support. Further, these
+ * transformations can be enabled across any metrics for which they can apply by configuring and sharing Protocols.
  *
  * <p>Transformations against ProtocolMetrics are defined by the {@link Protocol} class. ProtocolMetrics can support
  * many different Protocols, and can be transformed by multiple Protocols at once. ProtocolMetrics must be able to
@@ -54,9 +55,9 @@ public interface ProtocolMetric extends LogicalMetric {
 
     /**
      * <p>Apply this protocol with these parameters to this metric and return a (typically different) metric. Because
-     * the result metric is inherently different than the input metric, the result must have a new (minimal) set of
-     * metadata associated with it. The output metadata should at least contain a new apiName to annotate the result
-     * set with.
+     * the new metric has a different calculation it should probably have a different name than the base metric passed
+     * in. This is especially important because the base metric could also be on the request as well as the transformed
+     * metric. The output metadata should at least contain a new name and long name to annotate the result set with.
      *
      * <p>The transformed metric is not necessarily a protocol metric.
      *

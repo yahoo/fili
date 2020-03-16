@@ -51,7 +51,8 @@ public class ProtocolSupport {
     }
 
     /**
-     * Constructor.
+     * Constructor. Name is defaulted to empty string, indicating that this protocol support will not publish metadata
+     * for the base metric.
      *
      * @param protocols  A collection of protocols to support.
      * @param blacklist  Protocols that will not be supported and should not be supported by depending metrics.
