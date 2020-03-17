@@ -1,3 +1,5 @@
+// Copyright 2020 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
 import com.yahoo.bard.webservice.data.config.SimpleMetadata;
@@ -9,6 +11,8 @@ public interface MetadataDescribable {
 
     /**
      * Gets the metadata object that describes an instance of the implementing class.
+     *
+     * @return the metadata object
      */
     SimpleMetadata getMetadata();
 }
