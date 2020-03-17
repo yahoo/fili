@@ -1,5 +1,7 @@
 package com.yahoo.bard.webservice.data.config;
 
+import com.google.common.base.Objects;
+
 /**
  * Simple value object that exposes metadata that many different types of Fili objects can possess.
  */
@@ -110,5 +112,33 @@ public class SimpleMetadata {
      */
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleMetadata{" +
+                "name=" + name +
+                ",id=" + id +
+                ",description=" + description +
+                "}";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof SimpleMetadata)) {
+            return false;
+        }
+        SimpleMetadata that = (SimpleMetadata) other;
+
+        return Objects.equal(this.name, that.name) &&
+                Objects.equal(this.id, that.id) &&
+                Objects.equal(this.description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(this.name);
+        result = 32 * result + Objects.hashCode(this.id);
+        return 32 * result + Objects.hashCode(description);
     }
 }
