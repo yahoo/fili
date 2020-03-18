@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
-import com.yahoo.bard.webservice.data.config.MetricMetadata;
+import com.yahoo.bard.webservice.data.config.GlobalMetadata;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
@@ -69,6 +69,11 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
     }
 
     @Override
+    public GlobalMetadata getMetadata() {
+        return getLogicalMetricInfo();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
         if (o == null || getClass() != o.getClass()) { return false; }
@@ -88,10 +93,5 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
                 super.toString() +
                 ", protocolSupport=" + protocolSupport +
                 '}';
-    }
-
-    @Override
-    public MetricMetadata getMetadata() {
-        return getLogicalMetricInfo();
     }
 }

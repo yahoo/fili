@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
+import com.yahoo.bard.webservice.data.config.GlobalMetadata;
+import com.yahoo.bard.webservice.data.config.MetadataDescribable;
+
 /**
  * Protocol describes a named type transformation for metrics.
  *
@@ -18,11 +21,12 @@ package com.yahoo.bard.webservice.data.metric.protocol;
  *
  * Typically protocols are not idempotent and applying the same mapping twice is invalid and unsafe.
  */
-public class Protocol {
+public class Protocol implements MetadataDescribable {
 
     private final String contractName;
     private final String coreParameterName;
     private final MetricTransformer metricTransformer;
+    private final GlobalMetadata metadata;
 
     /**
      * Constructor.
@@ -48,9 +52,26 @@ public class Protocol {
             String coreParameterName,
             MetricTransformer metricTransformer
     ) {
+        this(contractName, coreParameterName, metricTransformer, GlobalMetadata.fromId(contractName));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param contractName  The name of the protocol contract.
+     * @param coreParameterName The name of the core parameter for this protocol.
+     * @param metricTransformer  The transformer to process metrics under this protocol.
+     */
+    public Protocol(
+            String contractName,
+            String coreParameterName,
+            MetricTransformer metricTransformer,
+            GlobalMetadata metadata
+    ) {
         this.contractName = contractName;
         this.coreParameterName = coreParameterName;
         this.metricTransformer = metricTransformer;
+        this.metadata = metadata;
     }
 
     /**
@@ -78,5 +99,10 @@ public class Protocol {
      */
     public MetricTransformer getMetricTransformer() {
         return metricTransformer;
+    }
+
+    @Override
+    public GlobalMetadata getMetadata() {
+        return metadata;
     }
 }

@@ -4,8 +4,8 @@ package com.yahoo.bard.webservice.data.metric.protocol;
 
 import com.yahoo.bard.webservice.data.config.GlobalMetadata;
 import com.yahoo.bard.webservice.data.config.MetadataDescribable;
-import com.yahoo.bard.webservice.data.config.SimpleMetadata;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,8 +67,17 @@ public class ProtocolSupport implements MetadataDescribable {
             GlobalMetadata metadata
     ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
-        this.blacklist = blacklist;
+        this.blacklist = new HashSet<>(blacklist);
         this.metadata = metadata;
+    }
+
+    @Override
+    public GlobalMetadata getMetadata() {
+        return metadata;
+    }
+
+    public ProtocolSupport withMetadata(GlobalMetadata metadata) {
+        return new ProtocolSupport(new ArrayList<>(protocolMap.values()), new HashSet<>(blacklist), metadata);
     }
 
     /**
@@ -171,16 +180,6 @@ public class ProtocolSupport implements MetadataDescribable {
      */
     public Protocol getProtocol(String protocolName) {
         return protocolMap.get(protocolName);
-    }
-
-    /**
-     * Returns the metadata describing this ProtocolSupport.
-     *
-     * @return the metadata object
-     */
-    @Override
-    public GlobalMetadata getMetadata() {
-        return metadata;
     }
 
     @Override

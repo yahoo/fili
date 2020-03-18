@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
-import com.yahoo.bard.webservice.data.config.MetricMetadata;
+import com.yahoo.bard.webservice.data.config.GlobalMetadata;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ import java.util.Objects;
  * want to configure description, for example, they can add the description, which is going to be picked up during
  * logical metric construction.
  */
-public class LogicalMetricInfo implements MetricMetadata {
+public class LogicalMetricInfo implements GlobalMetadata {
     private static final String TYPE_DEFAULT = "number";
 
     private final String name;

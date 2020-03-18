@@ -3,10 +3,7 @@
 package com.yahoo.bard.webservice.util
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow
-import com.yahoo.bard.webservice.data.config.SimpleMetadata
 import com.yahoo.bard.webservice.data.dimension.impl.FlagFromTagDimension
-import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
-import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -76,11 +73,6 @@ class ClassScannerSpec extends Specification {
                 LinkedHashMap,
                 JobRow,
                 FlagFromTagDimension,
-                // SimpleMetadata and classes that depend on this.
-                // TODO Refactor this class to handle builder pattern.
-                SimpleMetadata,
-                ProtocolMetricImpl,
-                ProtocolSupport
         ]
 
         for (Class cls : classScanner.classes) {
