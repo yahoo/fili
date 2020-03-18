@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
-import com.yahoo.bard.webservice.data.MetadataDescribable;
+import com.yahoo.bard.webservice.data.config.MetadataDescribable;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 

@@ -2,7 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
-import com.yahoo.bard.webservice.data.MetadataDescribable;
+import com.yahoo.bard.webservice.data.config.GlobalMetadata;
+import com.yahoo.bard.webservice.data.config.MetadataDescribable;
 import com.yahoo.bard.webservice.data.config.SimpleMetadata;
 
 import java.util.Collection;
@@ -25,8 +26,6 @@ import java.util.stream.Stream;
  */
 public class ProtocolSupport implements MetadataDescribable {
 
-    private static final String UNNAMED = "";
-
     /**
      * Contracts which should not be supported on this metric or metrics that depend on it.
      */
@@ -40,7 +39,7 @@ public class ProtocolSupport implements MetadataDescribable {
     /**
      * Metadata describing a ProtocolSupport instance which can be exposed through metadata endpoints.
      */
-    private final SimpleMetadata metadata;
+    private final GlobalMetadata metadata;
 
     /**
      * Constructor.
@@ -48,23 +47,10 @@ public class ProtocolSupport implements MetadataDescribable {
      * @param protocols A collection of protocols to support.
      */
     public ProtocolSupport(
-            Collection<Protocol> protocols
-    ) {
-        this(protocols, Collections.emptySet());
-    }
-
-    /**
-     * Constructor. Name is defaulted to empty string, indicating that this protocol support will not publish metadata
-     * for the base metric.
-     *
-     * @param protocols  A collection of protocols to support.
-     * @param blacklist  Protocols that will not be supported and should not be supported by depending metrics.
-     */
-    public ProtocolSupport(
             Collection<Protocol> protocols,
-            Set<String> blacklist
+            GlobalMetadata metadata
     ) {
-        this(protocols, blacklist, SimpleMetadata.builder(UNNAMED).build());
+        this(protocols, Collections.emptySet(), metadata);
     }
 
     /**
@@ -78,7 +64,7 @@ public class ProtocolSupport implements MetadataDescribable {
     public ProtocolSupport(
             Collection<Protocol> protocols,
             Set<String> blacklist,
-            SimpleMetadata metadata
+            GlobalMetadata metadata
     ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
         this.blacklist = blacklist;
@@ -136,7 +122,7 @@ public class ProtocolSupport implements MetadataDescribable {
         Set<String> newBlackList = Stream.concat(protocolNames.stream(), blacklist.stream())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        return new ProtocolSupport(protocols, newBlackList);
+        return new ProtocolSupport(protocols, newBlackList, getMetadata());
     }
 
     /**
@@ -173,7 +159,7 @@ public class ProtocolSupport implements MetadataDescribable {
                 .map(Protocol::getContractName)
                 .forEach(name -> newBlackList.remove(name));
 
-        return new ProtocolSupport(newProtocols, newBlackList);
+        return new ProtocolSupport(newProtocols, newBlackList, getMetadata());
     }
 
     /**
@@ -193,7 +179,7 @@ public class ProtocolSupport implements MetadataDescribable {
      * @return the metadata object
      */
     @Override
-    public SimpleMetadata getMetadata() {
+    public GlobalMetadata getMetadata() {
         return metadata;
     }
 
