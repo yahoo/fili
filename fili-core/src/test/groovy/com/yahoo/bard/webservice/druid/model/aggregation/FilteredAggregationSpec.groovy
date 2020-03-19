@@ -29,7 +29,7 @@ import com.yahoo.bard.webservice.table.StrictPhysicalTable
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 
 import org.apache.commons.lang3.tuple.Pair
 

@@ -1,7 +1,7 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2020 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 
-package com.yahoo.bard.webservice.web.apirequest.binders;
+package com.yahoo.bard.webservice.web.apirequest.generator.having;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NOT_IN_QUERY_FORMAT;
 
@@ -10,8 +10,8 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.web.ApiHaving;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
-import com.yahoo.bard.webservice.web.BadHavingException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -10,6 +10,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_I
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

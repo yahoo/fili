@@ -1,6 +1,6 @@
-// Copyright 2016 Yahoo Inc.
+// Copyright 2020 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.apirequest.exceptions;
 
 /**
  * Unchecked exception for a bad API request.

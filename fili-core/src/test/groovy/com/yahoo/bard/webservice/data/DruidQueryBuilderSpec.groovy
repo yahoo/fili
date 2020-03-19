@@ -47,7 +47,7 @@ import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.ApiHaving
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.joda.time.DateTime

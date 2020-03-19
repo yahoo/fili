@@ -1,6 +1,6 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2020 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.generator;
+package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_METRICS;
@@ -9,10 +9,12 @@ import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.Req
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
+import com.yahoo.bard.webservice.web.apirequest.generator.UnsatisfiedApiRequestConstraintsException;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.slf4j.Logger;
@@ -81,7 +83,7 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>
-     * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
+     * If the query contains undefined metrics, {@link BadApiRequestException} will be
      * thrown.
      *
      * This method is meant for backwards compatibility. If you do not need to use this method for that reason please

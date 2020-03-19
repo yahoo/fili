@@ -1,6 +1,6 @@
-// Copyright 2017 Yahoo Inc.
+// Copyright 2020 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.binders
+package com.yahoo.bard.webservice.web.apirequest.generator
 
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -10,8 +10,9 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.BadFilterException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 
 import org.joda.time.DateTime
 
