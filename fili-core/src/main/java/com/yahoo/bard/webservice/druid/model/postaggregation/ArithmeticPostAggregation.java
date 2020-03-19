@@ -49,7 +49,6 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
     // CHECKSTYLE:OFF
     /**
      * Druid ALWAYS coerces result of arithmetic post aggregations to Double. See:
-     *
      * https://github.com/apache/druid/blob/master/processing/src/main/java/org/apache/druid/query/aggregation/post/ArithmeticPostAggregator.java#L106-L126
      * Relevant Druid class: {@code org.apache.druid.query.aggregation.post.ArithmeticPostAggregator}
      *
