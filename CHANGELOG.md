@@ -13,6 +13,7 @@ Current
       floating point by not overriding the Aggregation#isFloatingPoint method to return "false".  
     * ArithmeticPostAggregation was reporting precision based on operands, but druid always coerces result of arithmetic
       post agg to double.
+       - Fixed in PR https://github.com/yahoo/fili/pull/1023
 
 - [Fix_OR_logic_for_presto_support](https://github.com/yahoo/fili/pull/999 and https://github.com/yahoo/fili/pull/1002)
     * We use to split the filter clause by ` AND `and then cast each field to varchar before comparison. Add split or ` OR ` as well to support Presto better
