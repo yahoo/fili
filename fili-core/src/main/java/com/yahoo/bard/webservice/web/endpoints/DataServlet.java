@@ -44,6 +44,7 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -116,6 +117,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final JobPayloadBuilder jobPayloadBuilder;
     private final BroadcastChannel<String> preResponseStoredNotifications;
     private final DateTimeFormatter dateTimeFormatter;
+    private final ApiMetricAnnotater apiMetricAnnotater;
 
     private final GranularityParser granularityParser;
 
@@ -160,6 +162,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
      * @param dateTimeFormatter  date time formatter
+     * @param apiMetricAnnotater  A function to modify apiMetrics after parsing
      */
     @Inject
     public DataServlet(
@@ -182,7 +185,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             DataApiRequestFactory dataApiRequestFactory,
             ResponseProcessorFactory responseProcessorFactory,
             DataExceptionHandler exceptionHandler,
-            DateTimeFormatter dateTimeFormatter
+            DateTimeFormatter dateTimeFormatter,
+            ApiMetricAnnotater apiMetricAnnotater
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -205,6 +209,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.responseProcessorFactory = responseProcessorFactory;
         this.exceptionHandler = exceptionHandler;
         this.dateTimeFormatter = dateTimeFormatter;
+        this.apiMetricAnnotater = apiMetricAnnotater;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -636,6 +641,11 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
+    }
+
+    @Override
+    public ApiMetricAnnotater getApiMetricAnnotater() {
+        return apiMetricAnnotater;
     }
 
     @Override

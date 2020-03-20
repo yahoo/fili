@@ -23,7 +23,6 @@ import org.joda.time.DateTime
 import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore("Disabling these tests as Protocol Metrics break existing intersection parsing.")
 class IntersectionReportingFlagOffSpec extends Specification {
 
     DimensionDictionary dimensionDict

@@ -12,12 +12,12 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 import spock.lang.Specification
 
-class DefaultLogicalMetricGeneratorSpec extends Specification {
+class ProtocolLogicalMetricGeneratorSpec extends Specification {
 
     Generator<LinkedHashSet<LogicalMetric>> gen
 
     def setup() {
-        gen = new DefaultLogicalMetricGenerator()
+        gen = new ProtocolLogicalMetricGenerator()
     }
 
     def "bind() returns existing LogicalMetrics"() {

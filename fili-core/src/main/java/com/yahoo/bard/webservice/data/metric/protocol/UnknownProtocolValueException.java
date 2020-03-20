@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * A checked exception for errors emitted when protocol values cannot be processed.
  */
-public class UnknownProtocolValueException extends Exception {
+public class UnknownProtocolValueException extends RuntimeException {
 
     public static final String MESSAGE_FORMAT = "Unknown value for parameter %s: %s";
 

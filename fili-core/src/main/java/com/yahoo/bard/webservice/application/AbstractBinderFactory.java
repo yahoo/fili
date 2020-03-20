@@ -120,6 +120,7 @@ import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
@@ -276,6 +277,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
+                bindApiRequestMapper(this);
+
                 //Initialize the field converter
                 FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
@@ -385,6 +388,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             }
 
         };
+    }
+
+    private void bindApiRequestMapper(AbstractBinder binder) {
+        binder.bind(ApiMetricAnnotater.NO_OP_ANNOTATER).to(ApiMetricAnnotater.class);
     }
 
     /**

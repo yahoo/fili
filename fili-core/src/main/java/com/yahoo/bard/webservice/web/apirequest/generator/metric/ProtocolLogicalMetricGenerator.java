@@ -12,10 +12,10 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
 import com.yahoo.bard.webservice.web.apirequest.generator.UnsatisfiedApiRequestConstraintsException;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.antlr.ProtocolAntlrApiMetricParser;
@@ -119,12 +119,7 @@ public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<L
 
         List<ApiMetric> apiMetrics = protocolAntlrApiMetricParser.apply(apiMetricQuery);
 
-        //TODO
-        // annotate additional parameters onto apimetrics
-        // add timegrain
-        // normalize non-values out if appropriate
 
-        // TODO extract into checkInvalidMetricNames method
         for (ApiMetric metric : apiMetrics) {
             LogicalMetric logicalMetric = metricDictionary.get(metric.getBaseApiMetricId());
 //            protocolChain.applyProtocols();

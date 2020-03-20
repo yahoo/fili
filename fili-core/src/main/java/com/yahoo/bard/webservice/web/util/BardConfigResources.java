@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -89,5 +90,14 @@ public interface BardConfigResources {
      */
     default LogicalTableDictionary getLogicalTableDictionary() {
         return getResourceDictionaries().getLogicalDictionary();
+    }
+
+    /**
+     * The default transforms to apply to ApiMetrics after parsing before binding.
+     *
+     * @return a function to conform apiMetrics according to business requirements.
+     */
+    default ApiMetricAnnotater getApiMetricAnnotater() {
+        return ApiMetricAnnotater.NO_OP_ANNOTATER;
     }
 }
