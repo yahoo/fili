@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
-import com.yahoo.bard.webservice.data.config.GlobalMetadata;
+import com.yahoo.bard.webservice.data.config.CommonMetadata;
 import com.yahoo.bard.webservice.data.config.MetadataDescribable;
 
 /**
@@ -26,7 +26,7 @@ public class Protocol implements MetadataDescribable {
     private final String contractName;
     private final String coreParameterName;
     private final MetricTransformer metricTransformer;
-    private final GlobalMetadata metadata;
+    private final CommonMetadata metadata;
 
     /**
      * Constructor.
@@ -52,7 +52,7 @@ public class Protocol implements MetadataDescribable {
             String coreParameterName,
             MetricTransformer metricTransformer
     ) {
-        this(contractName, coreParameterName, metricTransformer, GlobalMetadata.fromId(contractName));
+        this(contractName, coreParameterName, metricTransformer, CommonMetadata.fromId(contractName));
     }
 
     /**
@@ -66,7 +66,7 @@ public class Protocol implements MetadataDescribable {
             String contractName,
             String coreParameterName,
             MetricTransformer metricTransformer,
-            GlobalMetadata metadata
+            CommonMetadata metadata
     ) {
         this.contractName = contractName;
         this.coreParameterName = coreParameterName;
@@ -102,7 +102,7 @@ public class Protocol implements MetadataDescribable {
     }
 
     @Override
-    public GlobalMetadata getMetadata() {
+    public CommonMetadata getMetadata() {
         return metadata;
     }
 }

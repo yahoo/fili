@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
-import com.yahoo.bard.webservice.data.config.GlobalMetadata;
+import com.yahoo.bard.webservice.data.config.CommonMetadata;
 import com.yahoo.bard.webservice.data.config.MetadataDescribable;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ProtocolSupport implements MetadataDescribable {
     /**
      * Metadata describing a ProtocolSupport instance which can be exposed through metadata endpoints.
      */
-    private final GlobalMetadata metadata;
+    private final CommonMetadata metadata;
 
     /**
      * Constructor.
@@ -48,7 +48,7 @@ public class ProtocolSupport implements MetadataDescribable {
      */
     public ProtocolSupport(
             Collection<Protocol> protocols,
-            GlobalMetadata metadata
+            CommonMetadata metadata
     ) {
         this(protocols, Collections.emptySet(), metadata);
     }
@@ -64,7 +64,7 @@ public class ProtocolSupport implements MetadataDescribable {
     public ProtocolSupport(
             Collection<Protocol> protocols,
             Set<String> blacklist,
-            GlobalMetadata metadata
+            CommonMetadata metadata
     ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
         this.blacklist = new HashSet<>(blacklist);
@@ -72,11 +72,11 @@ public class ProtocolSupport implements MetadataDescribable {
     }
 
     @Override
-    public GlobalMetadata getMetadata() {
+    public CommonMetadata getMetadata() {
         return metadata;
     }
 
-    public ProtocolSupport withMetadata(GlobalMetadata metadata) {
+    public ProtocolSupport withMetadata(CommonMetadata metadata) {
         return new ProtocolSupport(new ArrayList<>(protocolMap.values()), new HashSet<>(blacklist), metadata);
     }
 
