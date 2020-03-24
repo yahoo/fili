@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.resolver;
 
+import com.google.inject.internal.cglib.core.$CodeGenerationException;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 
@@ -66,11 +67,13 @@ public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
     public Set<String> getAllColumnPhysicalNames() {
         return allColumnPhysicalNames;
     }
-
     @Override
     public PhysicalDataSourceConstraint withDimensionFilter(Predicate<Dimension> filter) {
         DataSourceConstraint filteredConstraint = super.withDimensionFilter(filter);
-        return new PhysicalDataSourceConstraint(filteredConstraint, schema, allColumnPhysicalNames);
+        Set<String> filteredPhysicalNames = filteredConstraint.getAllColumnNames().stream()
+                .map(schema::getPhysicalColumnName)
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+        return new PhysicalDataSourceConstraint(filteredConstraint, schema, filteredPhysicalNames);
     }
 
     /**

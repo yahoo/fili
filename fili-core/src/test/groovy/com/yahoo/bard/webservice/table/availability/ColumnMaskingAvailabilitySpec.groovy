@@ -98,34 +98,40 @@ class ColumnMaskingAvailabilitySpec extends Specification {
     }
     def "Test column masking when constrained by  physical constraint"() {
         setup:
-        String missingDimensionPhysicalName = "missing_column"
+        String missingDimensionPhysicalName = "missing_dimension"
         String missingDimensionApiName = "missingDimension"
 
-        AvailablityTest target = new AvailablityTest()
-        target.physicalavailabity = [
+        AvailabilityTest target = new AvailabilityTest()
+        //build map of druid physical columns and their available time intervals
+        target.physicalAvailabity = [
                 column_1 : new SimplifiedIntervalList([ new Interval("2020-01-01/2020-03-01")]),
                 column_2 : new SimplifiedIntervalList([ new Interval("2020-02-01/2020-03-01")]),
                 missingDimensionPhysicalName : new SimplifiedIntervalList(),
         ]
 
+        //configure Dimensions and Metrics
         TestDimension filteredDimension = new TestDimension(missingDimensionApiName)
         TestDimension dimensionOne = new TestDimension("dimensionOne")
+
         LogicalMetric metricOne = Mock(LogicalMetric)
         metricOne.getName() >> "metricOne"
 
-        ColumnMaskingAvailability testAvailability = new ColumnMaskingAvailability(target, [missingDimensionApiName] as Set)
+        ColumnMaskingAvailability test = new ColumnMaskingAvailability(target, [missingDimensionApiName] as Set)
 
         Iterable<Column> cols = [ new Column("column_1"), new Column("column_2"), new Column(missingDimensionPhysicalName)]
 
-        Map<String, String> logicalToPhysicalNames = [
-                dimesnionOne: "column_1" ,
-                metricOne: "column_2" ,
+        //Mapping of  logical dimensions to physical druid
+        Map<String, String> logicalToPhysicalNamesMapping = [
+                dimesnionOne : "column_1" ,
+                metricOne : "column_2" ,
                 (missingDimensionApiName) : missingDimensionPhysicalName
         ]
+
+        //Build physical table schema
         PhysicalTableSchema schema = new PhysicalTableSchema(
                 new ZonedTimeGrain(DefaultTimeGrain.DAY, DateTimeZone.UTC),
                 cols,
-                logicalToPhysicalNames
+                logicalToPhysicalNamesMapping
         )
 
         DataSourceConstraint baseConstraint = new BaseDataSourceConstraint(
@@ -135,14 +141,18 @@ class ColumnMaskingAvailabilitySpec extends Specification {
                 [] as Set,
                 new ApiFilters()
         )
+
         PhysicalDataSourceConstraint constraint = new PhysicalDataSourceConstraint(baseConstraint , schema)
 
-        SimplifiedIntervalList result = testAvailability.getAvailableIntervals(constraint)
-        result.getFirst() == "2020-02-01/2020-03-01" as SimplifiedIntervalList
+        when:
+        SimplifiedIntervalList result = test.getAvailableIntervals(constraint)
+
+        then:
+        result.getFirst() == "2020-02-01/2020-03-01"
     }
 
-    class AvailablityTest implements Availability{
-        Map<String, SimplifiedIntervalList> physicalavailabity = [:]
+    class AvailabilityTest implements Availability{
+        Map<String, SimplifiedIntervalList> physicalAvailabity = [:]
 
         @Override
         Set<DataSourceName> getDataSourceNames() {
@@ -155,29 +165,25 @@ class ColumnMaskingAvailabilitySpec extends Specification {
         }
 
         @Override
-        SimplifiedIntervalList getAvailableIntervals() {
-            return new SimplifiedIntervalList()
-        }
-
-        @Override
         SimplifiedIntervalList getAvailableIntervals(DataSourceConstraint constraint) {
             if(! (constraint instanceof PhysicalDataSourceConstraint)){
                 throw new IllegalArgumentException("Exception : this is only for physical constraints test")
             }
             PhysicalDataSourceConstraint physicalDataSource = (PhysicalDataSourceConstraint) constraint
 
-            SimplifiedIntervalList minterval = null
-            for(Map.Entry<String, SimplifiedIntervalList> entry : physicalavailabity.entrySet()){
+            SimplifiedIntervalList intrvls = null
+            for(Map.Entry<String, SimplifiedIntervalList> entry : physicalAvailabity.entrySet()){
                 if(!physicalDataSource.getAllColumnPhysicalNames().contains(entry.getKey()))
                         continue;
-                if(minterval == null){
-                    minterval = entry.getValue()
+                if(intrvls == null){
+                    intrvls = entry.getValue()
                 }
                 else{
-                    minterval = minterval.intersect(entry.getValue())
+                    intrvls = intrvl.intersect(entry.getValue())
                 }
 
             }
+            return intrvls
         }
     }
 
