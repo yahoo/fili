@@ -148,7 +148,7 @@ class ColumnMaskingAvailabilitySpec extends Specification {
         SimplifiedIntervalList result = test.getAvailableIntervals(constraint)
 
         then:
-        result.getFirst() == "2020-02-01/2020-03-01"
+        result.getFirst() == "2020-02-01/2020-03-01" as Interval
     }
 
     class AvailabilityTest implements Availability{
