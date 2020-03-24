@@ -179,7 +179,7 @@ class ColumnMaskingAvailabilitySpec extends Specification {
                     intrvls = entry.getValue()
                 }
                 else{
-                    intrvls = intrvl.intersect(entry.getValue())
+                    intrvls = intrvls.intersect(entry.getValue())
                 }
 
             }
