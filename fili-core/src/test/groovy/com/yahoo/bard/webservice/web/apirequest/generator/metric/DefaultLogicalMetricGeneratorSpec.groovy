@@ -1,24 +1,26 @@
-// Copyright 2019 Oath Inc.
+// Copyright 2020 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.generator
+package com.yahoo.bard.webservice.web.apirequest.generator.metric
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder
-import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.generator.TestRequestParameters
+import com.yahoo.bard.webservice.web.apirequest.generator.UnsatisfiedApiRequestConstraintsException
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 import spock.lang.Specification
 
-class ProtocolLogicalMetricGeneratorSpec extends Specification {
+class DefaultLogicalMetricGeneratorSpec extends Specification {
 
-    Generator<LinkedHashSet<LogicalMetric>> gen
+    DefaultLogicalMetricGenerator generator;
 
     def setup() {
-        gen = new ProtocolLogicalMetricGenerator()
+        generator = new DefaultLogicalMetricGenerator()
     }
+
 
     def "bind() returns existing LogicalMetrics"() {
         setup: "prepare generator params"
@@ -36,10 +38,10 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         TestRequestParameters params = new TestRequestParameters()
 
         // requested metrics
-        params.logicalMetrics =  "logicalMetric1,logicalMetric2"
+        params.logicalMetrics = "logicalMetric1,logicalMetric2"
 
         expect: "the two metrics are returned on request"
-        gen.bind(builder, params, resources) == [logicalMetric1, logicalMetric2] as LinkedHashSet
+        generator.bind(builder, params, resources) == [logicalMetric1, logicalMetric2] as LinkedHashSet
     }
 
     def "bind() throws BadApiRequestException on non-existing LogicalMetric"() {
@@ -55,10 +57,10 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         TestRequestParameters params = new TestRequestParameters()
 
         // requested metrics
-        params.logicalMetrics =  "nonExistingMetric"
+        params.logicalMetrics = "nonExistingMetric"
 
         when: "a non-existing metrics request"
-        gen.bind(builder, params, resources)
+        generator.bind(builder, params, resources)
 
         then: "BadApiRequestException is thrown"
         BadApiRequestException exception = thrown()
@@ -72,9 +74,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         TestRequestParameters params = new TestRequestParameters()
 
         when:
-        gen.validate([] as LinkedHashSet<LogicalMetric>, builder, params, resources)
+        generator.validate([] as LinkedHashSet<LogicalMetric>, builder, params, resources)
 
         then:
         thrown(UnsatisfiedApiRequestConstraintsException)
     }
+
+    // TODO Log tech debt issue to test the four methods in DefaultLogicalMetricGenerator
 }

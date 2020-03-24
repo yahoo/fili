@@ -658,7 +658,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request
      * @param dateTimeSort  A dateTime sort column with its direction
+     *
+     * @deprecated Optimizable should be set
      */
+    @Deprecated
     protected DataApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
@@ -842,7 +845,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
 
     /**
-     * All argument constructor, meant to be used for rewriting apiRequest.
+     * Constructor with all bindables bound, meant to be used for rewriting apiRequest.
      *
      * Filter builder in constructor should be removed when some deprecations come out.
      *

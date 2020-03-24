@@ -10,7 +10,9 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
+import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
@@ -21,6 +23,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.UnsatisfiedApiRequestC
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.antlr.ProtocolAntlrApiMetricParser;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.protocol.ProtocolChain;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.slf4j.Logger;
@@ -37,16 +40,28 @@ import java.util.stream.Collectors;
  * Default generator implementation for binding logical metrics. Binding logical metrics is dependent on the logical
  * table being queried. Ensure the logical table has been bound before using this class to generate logical metrics.
  */
-public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<LogicalMetric>> {
+public class ProtocolLogicalMetricGenerator
+        implements Generator<LinkedHashSet<LogicalMetric>>, ApiRequestLogicalMetricBinder {
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolLogicalMetricGenerator.class);
 
-    final ProtocolAntlrApiMetricParser protocolAntlrApiMetricParser;
-    final ProtocolChain protocolChain;
+    private final ApiMetricAnnotater apiMetricAnnotater;
+    private final ProtocolAntlrApiMetricParser protocolAntlrApiMetricParser;
+    private final ProtocolChain protocolChain;
 
-    public ProtocolLogicalMetricGenerator() {
+    /**
+     * Constructor.
+     *
+     * @param apiMetricAnnotater  The metric annotator to apply
+     * @param protocolNames  The list of protocols supported in the System
+     */
+    public ProtocolLogicalMetricGenerator(ApiMetricAnnotater apiMetricAnnotater, List<String> protocolNames) {
+        this.apiMetricAnnotater = apiMetricAnnotater;
         this.protocolAntlrApiMetricParser = new ProtocolAntlrApiMetricParser();
-        LinkedHashSet<Protocol> protocols =
-                new LinkedHashSet<>(DefaultSystemMetricProtocols.getDefaultProtocolDictionary().values());
+        ProtocolDictionary protocolDictionary = DefaultSystemMetricProtocols.getDefaultProtocolDictionary();
+        LinkedHashSet<Protocol> protocols = protocolNames.stream()
+                .map(protocolDictionary::get)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         this.protocolChain = new ProtocolChain(new ArrayList<>(protocols));
     }
 
@@ -72,7 +87,6 @@ public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<L
      * @param builder  The builder object representing the in progress DataApiRequest
      * @param params  The request parameters sent by the client
      * @param resources  Resources used to build the request
-     *
      *
      */
     @Override
@@ -118,20 +132,23 @@ public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<L
         List<String> invalidMetricNames = new ArrayList<>();
 
         List<ApiMetric> apiMetrics = protocolAntlrApiMetricParser.apply(apiMetricQuery);
-
+        apiMetrics = apiMetrics.stream()
+                .map(apiMetricAnnotater)
+                .collect(Collectors.toList());
 
         for (ApiMetric metric : apiMetrics) {
-            LogicalMetric logicalMetric = metricDictionary.get(metric.getBaseApiMetricId());
-//            protocolChain.applyProtocols();
+            GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
+                    metric.getRawName(),
+                    metric.getBaseApiMetricId()
+            );
+
+            LogicalMetric baseLogicalMetrics = metricDictionary.get(metric.getBaseApiMetricId());
+            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetrics);
             if (logicalMetric == null) {
                 invalidMetricNames.add(metric.getRawName());
                 continue;
             }
-            logicalMetric = protocolChain.applyProtocols(
-                    new LogicalMetricInfo(metric.getRawName()),
-                    metric,
-                    logicalMetric
-            );
+            logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, logicalMetric);
             metrics.add(logicalMetric);
         }
         if (!invalidMetricNames.isEmpty()) {
@@ -153,11 +170,12 @@ public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<L
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
-    public static void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
+    public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
         //get metric names from the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()
-                .map(LogicalMetric::getName)
+                .map(LogicalMetric::getLogicalMetricInfo)
+                .map(this::getBaseName)
                 .collect(Collectors.toSet());
 
         //get metric names from logicalMetrics and remove all the valid metrics
@@ -173,5 +191,11 @@ public class ProtocolLogicalMetricGenerator implements Generator<LinkedHashSet<L
                     METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName())
             );
         }
+    }
+
+    private String getBaseName(LogicalMetricInfo metricInfo) {
+        return metricInfo instanceof GeneratedMetricInfo ? ((GeneratedMetricInfo) metricInfo).getBaseMetricName() :
+                metricInfo
+                .getName();
     }
 }

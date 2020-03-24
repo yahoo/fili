@@ -23,6 +23,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGener
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
@@ -66,6 +67,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final PaginationParameters paginationParameters;
     protected final long asyncAfter;
     protected final String downloadFilename;
+
+    // hardcoding this for now to the old behavior so injection can be based on the protocol binder without changing
+    // this code.
+    ApiRequestLogicalMetricBinder metricBinder = new DefaultLogicalMetricGenerator();
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -290,7 +295,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String apiMetricQuery,
             MetricDictionary metricDictionary
     ) {
-        return DefaultLogicalMetricGenerator.generateLogicalMetrics(apiMetricQuery, metricDictionary);
+        return metricBinder.generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**
@@ -303,7 +308,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
-        DefaultLogicalMetricGenerator.validateMetrics(logicalMetrics, table);
+        metricBinder.validateMetrics(logicalMetrics, table);
     }
 
     /**

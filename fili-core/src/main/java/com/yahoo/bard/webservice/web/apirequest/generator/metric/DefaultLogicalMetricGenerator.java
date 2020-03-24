@@ -31,7 +31,8 @@ import java.util.stream.Collectors;
  * Default generator implementation for binding logical metrics. Binding logical metrics is dependent on the logical
  * table being queried. Ensure the logical table has been bound before using this class to generate logical metrics.
  */
-public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<LogicalMetric>> {
+public class DefaultLogicalMetricGenerator
+        implements Generator<LinkedHashSet<LogicalMetric>>, ApiRequestLogicalMetricBinder {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultLogicalMetricGenerator.class);
 
     @Override
@@ -94,7 +95,7 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
      *
      * @return set of metric objects
      */
-    public static LinkedHashSet<LogicalMetric> generateLogicalMetrics(
+    public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
     ) {
@@ -134,7 +135,7 @@ public class DefaultLogicalMetricGenerator implements Generator<LinkedHashSet<Lo
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
-    public static void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
+    public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
         //get metric names from the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()

@@ -10,7 +10,8 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
-import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -97,7 +98,7 @@ public interface BardConfigResources {
      *
      * @return a function to conform apiMetrics according to business requirements.
      */
-    default ApiMetricAnnotater getApiMetricAnnotater() {
-        return ApiMetricAnnotater.NO_OP_ANNOTATER;
+    default ApiRequestLogicalMetricBinder getMetricBinder() {
+        return new DefaultLogicalMetricGenerator();
     }
 }

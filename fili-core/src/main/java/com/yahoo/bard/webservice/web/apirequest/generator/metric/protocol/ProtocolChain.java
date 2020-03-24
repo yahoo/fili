@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.generator.metric.protocol;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
+import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.metric.protocol.UnknownProtocolValueException;
@@ -59,7 +59,7 @@ public class ProtocolChain {
      * @throws UnknownProtocolValueException if the protocol data from the query cannot be applied
      */
     public LogicalMetric applyProtocols(
-            LogicalMetricInfo resultMetadata,
+            GeneratedMetricInfo resultMetadata,
             ApiMetric apiMetric,
             LogicalMetric fromMetric
     )

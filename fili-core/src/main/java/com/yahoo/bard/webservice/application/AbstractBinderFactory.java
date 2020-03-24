@@ -54,6 +54,7 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -117,9 +118,12 @@ import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
@@ -158,6 +162,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -193,6 +198,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
+
+    public static final String NAME_ACTIVE_PROTOCOLS = "active_protocols_name";
+    public static final String NAME_METRIC_GENERATOR = "metric_generator_name";
 
     // Two minutes in milliseconds
     public static final int HC_LAST_RUN_PERIOD_MILLIS_DEFAULT = 120 * 1000;
@@ -277,7 +285,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
-                bindApiRequestMapper(this);
+                // Protocol Stuff
+                bindMetricGenerator(this);
 
                 //Initialize the field converter
                 FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
@@ -390,8 +399,31 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         };
     }
 
-    private void bindApiRequestMapper(AbstractBinder binder) {
+    /**
+     * Bind the components necessary to support protocol metrics.
+     *
+     * @param binder The binder to bind the generator to.
+     */
+    private void bindMetricGenerator(AbstractBinder binder) {
+        List<String> protocols = Collections.emptyList();
+        TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() { };
+        binder.bind(protocols).named(NAME_ACTIVE_PROTOCOLS).to(stringListLiteral);
+
         binder.bind(ApiMetricAnnotater.NO_OP_ANNOTATER).to(ApiMetricAnnotater.class);
+
+        ProtocolLogicalMetricGenerator protocolLogicalMetricGenerator = new ProtocolLogicalMetricGenerator(
+                ApiMetricAnnotater.NO_OP_ANNOTATER,
+                protocols
+        );
+
+        // The binder used for factories
+        TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>> metricGeneratorType =
+                new TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>>() { };
+        binder.bind(protocolLogicalMetricGenerator).named(NAME_METRIC_GENERATOR).to(metricGeneratorType);
+
+        // The binding used for construction based ApiRequest objects
+        binder.bind(protocolLogicalMetricGenerator).to(ApiRequestLogicalMetricBinder.class);
+
     }
 
     /**
