@@ -2,13 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.data.config.MetadataDescribable;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
  */
-public interface LogicalMetric {
+public interface LogicalMetric extends MetadataDescribable {
     String DEFAULT_CATEGORY = "General";
 
     /**

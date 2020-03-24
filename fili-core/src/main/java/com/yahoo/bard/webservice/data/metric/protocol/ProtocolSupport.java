@@ -45,6 +45,8 @@ public class ProtocolSupport implements MetadataDescribable {
      * Constructor.
      *
      * @param protocols A collection of protocols to support.
+     * @param metadata  Metadata object used to describe and identify ProtocolSupport instances through metadata
+     *                  endpoints.
      */
     public ProtocolSupport(
             Collection<Protocol> protocols,

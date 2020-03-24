@@ -61,6 +61,7 @@ public class Protocol implements MetadataDescribable {
      * @param contractName  The name of the protocol contract.
      * @param coreParameterName The name of the core parameter for this protocol.
      * @param metricTransformer  The transformer to process metrics under this protocol.
+     * @param metadata  Metadata object used to describe and identify Protocol instances through metadata endpoints.
      */
     public Protocol(
             String contractName,

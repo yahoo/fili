@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric.protocol;
 
+import com.yahoo.bard.webservice.data.config.CommonMetadata;
 import com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol;
 
 import java.util.HashSet;
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
  * Source for default protocols and default protocol dictionary.
  */
 public class DefaultSystemMetricProtocols {
+
+    public static final String STANDARD_SUPPORT_ID = "standard_protocol_support";
 
     private static final ProtocolDictionary DEFAULT_PROTOCOL_DICTIONARY = new ProtocolDictionary();
 
@@ -65,9 +68,12 @@ public class DefaultSystemMetricProtocols {
      * @return  A Protocol Support describing the default protocols supported throughout the system.
      */
     public static ProtocolSupport getStandardProtocolSupport() {
-        return new ProtocolSupport(STANDARD_PROTOCOLS.stream()
-                .map(DEFAULT_PROTOCOL_DICTIONARY::get)
-                .collect(Collectors.toList()));
+        return new ProtocolSupport(
+                STANDARD_PROTOCOLS.stream()
+                        .map(DEFAULT_PROTOCOL_DICTIONARY::get)
+                        .collect(Collectors.toList()),
+                CommonMetadata.fromId(STANDARD_SUPPORT_ID)
+        );
     }
 
 

@@ -23,8 +23,6 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
 
     private final List<PostAggregation> fields;
 
-    private final boolean floatingPoint;
-
     /**
      * Constructor.
      *
@@ -36,8 +34,6 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         super(ARITHMETIC, name);
         this.fn = fn;
         this.fields = Collections.unmodifiableList(fields);
-        this.floatingPoint = fn.equals(ArithmeticPostAggregationFunction.DIVIDE) ||
-                fields.stream().anyMatch(PostAggregation::isFloatingPoint);
     }
 
     @JsonSerialize(using = HasDruidNameSerializer.class)
@@ -50,11 +46,20 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         return fields;
     }
 
+    // CHECKSTYLE:OFF
+    /**
+     * Druid ALWAYS coerces result of arithmetic post aggregations to Double. See:
+     * https://github.com/apache/druid/blob/master/processing/src/main/java/org/apache/druid/query/aggregation/post/ArithmeticPostAggregator.java#L106-L126
+     * Relevant Druid class: {@code org.apache.druid.query.aggregation.post.ArithmeticPostAggregator}
+     *
+     * @inheritDoc
+     */
     @Override
     @JsonIgnore
     public boolean isFloatingPoint() {
-        return floatingPoint;
+        return true;
     }
+    // CHECKSTYLE:ON
 
     @Override
     public ArithmeticPostAggregation withName(String name) {
