@@ -47,7 +47,7 @@ public class ProtocolLogicalMetricGenerator
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolLogicalMetricGenerator.class);
 
     private final ApiMetricAnnotater apiMetricAnnotater;
-    private final ProtocolAntlrApiMetricParser protocolAntlrApiMetricParser;
+    private final ApiMetricParser apiMetricParser;
     private final ProtocolChain protocolChain;
 
     /**
@@ -57,9 +57,22 @@ public class ProtocolLogicalMetricGenerator
      * @param protocolNames  The list of protocols supported in the System
      */
     public ProtocolLogicalMetricGenerator(ApiMetricAnnotater apiMetricAnnotater, List<String> protocolNames) {
+        this(
+                apiMetricAnnotater,
+                protocolNames,
+                new ProtocolAntlrApiMetricParser(),
+                DefaultSystemMetricProtocols.getDefaultProtocolDictionary()
+        );
+    }
+
+    public ProtocolLogicalMetricGenerator(
+            ApiMetricAnnotater apiMetricAnnotater,
+            List<String> protocolNames,
+            ApiMetricParser metricParser,
+            ProtocolDictionary protocolDictionary
+    ) {
         this.apiMetricAnnotater = apiMetricAnnotater;
-        this.protocolAntlrApiMetricParser = new ProtocolAntlrApiMetricParser();
-        ProtocolDictionary protocolDictionary = DefaultSystemMetricProtocols.getDefaultProtocolDictionary();
+        this.apiMetricParser = metricParser;
         LinkedHashSet<Protocol> protocols = protocolNames.stream()
                 .map(protocolDictionary::get)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -130,13 +143,20 @@ public class ProtocolLogicalMetricGenerator
             String apiMetricQuery,
             MetricDictionary metricDictionary
     ) {
-        LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
-        List<String> invalidMetricNames = new ArrayList<>();
+        List<ApiMetric> apiMetrics = parseApiMetricQuery(apiMetricQuery);
+        return applyProtocols(apiMetrics, metricDictionary);
+    }
 
-        List<ApiMetric> apiMetrics = protocolAntlrApiMetricParser.apply(apiMetricQuery);
-        apiMetrics = apiMetrics.stream()
+    private List<ApiMetric> parseApiMetricQuery(String apiMetricQuery) {
+        return apiMetricParser.apply(apiMetricQuery)
+                .stream()
                 .map(apiMetricAnnotater)
                 .collect(Collectors.toList());
+    }
+
+    private LinkedHashSet<LogicalMetric> applyProtocols(List<ApiMetric> apiMetrics, MetricDictionary metricDictionary) {
+        LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
+        List<String> invalidMetricNames = new ArrayList<>();
 
         for (ApiMetric metric : apiMetrics) {
             GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
@@ -145,18 +165,20 @@ public class ProtocolLogicalMetricGenerator
             );
 
             LogicalMetric baseLogicalMetrics = metricDictionary.get(metric.getBaseApiMetricId());
-            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetrics);
-            if (logicalMetric == null) {
+            if (baseLogicalMetrics == null) {
                 invalidMetricNames.add(metric.getRawName());
                 continue;
             }
+            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetrics);
             metrics.add(logicalMetric);
         }
+
         if (!invalidMetricNames.isEmpty()) {
             String message = ErrorMessageFormat.METRICS_UNDEFINED.logFormat(invalidMetricNames);
             LOG.error(message);
             throw new BadApiRequestException(message);
         }
+
         return metrics;
     }
 
