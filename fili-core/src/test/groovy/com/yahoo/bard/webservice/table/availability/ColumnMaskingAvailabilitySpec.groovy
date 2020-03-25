@@ -138,7 +138,7 @@ class ColumnMaskingAvailabilitySpec extends Specification {
                 [dimensionOne] as Set,
                 [filteredDimension] as Set,
                 [] as Set,
-                [] as Set,
+                ["metricOne"] as Set,
                 new ApiFilters()
         )
 
@@ -148,7 +148,7 @@ class ColumnMaskingAvailabilitySpec extends Specification {
         SimplifiedIntervalList result = test.getAvailableIntervals(constraint)
 
         then:
-        result.get(0) == "2020-02-01T00:00:00.000-06:00/2020-03-01T00:00:00.000-06:00"
+        result.getFirst() == ["2020-02-01T00:00:00.000-06:00/2020-03-01T00:00:00.000-06:00"] as Interval
     }
 
     class AvailabilityTest implements Availability{
@@ -169,11 +169,11 @@ class ColumnMaskingAvailabilitySpec extends Specification {
             if(! (constraint instanceof PhysicalDataSourceConstraint)){
                 throw new IllegalArgumentException("Exception : this is only for physical constraints test")
             }
-            //PhysicalDataSourceConstraint physicalDataSource = (PhysicalDataSourceConstraint) constraint
+            PhysicalDataSourceConstraint physicalDataSource = (PhysicalDataSourceConstraint) constraint
 
             SimplifiedIntervalList intrvls = null
             for(Map.Entry<String, SimplifiedIntervalList> entry : physicalAvailabity.entrySet()){
-                if(!constraint.getAllColumnPhysicalNames().contains(entry.getKey()))
+                if(!physicalDataSource.getAllColumnPhysicalNames().contains(entry.getKey()))
                         continue;
                 if(intrvls == null){
                     intrvls = entry.getValue()
