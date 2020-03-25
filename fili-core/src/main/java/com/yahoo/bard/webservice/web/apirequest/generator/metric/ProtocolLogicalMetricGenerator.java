@@ -37,8 +37,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Default generator implementation for binding logical metrics. Binding logical metrics is dependent on the logical
- * table being queried. Ensure the logical table has been bound before using this class to generate logical metrics.
+ * Default generator implementation for binding protocol logical metrics.
+ * Protocol Metrics are parsed, using a grammar from an apirequest string and a set of parameters.
+ * The base metric name is retrieved from the metric dictionary and then the parameters are used to apply zero or more
+ * transformations.  The resulting protocol metric is validated as having a baseMetric on the logical table.
  */
 public class ProtocolLogicalMetricGenerator
         implements Generator<LinkedHashSet<LogicalMetric>>, ApiRequestLogicalMetricBinder {

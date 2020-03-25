@@ -66,13 +66,14 @@ public class ProtocolChain {
             throws UnknownProtocolValueException {
         LogicalMetric soFar = fromMetric;
         for (Protocol p: protocols) {
+            if (! apiMetric.getParameters().containsKey(p.getCoreParameterName()))  {
+                continue;
+            }
+
             if (!(soFar instanceof ProtocolMetric)) {
                 break;
             }
             ProtocolMetric soFarProtocol = (ProtocolMetric) soFar;
-            if (! apiMetric.getParameters().containsKey(p.getCoreParameterName()))  {
-                continue;
-            }
             if (!soFarProtocol.accepts(p.getContractName())) {
                 String message = "Protocol triggering parameter is sent on incompatible protocol.";
                 if (strictValidation) {
