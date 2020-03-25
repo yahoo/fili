@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+BREAKING CHANGE with: Hook to .org, push events only, require continutous-integration check for master
+
 /**
  * Abstract decorator implementation of {@link Availability}. This is a utility class intended to help clients implement
  * wrappers over availability. Clients should extend this class when implementing a decorator over Availabilty. This
