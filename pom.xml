@@ -2,7 +2,7 @@ INVALID test 1 ; classic config: .org, push/pr  | required
 Result: No notification
 Test 2: Turn off required branch pass  (no pass, no feedback, no blocking)
 Test 3: Change to .com
-
+removed codacy
 
 
 <?xml version="1.0" encoding="UTF-8"?>
