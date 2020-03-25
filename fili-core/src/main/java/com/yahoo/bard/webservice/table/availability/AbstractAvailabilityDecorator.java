@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-BREAKING CHANGE with: Hook to .org, push events only, require continutous-integration check for master
+// Test case 1: BREAKING CHANGE with: Hook to .org, push events only, require continutous-integration check for master
+// Results: hit deprecated validation endpoint, on travis org, branch built only, notification of failure propagated.
+// Test 2: Comenting out breaking change seeing if results still propagate.
 
 /**
  * Abstract decorator implementation of {@link Availability}. This is a utility class intended to help clients implement
