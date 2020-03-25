@@ -402,15 +402,24 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     /**
      * Bind the components necessary to support protocol metrics.
      *
+     * This method binds both the total ProtocolLogicalMetricGenerator and the arguments needed to create one
+     * in case users want to do their own implementation.  The ProtocolLogicalMetricGenerator is on the
+     * BardConfigResources interface to support constructor level injection, but the DataApiRequestFactory takes its
+     * own injection and therefore can use the component fields as well.
+     *
      * @param binder The binder to bind the generator to.
      */
     private void bindMetricGenerator(AbstractBinder binder) {
         List<String> protocols = Collections.emptyList();
         TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() { };
+
+        // If you want to configure your system metrics, change the list of metrics
         binder.bind(protocols).named(NAME_ACTIVE_PROTOCOLS).to(stringListLiteral);
 
+        // If you want to make your own business logic, you can change the Annotater implementation
         binder.bind(ApiMetricAnnotater.NO_OP_ANNOTATER).to(ApiMetricAnnotater.class);
 
+        // This is the default binder used in ProtocolDataApiRequestImp
         ProtocolLogicalMetricGenerator protocolLogicalMetricGenerator = new ProtocolLogicalMetricGenerator(
                 ApiMetricAnnotater.NO_OP_ANNOTATER,
                 protocols

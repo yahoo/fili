@@ -148,7 +148,6 @@ public class ProtocolLogicalMetricGenerator
                 invalidMetricNames.add(metric.getRawName());
                 continue;
             }
-            logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, logicalMetric);
             metrics.add(logicalMetric);
         }
         if (!invalidMetricNames.isEmpty()) {
@@ -180,7 +179,8 @@ public class ProtocolLogicalMetricGenerator
 
         //get metric names from logicalMetrics and remove all the valid metrics
         Set<String> invalidMetricNames = logicalMetrics.stream()
-                .map(LogicalMetric::getName)
+                .map(LogicalMetric::getLogicalMetricInfo)
+                .map(this::getBaseName)
                 .filter(it -> !validMetricNames.contains(it))
                 .collect(Collectors.toSet());
 

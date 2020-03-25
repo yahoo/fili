@@ -7,6 +7,9 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
+/**
+ * Handler to collect exceptions produced by the generated parsing.
+ */
 public class ExceptionErrorListener extends BaseErrorListener {
     public static final ExceptionErrorListener INSTANCE = new ExceptionErrorListener();
 
