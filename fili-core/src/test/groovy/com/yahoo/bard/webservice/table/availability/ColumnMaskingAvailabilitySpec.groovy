@@ -106,7 +106,7 @@ class ColumnMaskingAvailabilitySpec extends Specification {
         target.physicalAvailabity = [
                 column_1 : new SimplifiedIntervalList([ new Interval("2020-01-01/2020-03-01")]),
                 column_2 : new SimplifiedIntervalList([ new Interval("2020-02-01/2020-03-01")]),
-                missingDimensionPhysicalName : new SimplifiedIntervalList(),
+                (missingDimensionPhysicalName) : new SimplifiedIntervalList(),
         ]
 
         //configure Dimensions and Metrics
