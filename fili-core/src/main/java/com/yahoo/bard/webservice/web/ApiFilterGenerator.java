@@ -3,8 +3,7 @@
 package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
 
 import javax.validation.constraints.NotNull;
 

@@ -23,7 +23,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
@@ -111,9 +111,9 @@ class DataApiRequestImplSpec extends Specification {
         given:
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,met3",
-                table,
                 metricDict,
-                dimensionDict
+                dimensionDict,
+                table
         )
 
         HashSet<Dimension> expected =
@@ -131,9 +131,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
-                table,
                 metricDict,
-                dimensionDict
+                dimensionDict,
+                table
         )
 
         then: "BadApiRequestException is thrown"
@@ -176,9 +176,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "",
-                table,
                 metricDict,
-                dimensionDict
+                dimensionDict,
+                table
         )
 
         then:
@@ -203,9 +203,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "",
-                table,
                 metricDict,
-                dimensionDict
+                dimensionDict,
+                table
         )
 
         then:

@@ -41,7 +41,7 @@ public interface FeatureFlag {
     default boolean isSet() {
         SystemConfig systemConfig = SystemConfigProvider.getInstance();
         try {
-            return systemConfig.getStringProperty(systemConfig.getPackageVariableName(getName()), null) != null;
+            return systemConfig.getStringProperty(systemConfig.getPackageVariableName(getName())) != null;
         } catch (SystemConfigException exception) {
             return false;
         }

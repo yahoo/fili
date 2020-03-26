@@ -21,11 +21,11 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.exception.DataExceptionHandler;
@@ -42,8 +42,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -117,8 +116,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final BroadcastChannel<String> preResponseStoredNotifications;
     private final DateTimeFormatter dateTimeFormatter;
 
-    private final ApiRequestLogicalMetricBinder metricBinder;
-
     private final GranularityParser granularityParser;
 
     private final ObjectWriter writer;
@@ -128,7 +125,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final ResponseProcessorFactory responseProcessorFactory;
 
     private final DataApiRequestFactory dataApiRequestFactory;
-
 
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
@@ -163,7 +159,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
      * @param dateTimeFormatter  date time formatter
-     * @param metricBinder  A binder to build logical metrics
      */
     @Inject
     public DataServlet(
@@ -186,8 +181,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             DataApiRequestFactory dataApiRequestFactory,
             ResponseProcessorFactory responseProcessorFactory,
             DataExceptionHandler exceptionHandler,
-            DateTimeFormatter dateTimeFormatter,
-            ApiRequestLogicalMetricBinder metricBinder
+            DateTimeFormatter dateTimeFormatter
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -210,7 +204,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.responseProcessorFactory = responseProcessorFactory;
         this.exceptionHandler = exceptionHandler;
         this.dateTimeFormatter = dateTimeFormatter;
-        this.metricBinder = metricBinder;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -652,10 +645,5 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public GranularityParser getGranularityParser() {
         return granularityParser;
-    }
-
-    @Override
-    public ApiRequestLogicalMetricBinder getMetricBinder() {
-        return metricBinder;
     }
 }

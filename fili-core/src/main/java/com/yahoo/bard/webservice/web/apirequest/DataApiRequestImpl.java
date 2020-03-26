@@ -44,16 +44,16 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.generator.IntervalBinders;
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -658,10 +658,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request
      * @param dateTimeSort  A dateTime sort column with its direction
-     *
-     * @deprecated Optimizable should be set
      */
-    @Deprecated
     protected DataApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
@@ -798,7 +795,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *
      * @deprecated Removing filterBuilder. Use {@link #DataApiRequestImpl(LogicalTable, Granularity, LinkedHashSet,
      *      LinkedHashMap, LinkedHashSet, List, ApiFilters, Map, LinkedHashSet, OrderByColumn, DateTimeZone, Integer,
-     *      Integer, PaginationParameters, ResponseFormatType, String, Long, boolean)}
+     *      Integer, PaginationParameters, ResponseFormatType, String, Long)}
      */
     @Deprecated
     protected DataApiRequestImpl(
@@ -845,7 +842,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
 
     /**
-     * Constructor with all bindables bound, meant to be used for rewriting apiRequest.
+     * All argument constructor, meant to be used for rewriting apiRequest.
      *
      * Filter builder in constructor should be removed when some deprecations come out.
      *
@@ -1054,7 +1051,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             MetricDictionary metricDictionary,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return generateLogicalMetrics(apiMetricExpression, logicalTable, metricDictionary, dimensionDictionary);
+        return generateLogicalMetrics(apiMetricExpression, metricDictionary, dimensionDictionary, logicalTable);
     }
 
     /**
@@ -1572,18 +1569,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','.
-     * @param table  The logical table for the data request
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
+     * @param table  The logical table for the data request
      *
      * @return set of metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
-            LogicalTable table,
             MetricDictionary metricDictionary,
-            DimensionDictionary dimensionDictionary
+            DimensionDictionary dimensionDictionary,
+            LogicalTable table
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
             LOG.trace("Metric dictionary: {}", metricDictionary);

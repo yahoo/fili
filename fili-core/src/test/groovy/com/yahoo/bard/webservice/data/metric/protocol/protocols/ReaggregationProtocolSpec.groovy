@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
-import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
@@ -26,7 +25,7 @@ class ReaggregationProtocolSpec extends Specification {
         Aggregation agg = new LongSumAggregation("foo", "bar")
         TemplateDruidQuery templateDruidQuery = new TemplateDruidQuery([agg], [])
         LogicalMetric logicalMetric = new LogicalMetricImpl(templateDruidQuery, new NoOpResultSetMapper(), "foo");
-        GeneratedMetricInfo resultLmi = new GeneratedMetricInfo("result", "base")
+        LogicalMetricInfo resultLmi = new LogicalMetricInfo("result")
 
         Map params = [(ReaggregationProtocol.REAGG_CORE_PARAMETER): acceptedValue]
 

@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
 import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.JobNotFoundException
 import com.yahoo.bard.webservice.web.JobRequestFailedException

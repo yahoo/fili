@@ -10,7 +10,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
-import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -37,9 +36,9 @@ class TimeAverageMetricTransformerSpec extends Specification {
         MetricMaker sketchMaker = new ThetaSketchMaker(metricDictionary, 128)
 
         LogicalMetric longSum = maker.make("foo", "bar")
-        GeneratedMetricInfo longSumOutLmi = new GeneratedMetricInfo("longSumResult", "base")
+        LogicalMetricInfo longSumOutLmi = new LogicalMetricInfo("longSumResult")
         LogicalMetric sketchUnion = sketchMaker.make("foo", "bar")
-        GeneratedMetricInfo sketchOutLmi = new GeneratedMetricInfo("sketchUnionResult", "sketchBase")
+        LogicalMetricInfo sketchOutLmi = new LogicalMetricInfo("sketchUnionResult")
         Map params = [(protocol.coreParameterName): value]
 
         LogicalMetric averageMetric = timeAverageTransformer.apply(longSumOutLmi, longSum, protocol, params)

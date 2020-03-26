@@ -225,7 +225,6 @@
 
         <module name="MethodLength">
             <property name="severity" value="error" />
-            <property name="max" value="160" />
         </module>
 
         <module name="RegexpSinglelineJava">

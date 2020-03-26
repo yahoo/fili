@@ -16,8 +16,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime

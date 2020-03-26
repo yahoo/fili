@@ -17,8 +17,7 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.FilterTokenizer
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

@@ -15,8 +15,7 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.PaginationParameters

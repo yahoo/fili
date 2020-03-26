@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.TableIdentifier;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;

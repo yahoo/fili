@@ -158,7 +158,7 @@ class ErrorDataServletSpec extends Specification {
             """{
                     "status":400,
                     "statusName": "Bad Request",
-                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description":"${message}",
                     "druidQuery":null,
                     "requestId": "SOME UUID"
@@ -180,7 +180,7 @@ class ErrorDataServletSpec extends Specification {
             """{
                     "status":400,
                     "statusName": "Bad Request",
-                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description":"${METRICS_MISSING.format()}",
                     "druidQuery":null,
                     "requestId": "SOME UUID"
@@ -201,7 +201,7 @@ class ErrorDataServletSpec extends Specification {
             """{
                     "status":400,
                     "statusName": "Bad Request",
-                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description":"${METRICS_MISSING.format()}",
                     "druidQuery":null,
                     "requestId": "SOME UUID"
@@ -225,7 +225,7 @@ class ErrorDataServletSpec extends Specification {
             """{
                     "status":400,
                     "statusName": "Bad Request",
-                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description":"${message}",
                     "druidQuery":null,
                     "requestId": "SOME UUID"
@@ -248,7 +248,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -272,7 +272,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -296,7 +296,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -320,7 +320,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -344,7 +344,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -370,7 +370,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -396,7 +396,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -421,7 +421,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -446,7 +446,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
                     "statusName": "Bad Request",
-                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description":"${message}",
                     "druidQuery":null,
                     "requestId": "SOME UUID"
@@ -471,7 +471,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -496,7 +496,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -521,7 +521,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -556,7 +556,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -589,7 +589,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${INTERVAL_MISSING.format()}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -610,7 +610,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${INTERVAL_MISSING.format()}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -637,7 +637,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"
@@ -662,7 +662,7 @@ class ErrorDataServletSpec extends Specification {
         String jsonFailure =
                 """{"status":400,
     "statusName": "Bad Request",
-    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "reason":"com.yahoo.bard.webservice.web.BadApiRequestException",
     "description":"${message}",
     "druidQuery":null,
     "requestId": "SOME UUID"

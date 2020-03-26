@@ -10,7 +10,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_I
 import com.yahoo.bard.webservice.async.jobs.jobrows.DefaultJobField;
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobField;
 import com.yahoo.bard.webservice.util.FilterTokenizer;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
+import com.yahoo.bard.webservice.web.BadFilterException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.FilterOperation;
 

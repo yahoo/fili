@@ -13,18 +13,17 @@ import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultGranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalTableGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
-import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -67,10 +66,6 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final PaginationParameters paginationParameters;
     protected final long asyncAfter;
     protected final String downloadFilename;
-
-    // hardcoding this for now to the old behavior so injection can be based on the protocol binder without changing
-    // this code.
-    ApiRequestLogicalMetricBinder metricBinder = new DefaultLogicalMetricGenerator();
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -283,7 +278,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>
-     * If the query contains undefined metrics, {@link BadApiRequestException} will be
+     * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
      * thrown.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','
@@ -295,7 +290,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String apiMetricQuery,
             MetricDictionary metricDictionary
     ) {
-        return metricBinder.generateLogicalMetrics(apiMetricQuery, metricDictionary);
+        return DefaultLogicalMetricGenerator.generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**
@@ -308,7 +303,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
-        metricBinder.validateMetrics(logicalMetrics, table);
+        DefaultLogicalMetricGenerator.validateMetrics(logicalMetrics, table);
     }
 
     /**

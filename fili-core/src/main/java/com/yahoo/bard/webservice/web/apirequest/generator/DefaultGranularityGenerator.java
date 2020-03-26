@@ -9,7 +9,7 @@ import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.Req
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.util.GranularityParseException;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;

@@ -20,7 +20,7 @@ class ProtocolMetricImplSpec extends Specification {
 
     def setup() {
         ResultSetMapper resultSetMapper = new NoOpResultSetMapper()
-        GeneratedMetricInfo logicalMetricInfo = new GeneratedMetricInfo("name", "baseName")
+        LogicalMetricInfo logicalMetricInfo = new LogicalMetricInfo("name")
         TemplateDruidQuery templateDruidQuery = Mock(TemplateDruidQuery)
         protocolMetric = new ProtocolMetricImpl(logicalMetricInfo, templateDruidQuery, resultSetMapper, protocolSupport)
     }
@@ -28,7 +28,7 @@ class ProtocolMetricImplSpec extends Specification {
     def "Accept invokes the protocol support and applies the attached transformer"() {
         setup:
         LogicalMetric expected = Mock(LogicalMetric)
-        GeneratedMetricInfo outLmi = Mock(GeneratedMetricInfo)
+        LogicalMetricInfo outLmi = Mock(LogicalMetricInfo)
         MetricTransformer metricTransformer = Mock(MetricTransformer)
         protocolSupport.getProtocol(protocolName) >> protocol
         protocol.getMetricTransformer() >> metricTransformer
@@ -46,7 +46,7 @@ class ProtocolMetricImplSpec extends Specification {
     def "Accept throws an exception with a bad values"() {
         setup:
         LogicalMetric expected = Mock(LogicalMetric)
-        GeneratedMetricInfo outLmi = Mock(GeneratedMetricInfo)
+        LogicalMetricInfo outLmi = Mock(LogicalMetricInfo)
         MetricTransformer metricTransformer = Mock(MetricTransformer)
         protocolSupport.getProtocol(protocolName) >> protocol
         protocol.getCoreParameterName() >> protocolName

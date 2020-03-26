@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.metric.protocol;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.BaseProtocolMetricMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.protocols.TimeAverageMetricTransformer;
 
 import java.util.Map;
@@ -41,7 +42,7 @@ public interface MetricTransformer {
      * @throws UnknownProtocolValueException if this transformer doesn't know how to accept this signal
      */
     LogicalMetric apply(
-            GeneratedMetricInfo resultMetadata,
+            LogicalMetricInfo resultMetadata,
             LogicalMetric logicalMetric,
             Protocol protocol,
             Map<String, String> parameterValues

@@ -14,7 +14,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
@@ -38,9 +37,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN]property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -53,9 +52,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos,foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -67,9 +66,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "dinga",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -81,9 +80,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(OR(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -94,9 +93,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     def "When the INTERSECTION_REPORTING flag is enabled and the query contains unfiltered metrics, the Logical Metrics returned are equal to the Logical Metrics from the Metric Dictionary"() {
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "pageViews,foos",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
         HashSet<Dimension> expected =
                 ["pageViews", "foos"].collect { String name ->
@@ -113,9 +112,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country1|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -189,9 +188,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "pageViews(AND(country|id-in[US,IN],property|id-in[news,sports]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         then:
@@ -202,9 +201,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     def "When API request contains filtered metrics, the Logical Metric returned by generateLogicalMetrics is filtered and therefore not equal to the Logical Metric from the Metric dictionary "(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         HashSet<Dimension> expected =
@@ -221,9 +220,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     def "An exception is thrown when validateMetrics is passed an intersection expression using invalid metrics"(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         when:
@@ -239,9 +238,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     def "No exception is thrown when validateMetrics is passed an intersection expression using valid metrics"(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         when:
@@ -254,9 +253,9 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     def "The dimensions returned from the filtered logical metric are correct"() {
         LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
-                resources.table,
                 resources.metricDict,
-                resources.dimensionDict
+                resources.dimensionDict,
+                resources.table
         )
 
         expect:

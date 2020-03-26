@@ -15,12 +15,10 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class IntersectionReportingFlagOffSpec extends Specification {
@@ -58,7 +56,7 @@ class IntersectionReportingFlagOffSpec extends Specification {
 
     def "When INTERSECTION_REPORTING feature flag is off, query with valid unfiltered metrics returns the correct metrics from the metric dictionary"() {
         when: "The metric string contains valid unfiltered metrics"
-        new TestingDataApiRequestImpl().generateLogicalMetrics("met1,met2,met3", table, metricDict, dimensionDict)
+        new TestingDataApiRequestImpl().generateLogicalMetrics("met1,met2,met3", metricDict, dimensionDict, table)
 
         then: "The metrics generated are the same ones as in the dictionary"
         ["met1", "met2", "met3" ].collect { metricDict.get(it) }
@@ -68,9 +66,9 @@ class IntersectionReportingFlagOffSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1(AND(app1,app2)),met2,met3",
-                table,
                 metricDict,
-                dimensionDict
+                dimensionDict,
+                table
         )
 
         then:

@@ -17,7 +17,7 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
                 {
                     "status": 400,
                     "statusName": "Bad Request",
-                    "reason": "com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason": "com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description": "Required parameter metrics is missing or empty. Use 'metrics=METRICNAME1,METRICNAME2' in the query string.",
                     "druidQuery": null
                 }
@@ -27,7 +27,7 @@ class AsyncInvalidApiRequest extends AsyncFunctionalSpec {
             """{
                     "status": 400,
                     "statusName": "Bad Request",
-                    "reason": "com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "reason": "com.yahoo.bard.webservice.web.BadApiRequestException",
                     "description": "Required parameter metrics is missing or empty. Use 'metrics=METRICNAME1,METRICNAME2' in the query string.",
                     "druidQuery": null
             }"""

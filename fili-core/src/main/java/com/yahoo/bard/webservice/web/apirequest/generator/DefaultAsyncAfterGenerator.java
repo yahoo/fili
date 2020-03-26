@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest.generator;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_ASYNC_AFTER;
 
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;

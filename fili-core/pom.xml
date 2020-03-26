@@ -202,13 +202,6 @@
             <artifactId>lucene-backward-codecs</artifactId>
         </dependency>
 
-        <!-- ANTLR Runtime -->
-        <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
-            <version>4.6</version>
-        </dependency>
-
         <!-- Guava -->
         <!-- Currently what we mainly use is the RangeSet containers -->
         <dependency>
@@ -235,19 +228,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
-                <version>4.6</version>
-                <executions>
-                    <execution>
-                        <id>antlr</id>
-                        <goals>
-                            <goal>antlr4</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

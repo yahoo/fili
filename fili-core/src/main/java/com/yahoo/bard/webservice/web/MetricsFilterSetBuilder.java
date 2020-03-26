@@ -14,7 +14,6 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

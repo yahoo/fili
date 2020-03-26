@@ -14,7 +14,8 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import org.apache.commons.lang3.tuple.Pair
 
