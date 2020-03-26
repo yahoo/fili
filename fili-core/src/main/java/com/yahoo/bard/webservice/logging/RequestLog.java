@@ -342,7 +342,7 @@ public class RequestLog {
 
         LogInfo logInfo = requestLog.info.get(cls.getSimpleName());
         if (logInfo == null) {
-            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName());
+            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName(), requestLog);
             LOG.error(message);
             throw new IllegalStateException(message);
         }
