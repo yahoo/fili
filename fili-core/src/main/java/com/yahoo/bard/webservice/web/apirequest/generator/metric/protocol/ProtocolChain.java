@@ -73,6 +73,7 @@ public class ProtocolChain {
             if (!(soFar instanceof ProtocolMetric)) {
                 break;
             }
+
             ProtocolMetric soFarProtocol = (ProtocolMetric) soFar;
             if (!soFarProtocol.accepts(p.getContractName())) {
                 String message = "Protocol triggering parameter is sent on incompatible protocol.";
