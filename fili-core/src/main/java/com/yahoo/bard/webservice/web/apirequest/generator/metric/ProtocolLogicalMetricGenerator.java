@@ -219,7 +219,6 @@ public class ProtocolLogicalMetricGenerator
 
     private String getBaseName(LogicalMetricInfo metricInfo) {
         return metricInfo instanceof GeneratedMetricInfo ? ((GeneratedMetricInfo) metricInfo).getBaseMetricName() :
-                metricInfo
-                .getName();
+                metricInfo.getName();
     }
 }

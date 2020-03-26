@@ -27,9 +27,9 @@ public class ApiMetric {
      * @param parameters  The key value pairs of used to modify the metric, if any.
      */
     public ApiMetric(
-            final String rawName,
-            final String baseApiMetricId,
-            final Map<String, String> parameters
+            String rawName,
+            String baseApiMetricId,
+            Map<String, String> parameters
     ) {
         this.rawName = rawName;
         this.baseApiMetricId = baseApiMetricId;
