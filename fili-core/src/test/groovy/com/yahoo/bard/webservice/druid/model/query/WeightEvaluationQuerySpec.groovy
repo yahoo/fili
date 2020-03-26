@@ -34,7 +34,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
-import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator
+import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
 import org.joda.time.Interval

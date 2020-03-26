@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime

@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException
 
 import spock.lang.Specification
 import spock.lang.Unroll

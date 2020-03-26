@@ -30,8 +30,9 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOpera
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

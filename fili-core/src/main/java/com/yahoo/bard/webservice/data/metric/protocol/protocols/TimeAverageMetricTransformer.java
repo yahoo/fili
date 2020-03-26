@@ -8,9 +8,9 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK;
 
 import com.yahoo.bard.webservice.data.config.metric.makers.AggregationAverageMaker;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
+import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.MetricTransformer;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
@@ -82,9 +82,10 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
                 protocolSupportSupplier.get()
         );
     }
+
     @Override
     public LogicalMetric apply(
-            LogicalMetricInfo resultMetadata,
+            GeneratedMetricInfo resultMetadata,
             LogicalMetric logicalMetric,
             Protocol protocol,
             Map<String, String> parameterValues

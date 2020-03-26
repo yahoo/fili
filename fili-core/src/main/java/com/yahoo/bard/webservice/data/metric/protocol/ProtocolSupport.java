@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,6 +93,19 @@ public class ProtocolSupport {
      */
     public boolean accepts(String protocolName) {
         return ! blacklist.contains(protocolName) && protocolMap.containsKey(protocolName);
+    }
+
+    /**
+     * Return a set of supported protocol names.
+     *
+     * This allows easy classification, and identification of supported contracts.
+     *
+     * @return Sorted names of the supported protocols
+     */
+    public SortedSet<String> getProtocolNames() {
+        TreeSet<String> protocolNames = new TreeSet<>(protocolMap.keySet());
+        protocolNames.removeAll(blacklist);
+        return protocolNames;
     }
 
     /**

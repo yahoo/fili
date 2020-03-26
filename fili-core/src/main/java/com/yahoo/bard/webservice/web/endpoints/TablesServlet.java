@@ -21,7 +21,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.annotation.Timed;

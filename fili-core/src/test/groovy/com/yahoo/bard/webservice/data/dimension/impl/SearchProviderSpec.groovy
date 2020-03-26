@@ -19,7 +19,7 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import org.joda.time.DateTime

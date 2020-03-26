@@ -116,6 +116,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     HAVING_METRICS_NOT_IN_QUERY_FORMAT("Requested having metric(s) '%s' were not selected in the metrics expression."),
     HAVING_OPERATOR_INVALID("Having operator '%s' is invalid."),
 
+    HAVING_INVALID_WITH_DETAIL("Having expression '%s' is invalid. (%s)"),
+
     LOGINFO_CLASS_INVALID("Invalid LogInfo class: %s. Cannot define its order. Ignoring."),
 
     DRUID_METADATA_READ_ERROR("Unable to read metadata for: '%s'."),
@@ -140,6 +142,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DIMENSION_ROWS_NOT_FOUND("Dimension rows not found for %s with filter %s"),
 
     UNABLE_TO_FIND_DIMENSION_FROM_DICTIONARY("Unable to find dimension from Dimension dictionary for the name: %s"),
+
+    METRIC_INVALID_WITH_DETAIL("Metric expression '%s' is invalid. (%s)"),
+
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),
