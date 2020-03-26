@@ -66,11 +66,13 @@ public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
     public Set<String> getAllColumnPhysicalNames() {
         return allColumnPhysicalNames;
     }
-
     @Override
     public PhysicalDataSourceConstraint withDimensionFilter(Predicate<Dimension> filter) {
         DataSourceConstraint filteredConstraint = super.withDimensionFilter(filter);
-        return new PhysicalDataSourceConstraint(filteredConstraint, schema, allColumnPhysicalNames);
+        Set<String> filteredPhysicalNames = filteredConstraint.getAllColumnNames().stream()
+                .map(schema::getPhysicalColumnName)
+                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+        return new PhysicalDataSourceConstraint(filteredConstraint, schema, filteredPhysicalNames);
     }
 
     /**
