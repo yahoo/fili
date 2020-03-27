@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
+import com.yahoo.bard.webservice.data.metric.protocol.UnknownProtocolValueException
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
@@ -25,19 +26,27 @@ import spock.lang.Unroll
 class TimeAverageMetricTransformerSpec extends Specification {
 
     Protocol protocol = ReaggregationProtocol.INSTANCE
+    MetricDictionary metricDictionary = new MetricDictionary();
+    GeneratedMetricInfo longSumOutLmi;
+    LogicalMetric longSum
+    MetricMaker longSumMaker
+    MetricMaker sketchMaker
+
+    def setup() {
+        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter()
+        longSumOutLmi = new GeneratedMetricInfo("longSumResult", "base")
+
+        longSumMaker = new LongSumMaker(metricDictionary)
+        sketchMaker = new ThetaSketchMaker(metricDictionary, 128)
+
+        longSum = longSumMaker.make("foo", "bar")
+    }
 
     @Unroll
     def "Create a time average for #grain"() {
         setup:
-        FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter()
         TimeAverageMetricTransformer timeAverageTransformer = TimeAverageMetricTransformer.INSTANCE
 
-        MetricDictionary metricDictionary = new MetricDictionary();
-        MetricMaker maker = new LongSumMaker(metricDictionary)
-        MetricMaker sketchMaker = new ThetaSketchMaker(metricDictionary, 128)
-
-        LogicalMetric longSum = maker.make("foo", "bar")
-        GeneratedMetricInfo longSumOutLmi = new GeneratedMetricInfo("longSumResult", "base")
         LogicalMetric sketchUnion = sketchMaker.make("foo", "bar")
         GeneratedMetricInfo sketchOutLmi = new GeneratedMetricInfo("sketchUnionResult", "sketchBase")
         Map params = [(protocol.coreParameterName): value]
@@ -65,5 +74,18 @@ class TimeAverageMetricTransformerSpec extends Specification {
         "dayAvg"   | DefaultTimeGrain.DAY   | "Daily Average"
         "weekAvg"  | DefaultTimeGrain.WEEK  | "Weekly Average"
         "monthAvg" | DefaultTimeGrain.MONTH | "Monthly Average"
+    }
+
+    @Unroll
+    def "Fail if an invalid parameters #params is passed"() {
+        when:
+        TimeAverageMetricTransformer timeAverageTransformer = TimeAverageMetricTransformer.INSTANCE
+        timeAverageTransformer.apply(longSumOutLmi, longSum, protocol, params)
+
+        then:
+        thrown(UnknownProtocolValueException)
+
+        where:
+        params << [ [:], ["foo":"bar"]]
     }
 }

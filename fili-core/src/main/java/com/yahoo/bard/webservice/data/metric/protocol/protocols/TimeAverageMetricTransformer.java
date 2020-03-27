@@ -42,7 +42,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         return TimeAverageMetricMakerConfig.timeMakerConfigs.keySet();
     }
 
-    private MetricTransformer delegate;
+    private final MetricTransformer delegate;
 
     /**
      * Constructor.
@@ -61,6 +61,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         this.protocolSupportSupplier = protocolSupportSupplier;
         this.makerConfigMap = makerConfigMap;
         metricMakerMap = new HashMap<>();
+        this.delegate = delegate;
     }
 
     /**
