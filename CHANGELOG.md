@@ -53,6 +53,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
+   * Delegate to a default error handler to support easy chaining.
+
 - [Extracted `DataSourceConstraint` into an interface](https://github.com/yahoo/fili/issues/996)
    * `DataSourceConstraint` is now an interface.
     - Migration path documented in the linked issue.

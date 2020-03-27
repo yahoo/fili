@@ -42,6 +42,8 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         return TimeAverageMetricMakerConfig.timeMakerConfigs.keySet();
     }
 
+    private MetricTransformer delegate;
+
     /**
      * Constructor.
      *
@@ -49,10 +51,12 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      *
      * @param protocolSupportSupplier  A source for the default protocol support used by the makers.
      * @param  makerConfigMap  A collection of maker configurations to use when making time reaggregations.
+     * @param  delegate  A metric transformer to send to if no matching core value is found in this one.ß
      */
     protected TimeAverageMetricTransformer(
             Supplier<ProtocolSupport> protocolSupportSupplier,
-            Map<String, TimeAverageMetricMakerConfig> makerConfigMap
+            Map<String, TimeAverageMetricMakerConfig> makerConfigMap,
+            MetricTransformer delegate
     ) {
         this.protocolSupportSupplier = protocolSupportSupplier;
         this.makerConfigMap = makerConfigMap;
@@ -65,7 +69,11 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      * Private to implement singleton pattern for normal usage.
      */
     private TimeAverageMetricTransformer() {
-        this(DefaultSystemMetricProtocols::getStandardProtocolSupport, TimeAverageMetricMakerConfig.timeMakerConfigs);
+        this(
+                DefaultSystemMetricProtocols::getStandardProtocolSupport,
+                TimeAverageMetricMakerConfig.timeMakerConfigs,
+                MetricTransformer.ERROR_THROWING_TRANSFORM
+        );
     }
 
     /**
@@ -95,7 +103,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         String parameterValue = parameterValues.get(protocol.getCoreParameterName());
 
         if (!makerConfigMap.containsKey(parameterValue)) {
-            throw new UnknownProtocolValueException(protocol, parameterValues);
+            return delegate.apply(resultMetadata, logicalMetric, protocol, parameterValues);
         }
         TimeAverageMetricMakerConfig metricMakerConfig = makerConfigMap.get(parameterValue);
 
