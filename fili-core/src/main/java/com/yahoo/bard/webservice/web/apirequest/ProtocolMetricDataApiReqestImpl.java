@@ -212,7 +212,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * @return set of bound metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
-
+    @Override
     protected LinkedHashSet<LogicalMetric> bindLogicalMetrics(
             String apiMetricExpression,
             LogicalTable logicalTable,
