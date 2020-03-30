@@ -43,8 +43,6 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
 
-    private final ApiRequestLogicalMetricBinder metricBinder;
-
     /**
      * Parses the API request URL and generates the Api Request object.
      *
@@ -130,7 +128,6 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 page,
                 bardConfigResources
         );
-        metricBinder = bardConfigResources.getMetricBinder();
     }
 
     /**
