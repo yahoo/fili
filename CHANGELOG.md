@@ -54,6 +54,12 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Added parameter for `ApiRequestLogicalMetricBinder` to the core binding constructor on `DataApiRequestImpl`](https://github.com/yahoo/fili/pull/1034)
+   * `BardConfigResources` has a method for providing an instance of `ApiRequestLogicalMetricBind`
+    - Existing delegating constructors that take `BardConfigResources` have their public contracts unchanged
+   * `DefaultLogicalMetricBinder` is the default implementation of this interface.
+    - `BardConfigResources#getMetricBinder` is defaulted to return a new instance of this class.
+    
 - [Extracted `DataSourceConstraint` into an interface](https://github.com/yahoo/fili/issues/996)
    * `DataSourceConstraint` is now an interface.
     - Migration path documented in the linked issue.

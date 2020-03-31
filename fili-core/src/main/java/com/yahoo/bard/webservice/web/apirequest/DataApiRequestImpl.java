@@ -44,16 +44,17 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.IntervalBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -191,6 +192,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 count,
                 topN,
                 format,
+                null,
                 timeZoneId,
                 asyncAfter,
                 perPage,
@@ -201,7 +203,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getSystemTimeZone(),
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
-                bardConfigResources.getHavingApiGenerator()
+                bardConfigResources.getHavingApiGenerator(),
+                bardConfigResources.getMetricBinder()
         );
     }
 
@@ -294,7 +297,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getSystemTimeZone(),
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
-                bardConfigResources.getHavingApiGenerator()
+                bardConfigResources.getHavingApiGenerator(),
+                bardConfigResources.getMetricBinder()
         );
     }
 
@@ -398,7 +402,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 systemTimeZone,
                 granularityParser,
                 druidFilterBuilder,
-                havingGenerator
+                havingGenerator,
+                ApiRequestImpl.DEFAULT_METRIC_BINDER
         );
     }
 
@@ -440,6 +445,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param granularityParser A tool to process granularities
      * @param druidFilterBuilder A function to build druid filters from Api Filters
      * @param havingGenerator A function to create havings
+     * @param metricBinder  Class that parses the input metric query string and binds the requested metric names to the
+     *                      materialized LogicalMetrics.
      *
      * @throws BadApiRequestException in the following scenarios:
      * <ol>
@@ -478,7 +485,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DateTimeZone systemTimeZone,
             GranularityParser granularityParser,
             DruidFilterBuilder druidFilterBuilder,
-            HavingGenerator havingGenerator
+            HavingGenerator havingGenerator,
+            ApiRequestLogicalMetricBinder metricBinder
     ) throws BadApiRequestException {
         super(formatRequest, downloadFilename, asyncAfterRequest, perPage, page);
 
@@ -501,6 +509,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // At least one logical metric is required
         this.filterBuilder = druidFilterBuilder;  // required for intersection metrics to work
 
+        this.metricBinder = metricBinder;
         this.logicalMetrics = bindLogicalMetrics(logicalMetricsRequest, table, metricDictionary, dimensionDictionary);
         validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary);
 
