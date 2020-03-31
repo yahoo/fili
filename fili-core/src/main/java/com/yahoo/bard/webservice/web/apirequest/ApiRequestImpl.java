@@ -70,7 +70,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
 
     // hardcoding this for now to the old behavior so injection can be based on the protocol binder without changing
     // this code.
-    protected ApiRequestLogicalMetricBinder metricBinder = new DefaultLogicalMetricGenerator();
+    protected static final ApiRequestLogicalMetricBinder DEFAULT_METRIC_BINDER = new DefaultLogicalMetricGenerator();
+    protected ApiRequestLogicalMetricBinder metricBinder = DEFAULT_METRIC_BINDER;
 
     /**
      * Parses the API request URL and generates the API request object.

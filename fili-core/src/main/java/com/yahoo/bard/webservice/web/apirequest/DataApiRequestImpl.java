@@ -192,6 +192,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 count,
                 topN,
                 format,
+                null,
                 timeZoneId,
                 asyncAfter,
                 perPage,
@@ -376,8 +377,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DateTimeZone systemTimeZone,
             GranularityParser granularityParser,
             DruidFilterBuilder druidFilterBuilder,
-            HavingGenerator havingGenerator,
-            ApiRequestLogicalMetricBinder metricBinder
+            HavingGenerator havingGenerator
     ) throws BadApiRequestException {
         this(
                 tableName,
@@ -403,7 +403,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 granularityParser,
                 druidFilterBuilder,
                 havingGenerator,
-                metricBinder
+                ApiRequestImpl.DEFAULT_METRIC_BINDER
         );
     }
 
@@ -445,6 +445,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param granularityParser A tool to process granularities
      * @param druidFilterBuilder A function to build druid filters from Api Filters
      * @param havingGenerator A function to create havings
+     * @param metricBinder  Class that parses the input metric query string and binds the requested metric names to the
+     *                      materialized LogicalMetrics.
      *
      * @throws BadApiRequestException in the following scenarios:
      * <ol>
