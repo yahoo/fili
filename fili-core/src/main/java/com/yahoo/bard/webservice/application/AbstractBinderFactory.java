@@ -409,7 +409,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @param binder The binder to bind the generator to.
      */
-    private void bindMetricGenerator(AbstractBinder binder) {
+    protected void bindMetricGenerator(AbstractBinder binder) {
         List<String> protocols = Collections.emptyList();
         TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() { };
 
