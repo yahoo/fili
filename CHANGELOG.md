@@ -85,6 +85,9 @@ Current
    
 ### Removed:
 
+- [Removed redis key value store support](https://github.com/yahoo/fili/issues/1035)
+   * Redis `KeyValueStore` implementation and support removed. 
+
 ### Fixed:
 
 - [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)

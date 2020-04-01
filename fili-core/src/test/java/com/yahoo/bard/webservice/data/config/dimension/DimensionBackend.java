@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
  */
 public enum DimensionBackend {
 
-    REDIS,
     MEMORY;
 
     private static final Logger LOG = LoggerFactory.getLogger(DimensionBackend.class);
@@ -29,11 +28,9 @@ public enum DimensionBackend {
      */
     public static DimensionBackend getBackend() {
         // Read every time, since some tests set dimension_backend
+        // Since memory is now only supported backend, we don't need to read from system config.
+//        String dimensionBackend = SYSTEM_CONFIG.getStringProperty(DIMENSION_BACKEND_KEY, "memory");
 
-        String dimensionBackend = SYSTEM_CONFIG.getStringProperty(DIMENSION_BACKEND_KEY, "memory");
-        if ("redis".equalsIgnoreCase(dimensionBackend)) {
-            return REDIS;
-        }
         return MEMORY;
     }
 }

@@ -18,8 +18,6 @@ import com.yahoo.bard.webservice.data.config.names.TestLogicalTableName;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager;
-import com.yahoo.bard.webservice.data.dimension.RedisStore;
-import com.yahoo.bard.webservice.data.dimension.RedisStoreManager;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.data.dimension.impl.LuceneSearchProviderManager;
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProviderManager;
@@ -171,13 +169,6 @@ public class TestDimensions {
      */
     public static KeyValueStore getDefaultKeyValueStore(TestApiDimensionName storeName) {
         switch (DimensionBackend.getBackend()) {
-            case REDIS:
-                RedisStore store = RedisStoreManager.getInstance(storeName.asName());
-                // Key/values stored in Redis persist between tests, so remove
-                // them to give the test a clean environment.
-                store.removeAllKeys();
-                return store;
-
             case MEMORY:
             default:
                 return MapStoreManager.getInstance(storeName.asName());
