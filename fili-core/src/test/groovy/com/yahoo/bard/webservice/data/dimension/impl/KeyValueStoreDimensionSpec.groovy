@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
-import com.yahoo.bard.webservice.data.dimension.RedisStoreManager
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.web.ApiFilter
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
@@ -55,16 +54,7 @@ class KeyValueStoreDimensionSpec extends Specification {
         dimensionFields.add(BardDimensionField.DESC)
 
         String fileName = "dimension_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())
-        KeyValueStore keyValueStore
-        switch (dimensionBackend) {
-            case DimensionBackend.REDIS:
-                keyValueStore = RedisStoreManager.getInstance(fileName)
-                break
-            case DimensionBackend.MEMORY:
-                keyValueStore = MapStoreManager.getInstance(fileName)
-                break
-        }
-
+        KeyValueStore keyValueStore = MapStoreManager.getInstance(fileName)
 
         kvsDimension = new KeyValueStoreDimension("platform", "platform-description", dimensionFields, keyValueStore, ScanSearchProviderManager.getInstance("platform"))
         kvsDimension.setLastUpdated(lastUpdated)
