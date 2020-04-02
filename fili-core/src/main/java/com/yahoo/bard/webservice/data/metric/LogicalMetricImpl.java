@@ -174,14 +174,15 @@ public class LogicalMetricImpl implements LogicalMetric {
 
     @Override
     public LogicalMetric withLogicalMetricInfo(LogicalMetricInfo info) {
-        return new LogicalMetricImpl(
-                info,
-                getTemplateDruidQuery().renameMetricField(
-                        getLogicalMetricInfo().getName(),
-                        info.getName()
-                ),
-                getCalculation()
-        );
+        TemplateDruidQuery tdq = getTemplateDruidQuery();
+        if (getTemplateDruidQuery() != null) {
+            tdq = tdq.renameMetricField(
+                    getLogicalMetricInfo().getName(),
+                    info.getName()
+            );
+        }
+
+        return new LogicalMetricImpl(info, tdq, getCalculation());
     }
 
     @Override

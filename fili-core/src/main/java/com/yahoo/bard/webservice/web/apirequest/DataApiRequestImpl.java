@@ -1252,6 +1252,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             if (sortDirectionMap == null) {
                 return metricSortColumns;
             }
+
+            Map<String, LogicalMetric> requestedMetrics = logicalMetrics.stream()
+                    .collect(Collectors.toMap(
+                            LogicalMetric::getName,
+                            x -> x
+                    ));
+
             List<String> unknownMetrics = new ArrayList<>();
             List<String> unmatchedMetrics = new ArrayList<>();
             List<String> unsortableMetrics = new ArrayList<>();
@@ -1259,7 +1266,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             for (Map.Entry<String, SortDirection> entry : sortDirectionMap.entrySet())  {
                 sortMetricName = entry.getKey();
 
-                LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
+                LogicalMetric logicalMetric = requestedMetrics.get(sortMetricName);
+                if (logicalMetric == null) {
+                    logicalMetric = metricDictionary.get(sortMetricName);
+                }
 
                 // If metric dictionary returns a null, it means the requested sort metric is not found.
                 if (logicalMetric == null) {

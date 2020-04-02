@@ -77,15 +77,15 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
 
     @Override
     public ProtocolMetric withLogicalMetricInfo(LogicalMetricInfo info) {
-        return new ProtocolMetricImpl(
-                info,
-                getTemplateDruidQuery().renameMetricField(
-                        getLogicalMetricInfo().getName(),
-                        info.getName()
-                ),
-                getCalculation(),
-                getProtocolSupport()
-        );
+        TemplateDruidQuery newTdq = getTemplateDruidQuery();
+        if (newTdq != null) {
+            newTdq = newTdq.renameMetricField(
+                    getLogicalMetricInfo().getName(),
+                    info.getName()
+            );
+        }
+
+        return new ProtocolMetricImpl(info, newTdq, getCalculation(), getProtocolSupport());
     }
 
     @Override

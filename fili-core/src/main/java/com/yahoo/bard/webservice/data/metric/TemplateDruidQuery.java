@@ -433,6 +433,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     // TODO thoroughly test this feature...
+    // TODO validate IF currentName != newName, then no other agg uses newName
     /**
      * Renames the OUTERMOST field. Does not touched nested queries.
      *

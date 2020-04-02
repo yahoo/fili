@@ -34,8 +34,7 @@ public class RowNumMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
-                // TODO why was this null? Is that behavior critical? Would an empty tdq work?
-                new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet()),
+                null,
                 ROW_NUM_MAPPER
         );
     }
