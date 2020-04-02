@@ -437,6 +437,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     /**
      * Renames the OUTERMOST field. Does not touched nested queries.
      *
+     * if new name == currentName, just returns this tdq.
+     *
      * Renames a MetricField in this template druid query. All field names with {@code currentFieldName} and all output
      * names with {@code currentFieldName} will be renamed. If there is no metric field with {@code currentName}, this
      * template druid query is returned.
@@ -446,6 +448,10 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return
      */
     public TemplateDruidQuery renameMetricField(String currentName, String newName) {
+        if (currentName.equals(newName)) {
+            return this;
+        }
+
         if (getAggregations().stream().anyMatch(agg -> agg.getName().equals(currentName))) {
             return renameAggregation(currentName, newName);
         }
@@ -453,6 +459,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             return renamePostAggOutputName(currentName, newName);
         }
 
+        // TODO probably throw error instead of silently ignore bad rename
         return this;
     }
 

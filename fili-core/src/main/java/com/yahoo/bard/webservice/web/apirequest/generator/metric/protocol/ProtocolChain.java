@@ -87,10 +87,6 @@ public class ProtocolChain {
 
             soFar = soFarProtocol.accept(resultMetadata, p.getContractName(), apiMetric.getParameters());
         }
-
-        if (soFar == fromMetric) {
-            soFar = soFar.withLogicalMetricInfo(resultMetadata);
-        }
         return soFar;
     }
 }
