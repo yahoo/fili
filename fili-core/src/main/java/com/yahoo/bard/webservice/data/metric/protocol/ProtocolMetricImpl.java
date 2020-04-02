@@ -76,6 +76,19 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
     }
 
     @Override
+    public ProtocolMetric withLogicalMetricInfo(LogicalMetricInfo info) {
+        return new ProtocolMetricImpl(
+                info,
+                getTemplateDruidQuery().renameMetricField(
+                        getLogicalMetricInfo().getName(),
+                        info.getName()
+                ),
+                getCalculation(),
+                getProtocolSupport()
+        );
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
         if (o == null || getClass() != o.getClass()) { return false; }

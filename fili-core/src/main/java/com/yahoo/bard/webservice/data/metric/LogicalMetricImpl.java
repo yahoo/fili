@@ -4,8 +4,10 @@ package com.yahoo.bard.webservice.data.metric;
 
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import java.util.Objects;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -168,6 +170,18 @@ public class LogicalMetricImpl implements LogicalMetric {
     @Override
     public LogicalMetricInfo getLogicalMetricInfo() {
         return logicalMetricInfo;
+    }
+
+    @Override
+    public LogicalMetric withLogicalMetricInfo(LogicalMetricInfo info) {
+        return new LogicalMetricImpl(
+                info,
+                getTemplateDruidQuery().renameMetricField(
+                        getLogicalMetricInfo().getName(),
+                        info.getName()
+                ),
+                getCalculation()
+        );
     }
 
     @Override

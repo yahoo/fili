@@ -14,7 +14,9 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
+import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
@@ -24,6 +26,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -427,6 +430,120 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 .filter(field -> field.getName().equals(name))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
+    }
+
+    // TODO thoroughly test this feature...
+    /**
+     * Renames the OUTERMOST field. Does not touched nested queries.
+     *
+     * Renames a MetricField in this template druid query. All field names with {@code currentFieldName} and all output
+     * names with {@code currentFieldName} will be renamed. If there is no metric field with {@code currentName}, this
+     * template druid query is returned.
+     *
+     * @param currentFieldName
+     * @param newFieldName
+     * @return
+     */
+    public TemplateDruidQuery renameMetricField(String currentName, String newName) {
+        if (getAggregations().stream().anyMatch(agg -> agg.getName().equals(currentName))) {
+            return renameAggregation(currentName, newName);
+        }
+        if (getPostAggregations().stream().anyMatch(pa -> pa.getName().equals(currentName))) {
+            return renamePostAggOutputName(currentName, newName);
+        }
+
+        return this;
+    }
+
+    /**
+     * Finds the target agg, renames it.
+     * Finds all post aggs that referenced the original name and rename them.
+     *
+     * @param currentName
+     * @param newName
+     * @return
+     */
+    protected TemplateDruidQuery renameAggregation(String currentName, String newName) {
+        Aggregation renamedAgg = getAggregations().stream()
+                .filter(agg -> agg.getName().equals(currentName))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new)
+                .withName(newName);
+
+        Set<Aggregation> newAggs = getAggregations().stream()
+                .filter(agg -> !agg.getName().equals(currentName))
+                .collect(Collectors.toSet());
+        newAggs.add(renamedAgg);
+
+        Set<PostAggregation> newPostAggs = new HashSet<>();
+        for (PostAggregation pa : getPostAggregations()) {
+            if (pa instanceof WithFields) {
+                newPostAggs.add(renamePostAggField(currentName, newName, (WithFields<?>) pa));
+            } else if (pa.getType().equals(PostAggregation.DefaultPostAggregationType.FIELD_ACCESS)) {
+                newPostAggs.add(new FieldAccessorPostAggregation(renamedAgg));
+            } else {
+                newPostAggs.add(pa);
+            }
+        }
+
+        // TODO validate name collisions?
+
+        return this
+                .withAggregations(newAggs)
+                .withPostAggregations(newPostAggs);
+    }
+
+    /**
+     * Renames a post aggregation that is dependent on a
+     * @param oldFieldName
+     * @param newFieldName
+     * @param rootPa
+     * @return
+     */
+    protected PostAggregation renamePostAggField(
+            String oldFieldName,
+            String newFieldName,
+            WithFields<? extends PostAggregation> rootPa
+    ) {
+        List<PostAggregation> newFields = new ArrayList<>();
+        for (PostAggregation field : rootPa.getFields()) {
+            PostAggregation newField;
+            if (field instanceof WithFields) {
+                newField = renamePostAggField(oldFieldName, newFieldName, (WithFields<?>) field);
+            } else if (field.getName().equals(oldFieldName)) {
+                newField = field.withName(newFieldName);
+            } else {
+                newField = field;
+            }
+            newFields.add(newField);
+        }
+        return rootPa.withFields(newFields);
+    }
+
+    /**
+     * Finds the post aggregation with {@code oldName} and renames it to {@code newName}. Cannot be applied to field
+     * accessor post aggs, because those are dependent on target Aggregation name.
+     *
+     * @param oldName
+     * @param newName
+     * @return
+     * @throws IllegalArgumentException if no PostAggregation with oldName is found, or if the PostAggregation is of
+     *                                  type FieldAccesorPostAggregation
+     */
+    protected TemplateDruidQuery renamePostAggOutputName(String oldName, String newName) {
+        PostAggregation newPa = getPostAggregations().stream()
+                .filter(pa -> !pa.getType().equals(PostAggregation.DefaultPostAggregationType.FIELD_ACCESS))
+                .filter(pa -> pa.getName().equals(oldName))
+                .findFirst()
+                .map(pa -> pa.withName(newName))
+                .orElseThrow(IllegalArgumentException::new);
+
+        Set<PostAggregation> newPostAggs = getPostAggregations().stream()
+                .filter(pa -> !pa.getName().equals(oldName))
+                .collect(Collectors.toSet());
+        newPostAggs.add(newPa);
+
+        return withPostAggregations(newPostAggs);
     }
 
     /**

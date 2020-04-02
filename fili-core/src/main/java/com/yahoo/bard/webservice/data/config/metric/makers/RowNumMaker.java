@@ -5,9 +5,11 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.RowNumMapper;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,7 +34,8 @@ public class RowNumMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
-                null,
+                // TODO why was this null? Is that behavior critical? Would an empty tdq work?
+                new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet()),
                 ROW_NUM_MAPPER
         );
     }

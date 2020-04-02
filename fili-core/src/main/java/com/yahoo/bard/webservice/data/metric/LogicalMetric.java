@@ -74,4 +74,13 @@ public interface LogicalMetric {
      * @return A collection of metric identity metadata.
      */
     LogicalMetricInfo getLogicalMetricInfo();
+
+    /**
+     * Returns a copy of this logical metric with the provided info replacing the existing info. The original metric
+     * remains untouched.
+     *
+     * @param info  The new metric info for the resulting LogicalMetric
+     * @return a copy of this metric with the new info
+     */
+    LogicalMetric withLogicalMetricInfo(LogicalMetricInfo info);
 }

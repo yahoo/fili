@@ -49,7 +49,7 @@ public class ProtocolChain {
     }
 
     /**
-     * Dummy implementation.
+     * Dummy implementation. Result metadata is ALWAYS applied to the input metric, even if no protocol are applied!
      *
      * @param resultMetadata  The metadata for the expected metric
      * @param apiMetric  The metric described in the apiRequest
@@ -86,6 +86,10 @@ public class ProtocolChain {
             }
 
             soFar = soFarProtocol.accept(resultMetadata, p.getContractName(), apiMetric.getParameters());
+        }
+
+        if (soFar == fromMetric) {
+            soFar = soFar.withLogicalMetricInfo(resultMetadata);
         }
         return soFar;
     }
