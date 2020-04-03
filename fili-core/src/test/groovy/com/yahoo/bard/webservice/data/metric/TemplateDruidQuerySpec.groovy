@@ -296,7 +296,7 @@ class TemplateDruidQuerySpec extends Specification {
         TemplateDruidQuery tdq = new TemplateDruidQuery([], [arithmeticPostAggOperand1])
 
         when:
-        tdq.renamePostAggOutputName(arithmeticAggOperand1Name, "unusedNewOutputName")
+        tdq.renamePostAggregation(arithmeticAggOperand1Name, "unusedNewOutputName")
 
         then: "field accessor post agg with matching name was ignored"
         // Since field accessor post agg was ignored, AND template druid queries can't have post aggs with duplicate
@@ -311,7 +311,7 @@ class TemplateDruidQuerySpec extends Specification {
         TemplateDruidQuery tdq = new TemplateDruidQuery([], [arithmeticPostAggOperand1])
 
         when:
-        tdq.renamePostAggOutputName(arithmeticAggOperand1Name, "unusedNewOutputName")
+        tdq.renamePostAggregation(arithmeticAggOperand1Name, "unusedNewOutputName")
 
         then: "dependent post agg with matching name was ignored"
         // Since dependent post aggs are not parsed and thus ignored no post with matching output name is detected and
@@ -479,4 +479,9 @@ class TemplateDruidQuerySpec extends Specification {
                 arithmeticAggOperand2Name +
                 " as that name already exists in this query"
     }
+
+    // Tests
+    // * test updating AggregationReference references
+    // * test top level AggregationReference rename
+    // TODO write "AggregationAliasingPostAgg", which is a post agg that aliases an Aggregation to a different output name
 }

@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.AggregationReference;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -48,6 +48,11 @@ import javax.validation.constraints.NotNull;
 public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQuery> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
+
+    protected static final String NULL_RENAME_ERROR_MESSAGE = "Can't rename a metric to or from 'null'";
+    protected static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name is " +
+            "already used by a metric field in this query";
+    protected static final String NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE = "no aggregation with name '%s' exists.";
 
     private final TemplateDruidQuery nestedQuery;
     private final ZonelessTimeGrain timeGrain;
@@ -434,65 +439,67 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 .orElseThrow(IllegalArgumentException::new);
     }
 
-    // TODO thoroughly test this feature...
-    // TODO validate IF currentName != newName, then no other agg uses newName
     /**
-     * Renames the OUTERMOST field. Does not touched nested queries.
+     * Renames the {@link MetricField} with name {@code currentName} to {@code newName}, as well as any other
+     * MetricFields in this TemplateDruidQuery that reference it. This functionality is primarily meant to service query
+     * time metric renaming. As such, this method only renames metrics on the outermost tdq. More involved query
+     * rewriting should be handled by custom {@link com.yahoo.bard.webservice.web.handlers.DataRequestHandler}
+     * implementations.
+     * <p>
+     * Renaming a metric to the same name (i.e. {@code currentName=foo, newName=foo}) is treated as a noop and this
+     * TemplateDruidQuery is returned with no operations performed on it.
      *
-     * if new name == currentName, just returns this tdq.
-     *
-     * Renames a MetricField in this template druid query. All field names with {@code currentFieldName} and all output
-     * names with {@code currentFieldName} will be renamed. If there is no metric field with {@code currentName}, this
-     * template druid query is returned.
-     *
-     * Throws null pointer exception if either name is null
-     * Throws illegal argument exception if target name already exists
-     *
-     * @param currentFieldName
-     * @param newFieldName
-     * @return
+     * @param currentName  The name of the MetricField to be rewritten. This parameter cannot be null and a
+     *                          MetricField with this name must exist on this TemplateDruidQuery
+     * @param newName  The name for the target MetricField to be renamed to. This parameter cannot be null and cannot
+     *                 conflict with a MetricField already on this TemplateDruidQuery
+     * @return the TemplateDruidQuery with the target MetricField renamed with {@code newName}. If newName is equivalent
+     *         to currentName, this metric call is treated as a noop and this TemplateDruidQuery is returned
+     * @throws NullPointerException if either parameter is null
+     * @throws IllegalArgumentException if there is no MetricField that matches currentName, or if a MetricField that
+     *                                  matches newName already exists.
      */
     public TemplateDruidQuery renameMetricField(@NotNull String currentName, @NotNull String newName) {
-        if (currentName == null || newName == null) {
-            throw new NullPointerException("Can't rename a metric to or from 'null'");
-        }
+        Objects.requireNonNull(currentName, NULL_RENAME_ERROR_MESSAGE);
+        Objects.requireNonNull(newName, NULL_RENAME_ERROR_MESSAGE);
 
-        // if rename is noop just return this
         if (currentName.equals(newName)) {
             return this;
         }
 
-        // don't allow duplicate names
-        if (Stream.concat(
-                getAggregations().stream(),
-                getPostAggregations().stream()
-        ).anyMatch(mf -> java.util.Objects.equals(newName, mf.getName()))) {
+        if (Stream.concat(getAggregations().stream(), getPostAggregations().stream())
+                .anyMatch(mf -> Objects.equals(newName, mf.getName()))) {
             throw new IllegalArgumentException(
-                    "Can't rename " + currentName + " to " + newName + " as that name already exists in this query"
+                String.format(RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE, currentName, newName)
             );
         }
 
-        if (getAggregations().stream().anyMatch(agg -> agg.getName().equals(currentName))) {
+        if (getAggregations().stream().anyMatch(agg -> Objects.equals(agg.getName(), currentName))) {
             return renameAggregation(currentName, newName);
         }
-        if (getPostAggregations().stream().anyMatch(pa -> pa.getName().equals(currentName))) {
-            return renamePostAggOutputName(currentName, newName);
+
+        if (getPostAggregations().stream().anyMatch(pa -> Objects.equals(pa.getName(), currentName))) {
+            return renamePostAggregation(currentName, newName);
         }
 
-        // TODO probably throw error instead of silently ignore bad rename
-        throw new IllegalArgumentException("no aggregation with name " + currentName + " exists.");
+        throw new IllegalArgumentException(String.format(NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE, currentName));
     }
 
     /**
-     * Finds the target agg, renames it.
-     * Finds all post aggs that referenced the original name and rename them.
+     * Renames the {@link Aggregation} with name {@code currentName}, and renames its output name to {@code newName}.
+     * The field name the target Aggregation references is never directly touched. Additionally, all
+     * {@link PostAggregation}s that reference the renamed Aggregation have their references updated to point to the
+     * renamed Aggregation.
+     * <p>
+     * The behavior when either parameter is null is undefined, as such this method should never be called with null
+     * parameter values.
      *
-     * @param currentName
-     * @param newName
-     * @return
+     * @param currentName  The output name of the Aggregation to rename
+     * @param newName  The new output name
+     * @return the TemplateDruidQuery with the renamed Aggregation and all updated PostAggregations
+     * @throws IllegalArgumentException if there is no Aggregation with an output name matching currentName
      */
     protected TemplateDruidQuery renameAggregation(String currentName, String newName) {
-        // only one because names must be unique
         Aggregation renamedAgg = getAggregations().stream()
                 .filter(agg -> agg.getName().equals(currentName))
                 .findFirst()
@@ -506,14 +513,13 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         Set<PostAggregation> newPostAggs = new HashSet<>();
         for (PostAggregation pa : getPostAggregations()) {
+            // TODO add repoint AggregationReference here.
             if (pa instanceof WithFields) {
-                newPostAggs.add(renamePostAggField(currentName, renamedAgg, (WithFields<?>) pa));
+                newPostAggs.add(renameAggregationReferences(currentName, renamedAgg, (WithFields<?>) pa));
             } else {
                 newPostAggs.add(pa);
             }
         }
-
-        // TODO validate name collisions?
 
         return this
                 .withAggregations(newAggs)
@@ -521,48 +527,52 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
-     * Renames a post aggregation that is dependent on an aggregation
+     * Updates all {@link PostAggregation}s that reference the {@link Aggregation} with output name that matches
+     * {@code oldFieldName} to point to the {@code renamedAgg}.
+     * <p>
+     * The behavior of this method when any parameter value is null is undefined. As such this method should never be
+     * called with null parameter values.
      *
-     * @param oldFieldName
-     * @param newFieldName
-     * @param rootPa
-     * @return
+     * @param oldFieldName  The name of the Aggregation that has been renamed. References to this Aggregation must be
+     *                      updated.
+     * @param renamedAgg  The new Aggregation that has been renamed from {@code oldFieldName}. All references to the
+     *                    previous Aggregations are repointed to this Aggregation.
+     * @param rootPostAgg  A PostAggregation that depends on other PostAggregations. If of those dependent
+     *                     PostAggregations reference the original Aggregation, they are repointed at the new
+     *                     Aggregation.
+     * @return a PostAggregation that has had all of its dependent PostAggregations updated.
      */
-    protected PostAggregation renamePostAggField(
+    protected PostAggregation renameAggregationReferences(
             String oldFieldName,
             Aggregation renamedAgg,
-            WithFields<? extends PostAggregation> rootPa
+            WithFields<? extends PostAggregation> rootPostAgg
     ) {
         List<PostAggregation> newFields = new ArrayList<>();
-        for (PostAggregation field : rootPa.getFields()) {
+        for (PostAggregation field : rootPostAgg.getFields()) {
             PostAggregation newField;
-            // TODO what should be renamed here? field name????
             if (field instanceof WithFields) {
-                newField = renamePostAggField(oldFieldName, renamedAgg, (WithFields<?>) field);
-            // field accessor is only post agg that actually references aggs
-            // TODO can this be generalized? doing the rename only makes sense when there is a post agg that
-            //  specifically references an agg. Post aggs and aggs SHARE a namespace, so the output name and agg name
-            //  must be distinct. According to this doc, only field accessor and javascript actually directly reference agg names:
-            //  https://druid.apache.org/docs/latest/querying/post-aggregations.html. Currently, we only support
-            //  FieldAccessor do to performance concerns (?). Should an interface be extracted here to allow clients to
-            //  consume new or custom druid post aggs that directly reference aggs as they come up?
-            //  That is probably the best option.......
-            } else if (
-                    field instanceof FieldAccessorPostAggregation &&
-                            ((FieldAccessorPostAggregation) field).getFieldName().equals(oldFieldName)
-            ) {
-                newField = new FieldAccessorPostAggregation(renamedAgg);
+                newField = renameAggregationReferences(oldFieldName, renamedAgg, (WithFields<?>) field);
+            // TODO externalize repoint this into its own method
+            } else if (field instanceof AggregationReference) {
+                List<Aggregation> newAggs = ((AggregationReference<?>) field).getAggregations().stream()
+                        .map((Aggregation agg) ->
+                                Objects.equals(agg.getName(), oldFieldName) ? renamedAgg : agg)
+                        .collect(Collectors.toList());
+
+                newField = ((AggregationReference<?>) field).withAggregations(newAggs);
             } else {
                 newField = field;
             }
             newFields.add(newField);
         }
-        return rootPa.withFields(newFields);
+        return rootPostAgg.withFields(newFields);
     }
 
     /**
      * Finds the post aggregation with {@code oldName} and renames it to {@code newName}. Cannot be applied to field
      * accessor post aggs, because those are dependent on target Aggregation name.
+     *
+     * neither name can be null. Standard interactions prevent this.
      *
      * @param oldName
      * @param newName
@@ -570,16 +580,15 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @throws IllegalArgumentException if no PostAggregation with oldName is found, or if the PostAggregation is of
      *                                  type FieldAccesorPostAggregation
      */
-    protected TemplateDruidQuery renamePostAggOutputName(String oldName, String newName) {
+    protected TemplateDruidQuery renamePostAggregation(String oldName, String newName) {
         PostAggregation newPa = getPostAggregations().stream()
-                .filter(pa -> !pa.getType().equals(PostAggregation.DefaultPostAggregationType.FIELD_ACCESS))
-                .filter(pa -> pa.getName().equals(oldName))
+                .filter(pa -> Objects.equals(pa.getName(), oldName))
                 .findFirst()
                 .map(pa -> pa.withName(newName))
                 .orElseThrow(IllegalArgumentException::new);
 
         Set<PostAggregation> newPostAggs = getPostAggregations().stream()
-                .filter(pa -> !pa.getName().equals(oldName))
+                .filter(pa -> !Objects.equals(pa.getName(), oldName))
                 .collect(Collectors.toSet());
         newPostAggs.add(newPa);
 

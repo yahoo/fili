@@ -5,13 +5,15 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.FIELD_ACCESS;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -20,18 +22,21 @@ import javax.validation.constraints.NotNull;
 /**
  * Model representing lookups of aggregation values.
  */
-public class FieldAccessorPostAggregation extends PostAggregation {
+public class FieldAccessorPostAggregation
+        extends PostAggregation
+        implements AggregationReference<FieldAccessorPostAggregation> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FieldAccessorPostAggregation.class);
 
-    private final MetricField metricField;
+    private final Aggregation metricField;
 
     /**
      * Constructor.
      *
      * @param aggregation  Aggregation to access
      */
-    public FieldAccessorPostAggregation(@NotNull MetricField aggregation) {
+    // TODO document HARDENING this contract in changelog!!!!
+    public FieldAccessorPostAggregation(@NotNull Aggregation aggregation) {
         super(FIELD_ACCESS, null);
 
         // Check for null aggregation
@@ -55,10 +60,14 @@ public class FieldAccessorPostAggregation extends PostAggregation {
      * @return An aggregation or post-aggregation referenced by this post aggregator.
      */
     @JsonIgnore
-    public MetricField getMetricField() {
+    public Aggregation getMetricField() {
         return metricField;
     }
 
+    @Override
+    public List<Aggregation> getAggregations() {
+        return Collections.singletonList(getMetricField());
+    }
 
     public String getFieldName() {
         return metricField.getName();
@@ -93,6 +102,17 @@ public class FieldAccessorPostAggregation extends PostAggregation {
     @Override
     public FieldAccessorPostAggregation withName(String name) {
         throw new IllegalStateException("Field Access doesn't take name.");
+    }
+
+    @Override
+    public FieldAccessorPostAggregation withAggregations(List<Aggregation> aggregations) {
+        if (aggregations.isEmpty()) {
+            // TODO externalize to interface
+            throw new IllegalArgumentException(
+                    "Attempted to create FieldAccessorPostAggregation without a dependent aggregation"
+            );
+        }
+        return new FieldAccessorPostAggregation(aggregations.get(0));
     }
 
     @Override
