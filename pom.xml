@@ -103,7 +103,6 @@
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
-        <version.netty>4.1.45.Final</version.netty>
         <version.jetty>9.4.20.v20190813</version.jetty>
 
         <version.lombok>1.18.8</version.lombok>
@@ -422,19 +421,6 @@
                 <version>${version.jackson}</version>
             </dependency>
 
-            <!-- Redis -->
-            <dependency>
-                <!-- TODO: Move to only redison dependency -->
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>3.2.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson</artifactId>
-                <version>3.8.2</version>
-            </dependency>
-
             <!-- JodaTime -->
             <dependency>
                 <groupId>joda-time</groupId>
@@ -452,45 +438,6 @@
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client-netty-utils</artifactId>
                 <version>${version.asynchttp}</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-dns</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-
-            <!-- Dependencies pegged to overwrite redisson versions.  Remove when redisson is removed or updated. -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-buffer</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-resolver-dns</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-                <version>${version.netty}</version>
             </dependency>
 
             <!-- ReactiveX -->

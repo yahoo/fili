@@ -18,7 +18,6 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
-import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -42,8 +41,6 @@ import javax.ws.rs.core.PathSegment;
 public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
-
-    private final ApiRequestLogicalMetricBinder metricBinder;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -130,7 +127,6 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 page,
                 bardConfigResources
         );
-        metricBinder = bardConfigResources.getMetricBinder();
     }
 
     /**
@@ -215,7 +211,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * @return set of bound metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
-
+    @Override
     protected LinkedHashSet<LogicalMetric> bindLogicalMetrics(
             String apiMetricExpression,
             LogicalTable logicalTable,
