@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 public class TimeAverageMetricTransformer implements MetricTransformer {
 
     private static final MetricDictionary EMPTY_METRIC_DICTIONARY = new MetricDictionary();
-    public final static TimeAverageMetricTransformer INSTANCE = new TimeAverageMetricTransformer();
 
     private Map<String, TimeAverageMetricMakerConfig> makerConfigMap;
 
@@ -53,7 +52,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      * @param  makerConfigMap  A collection of maker configurations to use when making time reaggregations.
      * @param  delegate  A metric transformer to send to if no matching core value is found in this one.ß
      */
-    protected TimeAverageMetricTransformer(
+    public TimeAverageMetricTransformer(
             Supplier<ProtocolSupport> protocolSupportSupplier,
             Map<String, TimeAverageMetricMakerConfig> makerConfigMap,
             MetricTransformer delegate
@@ -69,7 +68,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      *
      * Private to implement singleton pattern for normal usage.
      */
-    private TimeAverageMetricTransformer() {
+    public TimeAverageMetricTransformer() {
         this(
                 DefaultSystemMetricProtocols::getStandardProtocolSupport,
                 TimeAverageMetricMakerConfig.timeMakerConfigs,
@@ -174,7 +173,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
          * @param parameterValue  The value of the parameter that uses this config.
          * @param granularity  The granularity of reaggregation.
          */
-        TimeAverageMetricMakerConfig(
+        public TimeAverageMetricMakerConfig(
                 String parameterValue,
                 ZonelessTimeGrain granularity
         ) {
