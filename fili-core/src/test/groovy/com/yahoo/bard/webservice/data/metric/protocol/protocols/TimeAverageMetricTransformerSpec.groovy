@@ -45,7 +45,7 @@ class TimeAverageMetricTransformerSpec extends Specification {
     @Unroll
     def "Create a time average for #grain"() {
         setup:
-        TimeAverageMetricTransformer timeAverageTransformer = TimeAverageMetricTransformer.INSTANCE
+        TimeAverageMetricTransformer timeAverageTransformer = new TimeAverageMetricTransformer()
 
         LogicalMetric sketchUnion = sketchMaker.make("foo", "bar")
         GeneratedMetricInfo sketchOutLmi = new GeneratedMetricInfo("sketchUnionResult", "sketchBase")
@@ -79,7 +79,7 @@ class TimeAverageMetricTransformerSpec extends Specification {
     @Unroll
     def "Fail if an invalid parameters #params is passed"() {
         when:
-        TimeAverageMetricTransformer timeAverageTransformer = TimeAverageMetricTransformer.INSTANCE
+        TimeAverageMetricTransformer timeAverageTransformer = new TimeAverageMetricTransformer()
         timeAverageTransformer.apply(longSumOutLmi, longSum, protocol, params)
 
         then:
