@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 /**
- * A PostAggregation that references and Aggregation
+ * A PostAggregation that references and Aggregation. While this cannot be validated using Java's type system, the
+ * behavior of classes that interact with contract is ONLY defined on PostAggregations.
  */
 public interface AggregationReference<T extends PostAggregation> extends MetricField {
 

@@ -22,8 +22,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Model representing lookups of aggregation values.
  */
-public class FieldAccessorPostAggregation
-        extends PostAggregation
+public class FieldAccessorPostAggregation extends PostAggregation
         implements AggregationReference<FieldAccessorPostAggregation> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FieldAccessorPostAggregation.class);

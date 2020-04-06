@@ -513,9 +513,10 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         Set<PostAggregation> newPostAggs = new HashSet<>();
         for (PostAggregation pa : getPostAggregations()) {
-            // TODO add repoint AggregationReference here.
             if (pa instanceof WithFields) {
-                newPostAggs.add(renameAggregationReferences(currentName, renamedAgg, (WithFields<?>) pa));
+                newPostAggs.add(renamePostAggregationTree(currentName, renamedAgg, (WithFields<?>) pa));
+            } else if (pa instanceof AggregationReference) {
+                newPostAggs.add(renameAggregationReference(currentName, renamedAgg, (AggregationReference<?>) pa));
             } else {
                 newPostAggs.add(pa);
             }
@@ -542,7 +543,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      *                     Aggregation.
      * @return a PostAggregation that has had all of its dependent PostAggregations updated.
      */
-    protected PostAggregation renameAggregationReferences(
+    protected PostAggregation renamePostAggregationTree(
             String oldFieldName,
             Aggregation renamedAgg,
             WithFields<? extends PostAggregation> rootPostAgg
@@ -551,15 +552,9 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         for (PostAggregation field : rootPostAgg.getFields()) {
             PostAggregation newField;
             if (field instanceof WithFields) {
-                newField = renameAggregationReferences(oldFieldName, renamedAgg, (WithFields<?>) field);
-            // TODO externalize repoint this into its own method
+                newField = renamePostAggregationTree(oldFieldName, renamedAgg, (WithFields<?>) field);
             } else if (field instanceof AggregationReference) {
-                List<Aggregation> newAggs = ((AggregationReference<?>) field).getAggregations().stream()
-                        .map((Aggregation agg) ->
-                                Objects.equals(agg.getName(), oldFieldName) ? renamedAgg : agg)
-                        .collect(Collectors.toList());
-
-                newField = ((AggregationReference<?>) field).withAggregations(newAggs);
+                newField = renameAggregationReference(oldFieldName, renamedAgg, (AggregationReference<?>) field);
             } else {
                 newField = field;
             }
@@ -569,26 +564,49 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
-     * Finds the post aggregation with {@code oldName} and renames it to {@code newName}. Cannot be applied to field
+     * Repoints any references to {@link Aggregation}s with output name {@code currentAggName} to Aggregation
+     * {@code renamedAgg}. If {@code postAgg} does NOT reference an Aggregation with output name currentAggName, a copy of
+     * postAgg is returned.
+     *
+     * @param currentAggName
+     * @param renamedAgg
+     * @param postAgg
+     * @return
+     */
+    protected PostAggregation renameAggregationReference(
+            String currentAggName,
+            Aggregation renamedAgg,
+            AggregationReference<? extends PostAggregation> postAgg
+    ) {
+        List<Aggregation> newAggs = postAgg.getAggregations().stream()
+                .map((Aggregation agg) ->
+                        Objects.equals(agg.getName(), currentAggName) ? renamedAgg : agg)
+                .collect(Collectors.toList());
+
+        return postAgg.withAggregations(newAggs);
+    }
+
+    /**
+     * Finds the post aggregation with {@code currentName} and renames it to {@code newName}. Cannot be applied to field
      * accessor post aggs, because those are dependent on target Aggregation name.
      *
      * neither name can be null. Standard interactions prevent this.
      *
-     * @param oldName
+     * @param currentName
      * @param newName
      * @return
-     * @throws IllegalArgumentException if no PostAggregation with oldName is found, or if the PostAggregation is of
+     * @throws IllegalArgumentException if no PostAggregation with currentName is found, or if the PostAggregation is of
      *                                  type FieldAccesorPostAggregation
      */
-    protected TemplateDruidQuery renamePostAggregation(String oldName, String newName) {
+    protected TemplateDruidQuery renamePostAggregation(String currentName, String newName) {
         PostAggregation newPa = getPostAggregations().stream()
-                .filter(pa -> Objects.equals(pa.getName(), oldName))
+                .filter(pa -> Objects.equals(pa.getName(), currentName))
                 .findFirst()
                 .map(pa -> pa.withName(newName))
                 .orElseThrow(IllegalArgumentException::new);
 
         Set<PostAggregation> newPostAggs = getPostAggregations().stream()
-                .filter(pa -> !Objects.equals(pa.getName(), oldName))
+                .filter(pa -> !Objects.equals(pa.getName(), currentName))
                 .collect(Collectors.toSet());
         newPostAggs.add(newPa);
 
