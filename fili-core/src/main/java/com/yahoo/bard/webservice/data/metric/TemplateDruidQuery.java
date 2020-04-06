@@ -50,8 +50,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 
     protected static final String NULL_RENAME_ERROR_MESSAGE = "Can't rename a metric to or from 'null'";
-    protected static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name is " +
-            "already used by a metric field in this query";
+    protected static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name " +
+            "is already used by a metric field in this query";
     protected static final String NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE = "no aggregation with name '%s' exists.";
 
     private final TemplateDruidQuery nestedQuery;
@@ -442,7 +442,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     /**
      * Renames the {@link MetricField} with name {@code currentName} to {@code newName}, as well as any other
      * MetricFields in this TemplateDruidQuery that reference it. This functionality is primarily meant to service query
-     * time metric renaming. As such, this method only renames metrics on the outermost tdq. More involved query
+     * time metric renaming. As such, this method only renames metrics on the outermost TDQ. More involved query
      * rewriting should be handled by custom {@link com.yahoo.bard.webservice.web.handlers.DataRequestHandler}
      * implementations.
      * <p>
@@ -450,7 +450,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * TemplateDruidQuery is returned with no operations performed on it.
      *
      * @param currentName  The name of the MetricField to be rewritten. This parameter cannot be null and a
-     *                          MetricField with this name must exist on this TemplateDruidQuery
+     *                     MetricField with this name must exist on this TemplateDruidQuery
      * @param newName  The name for the target MetricField to be renamed to. This parameter cannot be null and cannot
      *                 conflict with a MetricField already on this TemplateDruidQuery
      * @return the TemplateDruidQuery with the target MetricField renamed with {@code newName}. If newName is equivalent
@@ -486,15 +486,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
-     * Renames the {@link Aggregation} with name {@code currentName}, and renames its output name to {@code newName}.
-     * The field name the target Aggregation references is never directly touched. Additionally, all
-     * {@link PostAggregation}s that reference the renamed Aggregation have their references updated to point to the
-     * renamed Aggregation.
+     * Renames the {@link Aggregation} with output name {@code currentName} to {@code newName}. The field name the
+     * target Aggregation references is never directly touched. Additionally, all {@link PostAggregation}s that
+     * reference the renamed Aggregation have their references updated to point to the renamed Aggregation.
      * <p>
      * The behavior when either parameter is null is undefined, as such this method should never be called with null
      * parameter values.
      *
-     * @param currentName  The output name of the Aggregation to rename
+     * @param currentName  The current output name of the Aggregation to rename
      * @param newName  The new output name
      * @return the TemplateDruidQuery with the renamed Aggregation and all updated PostAggregations
      * @throws IllegalArgumentException if there is no Aggregation with an output name matching currentName
@@ -538,7 +537,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      *                      updated.
      * @param renamedAgg  The new Aggregation that has been renamed from {@code oldFieldName}. All references to the
      *                    previous Aggregations are repointed to this Aggregation.
-     * @param rootPostAgg  A PostAggregation that depends on other PostAggregations. If of those dependent
+     * @param rootPostAgg  A PostAggregation that depends on other PostAggregations. If any of those dependent
      *                     PostAggregations reference the original Aggregation, they are repointed at the new
      *                     Aggregation.
      * @return a PostAggregation that has had all of its dependent PostAggregations updated.
@@ -565,13 +564,13 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
     /**
      * Repoints any references to {@link Aggregation}s with output name {@code currentAggName} to Aggregation
-     * {@code renamedAgg}. If {@code postAgg} does NOT reference an Aggregation with output name currentAggName, a copy of
-     * postAgg is returned.
+     * {@code renamedAgg}. If {@code postAgg} does NOT reference an Aggregation with output name currentAggName, a copy
+     * of postAgg is returned.
      *
-     * @param currentAggName
-     * @param renamedAgg
-     * @param postAgg
-     * @return
+     * @param currentAggName  The output name of the Aggregation that needs to be updated
+     * @param renamedAgg  The Aggregation to replace any Aggregation with name {@code currentAggName}
+     * @param postAgg  The PostAggregation to check for Aggregation references that need to be updated
+     * @return the updated PostAggregation
      */
     protected PostAggregation renameAggregationReference(
             String currentAggName,
@@ -587,14 +586,13 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
-     * Finds the post aggregation with {@code currentName} and renames it to {@code newName}. Cannot be applied to field
-     * accessor post aggs, because those are dependent on target Aggregation name.
+     * Finds the post aggregation with output name {@code currentName} and renames it to {@code newName}.
+     * <p>
+     * Neither name can be null. Standard interactions prevent this.
      *
-     * neither name can be null. Standard interactions prevent this.
-     *
-     * @param currentName
-     * @param newName
-     * @return
+     * @param currentName  The output name of the PostAggregation to rename
+     * @param newName  The name to renamed the PostAggregation to
+     * @return the TemplateDruidQuery with the renamed PostAggregation
      * @throws IllegalArgumentException if no PostAggregation with currentName is found, or if the PostAggregation is of
      *                                  type FieldAccesorPostAggregation
      */

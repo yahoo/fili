@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.AggregationAliasingPostAgg
 import com.yahoo.bard.webservice.druid.model.postaggregation.AggregationReference
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
@@ -406,7 +407,7 @@ class TemplateDruidQuerySpec extends Specification {
 
         TemplateDruidQuery tdq = new TemplateDruidQuery(
                 [arithmeticAggOperand1, arithmeticAggOperand2, arithmeticAggOperand3],
-                [arithmeticPostAgg, arithmeticPostAgg2]
+                [arithmeticPostAgg, arithmeticPostAgg2, aggregationAliasingPostAgg]
         )
         String newName = "newName"
 
@@ -545,45 +546,5 @@ class TemplateDruidQuerySpec extends Specification {
 
         then:
         result.getMetricField() == arithmeticAggOperand1
-    }
-
-    /**
-     * Test class that represents a (currently non existant) PostAgg that aliases an Aggregation to a different output name.
-     */
-    static class AggregationAliasingPostAgg extends PostAggregation implements AggregationReference<AggregationAliasingPostAgg> {
-
-        Aggregation targetAgg = null
-
-        /**
-         * Constructor.
-         *
-         * @param type Type of PostAggregation
-         * @param name Name of the post aggregation column. Most PostAggregations must have a name. FieldAccessor may be
-         * the only one that does not have a name.
-         */
-        AggregationAliasingPostAgg(String outputName, Aggregation targetAgg) {
-            super(DefaultPostAggregationType.FIELD_ACCESS, outputName)
-            this.targetAgg = targetAgg
-        }
-
-        @Override
-        List<Aggregation> getAggregations() {
-            [targetAgg]
-        }
-
-        @Override
-        AggregationAliasingPostAgg withAggregations(List<Aggregation> aggregations) {
-            return new AggregationAliasingPostAgg(getName(), aggregations.get(0))
-        }
-
-        @Override
-        PostAggregation withName(String name) {
-            return new AggregationAliasingPostAgg(name, getAggregations().get(0))
-        }
-
-        @Override
-        Set<Dimension> getDependentDimensions() {
-            return []
-        }
     }
 }
