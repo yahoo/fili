@@ -527,10 +527,16 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         Set<PostAggregation> newPostAggs = new HashSet<>();
         for (PostAggregation pa : getPostAggregations()) {
+            // Post aggregation has dependencies on other post aggs
+            // Must parse tree and repoint any references to the renamed aggregation
             if (pa instanceof WithFields) {
                 newPostAggs.add(renamePostAggregationTree(currentName, renamedAgg, (WithFields<?>) pa));
+            // Post aggregation directly references aggregations
+            // Must repoint any references to the renamed aggregation
             } else if (pa instanceof AggregationReference) {
                 newPostAggs.add(renameAggregationReference(currentName, renamedAgg, (AggregationReference<?>) pa));
+            // Post agg does not reference any other columns
+            // Safe to just maintain it and move on
             } else {
                 newPostAggs.add(pa);
             }
@@ -565,10 +571,16 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         List<PostAggregation> newFields = new ArrayList<>();
         for (PostAggregation field : rootPostAgg.getFields()) {
             PostAggregation newField;
+            // Post aggregation has dependencies on other post aggs
+            // Must parse tree and repoint any references to the renamed aggregation
             if (field instanceof WithFields) {
                 newField = renamePostAggregationTree(oldFieldName, renamedAgg, (WithFields<?>) field);
+            // Post aggregation directly references aggregations
+            // Must repoint any references to the renamed aggregation
             } else if (field instanceof AggregationReference) {
                 newField = renameAggregationReference(oldFieldName, renamedAgg, (AggregationReference<?>) field);
+            // Post agg does not reference any other columns
+            // Safe to just maintain it and move on
             } else {
                 newField = field;
             }

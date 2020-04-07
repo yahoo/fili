@@ -168,13 +168,6 @@ public class ProtocolLogicalMetricGenerator
                 continue;
             }
 
-            // if no name change nor parameters to apply just add to resolved metrics and continue
-            if (metric.getRawName().equals(metric.getBaseApiMetricId()) &&
-                            metric.getParameters().isEmpty()) {
-                metrics.add(baseLogicalMetric);
-                continue;
-            }
-
             GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
                     metric.getRawName(),
                     metric.getBaseApiMetricId()
