@@ -52,7 +52,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     protected static final String NULL_RENAME_ERROR_MESSAGE = "Can't rename a metric to or from 'null'";
     protected static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name " +
             "is already used by a metric field in this query";
-    protected static final String NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE = "no aggregation with name '%s' exists.";
+    public static final String NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE = "no MetricField with name '%s' exists.";
 
     private final TemplateDruidQuery nestedQuery;
     private final ZonelessTimeGrain timeGrain;
@@ -425,6 +425,21 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
+     * Checks if this TemplateDruidQuery contains a {@link MetricField} with output name that matches the provided name.
+     *
+     * @param name  The MetricField output name to search for
+     * @return whether or not this contains a MetricField with that output name {@code name}
+     */
+    public boolean containsMetricField(String name) {
+        return Stream.of(
+                getPostAggregations(),
+                getAggregations()
+        )
+                .flatMap(Collection::stream)
+                .anyMatch(mf -> java.util.Objects.equals(mf.getName(), name));
+    }
+
+    /**
      * Get the field by name.
      *
      * @param name  Name of the field to retrieve
@@ -434,7 +449,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     public MetricField getMetricField(String name) {
         return Stream.concat(postAggregations.stream(), aggregations.stream())
-                .filter(field -> field.getName().equals(name))
+                .filter(field -> java.util.Objects.equals(field.getName(), name))
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
     }
@@ -470,7 +485,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         if (Stream.concat(getAggregations().stream(), getPostAggregations().stream())
                 .anyMatch(mf -> Objects.equals(newName, mf.getName()))) {
             throw new IllegalArgumentException(
-                String.format(RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE, currentName, newName)
+                    String.format(RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE, currentName, newName)
             );
         }
 

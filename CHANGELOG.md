@@ -30,6 +30,17 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add withLogicalMetricInfo to LogicalMetric interface to support metric renaming](https://github.com/yahoo/fili/pull/1038)
+   * Supporting method added to TemplateDruidQuery to rename a target `MetricField`
+   * Default implementation written on existing `LogicalMetric` implementations (such as `LogicalMetricImpl`)
+     - Client subclasses of these implementations MUST override the `withLogicalMetricInfo` method, as the default
+       implementation will NOT return an instance of the client subclass! 
+
+- [Add rename capability to TemplateDruidQuery](https://github.com/yahoo/fili/pull/1038)
+   * Functionality added to support `LogicalMetric` renaming and aliasing
+   * Add ability to rename the output name of `MetricField`s on the `TemplateDruidQuery`
+   * Add method to check if `TemplateDruidQuery` contains MetricField with a given output name  
+
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming

@@ -11,6 +11,10 @@ import javax.validation.constraints.NotNull;
 
 /**
  * A LogicalMetric is a set of its TemplateQueries, Mapper, and its name.
+ * <p>
+ * All classes that extend LogicalMetricImpl MUST override the
+ * {@link LogicalMetric#withLogicalMetricInfo(LogicalMetricInfo)} to return the extended subclass. Otherwise, any code
+ * that relies on the behavior of that method will cause the subclass to be lost.
  */
 public class LogicalMetricImpl implements LogicalMetric {
 
@@ -172,15 +176,53 @@ public class LogicalMetricImpl implements LogicalMetric {
 
     @Override
     public LogicalMetric withLogicalMetricInfo(LogicalMetricInfo info) {
-        TemplateDruidQuery tdq = getTemplateDruidQuery();
-        if (getTemplateDruidQuery() != null) {
-            tdq = tdq.renameMetricField(
-                    getLogicalMetricInfo().getName(),
-                    info.getName()
+        return new LogicalMetricImpl(
+                info,
+                renameTemplateDruidQuery(info.getName()),
+                getCalculation()
+        );
+    }
+
+    /**
+     * Convenience method for renaming the MetricField that this LogicalMetric represents on the TemplateDruidQuery for
+     * this LogicalMetric.
+     *
+     * @param newName  The name for the output MetricField to be renamed to
+     * @return the renamed TemplateDruidQuery
+     */
+    protected TemplateDruidQuery renameTemplateDruidQuery(String newName) {
+        return renameTemplateDruidQuery(getTemplateDruidQuery(), getLogicalMetricInfo().getName(), newName);
+    }
+
+    /**
+     * Renames the output name of the MetricField on the outermost level of the provided tdq. The input
+     * {@link TemplateDruidQuery} MAY be null. If so, this method simply returns null. If {@code query} is NOT null, a
+     * {@link MetricField} with name {@code oldName} MUST be present on the query.
+     *
+     * @param query  Tdq to perform the rename over
+     * @param oldName  The name of the MetricField to rename
+     * @param newName  The new output name for the MetricField
+     * @return the renamed TemplateDruidQuery
+     * @throws IllegalArgumentException if {@code query} is not null AND does not contain a MetricField with output name
+     *                                  {@code oldName}
+     */
+    protected TemplateDruidQuery renameTemplateDruidQuery(
+            TemplateDruidQuery query,
+            String oldName,
+            String newName
+    ) {
+        if (query == null) {
+            return query;
+        }
+        if (!query.containsMetricField(oldName)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            TemplateDruidQuery.NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE,
+                            oldName
+                    )
             );
         }
-
-        return new LogicalMetricImpl(info, tdq, getCalculation());
+        return query.renameMetricField(oldName, newName);
     }
 
     @Override
