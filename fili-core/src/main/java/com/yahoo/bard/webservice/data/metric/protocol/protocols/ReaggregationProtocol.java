@@ -16,7 +16,7 @@ public class ReaggregationProtocol {
     public static final Protocol INSTANCE = new Protocol(
             REAGGREGATION_CONTRACT_NAME,
             REAGG_CORE_PARAMETER,
-            TimeAverageMetricTransformer.INSTANCE
+            new TimeAverageMetricTransformer()
     );
 
     public static final Collection<String> acceptedValues() {

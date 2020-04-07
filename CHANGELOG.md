@@ -65,6 +65,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
+   * Delegate to a default error handler to support easy chaining.
+
 - [Added parameter for `ApiRequestLogicalMetricBinder` to the core binding constructor on `DataApiRequestImpl`](https://github.com/yahoo/fili/pull/1034)
    * `BardConfigResources` has a method for providing an instance of `ApiRequestLogicalMetricBind`
     - Existing delegating constructors that take `BardConfigResources` have their public contracts unchanged
