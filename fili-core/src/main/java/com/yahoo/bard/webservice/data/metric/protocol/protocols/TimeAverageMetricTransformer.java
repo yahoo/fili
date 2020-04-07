@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 public class TimeAverageMetricTransformer implements MetricTransformer {
 
     private static final MetricDictionary EMPTY_METRIC_DICTIONARY = new MetricDictionary();
-    public final static TimeAverageMetricTransformer INSTANCE = new TimeAverageMetricTransformer();
 
     private Map<String, TimeAverageMetricMakerConfig> makerConfigMap;
 
@@ -42,6 +41,8 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         return TimeAverageMetricMakerConfig.timeMakerConfigs.keySet();
     }
 
+    private final MetricTransformer delegate;
+
     /**
      * Constructor.
      *
@@ -49,14 +50,17 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      *
      * @param protocolSupportSupplier  A source for the default protocol support used by the makers.
      * @param  makerConfigMap  A collection of maker configurations to use when making time reaggregations.
+     * @param  delegate  A metric transformer to send to if no matching core value is found in this one.ß
      */
-    protected TimeAverageMetricTransformer(
+    public TimeAverageMetricTransformer(
             Supplier<ProtocolSupport> protocolSupportSupplier,
-            Map<String, TimeAverageMetricMakerConfig> makerConfigMap
+            Map<String, TimeAverageMetricMakerConfig> makerConfigMap,
+            MetricTransformer delegate
     ) {
         this.protocolSupportSupplier = protocolSupportSupplier;
         this.makerConfigMap = makerConfigMap;
         metricMakerMap = new HashMap<>();
+        this.delegate = delegate;
     }
 
     /**
@@ -64,8 +68,12 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
      *
      * Private to implement singleton pattern for normal usage.
      */
-    private TimeAverageMetricTransformer() {
-        this(DefaultSystemMetricProtocols::getStandardProtocolSupport, TimeAverageMetricMakerConfig.timeMakerConfigs);
+    public TimeAverageMetricTransformer() {
+        this(
+                DefaultSystemMetricProtocols::getStandardProtocolSupport,
+                TimeAverageMetricMakerConfig.timeMakerConfigs,
+                MetricTransformer.ERROR_THROWING_TRANSFORM
+        );
     }
 
     /**
@@ -95,7 +103,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
         String parameterValue = parameterValues.get(protocol.getCoreParameterName());
 
         if (!makerConfigMap.containsKey(parameterValue)) {
-            throw new UnknownProtocolValueException(protocol, parameterValues);
+            return delegate.apply(resultMetadata, logicalMetric, protocol, parameterValues);
         }
         TimeAverageMetricMakerConfig metricMakerConfig = makerConfigMap.get(parameterValue);
 
@@ -165,7 +173,7 @@ public class TimeAverageMetricTransformer implements MetricTransformer {
          * @param parameterValue  The value of the parameter that uses this config.
          * @param granularity  The granularity of reaggregation.
          */
-        TimeAverageMetricMakerConfig(
+        public TimeAverageMetricMakerConfig(
                 String parameterValue,
                 ZonelessTimeGrain granularity
         ) {
