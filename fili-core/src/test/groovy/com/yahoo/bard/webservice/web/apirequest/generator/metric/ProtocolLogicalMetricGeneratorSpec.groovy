@@ -15,7 +15,6 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.data.metric.protocol.MetadataApplyTransformer
-import com.yahoo.bard.webservice.data.metric.protocol.MetricTransformer
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric
@@ -35,7 +34,7 @@ import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.sql.ResultSetMetaData
+
 
 class ProtocolLogicalMetricGeneratorSpec extends Specification {
 
