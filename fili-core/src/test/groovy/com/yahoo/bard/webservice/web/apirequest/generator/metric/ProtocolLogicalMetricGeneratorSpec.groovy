@@ -288,70 +288,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         errorMessageContainsNames(e.getMessage(), [invalidLogicalMetricName, invalidProtocolMetricBaseName] as Set)
     }
 
-    def "Parser produces correct value for __granularity parameter of the api metric"() {
-        setup:
-        MetricTransformer metricTransformer = Mock(MetricTransformer);
-        Protocol grainExpecting = new Protocol("ge", metricTransformer)
-        ProtocolMetric protocolMetric = new ProtocolMetricImpl(
-                new LogicalMetricInfo(baseMetadataTransformMetricName),
-                emptyTdq,
-                TEST_RSM,
-                new ProtocolSupport([grainExpecting]),
-        )
-        MetricDictionary metricDictionary1 = new MetricDictionary()
-        metricDictionary1.add(protocolMetric)
-        String grainExpectingProtocolName = "ge"
-        protocolDictionary.put(grainExpectingProtocolName, grainExpecting)
-
-        ProtocolDictionary protocolDictionary1 = new ProtocolDictionary()
-        protocolDictionary1.add(grainExpecting)
-
-        ApiMetric apiMetric = new ApiMetric("baseMetric", "baseMetric", ["ge": "true"])
-        TestApiMetricParser testParser = new TestApiMetricParser()
-        testParser.setResultMetrics([apiMetric])
-
-
-        ProtocolLogicalMetricGenerator generator = new ProtocolLogicalMetricGenerator(
-                ApiMetricAnnotater.NO_OP_ANNOTATER,
-                [grainExpectingProtocolName],
-                testParser,
-                protocolDictionary1,
-        )
-
-
-        1 * metricTransformer.apply(
-                _,
-                _,
-                _,
-                _) >>  { args ->
-            assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == expectedGrain
-        }
-
-
-        grainExpecting.getMetricTransformer() >> metricTransformer
-
-        expect:
-        generator.generateLogicalMetrics(text, grain, metricDictionary1) != null
-
-        cleanup:
-        protocolDictionary.remove(grainExpecting)
-        where:
-        expectedGrain           | text
-        DefaultTimeGrain.DAY    | "day"
-        DefaultTimeGrain.WEEK   | "week"
-        DefaultTimeGrain.MONTH  | "month"
-        AllGranularity.INSTANCE | "all"
-    }
-
     def "ProtocolLogical Metric Generator appends granularity"() {
         setup:
         List<ApiMetric> metrics = generator.parseApiMetricQueryWithGranularity("foo()", expectedGrain)
-
         expect:
-        metrics.every() { it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get(ProtocolLogicalMetricGenerator.GRANULARITY) == text }
-
-        cleanup:
-        protocolDictionary.remove(grainExpecting)
+        metrics.every() {it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get(ProtocolLogicalMetricGenerator.GRANULARITY) == text}
         where:
         expectedGrain           | text
         DefaultTimeGrain.DAY    | "day"
