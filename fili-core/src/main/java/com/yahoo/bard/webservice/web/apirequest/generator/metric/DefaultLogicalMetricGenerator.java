@@ -92,14 +92,12 @@ public class DefaultLogicalMetricGenerator
      * prefer using a generator instance instead.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','
-     * @param requestGranularity Granularity of the request
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
      *
      * @return set of metric objects
      */
     public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
-            Granularity requestGranularity,
             MetricDictionary metricDictionary
     ) {
         LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>();
@@ -138,16 +136,17 @@ public class DefaultLogicalMetricGenerator
      * prefer using a generator instance instead.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','
+     * @param requestGranularity Granularity of the request
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
      *
      * @return set of metric objects
      */
-    @Deprecated
     public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
+            Granularity requestGranularity,
             MetricDictionary metricDictionary
     ) {
-        return generateLogicalMetrics(apiMetricQuery, null, metricDictionary);
+        return generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**

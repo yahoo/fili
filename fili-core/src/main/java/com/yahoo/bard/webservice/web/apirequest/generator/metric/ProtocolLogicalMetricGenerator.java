@@ -76,29 +76,6 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
     }
 
     /**
-     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
-     * <p>
-     * If the query contains undefined metrics, {@link BadApiRequestException} will be
-     * thrown.
-     *
-     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
-     * prefer using a generator instance instead.
-     *
-     * @param apiMetricQuery  URL query string containing the metrics separated by ','
-     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
-     *
-     * @return set of metric objects
-     */
-    @Override
-    public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
-            String apiMetricQuery,
-            MetricDictionary metricDictionary
-    ) {
-        List<ApiMetric> apiMetrics = parseApiMetricQuery(apiMetricQuery);
-        return applyProtocols(apiMetrics, metricDictionary);
-    }
-
-    /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics with
      * granularity.
      * <p>
@@ -120,19 +97,11 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
             Granularity requestGranularity,
             MetricDictionary metricDictionary
     ) {
-        List<ApiMetric> apiMetrics = parseApiMetricQueryWithGranularity(apiMetricQuery, requestGranularity);
+        List<ApiMetric> apiMetrics = parseApiMetricQuery(apiMetricQuery, requestGranularity);
         return applyProtocols(apiMetrics, metricDictionary);
     }
 
-
-    private List<ApiMetric> parseApiMetricQuery(String apiMetricQuery) {
-        return apiMetricParser.apply(apiMetricQuery)
-                .stream()
-                .map(apiMetricAnnotater)
-                .collect(Collectors.toList());
-    }
-
-    private List<ApiMetric> parseApiMetricQueryWithGranularity(String apiMetricQuery, Granularity requestGranularity) {
+    private List<ApiMetric> parseApiMetricQuery(String apiMetricQuery, Granularity requestGranularity) {
         return apiMetricParser.apply(apiMetricQuery)
                 .stream()
                 .map(apiMetric -> apiMetric.withParameter(GRANULARITY, requestGranularity.getName()))

@@ -334,7 +334,7 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
 
     def "ProtocolLogical Metric Generator appends granularity"() {
         setup:
-        List<ApiMetric> metrics = generator.parseApiMetricQueryWithGranularity("foo()", expectedGrain)
+        List<ApiMetric> metrics = generator.parseApiMetricQuery("foo()", expectedGrain)
         expect:
         metrics.every() {it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get(ProtocolLogicalMetricGenerator.GRANULARITY) == text}
         where:
