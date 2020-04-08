@@ -72,7 +72,7 @@ public class ApiMetric {
      * @return A modified copy with an additional parameter
      */
     public ApiMetric withParameter(String key, String value) {
-        Map<String, String> newParams = new LinkedHashMap<>();
+        Map<String, String> newParams = new LinkedHashMap<>(parameters);
         newParams.put(key, value);
         return new ApiMetric(rawName, baseApiMetricId, newParams);
     }

@@ -46,6 +46,7 @@ import java.util.stream.Collectors;
 public class ProtocolLogicalMetricGenerator
         implements Generator<LinkedHashSet<LogicalMetric>>, ApiRequestLogicalMetricBinder {
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolLogicalMetricGenerator.class);
+    public static final String GRANULARITY = "__granularity";
 
     private final ApiMetricAnnotater apiMetricAnnotater;
     private final ApiMetricParser apiMetricParser;
@@ -184,7 +185,7 @@ public class ProtocolLogicalMetricGenerator
     private List<ApiMetric> parseApiMetricQueryWithGranularity(String apiMetricQuery, Granularity requestGranularity) {
         return apiMetricParser.apply(apiMetricQuery)
                 .stream()
-                .map(apiMetric -> apiMetric.withParameter("__granularity", requestGranularity.getName()))
+                .map(apiMetric -> apiMetric.withParameter(GRANULARITY, requestGranularity.getName()))
                 .map(apiMetricAnnotater)
                 .collect(Collectors.toList());
     }
@@ -199,12 +200,12 @@ public class ProtocolLogicalMetricGenerator
                     metric.getBaseApiMetricId()
             );
 
-            LogicalMetric baseLogicalMetrics = metricDictionary.get(metric.getBaseApiMetricId());
-            if (baseLogicalMetrics == null) {
+            LogicalMetric baseLogicalMetric = metricDictionary.get(metric.getBaseApiMetricId());
+            if (baseLogicalMetric == null) {
                 invalidMetricNames.add(metric.getRawName());
                 continue;
             }
-            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetrics);
+            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetric);
             metrics.add(logicalMetric);
         }
 
