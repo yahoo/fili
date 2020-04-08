@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.data.metric.protocol.MetadataApplyTransformer
+import com.yahoo.bard.webservice.data.metric.protocol.MetricTransformer
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric
@@ -33,8 +34,6 @@ import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater
 
 import spock.lang.Specification
 import spock.lang.Unroll
-
-
 
 class ProtocolLogicalMetricGeneratorSpec extends Specification {
 
@@ -286,6 +285,52 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         BadApiRequestException e = thrown()
         errorMessageContainsNames(e.getMessage(), [invalidLogicalMetricName, invalidProtocolMetricBaseName] as Set)
     }
+
+    def "ApiMetric appends granularity and creates LogicalMetric "() {
+        setup:
+        MetricTransformer metricTransformer = Mock(MetricTransformer);
+        Protocol grainExpecting = new Protocol("ge", metricTransformer)
+        ProtocolMetric protocolMetric = new ProtocolMetricImpl(
+                new LogicalMetricInfo(baseMetadataTransformMetricName),
+                emptyTdq,
+                TEST_RSM,
+                new ProtocolSupport([grainExpecting]),
+        )
+        MetricDictionary metricDictionary1 = new MetricDictionary()
+        metricDictionary1.add(protocolMetric)
+        String grainExpectingProtocolName = "ge"
+        protocolDictionary.put(grainExpectingProtocolName, grainExpecting)
+        ProtocolDictionary protocolDictionary1 = new ProtocolDictionary()
+        protocolDictionary1.add(grainExpecting)
+        ApiMetric apiMetric = new ApiMetric("baseMetric", "baseMetric", ["ge": "true"])
+        TestApiMetricParser testParser = new TestApiMetricParser()
+        testParser.setResultMetrics([apiMetric])
+        ProtocolLogicalMetricGenerator generator = new ProtocolLogicalMetricGenerator(
+                ApiMetricAnnotater.NO_OP_ANNOTATER,
+                [grainExpectingProtocolName],
+                testParser,
+                protocolDictionary1,
+        )
+        1 * metricTransformer.apply(
+                _,
+                _,
+                _,
+                _) >>  { args ->
+            assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == text
+        }
+        grainExpecting.getMetricTransformer() >> metricTransformer
+        expect:
+        generator.generateLogicalMetrics(text, expectedGrain, metricDictionary1) != null
+        cleanup:
+        protocolDictionary.remove(grainExpecting)
+        where:
+        expectedGrain           | text
+        DefaultTimeGrain.DAY    | "day"
+        DefaultTimeGrain.WEEK   | "week"
+        DefaultTimeGrain.MONTH  | "month"
+        AllGranularity.INSTANCE | "all"
+    }
+
 
     def "ProtocolLogical Metric Generator appends granularity"() {
         setup:
