@@ -10,13 +10,13 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.QueryType;
+import com.yahoo.bard.webservice.druid.model.WithMetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.postaggregation.AggregationReference;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
+import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
@@ -26,7 +26,6 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,12 +44,12 @@ import javax.validation.constraints.NotNull;
 /**
  * Template Druid Query. This class is immutable.
  */
-public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQuery> {
+public final class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQuery> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 
-    protected static final String NULL_RENAME_ERROR_MESSAGE = "Can't rename a metric to or from 'null'";
-    protected static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name " +
+    private static final String NULL_RENAME_ERROR_MESSAGE = "Can't rename a metric to or from 'null'";
+    private static final String RENAME_TO_DUPLICATE_NAME_ERROR_MESSAGE = "Can't rename '%s' to '%s', as that name " +
             "is already used by a metric field in this query";
     public static final String NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE = "no MetricField with name '%s' exists.";
 
@@ -482,6 +481,10 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             return this;
         }
 
+        if (!containsMetricField(currentName)) {
+            throw new IllegalArgumentException(String.format(NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE, currentName));
+        }
+
         if (Stream.concat(getAggregations().stream(), getPostAggregations().stream())
                 .anyMatch(mf -> Objects.equals(newName, mf.getName()))) {
             throw new IllegalArgumentException(
@@ -489,153 +492,63 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             );
         }
 
-        if (getAggregations().stream().anyMatch(agg -> Objects.equals(agg.getName(), currentName))) {
-            return renameAggregation(currentName, newName);
-        }
-
-        if (getPostAggregations().stream().anyMatch(pa -> Objects.equals(pa.getName(), currentName))) {
-            return renamePostAggregation(currentName, newName);
-        }
-
-        throw new IllegalArgumentException(String.format(NO_METRIC_TO_RENAME_FOUND_ERROR_MESSAGE, currentName));
-    }
-
-    /**
-     * Renames the {@link Aggregation} with output name {@code currentName} to {@code newName}. The field name the
-     * target Aggregation references is never directly touched. Additionally, all {@link PostAggregation}s that
-     * reference the renamed Aggregation have their references updated to point to the renamed Aggregation.
-     * <p>
-     * The behavior when either parameter is null is undefined, as such this method should never be called with null
-     * parameter values.
-     *
-     * @param currentName  The current output name of the Aggregation to rename
-     * @param newName  The new output name
-     * @return the TemplateDruidQuery with the renamed Aggregation and all updated PostAggregations
-     * @throws IllegalArgumentException if there is no Aggregation with an output name matching currentName
-     */
-    protected TemplateDruidQuery renameAggregation(String currentName, String newName) {
-        Aggregation renamedAgg = getAggregations().stream()
-                .filter(agg -> agg.getName().equals(currentName))
-                .findFirst()
-                .orElseThrow(IllegalArgumentException::new)
-                .withName(newName);
-
+        MetricField targetField = getMetricField(currentName);
+        MetricField updatedField = targetField.withName(newName);
         Set<Aggregation> newAggs = getAggregations().stream()
-                .filter(agg -> !agg.getName().equals(currentName))
+                .map(agg -> repointToNewMetricField(targetField, updatedField, agg))
                 .collect(Collectors.toSet());
-        newAggs.add(renamedAgg);
-
-        Set<PostAggregation> newPostAggs = new HashSet<>();
-        for (PostAggregation pa : getPostAggregations()) {
-            // Post aggregation has dependencies on other post aggs
-            // Must parse tree and repoint any references to the renamed aggregation
-            if (pa instanceof WithFields) {
-                newPostAggs.add(renamePostAggregationTree(currentName, renamedAgg, (WithFields<?>) pa));
-            // Post aggregation directly references aggregations
-            // Must repoint any references to the renamed aggregation
-            } else if (pa instanceof AggregationReference) {
-                newPostAggs.add(renameAggregationReference(currentName, renamedAgg, (AggregationReference<?>) pa));
-            // Post agg does not reference any other columns
-            // Safe to just maintain it and move on
-            } else {
-                newPostAggs.add(pa);
-            }
-        }
-
-        return this
-                .withAggregations(newAggs)
-                .withPostAggregations(newPostAggs);
-    }
-
-    /**
-     * Updates all {@link PostAggregation}s that reference the {@link Aggregation} with output name that matches
-     * {@code oldFieldName} to point to the {@code renamedAgg}.
-     * <p>
-     * The behavior of this method when any parameter value is null is undefined. As such this method should never be
-     * called with null parameter values.
-     *
-     * @param oldFieldName  The name of the Aggregation that has been renamed. References to this Aggregation must be
-     *                      updated.
-     * @param renamedAgg  The new Aggregation that has been renamed from {@code oldFieldName}. All references to the
-     *                    previous Aggregations are repointed to this Aggregation.
-     * @param rootPostAgg  A PostAggregation that depends on other PostAggregations. If any of those dependent
-     *                     PostAggregations reference the original Aggregation, they are repointed at the new
-     *                     Aggregation.
-     * @return a PostAggregation that has had all of its dependent PostAggregations updated.
-     */
-    protected PostAggregation renamePostAggregationTree(
-            String oldFieldName,
-            Aggregation renamedAgg,
-            WithFields<? extends PostAggregation> rootPostAgg
-    ) {
-        List<PostAggregation> newFields = new ArrayList<>();
-        for (PostAggregation field : rootPostAgg.getFields()) {
-            PostAggregation newField;
-            // Post aggregation has dependencies on other post aggs
-            // Must parse tree and repoint any references to the renamed aggregation
-            if (field instanceof WithFields) {
-                newField = renamePostAggregationTree(oldFieldName, renamedAgg, (WithFields<?>) field);
-            // Post aggregation directly references aggregations
-            // Must repoint any references to the renamed aggregation
-            } else if (field instanceof AggregationReference) {
-                newField = renameAggregationReference(oldFieldName, renamedAgg, (AggregationReference<?>) field);
-            // Post agg does not reference any other columns
-            // Safe to just maintain it and move on
-            } else {
-                newField = field;
-            }
-            newFields.add(newField);
-        }
-        return rootPostAgg.withFields(newFields);
-    }
-
-    /**
-     * Repoints any references to {@link Aggregation}s with output name {@code currentAggName} to Aggregation
-     * {@code renamedAgg}. If {@code postAgg} does NOT reference an Aggregation with output name currentAggName, a copy
-     * of postAgg is returned.
-     *
-     * @param currentAggName  The output name of the Aggregation that needs to be updated
-     * @param renamedAgg  The Aggregation to replace any Aggregation with name {@code currentAggName}
-     * @param postAgg  The PostAggregation to check for Aggregation references that need to be updated
-     * @return the updated PostAggregation
-     */
-    protected PostAggregation renameAggregationReference(
-            String currentAggName,
-            Aggregation renamedAgg,
-            AggregationReference<? extends PostAggregation> postAgg
-    ) {
-        List<Aggregation> newAggs = postAgg.getAggregations().stream()
-                .map((Aggregation agg) ->
-                        Objects.equals(agg.getName(), currentAggName) ? renamedAgg : agg)
-                .collect(Collectors.toList());
-
-        return postAgg.withAggregations(newAggs);
-    }
-
-    /**
-     * Finds the post aggregation with output name {@code currentName} and renames it to {@code newName}.
-     * <p>
-     * Neither name can be null. Standard interactions prevent this.
-     *
-     * @param currentName  The output name of the PostAggregation to rename
-     * @param newName  The name to renamed the PostAggregation to
-     * @return the TemplateDruidQuery with the renamed PostAggregation
-     * @throws IllegalArgumentException if no PostAggregation with currentName is found, or if the PostAggregation is of
-     *                                  type FieldAccesorPostAggregation
-     */
-    protected TemplateDruidQuery renamePostAggregation(String currentName, String newName) {
-        PostAggregation newPa = getPostAggregations().stream()
-                .filter(pa -> Objects.equals(pa.getName(), currentName))
-                .findFirst()
-                .map(pa -> pa.withName(newName))
-                .orElseThrow(IllegalArgumentException::new);
 
         Set<PostAggregation> newPostAggs = getPostAggregations().stream()
-                .filter(pa -> !Objects.equals(pa.getName(), currentName))
+                .map(pa -> repointToNewMetricField(targetField, updatedField, pa))
                 .collect(Collectors.toSet());
-        newPostAggs.add(newPa);
 
-        return withPostAggregations(newPostAggs);
+        return withAggregations(newAggs).withPostAggregations(newPostAggs);
+    }
+
+    /**
+     * Updates reference to
+     *
+     * @param oldField
+     * @param newField
+     * @param fieldToCheck
+     * @return
+     *
+     * TODO discuss weird behavior when T.withName produces a superclass of T
+     */
+    private <T extends MetricField> T repointToNewMetricField(
+            MetricField oldField,
+            MetricField newField,
+            T fieldToCheck
+    ) {
+        if (Objects.equals(oldField, fieldToCheck)) {
+            // Only ever called with Aggregation, PostAggregation or MetricField type. Since this method is private,
+            // the calling conditions are guaranteed to be maintained. Aggregation and PostAggregation syntactically
+            // enforce renaming always produces a subclass of the class of the renamed instance. This method is called
+            // recursively with MetricField return typing, and the type bound on this method ensures the result will
+            // always be a MetricField.
+            //noinspection unchecked
+            return (T) newField;
+        }
+
+        // if has children, iterate through children and repoint
+        if (fieldToCheck instanceof WithPostAggregations) {
+            WithPostAggregations<?> root = (WithPostAggregations<?>) fieldToCheck;
+            // TODO ignore warning
+            /// why is this safe?
+            return (T) root.withPostAggregations(
+                    root.getPostAggregations().stream()
+                    .map(pa -> repointToNewMetricField(oldField, newField, pa))
+                    .collect(Collectors.toList())
+            );
+        }
+        if (fieldToCheck instanceof WithMetricField) {
+            WithMetricField root = (WithMetricField) fieldToCheck;
+            // TODO ignore warning
+            // why is this safe?
+            return (T) root.withMetricField(repointToNewMetricField(oldField, newField, root.getMetricField()));
+        }
+
+        return fieldToCheck;
     }
 
     /**

@@ -67,7 +67,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
         ArithmeticPostAggregation pa = FieldConverterSupplier.metricsFilterSetBuilder.replacePostAggWithPostAggFromMap(resources.dayAvgFoosTdq.getPostAggregations().first(), aggNameToAggMap)
 
         expect:
-        pa.getFields().first().equals(new FieldAccessorPostAggregation(aggNameToAggMap.get("foos_sum")))
+        pa.getPostAggregations().first().equals(new FieldAccessorPostAggregation(aggNameToAggMap.get("foos_sum")))
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
@@ -110,14 +110,14 @@ class ThetaSketchNestedQuerySpec extends Specification {
         ArithmeticPostAggregation postAggregation = logicalMetrics.first().templateDruidQuery.postAggregations.first()
 
         FuzzySetPostAggregation unRegFoo1;
-        for (PostAggregation pa : postAggregation.fields) {
+        for (PostAggregation pa : postAggregation.postAggregations) {
             if (pa instanceof FuzzySetPostAggregation) {
                 unRegFoo1 = pa
                 break
             }
         }
         List<ThetaSketchSetOperationPostAggregation> unRegFooChildren =
-                ((ThetaSketchSetOperationPostAggregation) unRegFoo1.field).fields
+                ((ThetaSketchSetOperationPostAggregation) unRegFoo1.field).postAggregations
 
         expect:
         unRegFooChildren[0].func.equals(SketchSetOperationPostAggFunction.INTERSECT)

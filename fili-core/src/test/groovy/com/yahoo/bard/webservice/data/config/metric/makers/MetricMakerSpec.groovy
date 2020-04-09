@@ -119,6 +119,11 @@ class MetricMakerSpec extends Specification {
             }
 
             @Override
+            MetricField withName(String name) {
+                return this
+            }
+
+            @Override
             boolean isSketch() {
                 return true
             }

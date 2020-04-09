@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.FIELD_ACCESS;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.WithMetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -21,31 +24,41 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Model representing lookups of aggregation values.
+ *
+ * TODO document only ever has a SINGLE reference, will ignore any other reference attempted to be passed to it
  */
-public class FieldAccessorPostAggregation extends PostAggregation
-        implements AggregationReference<FieldAccessorPostAggregation> {
+public class FieldAccessorPostAggregation extends PostAggregation implements WithMetricField {
 
     private static final Logger LOG = LoggerFactory.getLogger(FieldAccessorPostAggregation.class);
 
-    private final Aggregation metricField;
+    private final MetricField metricField;
+    private final List<Aggregation> asAggregation;
+    private final List<PostAggregation> asPostAggregation;
 
     /**
      * Constructor.
      *
-     * @param aggregation  Aggregation to access
+     * @param metricField  MetricField to access
      */
-    // TODO document HARDENING this contract in changelog!!!!
-    public FieldAccessorPostAggregation(@NotNull Aggregation aggregation) {
+    public FieldAccessorPostAggregation(@NotNull MetricField metricField) {
         super(FIELD_ACCESS, null);
 
         // Check for null aggregation
-        if (aggregation == null) {
-            String message = "Aggregation cannot be null";
+        if (metricField == null) {
+            String message = "Field cannot be null";
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
 
-        this.metricField = aggregation;
+        this.metricField = metricField;
+        this.asAggregation = new ArrayList<>();
+        this.asPostAggregation = new ArrayList<>();
+        if (metricField instanceof Aggregation) {
+            this.asAggregation.add((Aggregation) metricField);
+        }
+        if (metricField instanceof PostAggregation) {
+            this.asPostAggregation.add((PostAggregation) metricField);
+        }
     }
 
     @Override
@@ -59,13 +72,13 @@ public class FieldAccessorPostAggregation extends PostAggregation
      * @return An aggregation or post-aggregation referenced by this post aggregator.
      */
     @JsonIgnore
-    public Aggregation getMetricField() {
+    public MetricField getMetricField() {
         return metricField;
     }
 
     @Override
-    public List<Aggregation> getAggregations() {
-        return Collections.singletonList(getMetricField());
+    public WithMetricField withMetricField(MetricField field) {
+        return new FieldAccessorPostAggregation(field);
     }
 
     public String getFieldName() {
@@ -101,17 +114,6 @@ public class FieldAccessorPostAggregation extends PostAggregation
     @Override
     public FieldAccessorPostAggregation withName(String name) {
         throw new IllegalStateException("Field Access doesn't take name.");
-    }
-
-    @Override
-    public FieldAccessorPostAggregation withAggregations(List<Aggregation> aggregations) {
-        if (aggregations.isEmpty()) {
-            // TODO externalize to interface
-            throw new IllegalArgumentException(
-                    "Attempted to create FieldAccessorPostAggregation without a dependent aggregation"
-            );
-        }
-        return new FieldAccessorPostAggregation(aggregations.get(0));
     }
 
     @Override

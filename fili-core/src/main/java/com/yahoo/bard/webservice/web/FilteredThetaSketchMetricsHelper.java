@@ -27,7 +27,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.WithFields;
+import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
@@ -327,23 +327,29 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             PostAggregation postAggregation,
             Map<String, List<FilteredAggregation>> filteredAggDictionary
     ) {
-        if (postAggregation instanceof WithFields) {
-            WithFields<?> withFieldsPostAgg = (WithFields<?>) postAggregation;
+        if (
+                postAggregation instanceof WithPostAggregations &&
+                        ((WithPostAggregations<?>) postAggregation).getPostAggregations().stream()
+                                .allMatch(mf -> mf instanceof PostAggregation)
+        ) {
+            // Above check ensures this reference produces post aggregations
+            //noinspection unchecked
+            WithPostAggregations<PostAggregation> fieldReferencePostAgg = (WithPostAggregations<PostAggregation>) postAggregation;
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             //In case the postAgg has the function NOT, we apply INTERSECT on the left operand of the
             //function and UNION on the right operand of the function
-            if (withFieldsPostAgg instanceof ThetaSketchSetOperationPostAggregation &&
-                    ((ThetaSketchSetOperationPostAggregation) withFieldsPostAgg)
+            if (fieldReferencePostAgg instanceof ThetaSketchSetOperationPostAggregation &&
+                    ((ThetaSketchSetOperationPostAggregation) fieldReferencePostAgg)
                             .getFunc()
                             .equals(SketchSetOperationPostAggFunction.NOT)) {
                 ThetaSketchSetOperationPostAggregation sketchSetPostAgg =
-                        (ThetaSketchSetOperationPostAggregation) withFieldsPostAgg;
+                        (ThetaSketchSetOperationPostAggregation) fieldReferencePostAgg;
                 //INTERSECT for the left operand
                 resultPostAggsList.add(
                         replacePostAggregation(
                                 SketchSetOperationPostAggFunction.INTERSECT,
-                                sketchSetPostAgg.getFields().get(0),
+                                sketchSetPostAgg.getPostAggregations().get(0),
                                 filteredAggDictionary
                         )
                 );
@@ -351,14 +357,14 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                 resultPostAggsList.add(
                         replacePostAggregation(
                                 SketchSetOperationPostAggFunction.UNION,
-                                sketchSetPostAgg.getFields().get(1),
+                                sketchSetPostAgg.getPostAggregations().get(1),
                                 filteredAggDictionary
                         )
                 );
-                return withFieldsPostAgg.withFields(resultPostAggsList);
+                return (PostAggregation) fieldReferencePostAgg.withPostAggregations(resultPostAggsList);
             }
 
-            List<PostAggregation> childPostAggs = withFieldsPostAgg.getFields();
+            List<PostAggregation> childPostAggs = fieldReferencePostAgg.getPostAggregations();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(
                         replacePostAggregation(
@@ -368,7 +374,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                         )
                 );
             }
-            return withFieldsPostAgg.withFields(resultPostAggsList);
+            return (PostAggregation) fieldReferencePostAgg.withPostAggregations(resultPostAggsList);
 
         } else if (postAggregation instanceof FieldAccessorPostAggregation) {
             //This postAgg is a leaf node i.e. a FieldAccessor
@@ -403,15 +409,22 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
             return postAggregation;
 
-        } else if (postAggregation instanceof WithFields) {
-
+        // TODO check if dependent on post aggregation
+        } else if (
+                postAggregation instanceof WithPostAggregations &&
+                        ((WithPostAggregations<?>) postAggregation).getPostAggregations().stream()
+                                .allMatch(mf -> mf instanceof PostAggregation)
+        ) {
+            // Type safety ensured with above check
+            //noinspection unchecked
+            WithPostAggregations<PostAggregation> postAggregationReference = (WithPostAggregations<PostAggregation>) postAggregation;
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
-            List<PostAggregation> childPostAggs = ((WithFields<?>) postAggregation).getFields();
+            List<PostAggregation> childPostAggs = postAggregationReference.getPostAggregations();
             for (PostAggregation postAgg : childPostAggs) {
                 resultPostAggsList.add(replacePostAggWithPostAggFromMap(postAgg, oldNameToNewAggregationMapping));
             }
 
-            return ((WithFields<?>) postAggregation).withFields(resultPostAggsList);
+            return (PostAggregation) postAggregationReference.withPostAggregations(resultPostAggsList);
         } else {
             return postAggregation;
         }

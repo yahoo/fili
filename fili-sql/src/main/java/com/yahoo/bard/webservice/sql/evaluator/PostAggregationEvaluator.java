@@ -135,7 +135,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
             ArithmeticPostAggregation arithmeticPostAggregation,
             RelBuilder builder,
             ApiToFieldMapper apiToFieldMapper) {
-        List<RexNode> innerFields = arithmeticPostAggregation.getFields().stream()
+        List<RexNode> innerFields = arithmeticPostAggregation.getPostAggregations().stream()
                 .map(field -> dispatcher.invoke(field, builder, apiToFieldMapper))
                 .collect(Collectors.toList());
 

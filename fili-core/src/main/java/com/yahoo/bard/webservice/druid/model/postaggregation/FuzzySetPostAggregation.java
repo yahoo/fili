@@ -4,14 +4,12 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**
  * Model representing post aggregation numeric estimates from sketches.
  */
-public abstract class FuzzySetPostAggregation extends PostAggregation implements WithFields<FuzzySetPostAggregation> {
+public abstract class FuzzySetPostAggregation extends PostAggregation implements WithPostAggregations<PostAggregation> {
 
     protected final PostAggregation field;
 
@@ -36,12 +34,6 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
         return getType();
     }
 
-    @JsonIgnore
-    @Override
-    public List<PostAggregation> getFields() {
-        return Collections.singletonList(this.getField());
-    }
-
     @Override
     public abstract FuzzySetPostAggregation withName(String name);
 
@@ -53,17 +45,6 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
      * @return a new instance with the given field
      */
     public abstract FuzzySetPostAggregation withField(PostAggregation field);
-
-    /**
-     * SketchEstimate converts the sketch into a number. Hence this method always should have one aggregator
-     *
-     * @param fields  List of post aggregation fields
-     *
-     * @return New FuzzySetPostAggregation with provided field and only one aggregator.
-     */
-    @JsonIgnore
-    @Override
-    public abstract FuzzySetPostAggregation withFields(List<PostAggregation> fields);
 
     @Override
     public boolean equals(Object o) {

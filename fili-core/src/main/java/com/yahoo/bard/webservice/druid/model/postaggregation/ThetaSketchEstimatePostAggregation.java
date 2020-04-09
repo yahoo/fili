@@ -5,11 +5,10 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.THETA_SKETCH_ESTIMATE;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_NUMBER_OF_FIELDS;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,16 +38,13 @@ public class ThetaSketchEstimatePostAggregation extends FuzzySetPostAggregation 
         return new ThetaSketchEstimatePostAggregation(getName(), field);
     }
 
-    /**
-     * SketchEstimate converts the sketch into a number. Hence this method always should have one aggregator
-     *
-     * @param fields  List of post aggregation fields
-     *
-     * @return New ThetaSketchEstimatePostAggregation with provided field and only one aggregator.
-     */
-    @JsonIgnore
     @Override
-    public ThetaSketchEstimatePostAggregation withFields(List<PostAggregation> fields) {
+    public List<PostAggregation> getPostAggregations() {
+        return Collections.singletonList(getField());
+    }
+
+    @Override
+    public WithPostAggregations<PostAggregation> withPostAggregations(final List<? extends PostAggregation> fields) {
         if (fields.size() != 1) {
             LOG.error(INVALID_NUMBER_OF_FIELDS.logFormat(fields));
             throw new IllegalArgumentException(INVALID_NUMBER_OF_FIELDS.format(fields));
