@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.Req
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -122,6 +123,30 @@ public class DefaultLogicalMetricGenerator
             throw new BadApiRequestException(message);
         }
         return metrics;
+    }
+
+    /**
+     * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics with
+     * granularity.
+     * <p>
+     * If the query contains undefined metrics, {@link BadApiRequestException} will be
+     * thrown.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
+     * @param apiMetricQuery  URL query string containing the metrics separated by ','
+     * @param requestGranularity Granularity of the request
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects
+     *
+     * @return set of metric objects
+     */
+    public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
+            String apiMetricQuery,
+            Granularity requestGranularity,
+            MetricDictionary metricDictionary
+    ) {
+        return generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**

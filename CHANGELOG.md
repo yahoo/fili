@@ -30,6 +30,9 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add __granularity to parameters map for ApiMetric by extracting it from the API query](https://github.com/yahoo/fili/pull/1039)
+    * Add `__granularity` to `parameter` map of `ApiMetric` in `ProtocolLogicalMetricGenerator`
+    
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming
