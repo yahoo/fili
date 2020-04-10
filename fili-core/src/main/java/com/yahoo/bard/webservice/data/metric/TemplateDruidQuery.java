@@ -44,7 +44,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Template Druid Query. This class is immutable.
  */
-public final class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQuery> {
+public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQuery> {
 
     private static final Logger LOG = LoggerFactory.getLogger(TemplateDruidQuery.class);
 

@@ -71,7 +71,7 @@ public class FieldAccessorPostAggregation extends PostAggregation implements Wit
      *
      * @return An aggregation or post-aggregation referenced by this post aggregator.
      */
-    @JsonIgnore
+    @Override
     public MetricField getMetricField() {
         return metricField;
     }

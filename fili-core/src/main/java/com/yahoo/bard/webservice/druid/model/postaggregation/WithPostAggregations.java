@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,7 +26,7 @@ public interface WithPostAggregations<T extends PostAggregation> extends MetricF
      *
      * @return the immutable list of references MetricFields.
      */
-    @JsonIgnore
+    @JsonProperty("fields")
      List<PostAggregation> getPostAggregations();
 
     /**

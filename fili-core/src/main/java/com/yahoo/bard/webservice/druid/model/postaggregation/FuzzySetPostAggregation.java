@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -27,6 +29,12 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
 
     public PostAggregation getField() {
         return field;
+    }
+
+    @JsonIgnore
+    @Override
+    public List<PostAggregation> getPostAggregations() {
+        return Collections.singletonList(getField());
     }
 
     @JsonIgnore

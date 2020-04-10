@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public interface WithMetricField extends MetricField {
 
 
+    @JsonIgnore
     MetricField getMetricField();
 
     /**
