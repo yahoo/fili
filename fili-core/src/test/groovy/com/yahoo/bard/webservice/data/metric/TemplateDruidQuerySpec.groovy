@@ -13,14 +13,16 @@ import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongMaxAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAliasingPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAliasingPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations
+
+import spock.lang.Specification
 
 class TemplateDruidQuerySpec extends Specification {
 
@@ -235,7 +237,7 @@ class TemplateDruidQuerySpec extends Specification {
     //  - internal node 2: PostAggReference whose CHILD is the node to replace. Node is returned with repoint child and other children intact
     //  - internal node 3: MetricFieldReference whose child is NOT the node to replace. Node is rebuilt but structure is same.
     //  - complex internal node: Post agg reference whose child has a child that is the node to replace. Node is successfully swapped and tree is otherwise maintained
-    
+
     def "Checking external node that is NOT the target node simply returns input node"() {
         given:
         MetricField toReplace = Mock()
@@ -329,7 +331,7 @@ class TemplateDruidQuerySpec extends Specification {
      * Test tree structure. Structure is top down, numbering is left to right
      * i = internal node
      * a = aggregation external node
-     * p = post aggregation
+     * p = post aggregation external node
      * r = node to replace
      *
      * l1:            i
@@ -383,6 +385,19 @@ class TemplateDruidQuerySpec extends Specification {
     }
 
     // Test renaming correctly mutates relevant fields
+
+    // Tests written:
+    //  - input name and output name are equivalent is noop
+    //  - error cases
+    //    - can't rename to or from null
+    //    - can't rename field that doesn't exist
+    //    - can't rename field to name that is already in use
+    //  - Renaming single aggregation works properly, other aggs untouched
+    //  - Renaming single post aggregation works properly
+    //  - Renaming single post aggregation does not affect unrelated post aggs nor aggs
+    //  - When agg is renamed, all references to it are renamed
+    //  - When post agg is renamed, all references to it are renamed
+
     def "renaming metric field to same name just returns the tdq unchanged"() {
         setup:
         TemplateDruidQuery tdq = new TemplateDruidQuery([], [])
@@ -473,22 +488,19 @@ class TemplateDruidQuerySpec extends Specification {
     def "Single post agg is renamed correctly"() {
         setup:
         String newName = "newName"
-        TemplateDruidQuery tdq = new TemplateDruidQuery([], [arithmeticPostAgg])
+        TemplateDruidQuery tdq = new TemplateDruidQuery(
+                [arithmeticAggOperand1, arithmeticAggOperand2],
+                [arithmeticPostAgg]
+        )
 
         when:
-        TemplateDruidQuery result = tdq.renameMetricField(arithmeticPostAggName, newName)
+        TemplateDruidQuery resultTdq = tdq.renameMetricField(arithmeticPostAggName, newName)
+        ArithmeticPostAggregation resultPostAgg = resultTdq.getPostAggregations().iterator().next()
 
-        then: "same amount of aggs and post aggs"
-        result.getAggregations().size() == 0
-        result.getPostAggregations().size() == 1
-
-        and: "output name was renamed"
-        ArithmeticPostAggregation resultPostAgg = result.getPostAggregations().iterator().next()
+        then:
+        resultTdq.getAggregations() == [arithmeticAggOperand1, arithmeticAggOperand2] as Set
+        resultPostAgg.getPostAggregations() == [arithmeticPostAggOperand1, arithmeticPostAggOperand2] as List<PostAggregation>
         resultPostAgg.getName() == newName
-
-        and: "all other fields are untouched"
-        resultPostAgg.getFn() == fn
-        resultPostAgg.getPostAggregations() == [arithmeticPostAggOperand1, arithmeticPostAggOperand2] as List
     }
 
     def "Renaming single field does not affect other fields in either agg nor post agg set"() {
@@ -519,49 +531,6 @@ class TemplateDruidQuerySpec extends Specification {
                 getPostAggregations().
                 find { it.getName() == arithmeticPostAggName }
         resUnrelated == arithmeticPostAgg
-    }
-
-    // TODO examine these methods
-    // Tested so far:
-    //  - input name and output name are equivalent is noop
-    //  - error cases
-    //    - can't rename to or from null
-    //    - can't rename field that doesn't exist
-    //    - can't rename field to name that is already in use
-    //  - Renaming single aggregation works properly, other aggs untouched
-    //  - Renaming single post aggregation works properly
-    //  - Renaming single post aggregation does not affect unrelated post aggs nor aggs
-
-    def "Long sum agg that IS referenced is renamed, and references to it are renamed"() {
-        setup:
-        String newOutputName = "newOutputName"
-        TemplateDruidQuery tdq = new TemplateDruidQuery(
-                [arithmeticAggOperand1, arithmeticAggOperand2],
-                [arithmeticPostAgg]
-        )
-
-        when:
-        TemplateDruidQuery result = tdq.renameAggregation(arithmeticAggOperand1Name, newOutputName)
-
-        then: "expected number of aggs and post aggs in result"
-        result.getAggregations().size() == 2
-        result.getPostAggregations().size() == 1
-
-        and: "unrelated agg is untouched"
-        arithmeticAggOperand2 == result.getAggregations().find { it.getName() == arithmeticAggOperand2Name }
-
-        and: "Output name of top level post agg is untouched"
-        ArithmeticPostAggregation resultPa = result.getPostAggregations().find { it.getName() == arithmeticPostAggName }
-        resultPa != null
-
-        and: "Unrelated dependent post agg is untouched"
-        resultPa.getPostAggregations().find { FieldAccessorPostAggregation it -> it.getFieldName() == arithmeticAggOperand2Name }
-
-        and: "target agg is renamed in both aggregations and post aggregations"
-        Aggregation transformedAgg = result.getAggregations().find { it.getName() == newOutputName }
-        transformedAgg != null
-        transformedAgg.getFieldName() == arithmeticAggOperand1FieldName
-        resultPa.getPostAggregations().find() { FieldAccessorPostAggregation it -> it.getMetricField() == transformedAgg } != null
     }
 
     def "If agg is referenced by multiple different post aggs, all references are renamed"() {
@@ -595,7 +564,7 @@ class TemplateDruidQuerySpec extends Specification {
         String newName = "newName"
 
         when:
-        TemplateDruidQuery result = tdq.renameAggregation(arithmeticAggOperand2Name, newName)
+        TemplateDruidQuery result = tdq.renameMetricField(arithmeticAggOperand2Name, newName)
 
         then: "target agg is renamed, other aggs are untouched"
         Aggregation resultAgg = result.getAggregations().find { it.getName() == newName }
@@ -616,85 +585,45 @@ class TemplateDruidQuerySpec extends Specification {
 
         and: "top level aggregation referencing post agg is renamed"
         FieldAliasingPostAggregation resAliasingPostAgg = result.getPostAggregations().find { it.getName() == aggregationAliasingPostAggName }
-        resAliasingPostAgg.getAggregations().get(0) == resultAgg
+        resAliasingPostAgg.getMetricField() == resultAgg
     }
 
-    def "renaming an aggregation that is referenced by a post aggregation correctly renames both pieces"() {
+    def "When updating post agg, any other post aggs that reference it are renamed"() {
         setup:
-        String newName = "newName"
+        String aggregationAliasingPostAggName = "arithmeticAggOperand2Alias"
+        FieldAliasingPostAggregation aggregationAliasingPostAgg = new FieldAliasingPostAggregation(
+                aggregationAliasingPostAggName,
+                arithmeticAggOperand2
+        )
+
+        String arithmeticPostAggFromAliasName = "arithmeticFromAlias"
+        ArithmeticPostAggregationFunction fn2 = ArithmeticPostAggregationFunction.DIVIDE
+        ArithmeticPostAggregation arithmeticPostAggFromAlias = new ArithmeticPostAggregation(
+                arithmeticPostAggFromAliasName,
+                fn2,
+                [arithmeticPostAggOperand1, aggregationAliasingPostAgg]
+        )
+
         TemplateDruidQuery tdq = new TemplateDruidQuery(
                 [arithmeticAggOperand1, arithmeticAggOperand2],
-                [arithmeticPostAgg]
+                [aggregationAliasingPostAgg, arithmeticPostAggFromAlias]
         )
-
-        when:
-        TemplateDruidQuery resultTdq = tdq.renameMetricField(arithmeticAggOperand2Name, newName)
-
-        then: "agg is correctly renamed"
-        Aggregation renamedAgg = resultTdq.getAggregations().find { it.getName() == newName }
-        renamedAgg.getFieldName() == arithmeticAggOperand2FieldName
-
-        and: "post agg that references it is correctly renamed"
-        ArithmeticPostAggregation resultPostAgg = resultTdq.getPostAggregations().iterator().next()
-        resultPostAgg.getName() == arithmeticPostAggName
-        resultPostAgg.getPostAggregations().get(0) == arithmeticPostAggOperand1
-        ((FieldAccessorPostAggregation) resultPostAgg.getPostAggregations().get(1)).getMetricField() == renamedAgg
-    }
-
-    def "renaming a post aggregation only renames the output name"() {
-        setup:
         String newName = "newName"
-        TemplateDruidQuery tdq = new TemplateDruidQuery(
-                [arithmeticAggOperand1, arithmeticAggOperand2],
-                [arithmeticPostAgg]
-        )
 
         when:
-        TemplateDruidQuery resultTdq = tdq.renameMetricField(arithmeticPostAggName, newName)
-        ArithmeticPostAggregation resultPostAgg = resultTdq.getPostAggregations().iterator().next()
+        TemplateDruidQuery result = tdq.renameMetricField(aggregationAliasingPostAggName, newName)
 
-        then:
-        resultTdq.getAggregations().containsAll([arithmeticAggOperand1, arithmeticAggOperand2])
-        resultPostAgg.getPostAggregations() == [arithmeticPostAggOperand1, arithmeticPostAggOperand2] as List<PostAggregation>
-        resultPostAgg.getName() == newName
+        then: "aggs are maintained"
+        result.getAggregations() == [arithmeticAggOperand1, arithmeticAggOperand2] as Set
+
+        and: "aliasing post agg is renamed, but still pointed at same agg"
+        FieldAliasingPostAggregation resultAliasPa = result.getPostAggregations()
+                .find { it -> it.getName() == newName}
+        resultAliasPa.getMetricField() == arithmeticAggOperand2
+
+        and: "arithmetic post agg now points to the new alias post agg"
+        ArithmeticPostAggregation resultArithmeticPa = result.getPostAggregations()
+                .find { it -> it.getName() == arithmeticPostAggFromAliasName}
+        resultArithmeticPa.getPostAggregations() == [arithmeticPostAggOperand1, resultAliasPa] as List
     }
-
-    def "Renaming AggregationReferences updates relevant reference to new Aggregation"() {
-        setup:
-        String newName = "newName"
-        LongSumAggregation updatedAgg = new LongSumAggregation(newName, arithmeticAggOperand1FieldName)
-        TemplateDruidQuery tdq = new TemplateDruidQuery([], [])
-
-        when:
-        FieldAccessorPostAggregation result = tdq.renameAggregationReference(
-                arithmeticAggOperand1Name,
-                updatedAgg,
-                (FieldAccessorPostAggregation) arithmeticPostAggOperand1
-        )
-
-        then:
-        result.getMetricField() == updatedAgg
-    }
-
-    def "Renaming AggregationReference with aggregation that it does NOT depend on returns a copy of the AggregationReference"() {
-        setup:
-        String newName = "newName"
-        LongSumAggregation updatedAgg = new LongSumAggregation(newName, arithmeticAggOperand1FieldName)
-        TemplateDruidQuery tdq = new TemplateDruidQuery([], [])
-
-        when:
-        FieldAccessorPostAggregation result = tdq.renameAggregationReference(
-                arithmeticAggOperand2Name,
-                updatedAgg,
-                (FieldAccessorPostAggregation) arithmeticPostAggOperand1
-        )
-
-        then:
-        result.getMetricField() == arithmeticAggOperand1
-    }
-
-    // TODO test renaming target of filtered aggregator
-    // TODO test post agg that references other post agg
 }
-
-import spock.lang.Specification
