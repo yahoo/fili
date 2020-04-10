@@ -52,7 +52,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "Required parameter metrics is missing or empty. Use 'metrics=METRICNAME1,METRICNAME2' in the query string."
     ),
     METRICS_UNDEFINED("Metric(s) '%s' do not exist."),
-    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s'."),
+    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s' with grain '%s'."),
     DUPLICATE_METRICS_IN_API_REQUEST(
             "Duplicate metric(s) are not allowed in the API request even if one is filtered and the other is " +
                     "unfiltered. Duplicate metric(s) are '%s'."

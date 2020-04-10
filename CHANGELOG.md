@@ -41,6 +41,9 @@ Current
    * Add ability to rename the output name of `MetricField`s on the `TemplateDruidQuery`
    * Add method to check if `TemplateDruidQuery` contains MetricField with a given output name  
 
+- [Add __granularity to parameters map for ApiMetric by extracting it from the API query](https://github.com/yahoo/fili/pull/1039)
+    * Add `__granularity` to `parameter` map of `ApiMetric` in `ProtocolLogicalMetricGenerator`
+    
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming
@@ -65,6 +68,8 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Add time grain to error message for metric missing from table errors](https://github.com/yahoo/fili/issues/1041)
+
 - [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
    * Delegate to a default error handler to support easy chaining.
 

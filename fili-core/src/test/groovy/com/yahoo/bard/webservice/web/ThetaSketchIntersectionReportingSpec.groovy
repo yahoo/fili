@@ -230,7 +230,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
 
         then:
-        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
+        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK' with grain 'day'."
         Exception e = thrown(BadApiRequestException)
         e.message == expectedMessage
 
