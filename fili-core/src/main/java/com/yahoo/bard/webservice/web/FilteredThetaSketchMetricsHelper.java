@@ -171,7 +171,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
 
         //Update the FieldAccessors from the outer query post aggs to access the correct aggs.
         Set<PostAggregation> updateOuterPostAggs = new HashSet<>();
-        for (PostAggregation postAggregation: outerQuery.getPostAggregations()) {
+        for (PostAggregation postAggregation : outerQuery.getPostAggregations()) {
             updateOuterPostAggs.add(replacePostAggWithPostAggFromMap(postAggregation, oldNameToNewAggregationMapping));
         }
 
@@ -191,7 +191,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             Map<String, Aggregation> oldNameToNewAggregationMapping
     ) {
         Set<Aggregation> aggregationSet = new HashSet<>();
-        for (Aggregation agg: outerAggregations) {
+        for (Aggregation agg : outerAggregations) {
             //If the agg fieldName exists in the map, then its name has changed in the innerQuery post agg
             if (oldFieldNameToNewFieldNameMap.containsKey(agg.getFieldName())) {
 
@@ -223,7 +223,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
     ) {
         Set<PostAggregation> postAggregationSet = new HashSet<>();
 
-        for (PostAggregation postAggregation: nestedQueryPostAggs) {
+        for (PostAggregation postAggregation : nestedQueryPostAggs) {
             if (postAggregation instanceof ConstantPostAggregation) {
                 postAggregationSet.add(postAggregation);
             } else {
@@ -302,7 +302,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         //If the Logical metric has post aggregations, we need to replace them with new postAggs containing intersection
         //or union of FilteredAggregators
 
-        for (PostAggregation postAggregation: postAggregations) {
+        for (PostAggregation postAggregation : postAggregations) {
             updatedPostAggs.add(
                     replacePostAggregation(
                             SketchSetOperationPostAggFunction.INTERSECT,
@@ -321,7 +321,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         );
     }
 
-   @Override
+    @Override
     public PostAggregation replacePostAggregation(
             SketchSetOperationPostAggFunction func,
             PostAggregation postAggregation,
@@ -334,7 +334,8 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         ) {
             // Above check ensures this reference produces post aggregations
             //noinspection unchecked
-            WithPostAggregations<PostAggregation> fieldReferencePostAgg = (WithPostAggregations<PostAggregation>) postAggregation;
+            WithPostAggregations<PostAggregation> fieldReferencePostAgg =
+                    (WithPostAggregations<PostAggregation>) postAggregation;
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             //In case the postAgg has the function NOT, we apply INTERSECT on the left operand of the
@@ -387,7 +388,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
                     filteredAggDictionary.get(fieldName)
             );
 
-        }  else {
+        } else {
             // Not an instance of WithField or of the type Constant
             return postAggregation;
         }
@@ -409,7 +410,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             //The agg which this fieldAccessor is referencing has not changed. So return the fieldAccessor as it is.
             return postAggregation;
 
-        // TODO check if dependent on post aggregation
+            // TODO check if dependent on post aggregation
         } else if (
                 postAggregation instanceof WithPostAggregations &&
                         ((WithPostAggregations<?>) postAggregation).getPostAggregations().stream()
@@ -417,7 +418,8 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         ) {
             // Type safety ensured with above check
             //noinspection unchecked
-            WithPostAggregations<PostAggregation> postAggregationReference = (WithPostAggregations<PostAggregation>) postAggregation;
+            WithPostAggregations<PostAggregation> postAggregationReference =
+                    (WithPostAggregations<PostAggregation>) postAggregation;
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             List<PostAggregation> childPostAggs = postAggregationReference.getPostAggregations();
             for (PostAggregation postAgg : childPostAggs) {
@@ -453,7 +455,7 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             filterHashMap.put(generateMetricName(aFilter), filterBuilder.buildFilters(metricFilter));
         }
 
-        for (Map.Entry<String, Filter> entry: filterHashMap.entrySet()) {
+        for (Map.Entry<String, Filter> entry : filterHashMap.entrySet()) {
             String newAggName = aggregation.getName().concat("-").concat(entry.getKey());
             FilteredAggregation filteredAggregation = new FilteredAggregation(
                     newAggName,
@@ -465,9 +467,9 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
         return filteredAggregationSet;
     }
 
-   @Override
+    @Override
     public String generateMetricName(String filterString) {
-       return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
+        return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
     }
 
     @Override

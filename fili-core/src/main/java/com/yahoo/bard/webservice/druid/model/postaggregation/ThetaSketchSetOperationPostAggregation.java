@@ -13,7 +13,8 @@ import java.util.Objects;
 /**
  * Model representing a post aggregation of sketch set operations.
  */
-public class ThetaSketchSetOperationPostAggregation extends PostAggregation implements WithPostAggregations<PostAggregation> {
+public class ThetaSketchSetOperationPostAggregation extends PostAggregation
+        implements WithPostAggregations<PostAggregation> {
 
     private final SketchSetOperationPostAggFunction func;
     private final List<PostAggregation> fields;

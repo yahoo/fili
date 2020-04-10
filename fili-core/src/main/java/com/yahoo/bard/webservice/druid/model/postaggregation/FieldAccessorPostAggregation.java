@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -23,9 +22,7 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 /**
- * Model representing lookups of aggregation values.
- *
- * TODO document only ever has a SINGLE reference, will ignore any other reference attempted to be passed to it
+ * Model representing a lookup from a different MetricField.
  */
 public class FieldAccessorPostAggregation extends PostAggregation implements WithMetricField {
 

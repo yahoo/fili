@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.druid.model.postaggregation;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,10 +15,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * A MetricField that references MetricFields. Specific implementations of this method may further restrict the types or
- * amounts MetricFields they point to. Any further contract constraints on subclasses must be clearly documented.
+ * A MetricField that depends on PostAggregations. Specific implementations of this method may further restrict the
+ * types or amounts PostAggregations they point to. Some implementations may also require a specific ordering of
+ * dependent PostAggregations.
  *
- * @param <T> Type of MetricField this MetricField references
+ * @param <T> Type of PostAggregation this MetricField depends on
  */
 public interface WithPostAggregations<T extends PostAggregation> extends MetricField {
 
@@ -32,8 +34,12 @@ public interface WithPostAggregations<T extends PostAggregation> extends MetricF
     /**
      * Creates a copy of this WithFields implementations that replaces its referenced MetricFields with a copy of the
      * provided list of fields.
+     * <p>
+     * All implementations that subclass {@link Aggregation} and {@link PostAggregation} must ensure that this method
+     * returns a subclass of that type. For example, a subclass of PostAggregation that implements WithPostAggregations
+     * should never return an Aggregation from this method.
      *
-     * @param fields  List of fields for the new WithFields instance to reference
+     * @param fields  The list of fields that the copy should now reference
      *
      * @return the copy
      */

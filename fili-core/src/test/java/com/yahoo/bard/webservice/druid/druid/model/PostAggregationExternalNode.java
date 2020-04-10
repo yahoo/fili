@@ -10,21 +10,24 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * // TODO update docs
- * Aggregations and Post Aggregations in a druid query can be viewed as a tree, where internal nodse are MetricFields
+ * Aggregations and Post Aggregations in a druid query can be viewed as a tree, where internal nodes are MetricFields
  * that reference other MetricFields, and external nodes are MetricFields that directly reference a druid column. This
- * is a test class that explicitly exposes this tree behavior without any other backend constraints.
+ * is a test class that explicitly exposes this tree behavior without any other backend constraints. This class
+ * represents an external node of type PostAggregation.
  * <p>
- * While the children of this class ARE mutable, defensive copies are used for exposing state. To mutate this class
- * clients must use mutator methods, no references to internal state are exposed. Auxiliary state to support
- * MetricField metadata that does not directly interact with the tree model is exposed through mutable fields.
- *
- * // TODO link WithMetricFieldInternalNode and MetricFieldExternalNode classes
+ * The {@link WithPostAggsInternalNode}, {@link WithMetricFieldInternalNode}, and {@link AggregationExternalNode}
+ * classes represent other node types in this tree structure.
  */
 public class PostAggregationExternalNode extends PostAggregation {
 
+    /**
+     * Name used by all instances of this class.
+     */
     public static final String NAME = "defaultName";
 
+    /**
+     * Constructor.
+     */
     public PostAggregationExternalNode() {
         super(() -> "", NAME);
     }
@@ -37,6 +40,7 @@ public class PostAggregationExternalNode extends PostAggregation {
         return new PostAggregationExternalNode();
     }
 
+    @Override
     public boolean isSketch() {
         return false;
     }

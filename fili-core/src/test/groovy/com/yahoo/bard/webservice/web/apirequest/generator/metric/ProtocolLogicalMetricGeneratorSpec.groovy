@@ -107,14 +107,23 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         validLogicalMetricAggregation = new LongSumAggregation(validLogicalMetricName, "valid_logical_metric_field")
 
         invalidLogicalMetricName = "invalidLogicalMetric"
-        invalidLogicalMetricAggregation = new LongSumAggregation(invalidLogicalMetricName, "invalid_logical_metric_field")
+        invalidLogicalMetricAggregation = new LongSumAggregation(
+                invalidLogicalMetricName,
+                "invalid_logical_metric_field"
+        )
 
         validProtocolMetricBaseName = "validProtocolMetric"
-        validProtocolMetricAggregation = new LongSumAggregation(validProtocolMetricBaseName, "valid_protocol_metric_field")
+        validProtocolMetricAggregation = new LongSumAggregation(
+                validProtocolMetricBaseName,
+                "valid_protocol_metric_field"
+        )
         validProtocolMetricRawName = "RAW_validProtocolMetric"
 
         invalidProtocolMetricBaseName = "invalidProtocolMetric"
-        invalidProtocolMetricAggregation = new LongSumAggregation(invalidProtocolMetricBaseName, "invalid_protocol_metric_field")
+        invalidProtocolMetricAggregation = new LongSumAggregation(
+                invalidProtocolMetricBaseName,
+                "invalid_protocol_metric_field"
+        )
         invalidProtocolMetricRawName = "RAW_invalidProtocolMetric"
 
         testTdq = new TemplateDruidQuery(
@@ -315,7 +324,7 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         Protocol grainExpecting = new Protocol("ge", metricTransformer)
         ProtocolMetric protocolMetric = new ProtocolMetricImpl(
                 new LogicalMetricInfo(baseMetadataTransformMetricName),
-                emptyTdq,
+                new TemplateDruidQuery([], []),
                 TEST_RSM,
                 new ProtocolSupport([grainExpecting]),
         )
@@ -338,8 +347,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
                 _,
                 _,
                 _,
-                _) >>  { args ->
-            assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                _
+        ) >> {
+            args ->
+                assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                return Mock(LogicalMetricImpl)
         }
         grainExpecting.getMetricTransformer() >> metricTransformer
         expect:
@@ -359,7 +371,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         setup:
         List<ApiMetric> metrics = generator.parseApiMetricQuery("foo()", expectedGrain)
         expect:
-        metrics.every() {it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get(ProtocolLogicalMetricGenerator.GRANULARITY) == text}
+        metrics.
+                every() {
+                    it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get
+                    (ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                }
         where:
         expectedGrain           | text
         DefaultTimeGrain.DAY    | "day"

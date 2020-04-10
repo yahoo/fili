@@ -1,3 +1,5 @@
+// Copyright 2020 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.druid.model;
 
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
@@ -7,22 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Aggregations and Post Aggregations in a druid query can be viewed as a tree, where internal nodse are MetricFields
+ * Aggregations and Post Aggregations in a druid query can be viewed as a tree, where internal nodes are MetricFields
  * that reference other MetricFields, and external nodes are MetricFields that directly reference a druid column. This
- * is a test class that explicitly exposes this tree behavior without any other backend constraints.
+ * is a test class that explicitly exposes this tree behavior without any other backend constraints. This class
+ * represents an internal node that can have 0 or more children.
  * <p>
  * While the children of this class ARE mutable, defensive copies are used for exposing state. To mutate this class
- * clients must use mutator methods, no references to internal state are exposed. Auxiliary state to support
- * MetricField metadata that does not directly interact with the tree model is exposed through mutable fields.
- *
- * // TODO link WithMetricFieldInternalNode and MetricFieldExternalNode classes
+ * clients must use mutator methods, no references to internal state are exposed.
+ * <p>
+ * The {@link WithMetricFieldInternalNode}, {@link AggregationExternalNode}, and {@link PostAggregationExternalNode}
+ * classes represent other node types in this tree structure.
  */
 public class WithPostAggsInternalNode extends PostAggregation implements WithPostAggregations<PostAggregation> {
 
+    /**
+     * Name used for all instances of this node type.
+     */
     public static final String NAME = "name";
 
     private List<PostAggregation> children;
 
+    /**
+     * Constructor.
+     *
+     * @param children  The children of this node.
+     */
     public WithPostAggsInternalNode(List<PostAggregation> children) {
         super(() -> "", NAME);
         this.children = new ArrayList<>(children);

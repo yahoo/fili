@@ -496,56 +496,73 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         MetricField updatedField = targetField.withName(newName);
         Set<Aggregation> newAggs = getAggregations().stream()
                 .map(agg -> repointToNewMetricField(targetField, updatedField, agg))
+                // This cast is safe because the only location where a type change can occur is in the
+                // WithPostAggregations#withPostAggregations method call. The contract on that method requires
+                // implementors that also subclass Aggregation or PostAggregation return a subclass of the implemented
+                // type. For example, PostAggregation#withPostAggregations must return a PostAggregation. Clients that
+                // breaks this contract will have a ClassCastException thrown on this line
+                .map(mf -> (Aggregation) mf)
                 .collect(Collectors.toSet());
 
         Set<PostAggregation> newPostAggs = getPostAggregations().stream()
                 .map(pa -> repointToNewMetricField(targetField, updatedField, pa))
+                // This cast is safe because the only location where a type change can occur is in the
+                // WithPostAggregations#withPostAggregations method call. The contract on that method requires
+                // implementors that also subclass Aggregation or PostAggregation return a subclass of the implemented
+                // type. For example, PostAggregation#withPostAggregations must return a PostAggregation. Clients that
+                // breaks this contract will have a ClassCastException thrown on this line
+                .map(mf -> (PostAggregation) mf)
                 .collect(Collectors.toSet());
 
         return withAggregations(newAggs).withPostAggregations(newPostAggs);
     }
 
     /**
-     * Updates reference to
+     * Updates any reference to {@code oldField} on {@code fieldToCheck} to point to {@code newField}. If fieldToCheck
+     * is equivalent to oldField, newField is returned. If fieldToCheck is not equivalent to oldField, nor does it nor
+     * any of its children contain references to oldField, an equivalent MetricField will be returned.
+     * <p>
+     * This method relies on proper implementation of "copy with modification" methods on all parsed MetricField
+     * implementations. If a MetricField implementation does not fulfil all of the contracts described in the
+     * MetricField and related class Javadocs, this method is not guaranteed to function properly.
      *
-     * @param oldField
-     * @param newField
-     * @param fieldToCheck
-     * @return
-     *
-     * TODO discuss weird behavior when T.withName produces a superclass of T
+     * @param <T>  The type of field that is being replaced
+     * @param oldField  The original MetricField that needs to be replaced with newField
+     * @param newField  The new MetricField that is replacing oldField
+     * @param fieldToCheck  The MetricField to be examined and repointed
+     * @return either newField if fieldToCheck itself needs to be replaced, or a copy of fieldToCheck that has any
+     *         references to oldField replaced with references to newField
      */
-    private <T extends MetricField> T repointToNewMetricField(
-            MetricField oldField,
-            MetricField newField,
-            T fieldToCheck
+    private <T extends MetricField> MetricField  repointToNewMetricField(
+            T oldField,
+            T newField,
+            MetricField fieldToCheck
     ) {
         if (Objects.equals(oldField, fieldToCheck)) {
-            // Only ever called with Aggregation, PostAggregation or MetricField type. Since this method is private,
-            // the calling conditions are guaranteed to be maintained. Aggregation and PostAggregation syntactically
-            // enforce renaming always produces a subclass of the class of the renamed instance. This method is called
-            // recursively with MetricField return typing, and the type bound on this method ensures the result will
-            // always be a MetricField.
-            //noinspection unchecked
-            return (T) newField;
+            return newField;
         }
 
         // if has children, iterate through children and repoint
         if (fieldToCheck instanceof WithPostAggregations) {
             WithPostAggregations<?> root = (WithPostAggregations<?>) fieldToCheck;
-            // TODO ignore warning
-            /// why is this safe?
-            return (T) root.withPostAggregations(
+
+
+            return root.withPostAggregations(
                     root.getPostAggregations().stream()
-                    .map(pa -> repointToNewMetricField(oldField, newField, pa))
-                    .collect(Collectors.toList())
+                            .map(pa -> repointToNewMetricField(oldField, newField, pa))
+                            // This cast is safe because the only location where a type change can occur is in the
+                            // WithPostAggregations#withPostAggregations method call. The contract on that method
+                            // requires implementors that also subclass Aggregation or PostAggregation return a subclass
+                            // of the implemented type. For example, PostAggregation#withPostAggregations must return a
+                            // PostAggregation. Clients that breaks this contract will have a ClassCastException thrown
+                            // on this line
+                            .map(mf -> (PostAggregation) mf)
+                            .collect(Collectors.toList())
             );
         }
         if (fieldToCheck instanceof WithMetricField) {
             WithMetricField root = (WithMetricField) fieldToCheck;
-            // TODO ignore warning
-            // why is this safe?
-            return (T) root.withMetricField(repointToNewMetricField(oldField, newField, root.getMetricField()));
+            return root.withMetricField(repointToNewMetricField(oldField, newField, root.getMetricField()));
         }
 
         return fieldToCheck;

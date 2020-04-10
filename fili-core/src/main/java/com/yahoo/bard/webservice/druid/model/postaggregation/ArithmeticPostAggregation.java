@@ -87,7 +87,11 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithPo
 
     @Override
     public String toString() {
-        return "ArithmeticPostAggregation{name=" + getName() + ", fn=" + getFn() + ", fields=" + getPostAggregations() + '}';
+        return "ArithmeticPostAggregation{" +
+                "name=" + getName() +
+                ", fn=" + getFn() +
+                ", fields=" + getPostAggregations() +
+                '}';
     }
 
     @Override
