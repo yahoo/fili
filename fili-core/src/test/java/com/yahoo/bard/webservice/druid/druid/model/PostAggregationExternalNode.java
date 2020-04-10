@@ -1,12 +1,11 @@
+// Copyright 2020 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.druid.model;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregationType;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -33,7 +32,7 @@ public class PostAggregationExternalNode extends PostAggregation {
     }
 
     /**
-     * This class doesn't track name, just return new instance
+     * This class doesn't track name, just return new instance.
      */
     @Override
     public PostAggregationExternalNode withName(String name) {

@@ -42,13 +42,40 @@ public class FieldAliasingPostAggregation extends PostAggregation implements Wit
     }
 
     /**
-     * Test utility method that actually MUTATES this instance to point to a different field.
+     * Test utility method that MUTATES this instance to point to a different field.
      *
-     * @param metricField
+     * @param metricField  The MetricField to point this PostAggregation at
      */
     public void setTargetMetricField(MetricField metricField) {
         this.targetField = metricField;
     }
 
     // TODO implement equals, toString, hashCode
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (!(o instanceof FieldAliasingPostAggregation)) {
+            return false;
+        }
+
+        FieldAliasingPostAggregation that = (FieldAliasingPostAggregation) o;
+        return java.util.Objects.equals(this.targetField, that.targetField) &&
+                java.util.Objects.equals(this.getName(), that.getName());
+    }
+
+    @Override
+    public String toString() {
+        return "FieldAliasPostAggregation{" +
+                "name=" + getName() +
+                ",field=" + getMetricField() +
+                "}";
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * java.util.Objects.hashCode(targetField) + java.util.Objects.hashCode(getName());
+    }
 }

@@ -42,7 +42,7 @@ public class AggregationExternalNode extends Aggregation {
     }
 
     /**
-     * This class doesn't track name, so just returns a new instance
+     * This class doesn't track name, so just returns a new instance.
      */
     @Override
     public Aggregation withName(String name) {
@@ -50,7 +50,7 @@ public class AggregationExternalNode extends Aggregation {
     }
 
     /**
-     * This class doesn't track field name, so just returns a new instance
+     * This class doesn't track field name, so just returns a new instance.
      */
     @Override
     public Aggregation withFieldName(final String fieldName) {

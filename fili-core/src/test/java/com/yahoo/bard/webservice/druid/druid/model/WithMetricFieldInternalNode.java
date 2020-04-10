@@ -52,7 +52,7 @@ public class WithMetricFieldInternalNode extends PostAggregation implements With
     }
 
     /**
-     * This class doesn't track name, so just returns a copy
+     * This class doesn't track name, so just returns a copy.
      */
     @Override
     public PostAggregation withName(String name) {
