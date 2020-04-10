@@ -57,6 +57,8 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Add time grain to error message for metric missing from table errors](https://github.com/yahoo/fili/issues/1041)
+
 - [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
    * Delegate to a default error handler to support easy chaining.
 
