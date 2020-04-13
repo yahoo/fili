@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.metric.protocol;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,9 +25,13 @@ public class MetadataApplyTransformer implements MetricTransformer {
                 ((ProtocolMetric) logicalMetric).getProtocolSupport() :
                 new ProtocolSupport(Collections.emptySet());
         ProtocolSupport newSupport = oldSupport.blacklistProtocol(protocol.getContractName());
+        TemplateDruidQuery renamedTdq = logicalMetric.getTemplateDruidQuery().renameMetricField(
+                logicalMetric.getLogicalMetricInfo().getName(),
+                resultMetadata.getName()
+        );
         return new ProtocolMetricImpl(
                 resultMetadata,
-                logicalMetric.getTemplateDruidQuery(),
+                renamedTdq,
                 logicalMetric.getCalculation(),
                 newSupport
         );

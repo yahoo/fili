@@ -77,6 +77,7 @@ public abstract class Aggregation implements MetricField {
      *
      * @return subclass of Aggregation
      */
+    @Override
     public abstract Aggregation withName(String name);
 
     /**

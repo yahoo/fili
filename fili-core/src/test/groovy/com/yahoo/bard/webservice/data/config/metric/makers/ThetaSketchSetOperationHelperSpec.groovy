@@ -38,7 +38,7 @@ class ThetaSketchSetOperationHelperSpec extends Specification {
         resultPostAgg.getName() == "NEW_POST_AGG"
         resultPostAgg.getFunc() == SketchSetOperationPostAggFunction.INTERSECT
         List<FieldAccessorPostAggregation> resultAggsList = new ArrayList<>()
-        for (PostAggregation pa : resultPostAgg.getFields()) {
+        for (PostAggregation pa : resultPostAgg.getPostAggregations()) {
             FieldAccessorPostAggregation fa = (FieldAccessorPostAggregation) pa;
             resultAggsList.add(fa.getMetricField())
         }

@@ -5,14 +5,15 @@ package com.yahoo.bard.webservice.druid.model.postaggregation
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  *  Test default methods on WithFields interface
  */
-class WithFieldsSpec extends Specification {
+class WithPostAggregationsSpec extends Specification {
 
-    WithFields<ArithmeticPostAggregation> postAggregation;
+    WithPostAggregations postAggregation;
     FieldAccessorPostAggregation field1
     FieldAccessorPostAggregation field2
     Aggregation aggregation1 = Mock(Aggregation)

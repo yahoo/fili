@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtoco
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -114,18 +115,24 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
         List<String> invalidMetricNames = new ArrayList<>();
 
         for (ApiMetric metric : apiMetrics) {
-            GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
-                    metric.getRawName(),
-                    metric.getBaseApiMetricId()
-            );
 
+            // if base metric isn't available just log and move on
             LogicalMetric baseLogicalMetric = metricDictionary.get(metric.getBaseApiMetricId());
             if (baseLogicalMetric == null) {
                 invalidMetricNames.add(metric.getRawName());
                 continue;
             }
-            LogicalMetric logicalMetric = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetric);
-            metrics.add(logicalMetric);
+
+            GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
+                    metric.getRawName(),
+                    metric.getBaseApiMetricId()
+            );
+
+            LogicalMetric result = baseLogicalMetric;
+            if (result instanceof ProtocolMetric) {
+                result = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetric);
+            }
+            metrics.add(result.withLogicalMetricInfo(generatedMetricInfo));
         }
 
         if (!invalidMetricNames.isEmpty()) {

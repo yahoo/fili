@@ -24,6 +24,8 @@ import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport
 import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.TableGroup
@@ -43,24 +45,29 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
     Protocol testProtocol
     ProtocolDictionary protocolDictionary
 
-    TemplateDruidQuery emptyTdq
+    TemplateDruidQuery testTdq
 
     String baseMetadataTransformMetricName
     String rawMetadataTransformMetricName
+    Aggregation baseMetadataAggregation
     ProtocolMetric baseMetric
 
     String validLogicalMetricName
+    Aggregation validLogicalMetricAggregation
     LogicalMetric validLogicalMetric
 
     String invalidLogicalMetricName
+    Aggregation invalidLogicalMetricAggregation
     LogicalMetric invalidLogicalMetric
 
     String validProtocolMetricBaseName
+    Aggregation validProtocolMetricAggregation
     String validProtocolMetricRawName
     ProtocolMetric validProtocolMetricPreTransform
     ProtocolMetric validProtocolMetricPostTransform
 
     String invalidProtocolMetricBaseName
+    Aggregation invalidProtocolMetricAggregation
     String invalidProtocolMetricRawName
     ProtocolMetric invalidProtocolMetricPreTransform
     ProtocolMetric invalidProtocolMetricPostTransform
@@ -94,62 +101,87 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         // setup test metrics
         baseMetadataTransformMetricName = "baseMetric"
         rawMetadataTransformMetricName = "baseMetric(p=unused)"
-        emptyTdq = new TemplateDruidQuery([], [])
+        baseMetadataAggregation = new LongSumAggregation(baseMetadataTransformMetricName, "base_metric_field")
+
+        validLogicalMetricName = "validLogicalMetric"
+        validLogicalMetricAggregation = new LongSumAggregation(validLogicalMetricName, "valid_logical_metric_field")
+
+        invalidLogicalMetricName = "invalidLogicalMetric"
+        invalidLogicalMetricAggregation = new LongSumAggregation(
+                invalidLogicalMetricName,
+                "invalid_logical_metric_field"
+        )
+
+        validProtocolMetricBaseName = "validProtocolMetric"
+        validProtocolMetricAggregation = new LongSumAggregation(
+                validProtocolMetricBaseName,
+                "valid_protocol_metric_field"
+        )
+        validProtocolMetricRawName = "RAW_validProtocolMetric"
+
+        invalidProtocolMetricBaseName = "invalidProtocolMetric"
+        invalidProtocolMetricAggregation = new LongSumAggregation(
+                invalidProtocolMetricBaseName,
+                "invalid_protocol_metric_field"
+        )
+        invalidProtocolMetricRawName = "RAW_invalidProtocolMetric"
+
+        testTdq = new TemplateDruidQuery(
+                [
+                        baseMetadataAggregation,
+                        validLogicalMetricAggregation,
+                        invalidLogicalMetricAggregation,
+                        validProtocolMetricAggregation,
+                        invalidProtocolMetricAggregation
+                ],
+                []
+        )
         baseMetric = new ProtocolMetricImpl(
                 new LogicalMetricInfo(baseMetadataTransformMetricName),
-                emptyTdq,
+                testTdq,
                 TEST_RSM,
                 new ProtocolSupport([testProtocol]),
         )
         metricDictionary = new MetricDictionary()
         metricDictionary.add(baseMetric)
 
-        // Prepare test metrics
-        validLogicalMetricName = "validLogicalMetric"
         validLogicalMetric = new LogicalMetricImpl(
                 new LogicalMetricInfo(validLogicalMetricName),
-                emptyTdq,
+                testTdq,
                 TEST_RSM
         )
         metricDictionary.add(validLogicalMetric)
 
-        invalidLogicalMetricName = "invalidLogicalMetric"
         invalidLogicalMetric = new LogicalMetricImpl(
                 new LogicalMetricInfo(invalidLogicalMetricName),
-                emptyTdq,
+                testTdq,
                 TEST_RSM
         )
         metricDictionary.add(invalidLogicalMetric)
 
-        validProtocolMetricBaseName = "validProtocolMetric"
-        validProtocolMetricRawName = "RAW_validProtocolMetric"
-
         validProtocolMetricPreTransform = new ProtocolMetricImpl(
                 new LogicalMetricInfo(validProtocolMetricBaseName),
-                emptyTdq,
+                testTdq,
                 TEST_RSM
         )
         metricDictionary.add(validProtocolMetricPreTransform)
 
         validProtocolMetricPostTransform = new ProtocolMetricImpl(
                 new GeneratedMetricInfo(validProtocolMetricRawName, validProtocolMetricBaseName),
-                emptyTdq,
+                testTdq.renameMetricField(validProtocolMetricBaseName, validProtocolMetricRawName),
                 TEST_RSM
         )
 
-        invalidProtocolMetricBaseName = "invalidProtocolMetric"
-        invalidProtocolMetricRawName = "RAW_invalidProtocolMetric"
-
         invalidProtocolMetricPreTransform = new ProtocolMetricImpl(
                 new LogicalMetricInfo(invalidProtocolMetricBaseName),
-                emptyTdq,
+                testTdq,
                 TEST_RSM
         )
         metricDictionary.add(invalidProtocolMetricPreTransform)
 
         invalidProtocolMetricPostTransform = new ProtocolMetricImpl(
                 new GeneratedMetricInfo(invalidProtocolMetricRawName, invalidProtocolMetricBaseName),
-                emptyTdq,
+                testTdq.renameMetricField(invalidProtocolMetricBaseName, invalidProtocolMetricRawName),
                 TEST_RSM
         )
 
@@ -292,7 +324,7 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         Protocol grainExpecting = new Protocol("ge", metricTransformer)
         ProtocolMetric protocolMetric = new ProtocolMetricImpl(
                 new LogicalMetricInfo(baseMetadataTransformMetricName),
-                emptyTdq,
+                new TemplateDruidQuery([], []),
                 TEST_RSM,
                 new ProtocolSupport([grainExpecting]),
         )
@@ -315,8 +347,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
                 _,
                 _,
                 _,
-                _) >>  { args ->
-            assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                _
+        ) >> {
+            args ->
+                assert ((Map<String, String>) args[3]).get(ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                return Mock(LogicalMetricImpl)
         }
         grainExpecting.getMetricTransformer() >> metricTransformer
         expect:
@@ -336,7 +371,11 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         setup:
         List<ApiMetric> metrics = generator.parseApiMetricQuery("foo()", expectedGrain)
         expect:
-        metrics.every() {it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get(ProtocolLogicalMetricGenerator.GRANULARITY) == text}
+        metrics.
+                every() {
+                    it.contains(ProtocolLogicalMetricGenerator.GRANULARITY) && it.get
+                    (ProtocolLogicalMetricGenerator.GRANULARITY) == text
+                }
         where:
         expectedGrain           | text
         DefaultTimeGrain.DAY    | "day"

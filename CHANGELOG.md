@@ -30,6 +30,17 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add withLogicalMetricInfo to LogicalMetric interface to support metric renaming](https://github.com/yahoo/fili/pull/1038)
+   * Supporting method added to TemplateDruidQuery to rename a target `MetricField`
+   * Default implementation written on existing `LogicalMetric` implementations (such as `LogicalMetricImpl`)
+     - Client subclasses of these implementations MUST override the `withLogicalMetricInfo` method, as the default
+       implementation will NOT return an instance of the client subclass! 
+
+- [Add rename capability to TemplateDruidQuery](https://github.com/yahoo/fili/pull/1038)
+   * Functionality added to support `LogicalMetric` renaming and aliasing
+   * Add ability to rename the output name of `MetricField`s on the `TemplateDruidQuery`
+   * Add method to check if `TemplateDruidQuery` contains MetricField with a given output name  
+
 - [Add __granularity to parameters map for ApiMetric by extracting it from the API query](https://github.com/yahoo/fili/pull/1039)
     * Add `__granularity` to `parameter` map of `ApiMetric` in `ProtocolLogicalMetricGenerator`
     
@@ -57,6 +68,12 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
+   * `WithPostAggregations` interface is almost a direct rename from `WithFields`
+     - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`
+     - Type parameter removed
+   * `WithMetricField` indicates a `MetricField` that depends on exactly 1 `MetricField`
+
 - [Add time grain to error message for metric missing from table errors](https://github.com/yahoo/fili/issues/1041)
 
 - [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
