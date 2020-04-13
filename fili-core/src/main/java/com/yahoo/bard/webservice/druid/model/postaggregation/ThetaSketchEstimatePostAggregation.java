@@ -44,7 +44,7 @@ public class ThetaSketchEstimatePostAggregation extends FuzzySetPostAggregation 
     }
 
     @Override
-    public WithPostAggregations<PostAggregation> withPostAggregations(final List<? extends PostAggregation> fields) {
+    public WithPostAggregations withPostAggregations(final List<? extends PostAggregation> fields) {
         if (fields.size() != 1) {
             LOG.error(INVALID_NUMBER_OF_FIELDS.logFormat(fields));
             throw new IllegalArgumentException(INVALID_NUMBER_OF_FIELDS.format(fields));

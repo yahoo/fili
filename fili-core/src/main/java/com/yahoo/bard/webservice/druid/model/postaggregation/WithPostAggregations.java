@@ -18,10 +18,8 @@ import java.util.stream.Collectors;
  * A MetricField that depends on PostAggregations. Specific implementations of this method may further restrict the
  * types or amounts PostAggregations they point to. Some implementations may also require a specific ordering of
  * dependent PostAggregations.
- *
- * @param <T> Type of PostAggregation this MetricField depends on
  */
-public interface WithPostAggregations<T extends PostAggregation> extends MetricField {
+public interface WithPostAggregations extends MetricField {
 
     /**
      * Returns all MetricFields this points to. The returned list is immutable.
@@ -43,7 +41,7 @@ public interface WithPostAggregations<T extends PostAggregation> extends MetricF
      *
      * @return the copy
      */
-     WithPostAggregations<T> withPostAggregations(List<? extends PostAggregation> fields);
+     WithPostAggregations withPostAggregations(List<? extends PostAggregation> fields);
 
     /**
      * Get the dimensions from all child MetricFields.

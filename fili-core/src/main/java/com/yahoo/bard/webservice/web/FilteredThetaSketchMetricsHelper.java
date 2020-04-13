@@ -327,15 +327,8 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             PostAggregation postAggregation,
             Map<String, List<FilteredAggregation>> filteredAggDictionary
     ) {
-        if (
-                postAggregation instanceof WithPostAggregations &&
-                        ((WithPostAggregations<?>) postAggregation).getPostAggregations().stream()
-                                .allMatch(mf -> mf instanceof PostAggregation)
-        ) {
-            // Above check ensures this reference produces post aggregations
-            //noinspection unchecked
-            WithPostAggregations<PostAggregation> fieldReferencePostAgg =
-                    (WithPostAggregations<PostAggregation>) postAggregation;
+        if (postAggregation instanceof WithPostAggregations) {
+            WithPostAggregations fieldReferencePostAgg = (WithPostAggregations) postAggregation;
 
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             //In case the postAgg has the function NOT, we apply INTERSECT on the left operand of the
@@ -413,13 +406,12 @@ public class FilteredThetaSketchMetricsHelper implements MetricsFilterSetBuilder
             // TODO check if dependent on post aggregation
         } else if (
                 postAggregation instanceof WithPostAggregations &&
-                        ((WithPostAggregations<?>) postAggregation).getPostAggregations().stream()
+                        ((WithPostAggregations) postAggregation).getPostAggregations().stream()
                                 .allMatch(mf -> mf instanceof PostAggregation)
         ) {
             // Type safety ensured with above check
             //noinspection unchecked
-            WithPostAggregations<PostAggregation> postAggregationReference =
-                    (WithPostAggregations<PostAggregation>) postAggregation;
+            WithPostAggregations postAggregationReference = (WithPostAggregations) postAggregation;
             List<PostAggregation> resultPostAggsList = new ArrayList<>();
             List<PostAggregation> childPostAggs = postAggregationReference.getPostAggregations();
             for (PostAggregation postAgg : childPostAggs) {

@@ -68,6 +68,12 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
+   * `WithPostAggregations` interface is almost a direct rename from `WithFields`
+     - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`
+     - Type parameter removed
+   * `WithMetricField` indicates a `MetricField` that depends on exactly 1 `MetricField`
+
 - [Add time grain to error message for metric missing from table errors](https://github.com/yahoo/fili/issues/1041)
 
 - [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()

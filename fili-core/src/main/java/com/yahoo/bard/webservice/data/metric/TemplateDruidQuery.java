@@ -533,7 +533,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return either newField if fieldToCheck itself needs to be replaced, or a copy of fieldToCheck that has any
      *         references to oldField replaced with references to newField
      */
-    private <T extends MetricField> MetricField  repointToNewMetricField(
+    private <T extends MetricField> MetricField repointToNewMetricField(
             T oldField,
             T newField,
             MetricField fieldToCheck
@@ -544,7 +544,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
         // if has children, iterate through children and repoint
         if (fieldToCheck instanceof WithPostAggregations) {
-            WithPostAggregations<?> root = (WithPostAggregations<?>) fieldToCheck;
+            WithPostAggregations root = (WithPostAggregations) fieldToCheck;
 
 
             return root.withPostAggregations(

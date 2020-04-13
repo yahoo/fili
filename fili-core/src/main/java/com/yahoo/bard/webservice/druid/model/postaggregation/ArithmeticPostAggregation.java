@@ -18,7 +18,7 @@ import java.util.Objects;
 /**
  * Model representing arithmetic post aggregations.
  */
-public class ArithmeticPostAggregation extends PostAggregation implements WithPostAggregations<PostAggregation> {
+public class ArithmeticPostAggregation extends PostAggregation implements WithPostAggregations {
 
     private final ArithmeticPostAggregationFunction fn;
 

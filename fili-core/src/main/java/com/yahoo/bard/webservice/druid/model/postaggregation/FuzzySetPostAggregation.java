@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * Model representing post aggregation numeric estimates from sketches.
  */
-public abstract class FuzzySetPostAggregation extends PostAggregation implements WithPostAggregations<PostAggregation> {
+public abstract class FuzzySetPostAggregation extends PostAggregation implements WithPostAggregations {
 
     protected final PostAggregation field;
 
