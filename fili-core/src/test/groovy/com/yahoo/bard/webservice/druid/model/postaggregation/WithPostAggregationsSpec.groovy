@@ -11,11 +11,9 @@ import spock.lang.Specification
 /**
  *  Test default methods on WithFields interface
  */
-// TODO change to reflect new contract on this class
-@Ignore
 class WithPostAggregationsSpec extends Specification {
 
-    WithPostAggregations<ArithmeticPostAggregation> postAggregation;
+    WithPostAggregations postAggregation;
     FieldAccessorPostAggregation field1
     FieldAccessorPostAggregation field2
     Aggregation aggregation1 = Mock(Aggregation)

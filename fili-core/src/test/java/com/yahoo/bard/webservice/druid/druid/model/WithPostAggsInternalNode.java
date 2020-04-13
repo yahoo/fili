@@ -20,7 +20,7 @@ import java.util.List;
  * The {@link WithMetricFieldInternalNode}, {@link AggregationExternalNode}, and {@link PostAggregationExternalNode}
  * classes represent other node types in this tree structure.
  */
-public class WithPostAggsInternalNode extends PostAggregation implements WithPostAggregations<PostAggregation> {
+public class WithPostAggsInternalNode extends PostAggregation implements WithPostAggregations {
 
     /**
      * Name used for all instances of this node type.
@@ -59,7 +59,7 @@ public class WithPostAggsInternalNode extends PostAggregation implements WithPos
      * @inheritDocs
      */
     @Override
-    public WithPostAggregations<PostAggregation> withPostAggregations(List<? extends PostAggregation> fields) {
+    public WithPostAggregations withPostAggregations(List<? extends PostAggregation> fields) {
         return new WithPostAggsInternalNode(new ArrayList<>(fields));
     }
 
