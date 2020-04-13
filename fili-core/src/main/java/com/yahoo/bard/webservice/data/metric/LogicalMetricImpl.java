@@ -174,6 +174,12 @@ public class LogicalMetricImpl implements LogicalMetric {
         return logicalMetricInfo;
     }
 
+    /**
+     * All subclasses of {@code LogicalMetricImpl} MUST override this method and return an instance of the subclassed
+     * type. Inheriting this implementation on subclasses will cause the subclass typing to be lost!
+     *
+     * @inheritDocs
+     */
     @Override
     public LogicalMetric withLogicalMetricInfo(LogicalMetricInfo info) {
         return new LogicalMetricImpl(
