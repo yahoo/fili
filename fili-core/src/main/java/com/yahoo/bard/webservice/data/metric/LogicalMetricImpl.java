@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
+import com.yahoo.bard.webservice.data.ResultSet;
+import com.yahoo.bard.webservice.data.metric.mappers.RenamableResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 
@@ -185,7 +187,7 @@ public class LogicalMetricImpl implements LogicalMetric {
         return new LogicalMetricImpl(
                 info,
                 renameTemplateDruidQuery(info.getName()),
-                getCalculation()
+                renameResultSetMapper(info.getName())
         );
     }
 
@@ -229,6 +231,30 @@ public class LogicalMetricImpl implements LogicalMetric {
             );
         }
         return query.renameMetricField(oldName, newName);
+    }
+
+    /**
+     * Convenience method.
+     *
+     * @param newName
+     * @return
+     */
+    protected ResultSetMapper renameResultSetMapper(String newName) {
+        return renameResultSetMapper(getCalculation(), newName);
+    }
+
+    /**
+     * If the mapper is renamable, renames the mapper. Otherwise, just returns the input mapper.
+     *
+     * @param mapper
+     * @param newName
+     * @return
+     */
+    protected ResultSetMapper renameResultSetMapper(ResultSetMapper mapper, String newName) {
+        if (mapper instanceof RenamableResultSetMapper) {
+            return ((RenamableResultSetMapper) mapper).withColumnName(newName);
+        }
+        return mapper;
     }
 
     @Override

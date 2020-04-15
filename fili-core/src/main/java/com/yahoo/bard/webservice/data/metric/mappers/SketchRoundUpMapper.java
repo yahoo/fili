@@ -15,7 +15,7 @@ import java.util.Objects;
  * Mapper to round floating point values to their ceiling. If a metric is null, the original result is passed along
  * unmodified.
  */
-public class SketchRoundUpMapper extends ResultSetMapper {
+public class SketchRoundUpMapper extends ResultSetMapper implements RenamableResultSetMapper {
 
     String columnName;
 
@@ -72,5 +72,10 @@ public class SketchRoundUpMapper extends ResultSetMapper {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), columnName);
+    }
+
+    @Override
+    public ResultSetMapper withColumnName(String newColumnName) {
+        return new SketchRoundUpMapper(newColumnName);
     }
 }
