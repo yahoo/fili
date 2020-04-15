@@ -44,4 +44,10 @@ class LogicalMetricImplSpec extends Specification {
         1 * testTdq.containsMetricField(targetName) >> true
         1 * testTdq.renameMetricField(targetName, newName)
     }
+
+    def "Attempting to rename renamable and non-renamable result set mappers functions succeeds"() {
+        setup:
+        String newName = "newName"
+        ResultSetMapper 
+    }
 }
