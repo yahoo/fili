@@ -30,6 +30,12 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add interface `RenamableResultSetMapper` to support pointing ResultSetMappers at different columns at query time](https://github.com/yahoo/fili/pull/1044)
+   * All `ResultSetMapper` implementations that are tied to a specific column in the `ResultSet` must implement this interface
+    - This re-pointing functionality is required to support metric renaming
+   * Currently only supports re-pointing at a single column. If multiple column re-point is required this interface must
+     be expanded
+
 - [Add withLogicalMetricInfo to LogicalMetric interface to support metric renaming](https://github.com/yahoo/fili/pull/1038)
    * Supporting method added to TemplateDruidQuery to rename a target `MetricField`
    * Default implementation written on existing `LogicalMetric` implementations (such as `LogicalMetricImpl`)

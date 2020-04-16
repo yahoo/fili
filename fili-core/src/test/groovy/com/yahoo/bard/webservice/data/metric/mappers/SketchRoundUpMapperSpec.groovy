@@ -50,4 +50,21 @@ class SketchRoundUpMapperSpec extends Specification {
         expect:
         mapper.map(result, schema) == result
     }
+
+    def "Renaming mapper correctly repoints to mapper to new column name"() {
+        setup:
+        MetricColumn newColumn = new MetricColumn("Mary had a little lamb")
+        ResultSetSchema renamedSchema = new ResultSetSchema(DefaultTimeGrain.DAY, [newColumn].toSet())
+        Result renamedResult = new Result(
+                [:],
+                [(newColumn): 1.3 as BigDecimal] as Map<MetricColumn, Object>,
+                new DateTime()
+        )
+
+        when:
+        SketchRoundUpMapper renamedMapper = mapper.withColumnName(newColumn.getName())
+
+        then:
+        renamedMapper.map(renamedResult, renamedSchema).getMetricValueAsNumber(newColumn)  == 2 as BigDecimal
+    }
 }

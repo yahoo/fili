@@ -86,7 +86,7 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
         return new ProtocolMetricImpl(
                 info,
                 renameTemplateDruidQuery(info.getName()),
-                getCalculation(),
+                renameResultSetMapper(info.getName()),
                 getProtocolSupport()
         );
     }
