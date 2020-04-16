@@ -2,7 +2,11 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
+import com.yahoo.bard.webservice.data.Result
+import com.yahoo.bard.webservice.data.ResultSetSchema
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.RenamableResultSetMapper
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 
 import spock.lang.Specification
 
@@ -48,6 +52,41 @@ class LogicalMetricImplSpec extends Specification {
     def "Attempting to rename renamable and non-renamable result set mappers functions succeeds"() {
         setup:
         String newName = "newName"
-        ResultSetMapper 
+        ResultSetMapper nonRenamable = Mock()
+        TestRenamableResultSetMapper renamableResultSetMapper = Spy()
+
+        when: "Attempt to rename non-renamable result set mapper"
+        ResultSetMapper result = testMetric.renameResultSetMapper(nonRenamable, newName)
+
+        then: "The input mapper is returned unchanged"
+        result == nonRenamable
+
+        when: "Attempt to rename renamable result set mapper"
+        testMetric.renameResultSetMapper(renamableResultSetMapper, newName)
+
+        then: "Rename method is called with input name"
+        1 * renamableResultSetMapper.withColumnName(newName)
+        0 * renamableResultSetMapper._
+    }
+
+    /**
+     * Does nothing. Just used as a base for a Spy mock to test interactions
+     */
+    class TestRenamableResultSetMapper extends ResultSetMapper implements RenamableResultSetMapper {
+
+        @Override
+        ResultSetMapper withColumnName(String newColumnName) {
+            return this
+        }
+
+        @Override
+        protected Result map(Result result, ResultSetSchema schema) {
+            return result
+        }
+
+        @Override
+        protected ResultSetSchema map(ResultSetSchema schema) {
+            return schema
+        }
     }
 }

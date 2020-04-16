@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
-import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.metric.mappers.RenamableResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.druid.model.MetricField;
@@ -234,21 +233,21 @@ public class LogicalMetricImpl implements LogicalMetric {
     }
 
     /**
-     * Convenience method.
+     * Convenience method for renaming result set mapper. Calls the rename method with this metric's result set mapper.
      *
-     * @param newName
-     * @return
+     * @param newName  The column name to point the result set mapper at, if applicable
+     * @return either this metric's mapper repointed at the new column name if applicable.
      */
     protected ResultSetMapper renameResultSetMapper(String newName) {
         return renameResultSetMapper(getCalculation(), newName);
     }
 
     /**
-     * If the mapper is renamable, renames the mapper. Otherwise, just returns the input mapper.
+     * If the mapper is renamable, points the mapper at the new nae. Otherwise, just returns the input mapper.
      *
-     * @param mapper
-     * @param newName
-     * @return
+     * @param mapper  The mapper to rename, if applicable
+     * @param newName  The new column name for the mapper to use, if applicable
+     * @return the input mapper if {@code mapper} is not renamable, or the renamed mapper if it is
      */
     protected ResultSetMapper renameResultSetMapper(ResultSetMapper mapper, String newName) {
         if (mapper instanceof RenamableResultSetMapper) {

@@ -56,6 +56,11 @@ public class SketchRoundUpMapper extends ResultSetMapper implements RenamableRes
     }
 
     @Override
+    public ResultSetMapper withColumnName(String newColumnName) {
+        return new SketchRoundUpMapper(newColumnName);
+    }
+
+    @Override
     protected ResultSetSchema map(ResultSetSchema schema) {
         return schema;
     }
@@ -72,10 +77,5 @@ public class SketchRoundUpMapper extends ResultSetMapper implements RenamableRes
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), columnName);
-    }
-
-    @Override
-    public ResultSetMapper withColumnName(String newColumnName) {
-        return new SketchRoundUpMapper(newColumnName);
     }
 }
