@@ -229,7 +229,6 @@ class TemplateDruidQuerySpec extends Specification {
     }
 
     // Test renaming correctly mutates relevant fields
-
     // Tests written:
     //  - input name and output name are equivalent is noop
     //  - error cases

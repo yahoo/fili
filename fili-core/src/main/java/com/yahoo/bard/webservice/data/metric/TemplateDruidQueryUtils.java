@@ -1,3 +1,5 @@
+// Copyright 2020 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric;
 
 import com.yahoo.bard.webservice.druid.model.MetricField;
@@ -9,7 +11,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Static utility methods that can help interact with TDQs
+ * Static utility methods that support interacting with {@link TemplateDruidQuery} instances.
  */
 public final class TemplateDruidQueryUtils {
 
@@ -45,7 +47,6 @@ public final class TemplateDruidQueryUtils {
      * @return either newField if fieldToCheck itself needs to be replaced, or a copy of fieldToCheck that has any
      *         references to oldField replaced with references to newField
      */
-    // TODO test this method. Can move tests directly from TDQSpec
     public static <T extends MetricField> MetricField repointToNewMetricField(
             MetricField fieldToCheck,
             T oldField,
