@@ -30,6 +30,11 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
+   * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
+     and replaces it with a different `MetricField` instance. 
+    - Relies on the new `WithPostAggregations` and `WithMetricField` interfaces to find children on `MetricField` instances 
+
 - [Add interface `RenamableResultSetMapper` to support pointing ResultSetMappers at different columns at query time](https://github.com/yahoo/fili/pull/1044)
    * All `ResultSetMapper` implementations that are tied to a specific column in the `ResultSet` must implement this interface
     - This re-pointing functionality is required to support metric renaming

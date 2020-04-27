@@ -10,13 +10,11 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.QueryType;
-import com.yahoo.bard.webservice.druid.model.WithMetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.SketchAggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
@@ -495,7 +493,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         MetricField targetField = getMetricField(currentName);
         MetricField updatedField = targetField.withName(newName);
         Set<Aggregation> newAggs = getAggregations().stream()
-                .map(agg -> repointToNewMetricField(targetField, updatedField, agg))
+                .map(agg -> TemplateDruidQueryUtils.repointToNewMetricField(agg, targetField, updatedField))
                 // This cast is safe because the only location where a type change can occur is in the
                 // WithPostAggregations#withPostAggregations method call. The contract on that method requires
                 // implementors that also subclass Aggregation or PostAggregation return a subclass of the implemented
@@ -505,7 +503,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 .collect(Collectors.toSet());
 
         Set<PostAggregation> newPostAggs = getPostAggregations().stream()
-                .map(pa -> repointToNewMetricField(targetField, updatedField, pa))
+                .map(pa -> TemplateDruidQueryUtils.repointToNewMetricField(pa, targetField, updatedField))
                 // This cast is safe because the only location where a type change can occur is in the
                 // WithPostAggregations#withPostAggregations method call. The contract on that method requires
                 // implementors that also subclass Aggregation or PostAggregation return a subclass of the implemented
@@ -515,57 +513,6 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 .collect(Collectors.toSet());
 
         return withAggregations(newAggs).withPostAggregations(newPostAggs);
-    }
-
-    /**
-     * Updates any reference to {@code oldField} on {@code fieldToCheck} to point to {@code newField}. If fieldToCheck
-     * is equivalent to oldField, newField is returned. If fieldToCheck is not equivalent to oldField, nor does it nor
-     * any of its children contain references to oldField, an equivalent MetricField will be returned.
-     * <p>
-     * This method relies on proper implementation of "copy with modification" methods on all parsed MetricField
-     * implementations. If a MetricField implementation does not fulfil all of the contracts described in the
-     * MetricField and related class Javadocs, this method is not guaranteed to function properly.
-     *
-     * @param <T>  The type of field that is being replaced
-     * @param oldField  The original MetricField that needs to be replaced with newField
-     * @param newField  The new MetricField that is replacing oldField
-     * @param fieldToCheck  The MetricField to be examined and repointed
-     * @return either newField if fieldToCheck itself needs to be replaced, or a copy of fieldToCheck that has any
-     *         references to oldField replaced with references to newField
-     */
-    private <T extends MetricField> MetricField repointToNewMetricField(
-            T oldField,
-            T newField,
-            MetricField fieldToCheck
-    ) {
-        if (Objects.equals(oldField, fieldToCheck)) {
-            return newField;
-        }
-
-        // if has children, iterate through children and repoint
-        if (fieldToCheck instanceof WithPostAggregations) {
-            WithPostAggregations root = (WithPostAggregations) fieldToCheck;
-
-
-            return root.withPostAggregations(
-                    root.getPostAggregations().stream()
-                            .map(pa -> repointToNewMetricField(oldField, newField, pa))
-                            // This cast is safe because the only location where a type change can occur is in the
-                            // WithPostAggregations#withPostAggregations method call. The contract on that method
-                            // requires implementors that also subclass Aggregation or PostAggregation return a subclass
-                            // of the implemented type. For example, PostAggregation#withPostAggregations must return a
-                            // PostAggregation. Clients that breaks this contract will have a ClassCastException thrown
-                            // on this line
-                            .map(mf -> (PostAggregation) mf)
-                            .collect(Collectors.toList())
-            );
-        }
-        if (fieldToCheck instanceof WithMetricField) {
-            WithMetricField root = (WithMetricField) fieldToCheck;
-            return root.withMetricField(repointToNewMetricField(oldField, newField, root.getMetricField()));
-        }
-
-        return fieldToCheck;
     }
 
     /**
