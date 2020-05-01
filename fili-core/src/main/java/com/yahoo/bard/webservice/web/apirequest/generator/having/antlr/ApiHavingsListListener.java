@@ -11,9 +11,10 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_OPERATOR_I
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.ApiHaving;
+import com.yahoo.bard.webservice.web.HavingOperation;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException;
-import com.yahoo.bard.webservice.web.HavingOperation;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric;
 import com.yahoo.bard.webservice.web.havingparser.HavingsBaseListener;
 import com.yahoo.bard.webservice.web.havingparser.HavingsParser;
 
@@ -27,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class ApiHavingsListListener extends HavingsBaseListener {
@@ -37,6 +39,9 @@ public class ApiHavingsListListener extends HavingsBaseListener {
     private Exception error = null;
     private final MetricDictionary metricDictionary;
     private final Set<LogicalMetric> logicalMetrics;
+    private Map<String, String> paramsSoFar = new HashMap<>();
+    private LogicalMetric currentMetric;
+
     /**
      *  Constructor.
      *
@@ -69,6 +74,7 @@ public class ApiHavingsListListener extends HavingsBaseListener {
     @Override
     public void exitHavingComponent(HavingsParser.HavingComponentContext ctx) {
         LogicalMetric metric = extractMetric(ctx);
+
         if (metric == null) {
             return;
         }
@@ -86,30 +92,48 @@ public class ApiHavingsListListener extends HavingsBaseListener {
 
     }
 
+    @Override
+    public void enterParamValue(HavingsParser.ParamValueContext ctx) {
+        paramsSoFar.put(ctx.ID().getText(), ctx.VALUE().getText());
+    }
+
     /**
      * Extract the metric portion of a having.
+     *
      * @param havingContext the Having context
+     *
      * @return the Metric
      */
     protected LogicalMetric extractMetric(HavingsParser.HavingComponentContext havingContext) {
-        String metricName = havingContext.metric().getText();
-        LogicalMetric metric = metricDictionary.get(metricName);
+        final String metricApiText = havingContext.metric().getText();
+        final String baseMetricId = havingContext.metric().metricName().ID().getText();
+        ApiMetric metricDetail = new ApiMetric(metricApiText, baseMetricId, paramsSoFar);
+
+        // If the local metric dictionary has been provisioned with this metric, resolve to it,
+        // otherwise try to resolve using baseName.
+        LogicalMetric metric = metricDictionary.containsKey(metricDetail.getRawName()) ? metricDictionary.get(
+                metricDetail.getRawName()) :
+                metricDictionary.get(metricDetail.getBaseApiMetricId());
 
         // If no metric is found in metric dictionary throw exception.
         if (metric == null) {
-            LOG.debug(HAVING_METRIC_UNDEFINED.logFormat(metricName));
-            error = new BadHavingException(HAVING_METRIC_UNDEFINED.format(metricName));
+            LOG.debug(HAVING_METRIC_UNDEFINED.logFormat(baseMetricId));
+            error = new BadHavingException(HAVING_METRIC_UNDEFINED.format(baseMetricId));
             return null;
         }
 
         // If the having metric is not found in query metrics throw exception
-        if (!logicalMetrics.contains(metric)) {
-            LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(metricName));
-            error = new BadHavingException(HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(metricName));
+        Optional<LogicalMetric> requestMetric = logicalMetrics.stream()
+                .filter(logicalMetric -> logicalMetric.getName().equals(metricDetail.getRawName()))
+                .findFirst();
+
+        if (! requestMetric.isPresent()) {
+            LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(metricApiText));
+            error = new BadHavingException(HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(metricApiText));
             return null;
         }
 
-        return metric;
+        return requestMetric.get();
     }
 
     /**
@@ -119,7 +143,7 @@ public class ApiHavingsListListener extends HavingsBaseListener {
      * @return the operation
      */
     protected HavingOperation extractOperation(HavingsParser.HavingComponentContext havingContext) {
-        String operationName = havingContext.OPERATOR().getText();
+        String operationName = havingContext.operator().getText();
         HavingOperation operation;
         try {
             operation = HavingOperation.fromString(operationName);
@@ -140,7 +164,7 @@ public class ApiHavingsListListener extends HavingsBaseListener {
     protected List<Double> extractValues(HavingsParser.HavingComponentContext havingContext) {
         List<Double> values = new LinkedList<>();
         Double val;
-        for (TerminalNode tok : havingContext.values().VALUE()) {
+        for (TerminalNode tok : havingContext.havingValues().HAVING_VALUE()) {
             try {
                 val = Double.parseDouble(tok.getText());
             } catch (NumberFormatException e) {

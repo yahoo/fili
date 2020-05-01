@@ -6,10 +6,12 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TA
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_METRICS;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_TABLE;
 
+import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,6 +85,29 @@ public class DefaultLogicalMetricGenerator
         validateMetrics(entity, builder.getLogicalTableIfInitialized().get());
     }
 
+
+    @Override
+    public LinkedHashSet<LogicalMetric> bind(
+            DataApiRequest request,
+            String parameter,
+            ResourceDictionaries dictionaries
+    ) {
+        return generateLogicalMetrics(
+                Optional.ofNullable(parameter).orElse(""),
+                dictionaries.getMetricDictionary()
+        );
+
+    }
+
+    @Override
+    public void validate(
+            LinkedHashSet<LogicalMetric> entity,
+            DataApiRequest request,
+            String parameter,
+            ResourceDictionaries dictionaries
+    ) {
+        validateMetrics(entity, request.getTable());
+    }
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>

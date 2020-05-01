@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ApiMetricsListListener extends MetricsBaseListener {
-    //private static final Logger LOG = LoggerFactory.getLogger(ApiMetricsListListener.class);
 
     private final Map<String, LogicalMetric> metrics = new HashMap<>();
 

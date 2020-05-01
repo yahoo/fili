@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -14,7 +15,7 @@ import java.util.Set;
 /**
  * A legacy interface to support the metric binding contract for the constructor embedded DataApiRequest builders.
  */
-public interface ApiRequestLogicalMetricBinder {
+public interface ApiRequestLogicalMetricBinder extends LegacyGenerator<LinkedHashSet<LogicalMetric>> {
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>
