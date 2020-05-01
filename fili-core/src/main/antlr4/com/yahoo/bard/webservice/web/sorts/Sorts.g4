@@ -1,10 +1,14 @@
-grammar Metrics;
+grammar Sorts;
 
 options {
-    tokenVocab=MetricsLex;
+    tokenVocab=SortsLex;
 }
-metrics
-    : ( metric ( COMMA metric )* )? EOF;
+
+sorts
+    : ( sortsComponent ( COMMA sortsComponent )* )? EOF;
+
+sortsComponent
+    : metric (PIPE orderingValue)?;
 
 metric
     : metricName ( OPEN_PARENTHESIS params? CLOSE_PARENTHESIS )?
@@ -17,4 +21,9 @@ params
     ;
 paramValue
     : ID EQUALS VALUE
+    ;
+
+orderingValue
+    : ASC
+    | DESC
     ;

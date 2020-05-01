@@ -42,7 +42,6 @@ public class ProtocolAntlrApiMetricParser implements ApiMetricParser {
         ApiMetricsListListener listener = new ApiMetricsListListener();
         MetricsLex lexer = MetricGrammarUtils.getLexer(metricQuery);
         MetricsParser parser = MetricGrammarUtils.getParser(lexer);
-        try {
             try {
                 MetricsParser.MetricsContext tree = parser.metrics();
                 ParseTreeWalker.DEFAULT.walk(listener, tree);
@@ -55,8 +54,5 @@ public class ProtocolAntlrApiMetricParser implements ApiMetricParser {
             List<ApiMetric> generated = listener.getResults();
             LOG.trace("Generated list of metric detail: {}", generated);
             return generated;
-        } catch (BadMetricException metricException) {
-            throw new BadApiRequestException(metricException.getMessage(), metricException);
-        }
     }
 }
