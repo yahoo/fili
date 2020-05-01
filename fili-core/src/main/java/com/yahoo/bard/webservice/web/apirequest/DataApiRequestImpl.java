@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
@@ -10,14 +9,12 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_METRIC_FI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -32,6 +29,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumnType;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -51,10 +49,12 @@ import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.IntervalBinders;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -204,7 +204,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
                 bardConfigResources.getHavingApiGenerator(),
-                bardConfigResources.getMetricBinder()
+                bardConfigResources.getMetricBinder(),
+                bardConfigResources.getOrderByGenerator()
         );
     }
 
@@ -298,7 +299,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
                 bardConfigResources.getHavingApiGenerator(),
-                bardConfigResources.getMetricBinder()
+                bardConfigResources.getMetricBinder(),
+                bardConfigResources.getOrderByGenerator()
         );
     }
 
@@ -403,7 +405,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 granularityParser,
                 druidFilterBuilder,
                 havingGenerator,
-                ApiRequestImpl.DEFAULT_METRIC_BINDER
+                ApiRequestImpl.DEFAULT_METRIC_BINDER,
+                new DefaultOrderByGenerator()
         );
     }
 
@@ -447,6 +450,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param havingGenerator A function to create havings
      * @param metricBinder  Class that parses the input metric query string and binds the requested metric names to the
      *                      materialized LogicalMetrics.
+     * @param orderByGenerator A function to create and validate sort clauses
      *
      * @throws BadApiRequestException in the following scenarios:
      * <ol>
@@ -486,7 +490,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             GranularityParser granularityParser,
             DruidFilterBuilder druidFilterBuilder,
             HavingGenerator havingGenerator,
-            ApiRequestLogicalMetricBinder metricBinder
+            ApiRequestLogicalMetricBinder metricBinder,
+            LegacyGenerator<List<OrderByColumn>> orderByGenerator
     ) throws BadApiRequestException {
         super(formatRequest, downloadFilename, asyncAfterRequest, perPage, page);
 
@@ -526,20 +531,23 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.havings = bindApiHavings(havingsRequest, havingGenerator, logicalMetrics);
         validateApiHavings(havingsRequest, havings);
 
-        //Using the LinkedHashMap to preserve the sort order
-        LinkedHashMap<String, SortDirection> sortColumnDirection = bindToColumnDirectionMap(sortsRequest);
-
-        //Requested sort on dateTime column
-        this.dateTimeSort = bindDateTimeSortColumn(sortColumnDirection).orElse(null);
-
-        // Requested sort on metrics - optional, can be empty Set
-        this.sorts = bindToColumnDirectionMap(
-                removeDateTimeSortColumn(sortColumnDirection),
-                logicalMetrics,
-                metricDictionary
+        ResourceDictionaries resourceDictionaries = new ResourceDictionaries(
+                null,
+                logicalTableDictionary,
+                metricDictionary,
+                dimensionDictionary
         );
-        validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
+        List<OrderByColumn> columns = orderByGenerator.bind(this, sortsRequest, resourceDictionaries);
 
+        orderByGenerator.validate(columns, this, sortsRequest, resourceDictionaries);
+
+        this.dateTimeSort = columns.stream()
+                .filter(column -> column.getType().equals(OrderByColumnType.TIME))
+                .findFirst().orElse(null);
+
+        this.sorts = columns.stream()
+                .filter(column -> ! column.getType().equals(OrderByColumnType.TIME))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
@@ -1209,119 +1217,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // No default post bind validations yet
     }
 
-
-    /**
-     * Method to convert sort list to column and direction map.
-     *
-     * @param sorts  String of sort columns
-     *
-     * @return LinkedHashMap of columns and their direction. Using LinkedHashMap to preserve the order
-     */
-    protected LinkedHashMap<String, SortDirection> bindToColumnDirectionMap(String sorts) {
-        LinkedHashMap<String, SortDirection> sortDirectionMap = new LinkedHashMap<>();
-
-        if (sorts != null && !sorts.isEmpty()) {
-            Arrays.stream(sorts.split(","))
-                    .map(e -> Arrays.asList(e.split("\\|")))
-                    .forEach(e -> sortDirectionMap.put(e.get(0), getSortDirection(e)));
-            return sortDirectionMap;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Generates a Set of OrderByColumn.
-     *
-     * @param sortDirectionMap  Map of columns and their direction
-     * @param logicalMetrics  Set of LogicalMetrics in the query
-     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
-     *
-     * @return a Set of OrderByColumn
-     * @throws BadApiRequestException if the sort clause is invalid.
-     */
-    protected LinkedHashSet<OrderByColumn> bindToColumnDirectionMap(
-            Map<String, SortDirection> sortDirectionMap,
-            Set<LogicalMetric> logicalMetrics,
-            MetricDictionary metricDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingSortColumns")) {
-            String sortMetricName;
-            LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
-
-            if (sortDirectionMap == null) {
-                return metricSortColumns;
-            }
-
-            Map<String, LogicalMetric> requestedMetrics = logicalMetrics.stream()
-                    .collect(Collectors.toMap(
-                            LogicalMetric::getName,
-                            x -> x
-                    ));
-
-            List<String> unknownMetrics = new ArrayList<>();
-            List<String> unmatchedMetrics = new ArrayList<>();
-            List<String> unsortableMetrics = new ArrayList<>();
-
-            for (Map.Entry<String, SortDirection> entry : sortDirectionMap.entrySet())  {
-                sortMetricName = entry.getKey();
-
-                LogicalMetric logicalMetric = requestedMetrics.get(sortMetricName);
-                if (logicalMetric == null) {
-                    logicalMetric = metricDictionary.get(sortMetricName);
-                }
-
-                // If metric dictionary returns a null, it means the requested sort metric is not found.
-                if (logicalMetric == null) {
-                    unknownMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (!logicalMetrics.contains(logicalMetric)) {
-                    unmatchedMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (logicalMetric.getTemplateDruidQuery() == null) {
-                    unsortableMetrics.add(sortMetricName);
-                    continue;
-                }
-                metricSortColumns.add(new OrderByColumn(logicalMetric, entry.getValue()));
-            }
-            if (!unknownMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_UNDEFINED.format(unknownMetrics.toString()));
-            }
-            if (!unmatchedMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
-            }
-            if (!unsortableMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_SORTABLE_FORMAT.logFormat(unsortableMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_SORTABLE_FORMAT.format(unsortableMetrics.toString()));
-            }
-
-            return metricSortColumns;
-        }
-    }
-
-    /**
-     * Method to generate DateTime sort column from the map of columns and its direction.
-     *
-     * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
-     *
-     * @return Instance of OrderByColumn for dateTime
-     */
-    protected Optional<OrderByColumn> bindDateTimeSortColumn(LinkedHashMap<String, SortDirection> sortColumns) {
-
-        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
-            if (!isDateTimeFirstSortField(sortColumns)) {
-                LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
-                throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
-            }
-            return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
-        }
-        return Optional.empty();
-    }
-
     /**
      * Validation for sort columns.
      *
@@ -1533,38 +1428,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
             LOG.debug(NON_AGGREGATABLE_INVALID.logFormat(invalidDimensionsInFilters));
             throw new BadApiRequestException(NON_AGGREGATABLE_INVALID.format(invalidDimensionsInFilters));
-        }
-    }
-
-    /**
-     * To check whether dateTime column request is first one in the sort list or not.
-     *
-     * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
-     *
-     * @return True if dateTime column is first one in the sort list. False otherwise
-     */
-    protected Boolean isDateTimeFirstSortField(LinkedHashMap<String, SortDirection> sortColumns) {
-        if (sortColumns != null) {
-            List<String> columns = new ArrayList<>(sortColumns.keySet());
-            return columns.get(0).equals(DATE_TIME_STRING);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Method to remove the dateTime column from map of columns and its direction.
-     *
-     * @param sortColumns  map of columns and its direction
-     *
-     * @return  Map of columns and its direction without dateTime sort column
-     */
-    protected Map<String, SortDirection> removeDateTimeSortColumn(Map<String, SortDirection> sortColumns) {
-        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
-            sortColumns.remove(DATE_TIME_STRING);
-            return sortColumns;
-        } else {
-            return sortColumns;
         }
     }
 

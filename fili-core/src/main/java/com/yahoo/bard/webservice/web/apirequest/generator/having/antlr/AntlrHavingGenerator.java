@@ -5,13 +5,12 @@ package com.yahoo.bard.webservice.web.apirequest.generator.having.antlr;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_INVALID_WITH_DETAIL;
 
-import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException;
-import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.havingparser.HavingsLex;
 import com.yahoo.bard.webservice.web.havingparser.HavingsParser;
 
@@ -24,18 +23,18 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-public class AntlrHavingGenerator extends DefaultHavingApiGenerator {
+public class AntlrHavingGenerator implements HavingGenerator {
+
     private static final Logger LOG = LoggerFactory.getLogger(AntlrHavingGenerator.class);
     private final MetricDictionary metricDictionary;
 
     /**
      * Constructor.
      *
-     * @param loader  Connects the resource dictionaries with the loaders..
+     * @param metricDictionary  Connects the resource dictionaries with the loaders..
      */
-    public AntlrHavingGenerator(ConfigurationLoader loader) {
-        super(loader);
-        this.metricDictionary = loader.getMetricDictionary();
+    public AntlrHavingGenerator(MetricDictionary metricDictionary) {
+        this.metricDictionary = metricDictionary;
     }
 
     public Map<LogicalMetric, Set<ApiHaving>> apply(
@@ -69,5 +68,10 @@ public class AntlrHavingGenerator extends DefaultHavingApiGenerator {
         } catch (BadHavingException havingException) {
             throw new BadApiRequestException(havingException.getMessage(), havingException);
         }
+    }
+
+    @Override
+    public AntlrHavingGenerator withMetricDictionary(MetricDictionary metricDictionary) {
+        return new AntlrHavingGenerator(metricDictionary);
     }
 }

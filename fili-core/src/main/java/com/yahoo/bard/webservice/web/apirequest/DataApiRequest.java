@@ -35,7 +35,12 @@ import javax.ws.rs.core.Response;
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
  */
 public interface DataApiRequest extends ApiRequest {
+
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
+    String METRIC_GENERATOR_NAMESPACE = "metric_generator";
+    String ORDER_BY_GENERATOR_NAMESPACE = "order_by_generator";
+
+
     String RATIO_METRIC_CATEGORY = "Ratios";
     String DATE_TIME_STRING = "dateTime";
 
@@ -394,8 +399,8 @@ public interface DataApiRequest extends ApiRequest {
     /**
      * Whether or not to attempt to build an optimal backend query (i.e. topN or timeSeries in the case of Druid) if possible.
      *
-     * @return True if the backend query built from this request can be safely optimized (i.e. converted into a topN 
-     * or timeseries query when hitting Druid), false if a naive query should be built (i.e. groupBy in the 
+     * @return True if the backend query built from this request can be safely optimized (i.e. converted into a topN
+     * or timeseries query when hitting Druid), false if a naive query should be built (i.e. groupBy in the
      * case of Druid)
      */
     default boolean optimizeBackendQuery() {
