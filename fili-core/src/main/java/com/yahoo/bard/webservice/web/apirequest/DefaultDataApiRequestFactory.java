@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import java.util.List;
@@ -73,6 +74,27 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String page,
             BardConfigResources bardConfigResources
     ) {
+        if (bardConfigResources.getMetricBinder() instanceof ProtocolLogicalMetricGenerator) {
+            return new ProtocolMetricDataApiReqestImpl(
+                    tableName,
+                    granularity,
+                    dimensions,
+                    logicalMetrics,
+                    intervals,
+                    apiFilters,
+                    havings,
+                    sorts,
+                    count,
+                    topN,
+                    format,
+                    downloadFilename,
+                    timeZoneId,
+                    asyncAfter,
+                    perPage,
+                    page,
+                    bardConfigResources
+            );
+        }
         return new DataApiRequestImpl(
                 tableName,
                 granularity,

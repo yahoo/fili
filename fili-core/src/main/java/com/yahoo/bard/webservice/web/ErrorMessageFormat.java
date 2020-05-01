@@ -145,6 +145,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
 
     METRIC_INVALID_WITH_DETAIL("Metric expression '%s' is invalid. (%s)"),
 
+    SORT_INVALID_WITH_DETAIL("Sort expression '%s' is invalid. (%s)"),
+
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),

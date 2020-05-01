@@ -72,6 +72,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
@@ -119,11 +120,13 @@ import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
@@ -285,9 +288,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(buildDataApiRequestFactory()).to(DataApiRequestFactory.class);
 
-                // Protocol Stuff
-                bindMetricGenerator(this);
-
                 //Initialize the field converter
                 FieldConverterSupplier.setSketchConverter(initializeSketchConverter());
 
@@ -302,6 +302,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 loader.load();
                 bindDictionaries(this);
                 bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
+                // Protocol Stuff
+                bindMetricGenerator(this);
 
                 // Bind the request mappers
                 bindRequestMappers(this);
@@ -433,6 +435,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         // The binding used for construction based ApiRequest objects
         binder.bind(protocolLogicalMetricGenerator).to(ApiRequestLogicalMetricBinder.class);
 
+        TypeLiteral<LegacyGenerator<List<OrderByColumn>>> orderByGeneratorType =
+                new TypeLiteral<LegacyGenerator<List<OrderByColumn>>>() { };
+
+        binder.bind(DefaultOrderByGenerator.class)
+                .named(DataApiRequest.ORDER_BY_GENERATOR_NAMESPACE)
+                .to(orderByGeneratorType);
     }
 
     /**
