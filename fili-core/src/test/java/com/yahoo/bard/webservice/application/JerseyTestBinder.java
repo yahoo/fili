@@ -78,6 +78,8 @@ public class JerseyTestBinder {
 
     public TestDimensions testDimensions = new TestDimensions();
 
+    public boolean wasStarted = false;
+
     /**
      * Constructor that will auto-start.
      *
@@ -226,6 +228,7 @@ public class JerseyTestBinder {
     public void start() {
         try {
             new StartHarness().startHarness();
+            wasStarted = true;
         } catch (Exception e) {
             throw (e instanceof IllegalStateException) ? (IllegalStateException) e : new IllegalStateException(e);
         }

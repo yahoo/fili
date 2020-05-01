@@ -416,7 +416,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Bad sort metric fails"() {
-        String message = SORT_METRICS_UNDEFINED.format("[bad, worse]")
+        String message = SORT_METRICS_NOT_IN_QUERY_FORMAT.format("[bad, worse]")
 
         String jsonFailure =
                 """{"status":400,

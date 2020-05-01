@@ -110,7 +110,7 @@ class DruidQueryBuilderSpec extends Specification {
         } ) as Map<String, ApiFilter>
 
         LogicalMetric metric = new LogicalMetricImpl(tdq, null, (LogicalMetricInfo) lmi1)
-        LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(metric, SortDirection.DESC)]
+        LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(lmi1.name, SortDirection.DESC)]
         limitSpec = new LimitSpec(orderByColumns)
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
     }
@@ -357,10 +357,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
 
         apiRequest.getTopN() >> Optional.of(5)
-        apiRequest.getSorts() >> ([new OrderByColumn(
-                new LogicalMetricImpl(null, null, lmi1),
-                SortDirection.DESC
-        )] as Set)
+        apiRequest.getSorts() >> ([new OrderByColumn(lmi1.name, SortDirection.DESC)] as Set)
         apiRequest.havings >> havingMap
         apiRequest.optimizeBackendQuery() >> canOptimize
 
@@ -386,10 +383,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> Optional.of(5)
-        apiRequest.sorts >> ([new OrderByColumn(
-                new LogicalMetricImpl(null, null, (LogicalMetricInfo) lmi1),
-                SortDirection.DESC
-        )] as Set)
+        apiRequest.sorts >> ([new OrderByColumn(lmi1.name, SortDirection.DESC)] as Set)
 
         initDefault(apiRequest)
 
@@ -405,22 +399,8 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> ([
-                new OrderByColumn(
-                        new LogicalMetricImpl(
-                                (TemplateDruidQuery) null,
-                                (ResultSetMapper) null,
-                                (LogicalMetricInfo) lmi1
-                        ),
-                        SortDirection.DESC
-                ),
-                new OrderByColumn(
-                        new LogicalMetricImpl(
-                                (TemplateDruidQuery) null,
-                                (ResultSetMapper) null,
-                                (LogicalMetricInfo) lmi2
-                        ),
-                        SortDirection.ASC
-                )
+                new OrderByColumn(lmi1.name, SortDirection.DESC),
+                new OrderByColumn(lmi2.name, SortDirection.ASC)
         ] as Set)
 
         initDefault(apiRequest)
@@ -438,8 +418,8 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.dimensions >> ([resources.d1, resources.d2] as Set)
         apiRequest.topN >> Optional.of(5)
         apiRequest.sorts >> ([
-                new OrderByColumn(new LogicalMetricImpl(tdq, null, lmi1), SortDirection.ASC),
-                new OrderByColumn(new LogicalMetricImpl(tdq, null, lmi2), SortDirection.DESC)
+                new OrderByColumn(lmi1.name, SortDirection.ASC),
+                new OrderByColumn(lmi2.name, SortDirection.DESC)
         ] as Set)
 
         initDefault(apiRequest)
@@ -488,10 +468,10 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.sorts >> {
             nSorts > 1 ?
                     [
-                            new OrderByColumn(new LogicalMetricImpl(tdq, null, lmi1), SortDirection.DESC),
-                            new OrderByColumn(new LogicalMetricImpl(tdq, null, lmi2), SortDirection.ASC)
+                            new OrderByColumn(lmi1.name, SortDirection.DESC),
+                            new OrderByColumn(lmi2.name, SortDirection.ASC)
                     ] as Set :
-                    [new OrderByColumn(new LogicalMetricImpl(null, null, "m1"), SortDirection.DESC)] as Set
+                    [new OrderByColumn("m1", SortDirection.DESC)] as Set
         }
         apiRequest.havings >> havingMap
         apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
@@ -534,7 +514,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         apiRequest.sorts >> {
             nSorts > 0 ?
-                    [new OrderByColumn(new LogicalMetricImpl(null, null, "m1"), SortDirection.DESC)] as Set :
+                    [new OrderByColumn("m1", SortDirection.DESC)] as Set :
                     [] as Set
         }
         apiRequest.havings >> havingMap

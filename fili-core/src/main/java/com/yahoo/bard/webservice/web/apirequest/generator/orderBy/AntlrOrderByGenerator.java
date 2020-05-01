@@ -12,8 +12,9 @@ import java.util.List;
  */
 public class AntlrOrderByGenerator extends DefaultOrderByGenerator {
 
+    private final ProtocolAntlrSortParser parser = new ProtocolAntlrSortParser();
+
     protected List<OrderByColumn> parseOrderByColumns(String sortsRequest) {
-        ProtocolAntlrSortParser parser = new ProtocolAntlrSortParser();
         return parser.apply(sortsRequest);
     }
 }
