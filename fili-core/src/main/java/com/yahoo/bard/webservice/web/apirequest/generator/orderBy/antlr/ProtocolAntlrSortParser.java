@@ -23,14 +23,8 @@ import java.util.List;
  * Parser that reads a string and uses ANTLR to extract logical representatons of sort columns.
  */
 public class ProtocolAntlrSortParser {
+
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolAntlrSortParser.class);
-
-    /**
-     * Constructor.
-     */
-    public ProtocolAntlrSortParser() {
-    }
-
 
     /**
      * Transform a text string into a protocol metric compliant order by column.

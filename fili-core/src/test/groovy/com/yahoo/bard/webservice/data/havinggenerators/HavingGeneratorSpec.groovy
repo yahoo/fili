@@ -2,13 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.havinggenerators
 
-import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.web.ApiHaving
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.HavingOperation
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.generator.having.antlr.AntlrHavingGenerator
 
 import spock.lang.Shared
@@ -21,24 +21,28 @@ class HavingGeneratorSpec extends Specification {
     @Shared LogicalMetric metric2
     @Shared LogicalMetric metric3
     @Shared Set<LogicalMetric> logicalMetrics
-    @Shared ConfigurationLoader loader
 
     def setup() {
         metric1 = new LogicalMetricImpl(null, null, "metric1")
         metric2 = new LogicalMetricImpl(null, null, "metric2")
         metric3 = new LogicalMetricImpl(null, null, "metric3")
 
+        LogicalMetric metric4Base = new LogicalMetricImpl(null, null, "metric4")
+        LogicalMetric metric4 = new LogicalMetricImpl(null, null, "metric4(foo=bar)")
+        LogicalMetric metric5Base = new LogicalMetricImpl(null, null, "metric5")
+        LogicalMetric metric5 = new LogicalMetricImpl(null, null, "metric5(foo=bar,foo2=bar2)")
+
+        List<LogicalMetric> metrics = [metric1, metric2, metric3]
+
         metricDictionary = new MetricDictionary()
-        metricDictionary.add(metric1)
-        metricDictionary.add(metric2)
-        metricDictionary.add(metric3)
+        metrics.every() { metricDictionary.add(it) }
+        metricDictionary.add(metric4Base)
+        metricDictionary.add(metric5Base)
 
         logicalMetrics = new HashSet<>()
-        logicalMetrics.add(metric1)
-        logicalMetrics.add(metric2)
-        logicalMetrics.add(metric3)
-        loader = Mock(ConfigurationLoader)
-        loader.getMetricDictionary() >> metricDictionary
+        logicalMetrics.addAll(metrics)
+        logicalMetrics.add(metric4)
+        logicalMetrics.add(metric5)
     }
 
     @Unroll
@@ -48,7 +52,7 @@ class HavingGeneratorSpec extends Specification {
         String query = "$metric-$op$values"
 
         when:
-        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(loader).apply(query, logicalMetrics);
+        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(metricDictionary).apply(query, logicalMetrics);
 
         then:
         Set<ApiHaving> havings = generateHaving.get(metric1)
@@ -118,6 +122,26 @@ class HavingGeneratorSpec extends Specification {
         'metric1' | 'eq'            | '[.0e1]'               |  [0]
 
     }
+    @Unroll
+    def "check parsing generateHavings for one protocol metrics"() {
+
+        given:
+        String query = "$metric-$op$values"
+
+        when:
+        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(metricDictionary).apply(query, logicalMetrics);
+
+        then:
+        Set<ApiHaving> havings = generateHaving.values().stream().findFirst().get()
+        havings[0].metric?.name == metric
+        havings[0].operation == HavingOperation.fromString(op)
+        havings[0].values == expected as List
+
+        where:
+        metric                       | op   | values    | expected
+        'metric4(foo=bar)'           | 'eq' | '[1,2,3]' | [1, 2, 3]
+        'metric5(foo=bar,foo2=bar2)' | 'eq' | '[1,2,3]' | [1, 2, 3]
+    }
 
     @Unroll
     def "check parsing generateHaving for multiple metric"() {
@@ -125,7 +149,7 @@ class HavingGeneratorSpec extends Specification {
         String query = "metric1-gt[25],metric3-notLessThan[1,2,3]"
 
         when:
-        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(loader).apply(query, logicalMetrics);
+        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(metricDictionary).apply(query, logicalMetrics);
 
         then:
         generateHaving.containsKey(metric1)
@@ -148,7 +172,7 @@ class HavingGeneratorSpec extends Specification {
         String query = "metric1-notEqualTo[-2.4],metric1-gte[8.0,23]"
 
         when:
-        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(loader).apply(query, logicalMetrics);
+        Map<LogicalMetric, Set<ApiHaving>> generateHaving =  new AntlrHavingGenerator(metricDictionary).apply(query, logicalMetrics);
 
         then:
         generateHaving.containsKey(metric1)
@@ -167,7 +191,7 @@ class HavingGeneratorSpec extends Specification {
     def "Bad having query #having throws #exception.simpleName because #reason"() {
 
         when:
-        AntlrHavingGenerator digitsHavingGenerator = new AntlrHavingGenerator(loader);
+        AntlrHavingGenerator digitsHavingGenerator = new AntlrHavingGenerator(metricDictionary);
         digitsHavingGenerator.apply(having, logicalMetrics);
 
         then:

@@ -21,18 +21,22 @@ import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
 import com.yahoo.bard.webservice.data.cache.TestDataCache;
 import com.yahoo.bard.webservice.data.cache.TestTupleDataCache;
+import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol;
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService;
 import com.yahoo.bard.webservice.data.volatility.NoVolatileIntervalsFunction;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
@@ -41,18 +45,32 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.antlr.AntlrHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.AntlrOrderByGenerator;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.endpoints.JobsEndpointResources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -180,6 +198,18 @@ public class TestBinderFactory extends AbstractBinderFactory {
         return dataSourceMetadataService;
     }
 
+    /**
+     * Creates an object that generates map of Api Having from having string.
+     * Constructs a {@link DefaultHavingApiGenerator} by default.
+     * @param loader  Configuration loader that connects resource dictionaries with the loader.
+     *
+     * @return An object to generate having maps from having string.
+     */
+    @Override
+    protected HavingGenerator buildHavingGenerator(ConfigurationLoader loader) {
+        return new PerRequestDictionaryHavingGenerator(new AntlrHavingGenerator(loader.getMetricDictionary()));
+    }
+
     @Override
     public ApiJobStore buildApiJobStore() {
         return JobsEndpointResources.getApiJobStore();
@@ -255,6 +285,39 @@ public class TestBinderFactory extends AbstractBinderFactory {
         return state.cache;
     }
 
+    protected void bindMetricGenerator(AbstractBinder binder) {
+        List<String> protocols = new ArrayList<>();
+        TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() { };
+
+        protocols.add(ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME);
+
+        // If you want to configure your system metrics, change the list of metrics
+        binder.bind(protocols).named(NAME_ACTIVE_PROTOCOLS).to(stringListLiteral);
+
+        // If you want to make your own business logic, you can change the Annotater implementation
+        binder.bind(ApiMetricAnnotater.NO_OP_ANNOTATER).to(ApiMetricAnnotater.class);
+
+        // This is the default binder used in ProtocolDataApiRequestImp
+        ProtocolLogicalMetricGenerator protocolLogicalMetricGenerator = new ProtocolLogicalMetricGenerator(
+                ApiMetricAnnotater.NO_OP_ANNOTATER,
+                protocols
+        );
+
+        // The binder used for factories
+        TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>> metricGeneratorType =
+                new TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>>() { };
+        binder.bind(protocolLogicalMetricGenerator).named(NAME_METRIC_GENERATOR).to(metricGeneratorType);
+
+        // The binding used for construction based ApiRequest objects
+        binder.bind(protocolLogicalMetricGenerator).to(ApiRequestLogicalMetricBinder.class);
+
+        TypeLiteral<LegacyGenerator<List<OrderByColumn>>> orderByGeneratorType =
+                new TypeLiteral<LegacyGenerator<List<OrderByColumn>>>() { };
+
+        binder.bind(AntlrOrderByGenerator.class)
+                .named(DataApiRequest.ORDER_BY_GENERATOR_NAMESPACE)
+                .to(orderByGeneratorType);
+    }
     /**
      * Get the data cache that has been loaded, or build one if none has been loaded yet.
      *

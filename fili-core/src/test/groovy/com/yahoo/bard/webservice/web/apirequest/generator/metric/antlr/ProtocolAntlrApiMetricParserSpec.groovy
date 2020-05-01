@@ -16,6 +16,7 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
     def "Parser produces correct value for single metric"() {
         expect:
         generator.apply(text) == [new ApiMetric(text.replace(" ", ""), metric, params)]
+
         where:
         text                         | metric  | params
         "two ( )"                    | "two"   | [:]
