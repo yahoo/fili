@@ -29,6 +29,13 @@ Current
     * `MetricUnionAvailability` previously did not create a defensive copy of the `availabilitiesToMetricNames` parameter. This has been fixed.   
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
+- [Fixing sort for protocol metrics] (https://github.com/yahoo/fili/issues/1047)
+    * Created an antlr grammar for Sorts
+    * Fixed integration issues with Havings
+    * Injected dynamic sort building into `BardConfigResources` and `DataApiServlet`
+    * Changed `TestBinderFactory` to support protocol metric tests.
+    * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
+
 ### Added:
 - [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
    * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
