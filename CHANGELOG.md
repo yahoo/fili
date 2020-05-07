@@ -7,7 +7,11 @@ pull request if there was one.
 
 Current
 -------
-### Fixed: 
+### Fixed:
+
+- [Fix: Metric Generator must be bound before loader.load() generates metrics](https://github.com/yahoo/fili/issues/1048)
+    * `AbstractBinderFactory` changed so that MetricBinding happens after metric generation not before.
+ 
 - [Fix bug where metric binding hook has set to private so it couldn't be overriden](https://github.com/yahoo/fili/pull/1033)
 - [Adds missing argument to format string in a rarely used error path in RequestLog](https://github.com/yahoo/fili/pull/1031)
 - [Fix bug where some Aggregation model types were incorrectly reporting precision](https://github.com/yahoo/fili/pull/1017)
