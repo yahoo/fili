@@ -297,13 +297,14 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
+                // Protocol Stuff
+                bindMetricGenerator(this);
+
                 // Build the configuration loader and load configuration
                 loader = getConfigurationLoader();
                 loader.load();
                 bindDictionaries(this);
                 bind(buildHavingGenerator(loader)).to(HavingGenerator.class);
-                // Protocol Stuff
-                bindMetricGenerator(this);
 
                 // Bind the request mappers
                 bindRequestMappers(this);
