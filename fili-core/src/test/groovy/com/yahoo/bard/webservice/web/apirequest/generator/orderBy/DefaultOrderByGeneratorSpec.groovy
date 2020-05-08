@@ -129,10 +129,10 @@ class DefaultOrderByGeneratorSpec extends Specification {
         e.getMessage() == errorMessage
 
         where:
-        sortString               | errorMessage                                       | rule
-        "xyz|desc,dateTime|desc" | DATE_TIME_SORT_VALUE_INVALID.format()              | "Date time follows other fields"
-        "xyz|desc,unknown"       | SORT_METRICS_NOT_IN_QUERY_FORMAT.format(["unknown"]) | "No selected metric"
-        "xyz|desc,noTDQ"         | SORT_METRICS_NOT_SORTABLE_FORMAT.format(["noTDQ"])   | "No fact column to sort"
+        sortString               | errorMessage                                                        | rule
+        "xyz|desc,dateTime|desc" | DATE_TIME_SORT_VALUE_INVALID.format()                               | "Date time follows other fields"
+        "xyz|desc,unknown"       | SORT_METRICS_NOT_IN_QUERY_FORMAT.format(["unknown"], "[xyz,noTDQ]") | "No selected metric"
+        "xyz|desc,noTDQ"         | SORT_METRICS_NOT_SORTABLE_FORMAT.format(["noTDQ"])                  | "No fact column to sort"
     }
 
     @Unroll

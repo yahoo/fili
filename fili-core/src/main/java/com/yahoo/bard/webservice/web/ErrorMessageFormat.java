@@ -69,7 +69,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     INVALID_NUMBER_OF_FIELDS("fields length shouldn't be more then one for Sketch Estimate operation %s"),
 
     SORT_DIRECTION_INVALID("Sort direction '%s' is invalid."),
-    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression."),
+    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression." +
+            "Possible matches: '%s'"),
     SORT_METRICS_NOT_SORTABLE_FORMAT("Sorting not possible on metric(s) '%s'."),
     SORT_METRICS_UNDEFINED("Metric(s) in sort expression '%s' do not exist."),
 
