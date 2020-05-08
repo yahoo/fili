@@ -120,9 +120,12 @@ public class DefaultOrderByGenerator implements Generator<List<OrderByColumn>>, 
                 .map(OrderByColumn::getDimension)
                 .collect(Collectors.toList());
 
+        String matchableMetrics = selectedMetrics.stream()
+                .map(LogicalMetric::getName)
+                .collect(Collectors.joining(",", "[", "]"));
         if (!unknownColumns.isEmpty()) {
-            LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unknownColumns));
-            throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unknownColumns.toString()));
+            LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unknownColumns, matchableMetrics));
+            throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unknownColumns, matchableMetrics));
         }
 
         // If any metrics being sorted on don't have a query column (an odd edge case, but it happens)

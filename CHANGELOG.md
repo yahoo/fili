@@ -90,6 +90,10 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+
+- [Error handling on sort of protocol metrics could be better](https://github.com/yahoo/fili/issues/1050)
+   * Added available metrics to help with debugging mismatch between sort metric parameters and selected metrics.
+   
 - [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
    * `WithPostAggregations` interface is almost a direct rename from `WithFields`
      - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`
