@@ -38,7 +38,7 @@ class AntlrOrderByGeneratorSpec extends Specification {
     LinkedHashSet<Dimension> selectedDimensions = [sampleDimension] as LinkedHashSet
 
     def setup() {
-        templateDruidQuery.getMetricField(_) >> xyzAggregation
+        templateDruidQuery = new TemplateDruidQuery([xyzAggregation], [])
         // Create the test web container to test the resources
         DimensionField dimensionField = Mock(DimensionField)
         sampleDimension.getKey() >> dimensionField
