@@ -24,7 +24,7 @@ public class SortsListListener extends SortsBaseListener {
     @Override
     public void exitSortsComponent(final SortsParser.SortsComponentContext ctx) {
         String columnName = ctx.metric().getText();
-        String orderValue = ctx.orderingValue().getText();
+        String orderValue = ctx.orderingValue() != null ? ctx.orderingValue().getText() : null;
         OrderByColumn sort = new OrderByColumn(columnName, orderValue);
         results.add(sort);
     }

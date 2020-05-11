@@ -9,6 +9,11 @@ Current
 -------
 ### Fixed:
 
+
+- [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)
+    * Moved binding out of `Sorts.g4` grammar and into `SortDirection`.
+    * Duplicated OrderByGeneratorSpec tests and added protocol metric tests.
+
 - [Fix: Metric Generator must be bound before loader.load() generates metrics](https://github.com/yahoo/fili/issues/1048)
     * `AbstractBinderFactory` changed so that MetricBinding happens after metric generation not before.
  

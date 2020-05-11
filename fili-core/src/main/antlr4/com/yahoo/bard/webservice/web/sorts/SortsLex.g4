@@ -25,15 +25,7 @@ fragment SCIENTIFIC_NOTATION : [eE] ;
 fragment SIGNS : [+\-] ;
 
 PIPE : '|';
-ASC : 'asc'
-    | 'ASC'
-    | 'ascending'
-    | 'ASCENDING' ;
 
-DESC : 'desc'
-    | 'DESC'
-    | 'descending'
-    | 'DESCENDING' ;
 
 mode VALUE_MODE;
 
