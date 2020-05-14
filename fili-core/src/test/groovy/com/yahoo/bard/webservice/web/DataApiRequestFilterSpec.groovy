@@ -123,7 +123,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS.format('unknown', 'locale')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|unknown-in[US,India],locale.id-eq[5]",
+                "locale|unknown-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -143,7 +143,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE.format('locale', 'name')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|id-in[US,India],locale.id-eq[5]",
+                "locale|id-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -158,7 +158,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format('undefined')
         when:
         FilterBinders.instance.generateFilters(
-                "undefined|id-in[US,India],locale.id-eq[5]",
+                "undefined|id-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -205,7 +205,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_OPERATOR_INVALID.format('in:')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|id-in:[US,India],locale.id-eq[5]",
+                "locale|id-in:[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
