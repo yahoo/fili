@@ -59,7 +59,8 @@ public class FilterBinders {
     /**
      * Constructor.
      *
-     * @param filterFactory factory class for ApiFilters.
+     * @param filterParser  Parser to convert string representations of filters into {@link FilterDefinition} instances.
+     * @param filterFactory  Factory class for ApiFilters.
      */
     @Inject
     public FilterBinders(
