@@ -41,6 +41,10 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add the ability for the metrics grammar to handle quoted metric values](https://github.com/yahoo/fili/pull/1055)
+   * Metric values can be quoted with single quotes (`'`), and can contain any value.
+     - Literal single quotes must be escaped with a backslash (`\`)
+
 - [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
    * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
      and replaces it with a different `MetricField` instance. 
@@ -90,6 +94,11 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)
+   * Filter parsing strategies are created by implementing the `ApiFilterParser` interface
+   * This interface can be bound to a specific instance in the client's `AbstractBinderFactory` extension, which will
+     then be injected into FilterBinders instances.
+
 - [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
    * `WithPostAggregations` interface is almost a direct rename from `WithFields`
      - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`
