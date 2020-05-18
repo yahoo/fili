@@ -11,7 +11,6 @@ import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestExceptio
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -134,7 +133,7 @@ public class OrderByColumn {
         }
 
         try {
-            return SortDirection.valueOf(sortDirection.toUpperCase(Locale.ENGLISH));
+            return SortDirection.valueByName(sortDirection);
         } catch (IllegalArgumentException ignored) {
             throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirection));
         }

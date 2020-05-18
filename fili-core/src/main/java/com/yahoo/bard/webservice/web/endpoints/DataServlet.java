@@ -663,4 +663,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     public ApiRequestLogicalMetricBinder getMetricBinder() {
         return metricBinder;
     }
+
+    @Override
+    public LegacyGenerator<List<OrderByColumn>> getOrderByGenerator() {
+        return orderByGenerator;
+    }
 }

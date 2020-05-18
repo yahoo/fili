@@ -24,6 +24,5 @@ paramValue
     ;
 
 orderingValue
-    : ASC
-    | DESC
+    : ID
     ;

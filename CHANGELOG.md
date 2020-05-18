@@ -9,6 +9,11 @@ Current
 -------
 ### Fixed:
 
+
+- [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)
+    * Moved binding out of `Sorts.g4` grammar and into `SortDirection`.
+    * Duplicated OrderByGeneratorSpec tests and added protocol metric tests.
+
 - [Fix: Metric Generator must be bound before loader.load() generates metrics](https://github.com/yahoo/fili/issues/1048)
     * `AbstractBinderFactory` changed so that MetricBinding happens after metric generation not before.
  
@@ -94,11 +99,15 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+
 - [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)
    * Filter parsing strategies are created by implementing the `ApiFilterParser` interface
    * This interface can be bound to a specific instance in the client's `AbstractBinderFactory` extension, which will
      then be injected into FilterBinders instances.
 
+- [Error handling on sort of protocol metrics could be better](https://github.com/yahoo/fili/issues/1050)
+   * Added available metrics to help with debugging mismatch between sort metric parameters and selected metrics.
+   
 - [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
    * `WithPostAggregations` interface is almost a direct rename from `WithFields`
      - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`

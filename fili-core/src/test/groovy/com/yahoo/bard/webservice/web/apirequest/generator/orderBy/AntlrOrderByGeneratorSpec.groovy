@@ -27,7 +27,7 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class DefaultOrderByGeneratorSpec extends Specification {
+class AntlrOrderByGeneratorSpec extends Specification {
 
     TemplateDruidQuery templateDruidQuery = Mock(TemplateDruidQuery)
     Aggregation xyzAggregation = new LongSumAggregation("xyz", "foo")
@@ -38,7 +38,7 @@ class DefaultOrderByGeneratorSpec extends Specification {
     LinkedHashSet<Dimension> selectedDimensions = [sampleDimension] as LinkedHashSet
 
     def setup() {
-        templateDruidQuery.getMetricField(_) >> xyzAggregation
+        templateDruidQuery = new TemplateDruidQuery([xyzAggregation], [])
         // Create the test web container to test the resources
         DimensionField dimensionField = Mock(DimensionField)
         sampleDimension.getKey() >> dimensionField
@@ -49,12 +49,13 @@ class DefaultOrderByGeneratorSpec extends Specification {
     def cleanup() {
     }
 
-    DefaultOrderByGenerator generator = new DefaultOrderByGenerator()
+    AntlrOrderByGenerator generator = new AntlrOrderByGenerator()
 
     @Unroll
     def "Bind parses the metric string #sortString correctly"() {
         setup:
-        List<String> metricFields = ["xyz", "abc", "dateTimexyz", "dinga"]
+        List<String> metricFields = ["xyz", "abc", "dateTimexyz", "dinga",
+                                     "xyz(param1=foo,param2=bar)", "xyz(param1=foo2,param2=bar2)"]
         Set<LogicalMetric> logicalMetrics = metricFields.collect() {
             Aggregation a = new LongSumAggregation(it, it + "_field")
             TemplateDruidQuery tdq = new TemplateDruidQuery([a], [])
@@ -106,6 +107,13 @@ class DefaultOrderByGeneratorSpec extends Specification {
         "xyz|desc,dateTime|DESC,abc|ASC" | [["xyz", DESC, METRIC], ["dateTime", DESC, TIME], ["abc", ASC, METRIC]]
         "xyz|DESC,dateTime,abc|DESC"     | [["xyz", DESC, METRIC], ["dateTime", DESC, TIME], ["abc", DESC, METRIC]]
         "xyz|DESC,dateTime"              | [["xyz", DESC, METRIC], ["dateTime", DESC, TIME]]
+
+        // protocol metric
+        "xyz(param1=foo,param2=bar)"            | [["xyz(param1=foo,param2=bar)", DESC, METRIC]]
+        "xyz(param1=foo,param2=bar)|descending" | [["xyz(param1=foo,param2=bar)", DESC, METRIC]]
+        "xyz(param1=foo,param2=bar)|ASC,xyz(param1=foo2,param2=bar2)|DESC"        | [["xyz(param1=foo,param2=bar)", ASC, METRIC],
+                                                                                    ["xyz(param1=foo2,param2=bar2)", DESC, METRIC]]
+        "xyz(param1=foo,param2=bar)|ASCENDING"  | [["xyz(param1=foo,param2=bar)", ASC, METRIC]]
     }
 
     @Unroll
