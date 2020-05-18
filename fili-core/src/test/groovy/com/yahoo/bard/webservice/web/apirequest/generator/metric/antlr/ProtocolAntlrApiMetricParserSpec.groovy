@@ -48,12 +48,14 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
         "five( bar=baz, one=three )" | "five"  | ["bar": "baz", "one": "three"]
         "six(bar=baz, 1=2)"          | "six"   | ["bar": "baz", "1": "2"]
         "seven(bar=baz , 1=7)"       | "seven" | ["bar": "baz", "1": "7"]
+        "eight(bar|baz=bazz, 1=7)"   | "eight" | ["bar|baz": "bazz", "1": "7"]
 
         // quoted values
         "eight( bar='baz', one='two' )" | "eight"  | ["bar": "baz", "one": "two"]
         "nine(bar='baz',1=2)"           | "nine"   | ["bar": "baz", "1": "2"]
         "ten(bar='|,😃,|')"             | "ten"    | ["bar": "|,😃,|"]
+        "ten(bar='\\\\'')"              | "ten"    | ["bar": "\\'"]
         "eleven(bar='')"                | "eleven" | ["bar": ""]
-        "twelve(bar='hello\\'world')"   | "twelve" | ["bar": "hello'world"]
+        "twelve(bar='\"hello\"\\'world')"   | "twelve" | ["bar": "\"hello\"'world"]
     }
 }

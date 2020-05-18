@@ -45,9 +45,10 @@ class RegexApiFilterParserSpec extends Specification {
     @Shared FilterDefinition expectedDefinition1 = new FilterDefinition(dimension1Name, "id", "in", ["1"])
     @Shared FilterDefinition expectedDefinition2 = new FilterDefinition(dimension1Name, "id", "in", ["1", "2", "345"])
     @Shared FilterDefinition expectedDefinition3 = new FilterDefinition(dimension1Name, "id", "in", ["1", "3|4|5"])
-    @Shared FilterDefinition expectedDefinition4 = new FilterDefinition(dimension1Name, "id", "in", ["1", "3(😃)5"])
-    @Shared FilterDefinition expectedDefinition5 = new FilterDefinition(dimension1Name, "id", "in", ["dimensionOne|id-in"])
-    @Shared FilterDefinition expectedDefinition6 = new FilterDefinition(dimension1Name, "_id_", "00_in", ["1", "2"])
+    @Shared FilterDefinition expectedDefinition4 = new FilterDefinition(dimension1Name, "id", "in", ["1", "34,5"])
+    @Shared FilterDefinition expectedDefinition5 = new FilterDefinition(dimension1Name, "id", "in", ["1", "3(😃)5"])
+    @Shared FilterDefinition expectedDefinition6 = new FilterDefinition(dimension1Name, "id", "in", ["dimensionOne|id-in"])
+    @Shared FilterDefinition expectedDefinition7 = new FilterDefinition(dimension1Name, "_id_", "00_in", ["1", "2"])
 
     @Unroll
     def "Parser produces correct value for single filter"() {
@@ -62,9 +63,10 @@ class RegexApiFilterParserSpec extends Specification {
         "dimensionOne|id-in[1]"                  || [expectedDefinition1]
         "dimensionOne|id-in[1,2,345]"            || [expectedDefinition2]
         "dimensionOne|id-in[1,3|4|5]"            || [expectedDefinition3]
-        "dimensionOne|id-in[1,3(😃)5]"           || [expectedDefinition4]
-        "dimensionOne|id-in[dimensionOne|id-in]" || [expectedDefinition5]
-        "dimensionOne|_id_-00_in[1,2]"           || [expectedDefinition6]
+        "dimensionOne|id-in[1,\"34,5\"]"          || [expectedDefinition4]
+        "dimensionOne|id-in[1,3(😃)5]"           || [expectedDefinition5]
+        "dimensionOne|id-in[dimensionOne|id-in]" || [expectedDefinition6]
+        "dimensionOne|_id_-00_in[1,2]"           || [expectedDefinition7]
     }
 
     def "Multiple filters are all parsed properly"() {
@@ -100,6 +102,7 @@ class RegexApiFilterParserSpec extends Specification {
         "dimension|id-in[filterValue]]"                     | _
         "dimension|id-in[filterVa]lue"                      | _
         "dimension|id-in[]"                                 | _
+        "dimension|id-in[],]"                               | _
         "dimension|id-in[filterVa],dim|id-in[filterVal]]"   | _
     }
 }

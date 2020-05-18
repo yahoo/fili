@@ -22,7 +22,7 @@ WS : [ \t\n\r]+ -> skip;
 mode PARAM_MODE;
 WS0 : [ \t\n\r]+ -> skip;
 COMMA0 : ',' -> type(COMMA);
-ID2 : [a-zA-Z0-9_]+ -> type(ID);
+ID2 : [a-zA-Z0-9_|]+ -> type(ID);
 EQUALS: '=' -> pushMode(VALUE_MODE);
 
 CLOSE_PARENTHESIS2 : ')' -> type(CLOSE_PARENTHESIS), popMode ;

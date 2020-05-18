@@ -45,8 +45,6 @@ public class RegexApiFilterParser implements ApiFilterParser {
             throw new IllegalArgumentException("Single filter parsing requires the input to be non-null and non-empty");
         }
 
-        FilterDefinition filterDefinition = new FilterDefinition();
-
         Matcher matcher = API_FILTER_PATTERN.matcher(singleFilter);
 
         if (!matcher.matches()) {
@@ -54,25 +52,23 @@ public class RegexApiFilterParser implements ApiFilterParser {
             throw new BadFilterException(FILTER_INVALID.format(singleFilter));
         }
 
-        filterDefinition.setDimensionName(matcher.group(1));
-        filterDefinition.setFieldName(matcher.group(2));
-        filterDefinition.setOperationName(matcher.group(3));
         // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-        List<String> values;
         try {
-            values = new ArrayList<>(
-                    FilterTokenizer.split(
-                            matcher.group(4)
-                                    .replaceAll("\\[", "")
-                                    .replaceAll("\\]", "")
-                                    .trim()
+            return new FilterDefinition(
+                    matcher.group(1),
+                    matcher.group(2),
+                    matcher.group(3),
+                    new ArrayList<>(
+                            FilterTokenizer.split(
+                                    matcher.group(4)
+                                            .replaceAll("\\[", "")
+                                            .replaceAll("\\]", "")
+                                            .trim())
                     )
             );
         } catch (IllegalArgumentException e) {
             throw new BadFilterException(FILTER_ERROR.logFormat(singleFilter, e.getMessage()), e);
         }
-        filterDefinition.setValues(values);
-        return filterDefinition;
     }
 
     @Override

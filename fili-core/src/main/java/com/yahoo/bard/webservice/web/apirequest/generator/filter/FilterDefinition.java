@@ -10,17 +10,10 @@ import java.util.List;
  */
 public class FilterDefinition {
 
-    private String dimensionName;
-    private String fieldName;
-    private String operationName;
-    private List<String> values;
-
-    /**
-     * Constructor. Nothing initialized, generally useful for building a filter over multiple calls.
-     */
-    public FilterDefinition() {
-        values = new ArrayList<>();
-    }
+    private final String dimensionName;
+    private final String fieldName;
+    private final String operationName;
+    private final List<String> values;
 
     /**
      * Copy constructor.
@@ -43,32 +36,16 @@ public class FilterDefinition {
         this.values = new ArrayList<>(values);
     }
 
-    public void setDimensionName(String dimensionName) {
-        this.dimensionName = dimensionName;
-    }
-
     public String getDimensionName() {
         return dimensionName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
     }
 
     public String getFieldName() {
         return fieldName;
     }
 
-    public void setOperationName(String operationName) {
-        this.operationName = operationName;
-    }
-
     public String getOperationName() {
         return operationName;
-    }
-
-    public void setValues(List<String> values) {
-        this.values = new ArrayList<>(values);
     }
 
     public List<String> getValues() {
