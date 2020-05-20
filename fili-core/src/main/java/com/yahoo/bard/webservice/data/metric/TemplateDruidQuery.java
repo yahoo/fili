@@ -55,6 +55,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     private final ZonelessTimeGrain timeGrain;
     private final Set<Aggregation> aggregations;
     private final Set<PostAggregation> postAggregations;
+    private final Set<Dimension> dimensions;
     private final int depth;
 
     /**
@@ -65,7 +66,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @param postAggregations  post aggregations for this query template
      */
     public TemplateDruidQuery(Collection<Aggregation> aggregations, Collection<PostAggregation> postAggregations) {
-        this(aggregations, postAggregations, null, (ZonelessTimeGrain) null);
+        this(aggregations, postAggregations, null, (ZonelessTimeGrain) null, Collections.emptySet());
     }
 
     /**
@@ -80,7 +81,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             ZonelessTimeGrain timeGrain
     ) {
-        this(aggregations, postAggregations, null, timeGrain);
+        this(aggregations, postAggregations, null, timeGrain, Collections.emptySet());
     }
 
     /**
@@ -95,7 +96,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             TemplateDruidQuery nestedQuery
     ) {
-        this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null);
+        this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null, Collections.emptySet());
     }
 
     /**
@@ -112,11 +113,32 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             TemplateDruidQuery nestedQuery,
             ZonelessTimeGrain timeGrain
     ) {
+        this(aggregations, postAggregations, nestedQuery, timeGrain, Collections.emptySet());
+    }
+
+
+    /**
+     * Template Query constructor for a nested template query with a bound time grain.
+     *
+     * @param aggregations  aggregations for this query template
+     * @param postAggregations  post aggregations for this query template
+     * @param nestedQuery  A query which this query uses as a data source
+     * @param timeGrain  The time grain constraint on the query if any
+     * @param dimensions  The Dimensions on TDQ
+     */
+    public TemplateDruidQuery(
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            TemplateDruidQuery nestedQuery,
+            ZonelessTimeGrain timeGrain,
+            Collection<Dimension>  dimensions
+    ) {
         // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
         this.aggregations = Collections.unmodifiableSet(new LinkedHashSet<>(aggregations));
         this.postAggregations = Collections.unmodifiableSet(new LinkedHashSet<>(postAggregations));
         this.nestedQuery = nestedQuery;
         this.timeGrain = timeGrain;
+        this.dimensions = Collections.unmodifiableSet(new LinkedHashSet<>(dimensions));
 
         // Check for duplicate field names
         Set<String> nameCollisions = getNameCollisions(aggregations, postAggregations);
@@ -170,18 +192,23 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         // Create the inner query.
         TemplateDruidQuery innerQuery;
         if (isNested()) {
-            innerQuery = new TemplateDruidQuery(innerAggregations, Collections.emptySet(), nestedQuery, null);
+            innerQuery = new TemplateDruidQuery(innerAggregations,
+                    Collections.emptySet(),
+                    nestedQuery,
+                    null,
+                    Collections.emptySet());
         } else {
             innerQuery = new TemplateDruidQuery(
                     innerAggregations,
                     Collections.emptySet(),
                     null,
-                    null
+                    null,
+                    Collections.emptySet()
             );
         }
 
         // Create the outer query, floating the post aggregations upward
-        return new TemplateDruidQuery(outerAggregations, postAggregations, innerQuery, timeGrain);
+        return new TemplateDruidQuery(outerAggregations, postAggregations, innerQuery, timeGrain, dimensions);
     }
 
     /**
@@ -229,11 +256,15 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         TemplateDruidQuery mergedNested = self.isNested() ?
                 self.nestedQuery.merge(sibling.getInnerQuery().get())
                 : null;
+        // Merge Dimension sets
+        Set<Dimension> mergedDimensions = new LinkedHashSet<>(self.getDimensions());
+        mergedDimensions.addAll(sibling.getDimensions());
         return new TemplateDruidQuery(
                 mergedAggregations,
                 mergedPostAggregations,
                 mergedNested,
-                mergedGrain
+                mergedGrain,
+                mergedDimensions
         );
     }
 
@@ -359,7 +390,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
 
     @Override
     public Collection<Dimension> getDimensions() {
-        return Collections.emptySet();
+        return dimensions;
     }
 
     @Override
@@ -526,7 +557,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     @Override
     public TemplateDruidQuery withAggregations(Collection<Aggregation> newAggregations) {
-        return new TemplateDruidQuery(newAggregations, postAggregations, nestedQuery, timeGrain);
+        return new TemplateDruidQuery(newAggregations, postAggregations, nestedQuery, timeGrain, dimensions);
     }
 
     /**
@@ -539,7 +570,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withPostAggregations(Collection<PostAggregation> newPostAggregations) {
-        return new TemplateDruidQuery(aggregations, newPostAggregations, nestedQuery, timeGrain);
+        return new TemplateDruidQuery(aggregations, newPostAggregations, nestedQuery, timeGrain, dimensions);
     }
 
     /**
@@ -552,7 +583,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withInnerQuery(TemplateDruidQuery newNestedQuery) {
-        return new TemplateDruidQuery(aggregations, postAggregations, newNestedQuery, timeGrain);
+        return new TemplateDruidQuery(aggregations, postAggregations, newNestedQuery, timeGrain, dimensions);
     }
 
     /**
@@ -565,7 +596,20 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withGranularity(ZonelessTimeGrain newTimeGrain) {
-        return new TemplateDruidQuery(aggregations, postAggregations, nestedQuery, newTimeGrain);
+        return new TemplateDruidQuery(aggregations, postAggregations, nestedQuery, newTimeGrain, dimensions);
+    }
+
+    /**
+     * Makes a copy of the template query and any sub query(s), changing dimensions set.
+     * <p>
+     * Everything is a shallow copy.
+     *
+     * @param dimensionList  The Dimensions to replace with in the copy
+     *
+     * @return copy of the query
+     */
+    public TemplateDruidQuery withDimensions(Collection<Dimension> dimensionList) {
+        return new TemplateDruidQuery(aggregations, postAggregations, nestedQuery, timeGrain, dimensionList);
     }
 
     @Override
@@ -627,11 +671,12 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 Objects.equals(aggregations, that.aggregations) &&
                         Objects.equals(postAggregations, that.postAggregations) &&
                         Objects.equals(nestedQuery, that.nestedQuery) &&
-                        Objects.equals(timeGrain, that.timeGrain);
+                        Objects.equals(timeGrain, that.timeGrain) &&
+                        Objects.equals(dimensions, that.dimensions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(aggregations, postAggregations, nestedQuery, timeGrain);
+        return Objects.hash(aggregations, postAggregations, nestedQuery, timeGrain, dimensions);
     }
 }
