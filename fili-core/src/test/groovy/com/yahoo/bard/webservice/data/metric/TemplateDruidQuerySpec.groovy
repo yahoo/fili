@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.druid.model.AggregationExternalNode
 import com.yahoo.bard.webservice.druid.druid.model.PostAggregationExternalNode
 import com.yahoo.bard.webservice.druid.druid.model.WithMetricFieldInternalNode
@@ -468,5 +469,46 @@ class TemplateDruidQuerySpec extends Specification {
         ArithmeticPostAggregation resultArithmeticPa = result.getPostAggregations()
                 .find { it -> it.getName() == arithmeticPostAggFromAliasName}
         resultArithmeticPa.getPostAggregations() == [arithmeticPostAggOperand1, resultAliasPa] as List
+    }
+
+    def "Simple tests by passing static dimensions while building TDQ"() {
+        setup:
+        Dimension dim1 = Mock(Dimension)
+        Dimension dim2 = Mock(Dimension)
+        Set<Aggregation> aggs = []
+        Set<PostAggregation> postAggs = []
+        TemplateDruidQuery tdq
+
+        when: "pass static dimensions to TDQ"
+        tdq = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim1]);
+
+        then:
+        tdq.getDimensions().contains(dim1)
+
+        when: "Test withDimensions"
+        TemplateDruidQuery tdqTestDimensions = tdq.withDimensions([dim2])
+
+        then:
+        tdqTestDimensions.getDimensions() == [dim2] as Set
+
+        when: "Make sure dimensions are preserved on merge"
+        TemplateDruidQuery tdqMerge = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim2]);
+
+        then:
+        tdq.merge(tdqMerge).getDimensions() == [dim1, dim2] as Set && tdq.merge(tdqMerge).getDimensions().size() == 2
+
+        when: "duplicate dimensions on merge"
+        TemplateDruidQuery tdqDuplicateDims = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim1]);
+
+        then:
+        tdq.merge(tdqDuplicateDims).getDimensions() == [dim1] as Set && tdq.merge(tdqDuplicateDims).getDimensions().size() == 1
+
+        when: "Nested queries"
+        TemplateDruidQuery q1 = new TemplateDruidQuery(aggs, postAggs, null, null, [dim1])
+        TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, q1, null, [dim2])
+
+        then:
+        q2.getInnermostQuery().getDimensions() == [dim1] as Set
+        q2.getDimensions() == [dim2] as Set
     }
 }
