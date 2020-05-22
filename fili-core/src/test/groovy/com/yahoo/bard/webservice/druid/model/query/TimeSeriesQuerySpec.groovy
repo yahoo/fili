@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
+import com.yahoo.bard.webservice.data.dimension.Dimension
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -36,6 +38,10 @@ class TimeSeriesQuerySpec extends Specification {
         DateTimeZone.setDefault(currentTZ)
     }
 
+    Dimension dimension1
+    Dimension dimension2
+    Dimension dimension3
+
     TimeSeriesQuery defaultQuery(Map vars) {
         vars.dataSource = vars.dataSource ?: new TableDataSource(TableTestUtils.buildTable(
                 "table_name",
@@ -59,6 +65,7 @@ class TimeSeriesQuerySpec extends Specification {
         new TimeSeriesQuery(
                 vars.dataSource,
                 vars.granularity,
+                vars.dimensions,
                 vars.filter,
                 vars.aggregations,
                 vars.postAggregations,
@@ -72,6 +79,7 @@ class TimeSeriesQuerySpec extends Specification {
         vars.queryType = vars.queryType ?: "timeseries"
         vars.dataSource = vars.dataSource ?: '{"type":"table","name":"table_name"}'
         vars.granularity = vars.granularity ?: '{"type":"period","period":"P1D"}'
+        vars.dimensions = vars.dimensions ?: "[]"
         vars.filter = vars.filter ? /"filter": $vars.filter,/ : ""
         vars.context = vars.context ?
                 /{"queryId":"dummy100",$vars.context}/ :
@@ -103,5 +111,30 @@ class TimeSeriesQuerySpec extends Specification {
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
+    }
+
+    def "check dimensions serialization"() {
+        //no dimensions
+        List<Dimension> dimensions1 = []
+        //single dimension
+        List<Dimension> dimensions2 = [dimension1]
+        //multiple dimension
+        List<Dimension> dimensions3 = [dimension1, dimension2, dimension3]
+
+        TimeSeriesQuery dq1 = defaultQuery(dimensions: dimensions1)
+        TimeSeriesQuery dq2 = defaultQuery(dimensions: dimensions2)
+        TimeSeriesQuery dq3 = defaultQuery(dimensions: dimensions3)
+        String druidQuery1 = MAPPER.writeValueAsString(dq1)
+        String druidQuery2 = MAPPER.writeValueAsString(dq2)
+        String druidQuery3 = MAPPER.writeValueAsString(dq3)
+
+        String queryString1 = stringQuery(default: true)
+        String queryString2 = stringQuery(dimensions: """[{"dimension":"locale","outputName":"apiLocale","type":"default"}]""")
+        String queryString3 = stringQuery(dimensions: """[{"dimension":"locale","outputName":"apiLocale","type":"default"},{"dimension":"platform","outputName":"apiPlatform","type":"default"},{"dimension":"product","outputName":"apiProduct","type":"default"}]""")
+
+        expect:
+        GroovyTestUtils.compareJson(druidQuery1, queryString1)
+        GroovyTestUtils.compareJson(druidQuery2, queryString2)
+        GroovyTestUtils.compareJson(druidQuery3, queryString3)
     }
 }

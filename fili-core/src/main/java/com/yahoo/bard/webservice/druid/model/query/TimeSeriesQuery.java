@@ -90,7 +90,7 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
     }
 
     /**
-     * Constructor.
+     * Constructor with dimensions.
      *
      * @param dataSource  The datasource
      * @param granularity  The granularity

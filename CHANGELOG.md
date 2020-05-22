@@ -30,6 +30,10 @@ Current
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
 ### Added:
+- [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
+   * Add a new constructor to `TimeSeriesQuery` with `dimensions` parameter.
+       - Allows for creating a `TimeSeriesQuery` using `withDimensions`.
+   
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming
