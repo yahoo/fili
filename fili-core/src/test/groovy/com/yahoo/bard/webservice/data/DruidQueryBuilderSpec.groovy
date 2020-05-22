@@ -16,7 +16,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
-import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
@@ -457,6 +456,42 @@ class DruidQueryBuilderSpec extends Specification {
         DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"       | "cannot"  | false
     }
 
+    def "Query has all Dims from input request as well as metrics TDQs (if any)"() {
+        setup:
+        TemplateDruidQuery tdqTest = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
+        TemplateDruidQuery tdqWithDims = tdqTest.withDimensions([resources.d5] as Collection<Dimension>)
+        apiRequest = Mock(DataApiRequest)
+        lm1 = new LogicalMetricImpl(tdqWithDims, new NoOpResultSetMapper(), m1LogicalMetric)
+
+        apiRequest.getTable() >> resources.lt12
+        apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
+        apiRequest.getTimeZone() >> UTC
+        apiRequest.getDimensions() >> ([resources.d1] as Set)
+        ApiFilters apiFilters = new ApiFilters(
+                apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
+        )
+        apiRequest.getApiFilters() >> { apiFilters }
+        apiRequest.withFilters(_) >> {
+            ApiFilters newFilters ->
+                apiFilters = newFilters
+                apiRequest
+        }
+        apiRequest.getLogicalMetrics() >> ([lm1] as Set)
+        apiRequest.getIntervals() >> intervals
+        apiRequest.getTopN() >> Optional.empty()
+        apiRequest.getSorts() >> ([] as Set)
+        apiRequest.getCount() >> Optional.empty()
+
+        when:
+        DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+
+        then:
+        dq?.getDimensions().size() == 2
+        dq?.getDimensions().sort() == [resources.d1, resources.d5].sort() as Collection<Dimension>
+        dq?.queryType == DefaultQueryType.GROUP_BY
+
+    }
+
     @Unroll
     def "TopN maps to druid #query when nDim:#nDims, nesting:#nested, nSorts:#nSorts, topN flag:#flag, havingMap:#havingMap and canOptimize: #canOptimize"() {
         setup:
@@ -510,7 +545,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.optimizeBackendQuery() >> canOptimize
 
-        apiRequest.dimensions >> { nDims > 0 ? [resources.d1] as Set : [] as Set }
+        apiRequest.dimensions >> { (nDims > 0) ? [resources.d1] as Set : [] as Set }
 
         apiRequest.sorts >> {
             nSorts > 0 ?

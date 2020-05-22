@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
@@ -40,6 +41,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -144,13 +146,25 @@ public class DruidQueryBuilder {
 
         Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
+        //Set will have all dimensions from request and metrics tdq.
+        Set<Dimension> dimensionSet = new LinkedHashSet<>(tableFilteredRequest.getDimensions());
+        Set<LogicalMetric> metrics = tableFilteredRequest.getLogicalMetrics();
+
+        // Gather all of the dimensions from metric TDQs
+        for (LogicalMetric metric : metrics) {
+            TemplateDruidQuery query = metric.getTemplateDruidQuery();
+            if (query != null && query.getDimensions().size() > 0) {
+                dimensionSet.addAll(query.getDimensions());
+            }
+        }
+
         return druidTopNMetric != null ?
             buildTopNQuery(
                     template,
                     table,
                     tableFilteredRequest.getGranularity(),
                     tableFilteredRequest.getTimeZone(),
-                    tableFilteredRequest.getDimensions(),
+                    dimensionSet,
                     filter,
                     tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
@@ -170,7 +184,7 @@ public class DruidQueryBuilder {
                         table,
                         tableFilteredRequest.getGranularity(),
                         tableFilteredRequest.getTimeZone(),
-                        tableFilteredRequest.getDimensions(),
+                        dimensionSet,
                         filter,
                         druidHavingBuilder.buildHavings(tableFilteredRequest.getHavings()),
                         tableFilteredRequest.getIntervals(),
