@@ -141,5 +141,9 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
     public TimeSeriesQuery withContext(QueryContext context) {
         return new TimeSeriesQuery(getDataSource(), granularity, filter, aggregations, postAggregations, intervals, context, false);
     }
+
+    public GroupByQuery withDimensions(Collection<Dimension> dimensions) {
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, null, aggregations, postAggregations, intervals, null, context, false);
+    }
     // CHECKSTYLE:ON
 }
