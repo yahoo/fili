@@ -6,7 +6,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_ERROR;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.FILTER_OPERATOR_INVALID;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
@@ -16,26 +15,21 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.util.FilterTokenizer;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.FilterOperation;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,23 +42,10 @@ import javax.validation.constraints.NotNull;
 public class FilterBinders {
     private static final Logger LOG = LoggerFactory.getLogger(FilterBinders.class);
 
-    protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
-    protected static final Pattern API_FILTER_PATTERN =
-            Pattern.compile("([^\\|]+)\\|([^-]+)-([^\\[]+)\\[([^\\]]+)\\]?");
-
     private static FilterBinders instance = new FilterBinders();
 
+    private final ApiFilterParser filterParser;
     private final FilterFactory filterFactory;
-
-    /**
-     * Data object to wrap string models.
-     */
-    public static class FilterDefinition {
-        protected String dimensionName;
-        protected String fieldName;
-        protected String operationName;
-        protected List<String> values;
-    }
 
     /**
      * Constructor.
@@ -72,16 +53,21 @@ public class FilterBinders {
      * Use default FilterFactory.
      */
     public FilterBinders() {
-        this(new FilterFactory());
+        this(new RegexApiFilterParser(), new FilterFactory());
     }
 
     /**
      * Constructor.
      *
-     * @param filterFactory factory class for ApiFilters.
+     * @param filterParser  Parser to convert string representations of filters into {@link FilterDefinition} instances.
+     * @param filterFactory  Factory class for ApiFilters.
      */
     @Inject
-    public FilterBinders(FilterFactory filterFactory) {
+    public FilterBinders(
+            ApiFilterParser filterParser,
+            FilterFactory filterFactory
+    ) {
+        this.filterParser = filterParser;
         this.filterFactory = filterFactory;
     }
 
@@ -92,6 +78,10 @@ public class FilterBinders {
      */
     public FilterFactory getFilterFactory() {
         return filterFactory;
+    }
+
+    public ApiFilterParser getFilterParser() {
+        return filterParser;
     }
 
     /**
@@ -123,10 +113,10 @@ public class FilterBinders {
             }
 
             // split on '],' to get list of filters
-            List<String> apiFilters = Arrays.asList(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN));
-            for (String apiFilter : apiFilters) {
-                ApiFilter newFilter;
-                try {
+            try {
+                List<FilterDefinition> apiFilters = filterParser.parseApiFilterQuery(filterQuery);
+                for (FilterDefinition apiFilter : apiFilters) {
+                    ApiFilter newFilter;
                     newFilter = generateApiFilter(apiFilter, dimensionDictionary);
 
                     // If there is a logical table and the filter is not part of it, throw exception.
@@ -140,26 +130,26 @@ public class FilterBinders {
                         throw new BadApiRequestException(errorMessage, new BadFilterException(errorMessage));
                     }
 
-                } catch (BadFilterException filterException) {
-                    throw new BadApiRequestException(filterException.getMessage(), filterException);
-                }
 
-                if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
-                    FilterOperation filterOperation = newFilter.getOperation();
-                    if (filterOperation.equals(DefaultFilterOperation.startswith)
-                            || filterOperation.equals(DefaultFilterOperation.contains)
-                            ) {
-                        throw new BadApiRequestException(
-                                ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
-                        );
+                    if (!BardFeatureFlag.DATA_FILTER_SUBSTRING_OPERATIONS.isOn()) {
+                        FilterOperation filterOperation = newFilter.getOperation();
+                        if (filterOperation.equals(DefaultFilterOperation.startswith)
+                                || filterOperation.equals(DefaultFilterOperation.contains)
+                                ) {
+                            throw new BadApiRequestException(
+                                    ErrorMessageFormat.FILTER_SUBSTRING_OPERATIONS_DISABLED.format()
+                            );
 
+                        }
                     }
+                    Dimension dim = newFilter.getDimension();
+                    if (!generated.containsKey(dim)) {
+                        generated.put(dim, new LinkedHashSet<>());
+                    }
+                    generated.get(dim).add(newFilter);
                 }
-                Dimension dim = newFilter.getDimension();
-                if (!generated.containsKey(dim)) {
-                    generated.put(dim, new LinkedHashSet<>());
-                }
-                generated.get(dim).add(newFilter);
+            } catch (IllegalArgumentException | BadFilterException e) {
+                throw new BadApiRequestException(e.getMessage(), e);
             }
             LOG.trace("Generated map of filters: {}", generated);
 
@@ -178,60 +168,74 @@ public class FilterBinders {
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * valid.
      */
-    public ApiFilter generateApiFilter(
-            @NotNull String filterQuery,
-            DimensionDictionary dimensionDictionary
-    ) throws BadFilterException {
-        LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterQuery, dimensionDictionary);
-        /*  url filter query pattern:  (dimension name)|(field name)-(operation)[?(value or comma separated values)]?
-         *
-         *  e.g.    locale|name-in[US,India]
-         *          locale|id-eq[5]
-         *
-         *          dimension name: locale      locale
-         *          field name:     name        id
-         *          operation:      in          eq
-         *          values:         US,India    5
-         */
-        Dimension dimension;
-        DimensionField dimensionField;
-        FilterOperation operation;
-        FilterDefinition definition;
-
+    public ApiFilter generateApiFilter(@NotNull String filterQuery, DimensionDictionary dimensionDictionary)
+            throws BadFilterException {
         try {
-            definition = buildFilterDefinition(filterQuery);
-
-            // Extract filter dimension form the filter query.
-            dimension = dimensionDictionary.findByApiName(definition.dimensionName);
-
-            // If no filter dimension is found in dimension dictionary throw exception.
-            if (dimension == null) {
-                LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(definition.dimensionName));
-                throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(definition.dimensionName));
-            }
-
-            try {
-                dimensionField = dimension.getFieldByName(definition.fieldName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(definition.fieldName, definition.dimensionName));
-                throw new BadFilterException(
-                        FILTER_FIELD_NOT_IN_DIMENSIONS.format(definition.fieldName, definition.dimensionName)
-                );
-            }
-
-            try {
-                operation = DefaultFilterOperation.fromString(definition.operationName);
-            } catch (IllegalArgumentException ignored) {
-                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(definition.operationName));
-                throw new BadFilterException(FILTER_OPERATOR_INVALID.format(definition.operationName));
-            }
-
-
+            return generateApiFilter(buildFilterDefinition(filterQuery), dimensionDictionary);
         } catch (IllegalArgumentException e) {
             LOG.debug(FILTER_ERROR.logFormat(filterQuery, e.getMessage()), e);
             throw new BadFilterException(FILTER_ERROR.format(filterQuery, e.getMessage()), e);
         }
-        return filterFactory.buildFilter(dimension, dimensionField, operation, definition.values);
+    }
+
+    /**
+     * Parses the URL filter Query and generates the ApiFilter object.
+     *
+     * @param filterDefinition  Parsed components of a single API query in String form
+     * @param dimensionDictionary  cache containing all the valid dimension objects.
+     *
+     * @return the ApiFilter
+     * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
+     * valid.
+     */
+    public ApiFilter generateApiFilter(
+            @NotNull FilterDefinition filterDefinition,
+            DimensionDictionary dimensionDictionary
+    ) throws BadFilterException {
+        LOG.trace("Filter query: {}\n\n DimensionDictionary: {}", filterDefinition, dimensionDictionary);
+
+        Dimension dimension;
+        DimensionField dimensionField;
+        FilterOperation operation;
+
+        try {
+            // Extract filter dimension form the filter query.
+            dimension = dimensionDictionary.findByApiName(filterDefinition.getDimensionName());
+
+            // If no filter dimension is found in dimension dictionary throw exception.
+            if (dimension == null) {
+                LOG.debug(FILTER_DIMENSION_UNDEFINED.logFormat(filterDefinition.getDimensionName()));
+                throw new BadFilterException(FILTER_DIMENSION_UNDEFINED.format(filterDefinition.getDimensionName()));
+            }
+
+            try {
+                dimensionField = dimension.getFieldByName(filterDefinition.getFieldName());
+            } catch (IllegalArgumentException ignored) {
+                LOG.debug(FILTER_FIELD_NOT_IN_DIMENSIONS.logFormat(
+                        filterDefinition.getFieldName(),
+                        filterDefinition.getFieldName())
+                );
+                throw new BadFilterException(
+                        FILTER_FIELD_NOT_IN_DIMENSIONS.format(
+                                filterDefinition.getFieldName(),
+                                filterDefinition.getDimensionName()
+                        )
+                );
+            }
+
+            try {
+                operation = DefaultFilterOperation.fromString(filterDefinition.getOperationName());
+            } catch (IllegalArgumentException ignored) {
+                LOG.debug(FILTER_OPERATOR_INVALID.logFormat(filterDefinition.getOperationName()));
+                throw new BadFilterException(FILTER_OPERATOR_INVALID.format(filterDefinition.getOperationName()));
+            }
+
+
+        } catch (IllegalArgumentException e) {
+            LOG.debug(FILTER_ERROR.logFormat(filterDefinition, e.getMessage()), e);
+            throw new BadFilterException(FILTER_ERROR.format(filterDefinition, e.getMessage()), e);
+        }
+        return filterFactory.buildFilter(dimension, dimensionField, operation, filterDefinition.getValues());
     }
 
     /**
@@ -244,30 +248,8 @@ public class FilterBinders {
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * valid.
      */
-    public FilterDefinition buildFilterDefinition(String filterQuery) throws BadFilterException {
-        FilterDefinition filterDefinition = new FilterDefinition();
-
-        Matcher matcher = API_FILTER_PATTERN.matcher(filterQuery);
-
-        if (!matcher.matches()) {
-            LOG.debug(FILTER_INVALID.logFormat(filterQuery));
-            throw new BadFilterException(FILTER_INVALID.format(filterQuery));
-        }
-
-        filterDefinition.dimensionName = matcher.group(1);
-        filterDefinition.fieldName = matcher.group(2);
-        filterDefinition.operationName = matcher.group(3);
-        // replaceAll takes care of any leading ['s or trailing ]'s which might mess up this.values
-        List<String> values = new ArrayList<>(
-                FilterTokenizer.split(
-                        matcher.group(4)
-                                .replaceAll("\\[", "")
-                                .replaceAll("\\]", "")
-                                .trim()
-                )
-        );
-        filterDefinition.values = values;
-        return filterDefinition;
+    public FilterDefinition buildFilterDefinition(@NotNull String filterQuery) throws BadFilterException {
+        return filterParser.parseSingleApiFilterQuery(filterQuery);
     }
 
     /**

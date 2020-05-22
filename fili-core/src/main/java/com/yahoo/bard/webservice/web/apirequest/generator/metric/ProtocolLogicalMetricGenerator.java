@@ -132,7 +132,11 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
             if (result instanceof ProtocolMetric) {
                 result = protocolChain.applyProtocols(generatedMetricInfo, metric, baseLogicalMetric);
             }
-            metrics.add(result.withLogicalMetricInfo(generatedMetricInfo));
+            // if result is unchanged
+            if (result == baseLogicalMetric) {
+                result = result.withLogicalMetricInfo(generatedMetricInfo);
+            }
+            metrics.add(result);
         }
 
         if (!invalidMetricNames.isEmpty()) {

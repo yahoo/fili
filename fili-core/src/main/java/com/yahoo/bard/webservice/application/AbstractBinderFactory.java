@@ -121,9 +121,11 @@ import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
 import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.ApiFilterParser;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.RegexApiFilterParser;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
@@ -380,6 +382,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bindExceptionHandlers(this);
 
                 bind(buildDateTimeFormatter()).to(DateTimeFormatter.class);
+
+                bind(buildApiFilterParser()).to(ApiFilterParser.class);
 
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
@@ -1405,6 +1409,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                                 DateTimeFormat.forPattern("yyyy").getParser()
                         }
                 ).toFormatter().withZone(DateTimeZone.forID("UTC"));
+    }
+
+    protected ApiFilterParser buildApiFilterParser() {
+        return new RegexApiFilterParser();
     }
 
     @Override
