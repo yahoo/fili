@@ -89,45 +89,6 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
         );
     }
 
-    /**
-     * Constructor with dimensions.
-     *
-     * @param dataSource  The datasource
-     * @param granularity  The granularity
-     * @param dimensions The dimensions
-     * @param filter  The filter
-     * @param aggregations  The aggregations
-     * @param postAggregations  The post-aggregations
-     * @param intervals  The intervals
-     * @param context  The context
-     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
-     * of the context.
-     */
-    public TimeSeriesQuery(
-            DataSource dataSource,
-            Granularity granularity,
-            Collection<Dimension> dimensions,
-            Filter filter,
-            Collection<Aggregation> aggregations,
-            Collection<PostAggregation> postAggregations,
-            Collection<Interval> intervals,
-            QueryContext context,
-            boolean incrementQueryId
-    ) {
-        super(
-                DefaultQueryType.TIMESERIES,
-                dataSource,
-                granularity,
-                dimensions,
-                filter,
-                aggregations,
-                postAggregations,
-                intervals,
-                context,
-                incrementQueryId
-        );
-    }
-
     //This method is overridden just to redefine its JSON scope
     @JsonIgnore
     @Override
@@ -181,8 +142,8 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
         return new TimeSeriesQuery(getDataSource(), granularity, filter, aggregations, postAggregations, intervals, context, false);
     }
 
-    public TimeSeriesQuery withDimensions(Collection<Dimension> dimensions) {
-        return new TimeSeriesQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, false);
+    public GroupByQuery withDimensions(Collection<Dimension> dimensions) {
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, null, aggregations, postAggregations, intervals, null, context, false);
     }
     // CHECKSTYLE:ON
 }

@@ -47,8 +47,8 @@ Current
 
 ### Added:
 - [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
-   * Add a new constructor to `TimeSeriesQuery` with `dimensions` parameter.
-       - Allows for creating a `TimeSeriesQuery` using `withDimensions`.
+   * Add `withDimensions` to `TimeSeriesQuery` with `dimensions` parameter.
+       - Allows for creating a `GroupByQuery` from a `TimeSeriesQuery`.
        
 - [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
    * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
