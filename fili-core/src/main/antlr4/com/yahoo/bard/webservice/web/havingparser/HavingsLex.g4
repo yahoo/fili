@@ -5,7 +5,7 @@ options { }
 tokens { OPERATOR, PARAMETER, KEY, VALUE, HAVING_VALUE }
 
 // Reused from metric
-OPEN_PARENTHESIS : '(' -> pushMode(PARAN_MODE);
+OPEN_PARENTHESIS : '(' -> pushMode(PARAM_MODE);
 CLOSE_PARENTHESIS : ')' ;
 COMMA : ','
         | ', ';
@@ -21,7 +21,7 @@ ID : [a-zA-Z0-9_]+;
 
 OPEN_BRACKET : '[' -> pushMode(HAVING_VALUE_MODE);
 // Having Operators
-mode PARAN_MODE;
+mode PARAM_MODE;
 COMMA0 : (',' | ', ') -> type(COMMA);
 WS0 : [ \t\n\r]+ -> skip;
 ID2 : [a-zA-Z0-9_]+ -> type(ID);
