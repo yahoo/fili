@@ -156,7 +156,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         //The number of Filtered Aggregations should be  number of aggs * number of filters
         aggregations.size() == 4
         aggregation instanceof FilteredAggregation
-        setOperationPostAggregation.fields == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
+        setOperationPostAggregation.postAggregations == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
     }
 
     def "replacePostAggregation replaces the filedAccesors of foo postAgg with intersection of its Filtered Aggregators"(){
@@ -169,7 +169,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         ThetaSketchSetOperationPostAggregation setOperationPostAggregation = replacedPostAgg.field
 
         expect:
-        setOperationPostAggregation.getFields() == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
+        setOperationPostAggregation.getPostAggregations() == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
     }
 
     def "getFilteredAggregation returns a set of filteredAggregations for a given aggregation and Filter object"(){
@@ -230,7 +230,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
 
         then:
-        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
+        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK' with grain 'day'."
         Exception e = thrown(BadApiRequestException)
         e.message == expectedMessage
 

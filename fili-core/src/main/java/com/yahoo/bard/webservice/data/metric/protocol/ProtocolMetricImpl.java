@@ -75,6 +75,22 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
         return protocolSupport;
     }
 
+    /**
+     * All subclasses of {@code ProtocolMetricImpl} MUST override this method and return an instance of the subclassed
+     * type. Inheriting this implementation on subclasses will cause the subclass typing to be lost!
+     *
+     * @inheritDocs
+     */
+    @Override
+    public ProtocolMetric withLogicalMetricInfo(LogicalMetricInfo info) {
+        return new ProtocolMetricImpl(
+                info,
+                renameTemplateDruidQuery(info.getName()),
+                renameResultSetMapper(info.getName()),
+                getProtocolSupport()
+        );
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }

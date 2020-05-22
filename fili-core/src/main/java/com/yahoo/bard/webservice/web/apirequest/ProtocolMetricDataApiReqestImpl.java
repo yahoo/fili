@@ -234,6 +234,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
 
             LinkedHashSet<LogicalMetric> generated = metricBinder.generateLogicalMetrics(
                     apiMetricExpression,
+                    this.getGranularity(),
                     metricDictionary
             );
 

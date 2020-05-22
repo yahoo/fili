@@ -219,7 +219,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Metric not in logical table fails"() {
-        String message = METRICS_NOT_IN_TABLE.format("[limbs]", "shapes")
+        String message = METRICS_NOT_IN_TABLE.format("[limbs]", "shapes", "day")
 
         String jsonFailure =
             """{
@@ -416,7 +416,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Bad sort metric fails"() {
-        String message = SORT_METRICS_UNDEFINED.format("[bad, worse]")
+        String message = SORT_METRICS_NOT_IN_QUERY_FORMAT.format("[bad, worse]", "[height]")
 
         String jsonFailure =
                 """{"status":400,
@@ -466,7 +466,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Sort metric not in query fails"() {
-        String message = SORT_METRICS_NOT_IN_QUERY_FORMAT.format("[width]")
+        String message = SORT_METRICS_NOT_IN_QUERY_FORMAT.format("[width]", "[height]")
 
         String jsonFailure =
                 """{"status":400,

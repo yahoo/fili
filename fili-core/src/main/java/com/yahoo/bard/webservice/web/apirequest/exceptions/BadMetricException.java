@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest.exceptions;
 /**
  * Bad having exception is an exception encountered when the having object cannot be built.
  */
-public class BadMetricException extends Exception {
+public class BadMetricException extends BadApiRequestException {
 
     /**
      * Constructor.

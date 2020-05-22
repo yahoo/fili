@@ -52,7 +52,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "Required parameter metrics is missing or empty. Use 'metrics=METRICNAME1,METRICNAME2' in the query string."
     ),
     METRICS_UNDEFINED("Metric(s) '%s' do not exist."),
-    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s'."),
+    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s' with grain '%s'."),
     DUPLICATE_METRICS_IN_API_REQUEST(
             "Duplicate metric(s) are not allowed in the API request even if one is filtered and the other is " +
                     "unfiltered. Duplicate metric(s) are '%s'."
@@ -69,7 +69,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     INVALID_NUMBER_OF_FIELDS("fields length shouldn't be more then one for Sketch Estimate operation %s"),
 
     SORT_DIRECTION_INVALID("Sort direction '%s' is invalid."),
-    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression."),
+    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression." +
+            "Possible matches: '%s'"),
     SORT_METRICS_NOT_SORTABLE_FORMAT("Sorting not possible on metric(s) '%s'."),
     SORT_METRICS_UNDEFINED("Metric(s) in sort expression '%s' do not exist."),
 
@@ -144,6 +145,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     UNABLE_TO_FIND_DIMENSION_FROM_DICTIONARY("Unable to find dimension from Dimension dictionary for the name: %s"),
 
     METRIC_INVALID_WITH_DETAIL("Metric expression '%s' is invalid. (%s)"),
+
+    SORT_INVALID_WITH_DETAIL("Sort expression '%s' is invalid. (%s)"),
 
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),

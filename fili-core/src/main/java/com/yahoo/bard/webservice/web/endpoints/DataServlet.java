@@ -26,6 +26,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.exception.DataExceptionHandler;
@@ -42,6 +43,7 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
@@ -118,6 +120,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     private final DateTimeFormatter dateTimeFormatter;
 
     private final ApiRequestLogicalMetricBinder metricBinder;
+    private final LegacyGenerator<List<OrderByColumn>> orderByGenerator;
 
     private final GranularityParser granularityParser;
 
@@ -140,7 +143,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
     /**
      * Constructor.
-     *
      * @param resourceDictionaries  Dictionary holder
      * @param druidQueryBuilder  A builder for converting API Requests into Druid Queries
      * @param templateDruidQueryMerger  A helper to merge TemplateDruidQueries together
@@ -156,14 +158,15 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
      * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard processes
      * @param httpResponseMaker  The factory for building HTTP responses
-     * that a query has been completed and its results stored in the
+* that a query has been completed and its results stored in the
      * @param formatResolver  The formatResolver for determining correct response format
      * @param dataApiRequestFactory A factory to build dataApiRequests
-     * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
+* {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
      * @param dateTimeFormatter  date time formatter
      * @param metricBinder  A binder to build logical metrics
+     * @param orderByGenerator  A factory to bind and validate sort clauses
      */
     @Inject
     public DataServlet(
@@ -187,7 +190,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             ResponseProcessorFactory responseProcessorFactory,
             DataExceptionHandler exceptionHandler,
             DateTimeFormatter dateTimeFormatter,
-            ApiRequestLogicalMetricBinder metricBinder
+            ApiRequestLogicalMetricBinder metricBinder,
+            @Named(DataApiRequest.ORDER_BY_GENERATOR_NAMESPACE) LegacyGenerator<List<OrderByColumn>> orderByGenerator
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -211,6 +215,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.exceptionHandler = exceptionHandler;
         this.dateTimeFormatter = dateTimeFormatter;
         this.metricBinder = metricBinder;
+        this.orderByGenerator = orderByGenerator;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -657,5 +662,10 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public ApiRequestLogicalMetricBinder getMetricBinder() {
         return metricBinder;
+    }
+
+    @Override
+    public LegacyGenerator<List<OrderByColumn>> getOrderByGenerator() {
+        return orderByGenerator;
     }
 }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.generator.having;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.ApiHaving;
 
 import java.util.Map;
@@ -14,4 +15,12 @@ import java.util.function.BiFunction;
  */
 public interface HavingGenerator extends BiFunction<String, Set<LogicalMetric>, Map<LogicalMetric, Set<ApiHaving>>> {
 
+    /**
+     * Rebuild this having generator with a custom metric dictionary.
+     *
+     * @param metricDictionary  An alternate dictionary.
+     *
+     * @return  A replacement metric dictionary
+     */
+    HavingGenerator withMetricDictionary(MetricDictionary metricDictionary);
 }

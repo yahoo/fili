@@ -6,42 +6,56 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregat
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.WithMetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * Model representing lookups of aggregation values.
+ * Model representing a lookup from a different MetricField.
  */
-public class FieldAccessorPostAggregation extends PostAggregation {
+public class FieldAccessorPostAggregation extends PostAggregation implements WithMetricField {
 
     private static final Logger LOG = LoggerFactory.getLogger(FieldAccessorPostAggregation.class);
 
     private final MetricField metricField;
+    private final List<Aggregation> asAggregation;
+    private final List<PostAggregation> asPostAggregation;
 
     /**
      * Constructor.
      *
-     * @param aggregation  Aggregation to access
+     * @param metricField  MetricField to access
      */
-    public FieldAccessorPostAggregation(@NotNull MetricField aggregation) {
+    public FieldAccessorPostAggregation(@NotNull MetricField metricField) {
         super(FIELD_ACCESS, null);
 
         // Check for null aggregation
-        if (aggregation == null) {
-            String message = "Aggregation cannot be null";
+        if (metricField == null) {
+            String message = "Field cannot be null";
             LOG.error(message);
             throw new IllegalArgumentException(message);
         }
 
-        this.metricField = aggregation;
+        this.metricField = metricField;
+        this.asAggregation = new ArrayList<>();
+        this.asPostAggregation = new ArrayList<>();
+        if (metricField instanceof Aggregation) {
+            this.asAggregation.add((Aggregation) metricField);
+        }
+        if (metricField instanceof PostAggregation) {
+            this.asPostAggregation.add((PostAggregation) metricField);
+        }
     }
 
     @Override
@@ -54,11 +68,15 @@ public class FieldAccessorPostAggregation extends PostAggregation {
      *
      * @return An aggregation or post-aggregation referenced by this post aggregator.
      */
-    @JsonIgnore
+    @Override
     public MetricField getMetricField() {
         return metricField;
     }
 
+    @Override
+    public WithMetricField withMetricField(MetricField field) {
+        return new FieldAccessorPostAggregation(field);
+    }
 
     public String getFieldName() {
         return metricField.getName();

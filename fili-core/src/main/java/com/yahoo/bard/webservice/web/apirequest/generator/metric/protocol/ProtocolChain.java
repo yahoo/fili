@@ -49,7 +49,7 @@ public class ProtocolChain {
     }
 
     /**
-     * Dummy implementation.
+     * Dummy implementation. Result metadata is ALWAYS applied to the input metric, even if no protocol are applied!
      *
      * @param resultMetadata  The metadata for the expected metric
      * @param apiMetric  The metric described in the apiRequest
@@ -65,6 +65,7 @@ public class ProtocolChain {
     )
             throws UnknownProtocolValueException {
         LogicalMetric soFar = fromMetric;
+
         for (Protocol p: protocols) {
             if (! apiMetric.getParameters().containsKey(p.getCoreParameterName()))  {
                 continue;
@@ -74,8 +75,8 @@ public class ProtocolChain {
                 break;
             }
 
-            ProtocolMetric soFarProtocol = (ProtocolMetric) soFar;
-            if (!soFarProtocol.accepts(p.getContractName())) {
+            ProtocolMetric soFarProtocolMetric = (ProtocolMetric) soFar;
+            if (!soFarProtocolMetric.accepts(p.getContractName())) {
                 String message = "Protocol triggering parameter is sent on incompatible protocol.";
                 if (strictValidation) {
                     throw new IllegalArgumentException(message);
@@ -85,7 +86,7 @@ public class ProtocolChain {
                 }
             }
 
-            soFar = soFarProtocol.accept(resultMetadata, p.getContractName(), apiMetric.getParameters());
+            soFar = soFarProtocolMetric.accept(resultMetadata, p.getContractName(), apiMetric.getParameters());
         }
         return soFar;
     }

@@ -7,7 +7,16 @@ pull request if there was one.
 
 Current
 -------
-### Fixed: 
+### Fixed:
+
+
+- [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)
+    * Moved binding out of `Sorts.g4` grammar and into `SortDirection`.
+    * Duplicated OrderByGeneratorSpec tests and added protocol metric tests.
+
+- [Fix: Metric Generator must be bound before loader.load() generates metrics](https://github.com/yahoo/fili/issues/1048)
+    * `AbstractBinderFactory` changed so that MetricBinding happens after metric generation not before.
+ 
 - [Fix bug where metric binding hook has set to private so it couldn't be overriden](https://github.com/yahoo/fili/pull/1033)
 - [Adds missing argument to format string in a rarely used error path in RequestLog](https://github.com/yahoo/fili/pull/1031)
 - [Fix bug where some Aggregation model types were incorrectly reporting precision](https://github.com/yahoo/fili/pull/1017)
@@ -29,11 +38,43 @@ Current
     * `MetricUnionAvailability` previously did not create a defensive copy of the `availabilitiesToMetricNames` parameter. This has been fixed.   
 - [Upgrades to netty 4.1.42.45.Final to address CVE-2019-20444 and CVE-2019-20445](https://github.com/yahoo/fili/pull/1006)
 
+- [Fixing sort for protocol metrics] (https://github.com/yahoo/fili/issues/1047)
+    * Created an antlr grammar for Sorts
+    * Fixed integration issues with Havings
+    * Injected dynamic sort building into `BardConfigResources` and `DataApiServlet`
+    * Changed `TestBinderFactory` to support protocol metric tests.
+    * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
+
 ### Added:
 - [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
    * Add a new constructor to `TimeSeriesQuery` with `dimensions` parameter.
        - Allows for creating a `TimeSeriesQuery` using `withDimensions`.
-   
+       
+- [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
+   * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
+     and replaces it with a different `MetricField` instance. 
+    - Relies on the new `WithPostAggregations` and `WithMetricField` interfaces to find children on `MetricField` instances 
+
+- [Add interface `RenamableResultSetMapper` to support pointing ResultSetMappers at different columns at query time](https://github.com/yahoo/fili/pull/1044)
+   * All `ResultSetMapper` implementations that are tied to a specific column in the `ResultSet` must implement this interface
+    - This re-pointing functionality is required to support metric renaming
+   * Currently only supports re-pointing at a single column. If multiple column re-point is required this interface must
+     be expanded
+
+- [Add withLogicalMetricInfo to LogicalMetric interface to support metric renaming](https://github.com/yahoo/fili/pull/1038)
+   * Supporting method added to TemplateDruidQuery to rename a target `MetricField`
+   * Default implementation written on existing `LogicalMetric` implementations (such as `LogicalMetricImpl`)
+     - Client subclasses of these implementations MUST override the `withLogicalMetricInfo` method, as the default
+       implementation will NOT return an instance of the client subclass! 
+
+- [Add rename capability to TemplateDruidQuery](https://github.com/yahoo/fili/pull/1038)
+   * Functionality added to support `LogicalMetric` renaming and aliasing
+   * Add ability to rename the output name of `MetricField`s on the `TemplateDruidQuery`
+   * Add method to check if `TemplateDruidQuery` contains MetricField with a given output name  
+
+- [Add __granularity to parameters map for ApiMetric by extracting it from the API query](https://github.com/yahoo/fili/pull/1039)
+    * Add `__granularity` to `parameter` map of `ApiMetric` in `ProtocolLogicalMetricGenerator`
+ 
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming
@@ -58,6 +99,18 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+
+- [Error handling on sort of protocol metrics could be better](https://github.com/yahoo/fili/issues/1050)
+   * Added available metrics to help with debugging mismatch between sort metric parameters and selected metrics.
+   
+- [WithFields interface refactored to WithPostAggregations and WithMetricFields](https://github.com/yahoo/fili/pull/1038)
+   * `WithPostAggregations` interface is almost a direct rename from `WithFields`
+     - Indicates a `MetricField` that can (but does not have to) depend on many `PostAggregations`
+     - Type parameter removed
+   * `WithMetricField` indicates a `MetricField` that depends on exactly 1 `MetricField`
+
+- [Add time grain to error message for metric missing from table errors](https://github.com/yahoo/fili/issues/1041)
+
 - [Made `TimeAverageMetricTransformer` use a delegate for non-match error]()
    * Delegate to a default error handler to support easy chaining.
 

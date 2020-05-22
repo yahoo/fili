@@ -174,7 +174,7 @@ public class ApiHaving {
 
         //Allows us to parse the values in a streamy way without losing information about the first value that
         //fails to parse.
-        Function<String, Double> toNumber = value -> {
+        Function<String, Double> toDouble = value -> {
             try {
                 return Double.parseDouble(value);
             } catch (NumberFormatException ignored) {
@@ -184,7 +184,7 @@ public class ApiHaving {
         };
 
         try {
-            return stringValues.stream().map(toNumber).collect(Collectors.toCollection(LinkedList::new));
+            return stringValues.stream().map(toDouble).collect(Collectors.toCollection(LinkedList::new));
         } catch (NumberFormatException e) {
             LOG.debug(HAVING_NON_NUMERIC.format(e.getMessage()));
             throw new BadHavingException(HAVING_NON_NUMERIC.format(e.getMessage()));

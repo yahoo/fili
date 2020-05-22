@@ -5,6 +5,7 @@ options {
 }
 metrics
     : ( metric ( COMMA metric )* )? EOF;
+
 metric
     : metricName ( OPEN_PARENTHESIS params? CLOSE_PARENTHESIS )?
     ;

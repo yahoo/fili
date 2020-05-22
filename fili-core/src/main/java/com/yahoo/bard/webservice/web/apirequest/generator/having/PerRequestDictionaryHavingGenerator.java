@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.generator.having;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.ApiHaving;
 
 import java.util.Map;
@@ -15,14 +16,14 @@ import java.util.stream.Collectors;
  */
 public class PerRequestDictionaryHavingGenerator implements HavingGenerator {
 
-    private final DefaultHavingApiGenerator havingGenerator;
+    private final HavingGenerator havingGenerator;
 
     /**
      * Constructor.
      *
      * @param havingGenerator  A default having generator to decorate.
      */
-    public PerRequestDictionaryHavingGenerator(DefaultHavingApiGenerator havingGenerator) {
+    public PerRequestDictionaryHavingGenerator(HavingGenerator havingGenerator) {
         this.havingGenerator = havingGenerator;
     }
 
@@ -36,10 +37,17 @@ public class PerRequestDictionaryHavingGenerator implements HavingGenerator {
      */
     @Override
     public Map<LogicalMetric, Set<ApiHaving>> apply(String havingString, Set<LogicalMetric> logicalMetrics) {
+        Map<String, LogicalMetric> metricMap = logicalMetrics.stream()
+                .collect(Collectors.toMap(LogicalMetric::getName, Function.identity()));
+        MetricDictionary metricDictionary = new MetricDictionary();
+        metricDictionary.putAll(metricMap);
         return havingGenerator
-                .withMetricDictionary(
-                        logicalMetrics.stream().collect(Collectors.toMap(LogicalMetric::getName, Function.identity()))
-                )
+                .withMetricDictionary(metricDictionary)
                 .apply(havingString, logicalMetrics);
+    }
+
+    @Override
+    public HavingGenerator withMetricDictionary(MetricDictionary metricDictionary) {
+        return new PerRequestDictionaryHavingGenerator(havingGenerator.withMetricDictionary(metricDictionary));
     }
 }

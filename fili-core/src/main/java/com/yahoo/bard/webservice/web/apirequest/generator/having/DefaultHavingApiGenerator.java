@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.HAVING_METRICS_NO
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.web.ApiHaving;
@@ -32,7 +33,7 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultHavingApiGenerator.class);
     private static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
-    private final Map<String, LogicalMetric> metricDictionary;
+    private final MetricDictionary metricDictionary;
 
     /**
      * Constructor.
@@ -50,7 +51,7 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
      *
      * @param metricDictionary  Dictionary of metrics for generating APIs
      */
-    public DefaultHavingApiGenerator(Map<String, LogicalMetric> metricDictionary) {
+    public DefaultHavingApiGenerator(MetricDictionary metricDictionary) {
         this.metricDictionary = metricDictionary;
     }
 
@@ -116,7 +117,7 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
      *
      * @return  A replacement metric dictionary
      */
-    public HavingGenerator withMetricDictionary(Map<String, LogicalMetric> metricDictionary) {
+    public HavingGenerator withMetricDictionary(MetricDictionary metricDictionary) {
         return new DefaultHavingApiGenerator(metricDictionary);
     }
 }

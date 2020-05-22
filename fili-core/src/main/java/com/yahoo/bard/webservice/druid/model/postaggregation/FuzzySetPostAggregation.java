@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * Model representing post aggregation numeric estimates from sketches.
  */
-public abstract class FuzzySetPostAggregation extends PostAggregation implements WithFields<FuzzySetPostAggregation> {
+public abstract class FuzzySetPostAggregation extends PostAggregation implements WithPostAggregations {
 
     protected final PostAggregation field;
 
@@ -32,14 +32,14 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
     }
 
     @JsonIgnore
-    public PostAggregationType getPostAggregationType() {
-        return getType();
+    @Override
+    public List<PostAggregation> getPostAggregations() {
+        return Collections.singletonList(getField());
     }
 
     @JsonIgnore
-    @Override
-    public List<PostAggregation> getFields() {
-        return Collections.singletonList(this.getField());
+    public PostAggregationType getPostAggregationType() {
+        return getType();
     }
 
     @Override
@@ -53,17 +53,6 @@ public abstract class FuzzySetPostAggregation extends PostAggregation implements
      * @return a new instance with the given field
      */
     public abstract FuzzySetPostAggregation withField(PostAggregation field);
-
-    /**
-     * SketchEstimate converts the sketch into a number. Hence this method always should have one aggregator
-     *
-     * @param fields  List of post aggregation fields
-     *
-     * @return New FuzzySetPostAggregation with provided field and only one aggregator.
-     */
-    @JsonIgnore
-    @Override
-    public abstract FuzzySetPostAggregation withFields(List<PostAggregation> fields);
 
     @Override
     public boolean equals(Object o) {

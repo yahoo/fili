@@ -72,6 +72,7 @@ public abstract class PostAggregation implements MetricField {
      *
      * @return a new instance of this with the given name
      */
+    @Override
     public abstract PostAggregation withName(String name);
 
     @Override
