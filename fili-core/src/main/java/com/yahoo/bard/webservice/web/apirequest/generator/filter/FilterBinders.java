@@ -167,11 +167,7 @@ public class FilterBinders {
      * @return the ApiFilter
      * @throws BadFilterException Exception when filter pattern is not matched or when any of its properties are not
      * valid.
-     *
-     * @deprecated prefer using an {@link ApiFilterParser} to parse filter queries and then use the version of this
-     * method that takes an {@link FilterDefinition}.
      */
-    @Deprecated
     public ApiFilter generateApiFilter(@NotNull String filterQuery, DimensionDictionary dimensionDictionary)
             throws BadFilterException {
         try {
