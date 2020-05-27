@@ -68,6 +68,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
     def "Flag from tag dimension based on lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
         given:
         apiRequest.getDimensions() >> ([resources.d14])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d14])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         when:
@@ -80,6 +81,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
     def "Flag from tag dimension based on *registered* lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
         given:
         apiRequest.getDimensions() >> ([resources.d15])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d15])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         when:
@@ -98,6 +100,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
         when:
         // generate queries
         apiRequest.getDimensions() >> ([resources.d15])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d15])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         DruidAggregationQuery<?> innerQuery = druidQuery.getInnerQuery().orElseThrow({return new IllegalStateException("Query is not nested")})
         DruidAggregationQuery<?> outerQuery = druidQuery

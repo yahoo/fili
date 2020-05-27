@@ -77,7 +77,12 @@ class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSp
                 "type" : "table"
             },
             "dimensions": [
-                "model"
+                "model",
+                {
+                    "dimension":"misc",
+                    "outputName":"other",
+                    "type":"default"
+                }
             ],
             "filter": {
                 "fields": [

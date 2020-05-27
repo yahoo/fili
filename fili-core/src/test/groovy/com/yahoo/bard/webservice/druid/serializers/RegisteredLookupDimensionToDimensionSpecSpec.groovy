@@ -67,6 +67,7 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
     def "Given registered lookup dimension with no lookup serialize using dimension serializer"() {
         given:
         apiRequest.getDimensions() >> ([resources.d13])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d13])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -76,6 +77,7 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
     def "Given registered lookup dimension with one lookup serialize correctly to (lookup) extraction dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d12])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d12])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -85,6 +87,7 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
     def "Given registered lookup dimension with multiple lookups serialize correctly to (cascade) extraction dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d11])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d11])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -94,6 +97,7 @@ class RegisteredLookupDimensionToDimensionSpecSpec extends Specification{
     def "Given registered lookup dimension with nested query, only the inner most dimension serialize to dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d12])
+        apiRequest.getAllReferencedDimensions() >> ([resources.d12])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         String serializedQuery = objectMapper.writeValueAsString(druidQuery)
 

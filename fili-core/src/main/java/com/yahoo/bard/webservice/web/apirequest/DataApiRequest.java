@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -21,6 +22,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
@@ -414,6 +417,23 @@ public interface DataApiRequest extends ApiRequest {
 
     @Deprecated
     DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
+
+    /**
+     * The set of referenced dimensions on this ApiRequest.
+     *
+     * @return a set of dimensions
+     */
+    default Set<Dimension> getAllReferencedDimensions() {
+        return Stream.of(
+                getDimensions(),
+                getApiFilters().keySet(),
+                getLogicalMetrics().stream()
+                        .map(LogicalMetric::getTemplateDruidQuery)
+                        .map(TemplateDruidQuery::getDimensions)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toSet())
+        ).flatMap(Set::stream).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
 
     // CHECKSTYLE:ON
 }

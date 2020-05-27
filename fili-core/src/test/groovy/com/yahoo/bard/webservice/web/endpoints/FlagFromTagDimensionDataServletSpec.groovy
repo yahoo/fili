@@ -198,6 +198,7 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 "type" : "table"
             },
             "dimensions": [
+                "filteringDimension",
                {
                   "dimension":"breed",
                   "outputName":"flagFromTag",

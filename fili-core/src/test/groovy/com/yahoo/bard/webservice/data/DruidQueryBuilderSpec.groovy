@@ -73,7 +73,6 @@ class DruidQueryBuilderSpec extends Specification {
     TopNMetric topNMetric
     DataApiRequest apiRequest
 
-    TemplateDruidQuery tdq = Mock(TemplateDruidQuery)
     LogicalMetric lm1
     static LogicalMetricInfo lmi1 = new LogicalMetricInfo("m1")
     static LogicalMetricInfo lmi2 = new LogicalMetricInfo("m2")
@@ -108,7 +107,6 @@ class DruidQueryBuilderSpec extends Specification {
             [(it.key): filterBinders.generateApiFilter(it.value as String, resources.dimensionDictionary)]
         } ) as Map<String, ApiFilter>
 
-        LogicalMetric metric = new LogicalMetricImpl(tdq, null, (LogicalMetricInfo) lmi1)
         LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(lmi1.name, SortDirection.DESC)]
         limitSpec = new LimitSpec(orderByColumns)
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
@@ -136,6 +134,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
+        apiRequest.getAllReferencedDimensions() >> ([resources.d1] as Set)
 
         // Is this correct? All filters use the same dimension, and since we are not merging with the existing set the result only picks up the last filter.
         ApiFilters apiFilters = new ApiFilters(
@@ -348,6 +347,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     @Unroll
@@ -391,6 +391,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
@@ -409,6 +410,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
@@ -428,6 +430,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     @Unroll
@@ -454,42 +457,6 @@ class DruidQueryBuilderSpec extends Specification {
         DefaultQueryType.GROUP_BY   | [:]                               | "timeSeries" | "is not"   | "cannot"  | false
         DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"       | "can"     | true
         DefaultQueryType.GROUP_BY   | [(resources.m1): [having] as Set] | "groupBy"    | "is"       | "cannot"  | false
-    }
-
-    def "Query has all Dims from input request as well as metrics TDQs (if any)"() {
-        setup:
-        TemplateDruidQuery tdqTest = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
-        TemplateDruidQuery tdqWithDims = tdqTest.withDimensions([resources.d5] as Collection<Dimension>)
-        apiRequest = Mock(DataApiRequest)
-        lm1 = new LogicalMetricImpl(tdqWithDims, new NoOpResultSetMapper(), m1LogicalMetric)
-
-        apiRequest.getTable() >> resources.lt12
-        apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
-        apiRequest.getTimeZone() >> UTC
-        apiRequest.getDimensions() >> ([resources.d1] as Set)
-        ApiFilters apiFilters = new ApiFilters(
-                apiFiltersByName.collectEntries {[(resources.d3): [it.value] as Set]} as Map<Dimension, Set<ApiFilter>>
-        )
-        apiRequest.getApiFilters() >> { apiFilters }
-        apiRequest.withFilters(_) >> {
-            ApiFilters newFilters ->
-                apiFilters = newFilters
-                apiRequest
-        }
-        apiRequest.getLogicalMetrics() >> ([lm1] as Set)
-        apiRequest.getIntervals() >> intervals
-        apiRequest.getTopN() >> Optional.empty()
-        apiRequest.getSorts() >> ([] as Set)
-        apiRequest.getCount() >> Optional.empty()
-
-        when:
-        DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
-
-        then:
-        dq?.getDimensions().size() == 2
-        dq?.getDimensions().sort() == [resources.d1, resources.d5].sort() as Collection<Dimension>
-        dq?.queryType == DefaultQueryType.GROUP_BY
-
     }
 
     @Unroll
