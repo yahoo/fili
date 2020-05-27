@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -429,6 +430,7 @@ public interface DataApiRequest extends ApiRequest {
                 getApiFilters().keySet(),
                 getLogicalMetrics().stream()
                         .map(LogicalMetric::getTemplateDruidQuery)
+                        .filter(Objects::nonNull)
                         .map(TemplateDruidQuery::getDimensions)
                         .flatMap(Collection::stream)
                         .collect(Collectors.toSet())
