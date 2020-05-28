@@ -10,7 +10,7 @@ Current
 ### Fixed:
 
 - [Fix: Add withDimension in TemplateDruidQuery](https://github.com/yahoo/fili/pull/1058)
-    * Ability to add dimension in TemplateDruidQuery on the fly.
+    * Modify a TDQ to add a dependent dimension.
     * Added getAllReferencedDimension in DataApiRequest to get request,metric,filter dimensions and pass it along to query builder.
 
 - [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)

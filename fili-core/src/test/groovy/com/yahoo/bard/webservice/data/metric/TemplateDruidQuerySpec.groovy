@@ -3,12 +3,6 @@
 package com.yahoo.bard.webservice.data.metric
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
-import com.yahoo.bard.webservice.druid.druid.model.AggregationExternalNode
-import com.yahoo.bard.webservice.druid.druid.model.PostAggregationExternalNode
-import com.yahoo.bard.webservice.druid.druid.model.WithMetricFieldInternalNode
-import com.yahoo.bard.webservice.druid.druid.model.WithPostAggsInternalNode
-import com.yahoo.bard.webservice.druid.model.MetricField
-import com.yahoo.bard.webservice.druid.model.WithMetricField
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -21,8 +15,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAliasingPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations
 
+import spock.lang.Shared
 import spock.lang.Specification
 
 class TemplateDruidQuerySpec extends Specification {
@@ -44,6 +38,12 @@ class TemplateDruidQuerySpec extends Specification {
     String thetaSketchPostAggName
     PostAggregation thetaSketchDependentPostAgg
     ThetaSketchEstimatePostAggregation thetaSketchPostAgg
+    @Shared
+    Dimension dim1 = Mock(Dimension)
+    @Shared
+    Dimension dim2 = Mock(Dimension)
+    @Shared
+    Dimension dim3 = Mock(Dimension)
 
     def setup() {
         arithmeticAggOperand1FieldName = "arithmetic_agg_operand_1"
@@ -491,18 +491,6 @@ class TemplateDruidQuerySpec extends Specification {
         then:
         tdqTestDimensions.getDimensions() == [dim2] as Set
 
-        when: "Make sure dimensions are preserved on merge"
-        TemplateDruidQuery tdqMerge = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim2]);
-
-        then:
-        tdq.merge(tdqMerge).getDimensions() == [dim1, dim2] as Set && tdq.merge(tdqMerge).getDimensions().size() == 2
-
-        when: "duplicate dimensions on merge"
-        TemplateDruidQuery tdqDuplicateDims = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim1]);
-
-        then:
-        tdq.merge(tdqDuplicateDims).getDimensions() == [dim1] as Set && tdq.merge(tdqDuplicateDims).getDimensions().size() == 1
-
         when: "Nested queries"
         TemplateDruidQuery q1 = new TemplateDruidQuery(aggs, postAggs, null, null, [dim1])
         TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, q1, null, [dim2])
@@ -510,5 +498,24 @@ class TemplateDruidQuerySpec extends Specification {
         then:
         q2.getInnermostQuery().getDimensions() == [dim1] as Set
         q2.getDimensions() == [dim2] as Set
+    }
+
+    def "When #dimensions1 is merged with #dimensions2 the merged Dimensions are retained: #expectedMergedDims"() {
+        setup:
+        Set<Aggregation> aggs = []
+        Set<PostAggregation> postAggs = []
+        TemplateDruidQuery tdq = new TemplateDruidQuery(aggs, postAggs, null, null, dimensions1);
+
+        TemplateDruidQuery tdqMerge = new TemplateDruidQuery(aggs, postAggs, null, null, dimensions2);
+
+        expect: "Merged dimensions are retained from both TDQs"
+        tdq.merge(tdqMerge).getDimensions() == expectedMergedDims as Set
+
+        where:
+        dimensions1    | dimensions2       | expectedMergedDims
+        [dim1]         | [dim2,dim3]       | [dim1,dim2,dim3]
+        [dim1]         | []                | [dim1]
+        []             | [dim2]            | [dim2]
+        [dim3]         | [dim3]            | [dim3]
     }
 }
