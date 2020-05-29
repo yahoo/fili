@@ -16,7 +16,6 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
-import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
@@ -74,7 +73,6 @@ class DruidQueryBuilderSpec extends Specification {
     TopNMetric topNMetric
     DataApiRequest apiRequest
 
-    TemplateDruidQuery tdq = Mock(TemplateDruidQuery)
     LogicalMetric lm1
     static LogicalMetricInfo lmi1 = new LogicalMetricInfo("m1")
     static LogicalMetricInfo lmi2 = new LogicalMetricInfo("m2")
@@ -109,7 +107,6 @@ class DruidQueryBuilderSpec extends Specification {
             [(it.key): filterBinders.generateApiFilter(it.value as String, resources.dimensionDictionary)]
         } ) as Map<String, ApiFilter>
 
-        LogicalMetric metric = new LogicalMetricImpl(tdq, null, (LogicalMetricInfo) lmi1)
         LinkedHashSet<OrderByColumn> orderByColumns = [new OrderByColumn(lmi1.name, SortDirection.DESC)]
         limitSpec = new LimitSpec(orderByColumns)
         topNMetric = new TopNMetric("m1", SortDirection.DESC)
@@ -137,6 +134,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
+        apiRequest.getAllReferencedDimensions() >> ([resources.d1] as Set)
 
         // Is this correct? All filters use the same dimension, and since we are not merging with the existing set the result only picks up the last filter.
         ApiFilters apiFilters = new ApiFilters(
@@ -349,6 +347,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     @Unroll
@@ -392,6 +391,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
@@ -410,6 +410,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
@@ -429,6 +430,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
+        1 * apiRequest.getAllReferencedDimensions()
     }
 
     @Unroll
@@ -510,7 +512,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.optimizeBackendQuery() >> canOptimize
 
-        apiRequest.dimensions >> { nDims > 0 ? [resources.d1] as Set : [] as Set }
+        apiRequest.dimensions >> { (nDims > 0) ? [resources.d1] as Set : [] as Set }
 
         apiRequest.sorts >> {
             nSorts > 0 ?

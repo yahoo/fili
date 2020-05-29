@@ -2,12 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.metric
 
-import com.yahoo.bard.webservice.druid.druid.model.AggregationExternalNode
-import com.yahoo.bard.webservice.druid.druid.model.PostAggregationExternalNode
-import com.yahoo.bard.webservice.druid.druid.model.WithMetricFieldInternalNode
-import com.yahoo.bard.webservice.druid.druid.model.WithPostAggsInternalNode
-import com.yahoo.bard.webservice.druid.model.MetricField
-import com.yahoo.bard.webservice.druid.model.WithMetricField
+import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.CountAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
@@ -20,8 +15,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAliasingPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.WithPostAggregations
 
+import spock.lang.Shared
 import spock.lang.Specification
 
 class TemplateDruidQuerySpec extends Specification {
@@ -43,6 +38,12 @@ class TemplateDruidQuerySpec extends Specification {
     String thetaSketchPostAggName
     PostAggregation thetaSketchDependentPostAgg
     ThetaSketchEstimatePostAggregation thetaSketchPostAgg
+    @Shared
+    Dimension dim1 = Mock(Dimension)
+    @Shared
+    Dimension dim2 = Mock(Dimension)
+    @Shared
+    Dimension dim3 = Mock(Dimension)
 
     def setup() {
         arithmeticAggOperand1FieldName = "arithmetic_agg_operand_1"
@@ -468,5 +469,53 @@ class TemplateDruidQuerySpec extends Specification {
         ArithmeticPostAggregation resultArithmeticPa = result.getPostAggregations()
                 .find { it -> it.getName() == arithmeticPostAggFromAliasName}
         resultArithmeticPa.getPostAggregations() == [arithmeticPostAggOperand1, resultAliasPa] as List
+    }
+
+    def "Simple tests by passing static dimensions while building TDQ"() {
+        setup:
+        Dimension dim1 = Mock(Dimension)
+        Dimension dim2 = Mock(Dimension)
+        Set<Aggregation> aggs = []
+        Set<PostAggregation> postAggs = []
+        TemplateDruidQuery tdq
+
+        when: "pass static dimensions to TDQ"
+        tdq = new TemplateDruidQuery([arithmeticAggOperand1, arithmeticAggOperand2], [arithmeticPostAggOperand1], null, null, [dim1]);
+
+        then:
+        tdq.getDimensions().contains(dim1)
+
+        when: "Test withDimensions"
+        TemplateDruidQuery tdqTestDimensions = tdq.withDimensions([dim2])
+
+        then:
+        tdqTestDimensions.getDimensions() == [dim2] as Set
+
+        when: "Nested queries"
+        TemplateDruidQuery q1 = new TemplateDruidQuery(aggs, postAggs, null, null, [dim1])
+        TemplateDruidQuery q2 = new TemplateDruidQuery(aggs, postAggs, q1, null, [dim2])
+
+        then:
+        q2.getInnermostQuery().getDimensions() == [dim1] as Set
+        q2.getDimensions() == [dim2] as Set
+    }
+
+    def "When #dimensions1 is merged with #dimensions2 the merged Dimensions are retained: #expectedMergedDims"() {
+        setup:
+        Set<Aggregation> aggs = []
+        Set<PostAggregation> postAggs = []
+        TemplateDruidQuery tdq = new TemplateDruidQuery(aggs, postAggs, null, null, dimensions1);
+
+        TemplateDruidQuery tdqMerge = new TemplateDruidQuery(aggs, postAggs, null, null, dimensions2);
+
+        expect: "Merged dimensions are retained from both TDQs"
+        tdq.merge(tdqMerge).getDimensions() == expectedMergedDims as Set
+
+        where:
+        dimensions1    | dimensions2       | expectedMergedDims
+        [dim1]         | [dim2,dim3]       | [dim1,dim2,dim3]
+        [dim1]         | []                | [dim1]
+        []             | [dim2]            | [dim2]
+        [dim3]         | [dim3]            | [dim3]
     }
 }

@@ -9,6 +9,10 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Add withDimension in TemplateDruidQuery](https://github.com/yahoo/fili/pull/1058)
+    * Modify a TDQ to add a dependent dimension.
+    * Added getAllReferencedDimension in DataApiRequest to get request,metric,filter dimensions and pass it along to query builder.
+
 - [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)
     * Moved binding out of `Sorts.g4` grammar and into `SortDirection`.
     * Duplicated OrderByGeneratorSpec tests and added protocol metric tests.
