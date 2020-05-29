@@ -107,6 +107,7 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Changing parameter value escaping from single quote to paranetheses](https://github.com/yahoo/fili/issues/1061) 
 
 - [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)
    * Filter parsing strategies are created by implementing the `ApiFilterParser` interface
