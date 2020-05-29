@@ -9,7 +9,6 @@ Current
 -------
 ### Fixed:
 
-
 - [Fix: Antlr Sort Parser didn't work.  Wasn't tested.  Patched and Tested](https://github.com/yahoo/fili/issues/1050)
     * Moved binding out of `Sorts.g4` grammar and into `SortDirection`.
     * Duplicated OrderByGeneratorSpec tests and added protocol metric tests.
@@ -104,6 +103,7 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Changing parameter value escaping from single quote to paranetheses](https://github.com/yahoo/fili/issues/1061) 
 
 - [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)
    * Filter parsing strategies are created by implementing the `ApiFilterParser` interface

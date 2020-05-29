@@ -2,7 +2,7 @@ lexer grammar MetricsLex;
 
 options { }
 
-tokens { OPERATOR, PARAMETER, KEY, VALUE, QUOTED_VALUE }
+tokens { OPERATOR, PARAMETER, KEY, VALUE, ESCAPED_VALUE }
 
 // Numeric value fragments
 fragment DOT: '.' ;
@@ -33,9 +33,9 @@ WS1 : [ \t\n\r]+ -> skip;
 COMMA1 : ',' -> type(COMMA) ;
 
 // I don't think you need to escape \, only '
-QUOTED_VALUE : '\'' ( '\\\'' | ~['] )* '\'' -> type(QUOTED_VALUE), popMode;
+ESCAPED_VALUE : '(' ( '\\)' | ~[)] )* ')' -> type(ESCAPED_VALUE), popMode;
 
-UNQUOTED_VALUE : [a-zA-Z0-9_]+ -> type(VALUE), popMode;
+UNESCAPED_VALUE : [a-zA-Z0-9_]+ -> type(VALUE), popMode;
 
 NUMERIC_VALUE : ((  SIGNS? DIGITS+ (DOT DIGITS*)? ( SCIENTIFIC_NOTATION SIGNS? DIGITS+) ?
                 | SIGNS? DOT DIGITS+ ( SCIENTIFIC_NOTATION SIGNS? DIGITS+ )?

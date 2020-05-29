@@ -34,13 +34,14 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
     }
 
     @Unroll
-    def "Parser produces correct value for single metric"() {
+    def "Parser produces #metric and #params from text: #text"() {
         expect:
         generator.apply(text) == [new ApiMetric(text.replace(" ", ""), metric, params)]
 
         where:
         text                         | metric  | params
         // unquoted values
+
         "two ( )"                    | "two"   | [:]
         "one(bar=baz)"               | "one"   | ["bar": "baz"]
         "three"                      | "three" | [:]
@@ -50,12 +51,15 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
         "seven(bar=baz , 1=7)"       | "seven" | ["bar": "baz", "1": "7"]
         "eight(bar|baz=bazz, 1=7)"   | "eight" | ["bar|baz": "bazz", "1": "7"]
 
-        // quoted values
-        "eight( bar='baz', one='two' )" | "eight"  | ["bar": "baz", "one": "two"]
-        "nine(bar='baz',1=2)"           | "nine"   | ["bar": "baz", "1": "2"]
-        "ten(bar='|,😃,|')"             | "ten"    | ["bar": "|,😃,|"]
-        "ten(bar='\\\\'')"              | "ten"    | ["bar": "\\'"]
-        "eleven(bar='')"                | "eleven" | ["bar": ""]
-        "twelve(bar='\"hello\"\\'world')"   | "twelve" | ["bar": "\"hello\"'world"]
+        // escaped values
+        "eight( bar=(baz), one=(two) )" | "eight"  | ["bar": "baz", "one": "two"]
+
+        "nine(bar=(baz),1=2)"           | "nine"   | ["bar": "baz", "1": "2"]
+        "ten(bar=(|,😃,|))"             | "ten"    | ["bar": "|,😃,|"]
+        "ten(bar=(\\\\)))"              | "ten"    | ["bar": "\\)"]
+        "eleven(bar=())"                | "eleven" | ["bar": ""]
+        "twelve(bar=(\"hello\"\\)world))"   | "twelve" | ["bar": "\"hello\")world"]
+
+
     }
 }
