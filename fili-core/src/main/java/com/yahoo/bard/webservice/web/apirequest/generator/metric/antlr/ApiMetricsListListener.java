@@ -22,12 +22,6 @@ public class ApiMetricsListListener extends MetricsBaseListener {
 
     private Exception error = null;
 
-    /**
-     *  Constructor.
-     */
-    public ApiMetricsListListener() {
-    }
-
     @Override
     public void enterMetric(MetricsParser.MetricContext ctx) {
         paramsSoFar = new HashMap<>();
@@ -43,7 +37,21 @@ public class ApiMetricsListListener extends MetricsBaseListener {
 
     @Override
     public void exitParamValue(MetricsParser.ParamValueContext ctx) {
-        paramsSoFar.put(ctx.ID().getText(), ctx.VALUE().getText());
+        // TODO strip quotes if present AND remove any escape characters
+        String value;
+        if (ctx.VALUE() != null) {
+            value = ctx.VALUE().getText();
+        } else {
+            String quotedParamValue = ctx.QUOTED_VALUE().getText();
+            // remove start and end quote
+            quotedParamValue = quotedParamValue.substring(1, quotedParamValue.length() - 1);
+            // TODO replace this with a precompiled pattern
+            quotedParamValue = quotedParamValue.replace("\\'", "'");
+            value = quotedParamValue;
+        }
+        paramsSoFar.put(ctx.ID().getText(), value);
+
+
     }
 
     /**

@@ -23,12 +23,6 @@ import java.util.List;
 public class ProtocolAntlrApiMetricParser implements ApiMetricParser {
     private static final Logger LOG = LoggerFactory.getLogger(ProtocolAntlrApiMetricParser.class);
 
-    /**
-     * Constructor.
-     */
-    public ProtocolAntlrApiMetricParser() {
-    }
-
     @Override
     public List<ApiMetric> apply(
             String metricQuery

@@ -49,6 +49,15 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+
+- [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
+   * Add `withDimensions` to `TimeSeriesQuery` with `dimensions` parameter.
+       - Allows for creating a `GroupByQuery` from a `TimeSeriesQuery`.
+       
+- [Add the ability for the metrics grammar to handle quoted metric values](https://github.com/yahoo/fili/pull/1055)
+   * Metric values can be quoted with single quotes (`'`), and can contain any value.
+     - Literal single quotes must be escaped with a backslash (`\`)
+     
 - [Add `TemplateDruidQueryUtils` class, which contains static utility methods for interacting with `TemplateDruidQuery`](https://github.com/yahoo/fili/pull/1046)
    * Add `repointToNewMetricField` method, which recursively checks a given field for references to a `MetricField` instance
      and replaces it with a different `MetricField` instance. 
@@ -73,7 +82,7 @@ Current
 
 - [Add __granularity to parameters map for ApiMetric by extracting it from the API query](https://github.com/yahoo/fili/pull/1039)
     * Add `__granularity` to `parameter` map of `ApiMetric` in `ProtocolLogicalMetricGenerator`
-    
+ 
 - [Add parameters for output logical metric info to core classes in the ProtocolMetric API](https://github.com/yahoo/fili/pull/1020)
     * Add `outputMetadata` parameter to the `ProtocolMetric` and `MetricTransformer` interfaces
         - Allows for a consistent way to name and track the result metric transformation, instead of deferring the renaming
@@ -98,6 +107,11 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+
+- [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)
+   * Filter parsing strategies are created by implementing the `ApiFilterParser` interface
+   * This interface can be bound to a specific instance in the client's `AbstractBinderFactory` extension, which will
+     then be injected into FilterBinders instances.
 
 - [Error handling on sort of protocol metrics could be better](https://github.com/yahoo/fili/issues/1050)
    * Added available metrics to help with debugging mismatch between sort metric parameters and selected metrics.
