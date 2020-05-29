@@ -20,6 +20,8 @@ public class ApiMetricsListListener extends MetricsBaseListener {
     private Map<String, String> paramsSoFar = new HashMap<>();
     private List<ApiMetric> results = new ArrayList<>();
 
+    private static final String MISSING_VALUE_FORMAT = "No recognized parsed value for parameter %s";
+
     private Exception error = null;
 
     @Override
@@ -37,19 +39,22 @@ public class ApiMetricsListListener extends MetricsBaseListener {
 
     @Override
     public void exitParamValue(MetricsParser.ParamValueContext ctx) {
-        // TODO strip quotes if present AND remove any escape characters
+        // TODO strip escaping characters if present AND remove any escape characters
+        String paramName = ctx.ID().getText();
         String value;
         if (ctx.VALUE() != null) {
             value = ctx.VALUE().getText();
-        } else {
-            String quotedParamValue = ctx.QUOTED_VALUE().getText();
+        } else if (ctx.ESCAPED_VALUE() != null) {
+            String quotedParamValue = ctx.ESCAPED_VALUE().getText();
             // remove start and end quote
             quotedParamValue = quotedParamValue.substring(1, quotedParamValue.length() - 1);
             // TODO replace this with a precompiled pattern
-            quotedParamValue = quotedParamValue.replace("\\'", "'");
+            quotedParamValue = quotedParamValue.replace("\\)", ")");
             value = quotedParamValue;
+        } else {
+            throw new IllegalStateException(String.format(MISSING_VALUE_FORMAT, paramName));
         }
-        paramsSoFar.put(ctx.ID().getText(), value);
+        paramsSoFar.put(paramName, value);
 
 
     }

@@ -16,5 +16,5 @@ params
     : paramValue ( COMMA paramValue )*
     ;
 paramValue
-    : ID EQUALS (VALUE | QUOTED_VALUE)
+    : ID EQUALS (VALUE | ESCAPED_VALUE)
     ;
