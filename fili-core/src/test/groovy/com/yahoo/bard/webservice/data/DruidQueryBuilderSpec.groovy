@@ -134,7 +134,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
         apiRequest.getTimeZone() >> UTC
         apiRequest.getDimensions() >> ([resources.d1] as Set)
-        apiRequest.getAllReferencedDimensions() >> ([resources.d1] as Set)
+        apiRequest.getAllGroupingDimensions() >> ([resources.d1] as Set)
 
         // Is this correct? All filters use the same dimension, and since we are not merging with the existing set the result only picks up the last filter.
         ApiFilters apiFilters = new ApiFilters(
@@ -347,7 +347,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllReferencedDimensions()
+        1 * apiRequest.getAllGroupingDimensions()
     }
 
     @Unroll
@@ -391,7 +391,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllReferencedDimensions()
+        1 * apiRequest.getAllGroupingDimensions()
     }
 
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
@@ -410,7 +410,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllReferencedDimensions()
+        1 * apiRequest.getAllGroupingDimensions()
     }
 
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
@@ -430,7 +430,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllReferencedDimensions()
+        1 * apiRequest.getAllGroupingDimensions()
     }
 
     @Unroll

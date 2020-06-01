@@ -37,7 +37,7 @@ import org.joda.time.Interval
 import spock.lang.Shared
 import spock.lang.Specification
 
-class DataApiRequestGetAllRefDimensionsSpec extends Specification {
+class DataApiRequestGetAllGroupingDimsSpec extends Specification {
         @Shared QueryBuildingTestingResources resources
         @Shared DefaultPhysicalTableResolver resolver
         @Shared DruidQueryBuilder builder
@@ -98,12 +98,12 @@ class DataApiRequestGetAllRefDimensionsSpec extends Specification {
         }
 
 
-        def "Check if getAllReferencedDimensions is called to get all Dims from input request & metric TDQs"() {
+        def "Check if getAllGroupingDimensions is called to get all Dims from input request & metric TDQs"() {
             setup:
             apiRequest = Mock(DataApiRequest)
             //Request Dimensions
             apiRequest.getDimensions() >> ([resources.d1] as Set)
-            apiRequest.getAllReferencedDimensions() >> ([resources.d1, resources.d2] as Set)
+            apiRequest.getAllGroupingDimensions() >> ([resources.d1, resources.d2] as Set)
 
             TemplateDruidQuery tdqTest = new TemplateDruidQuery([] as LinkedHashSet, [] as LinkedHashSet)
             TemplateDruidQuery tdqWithDims = tdqTest.withDimensions([resources.d5] as Collection<Dimension>)
@@ -132,9 +132,8 @@ class DataApiRequestGetAllRefDimensionsSpec extends Specification {
             when:
             DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
-            then: //getAllReferencedDimensions is called for every buildQuery call
+            then: //getAllGroupingDimensions is called for every buildQuery call
             dq?.queryType == DefaultQueryType.GROUP_BY
-            1 * apiRequest.getAllReferencedDimensions()
-
+            1 * apiRequest.getAllGroupingDimensions()
         }
 }

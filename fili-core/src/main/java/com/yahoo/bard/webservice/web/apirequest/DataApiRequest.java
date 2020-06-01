@@ -424,10 +424,9 @@ public interface DataApiRequest extends ApiRequest {
      *
      * @return a set of dimensions
      */
-    default Set<Dimension> getAllReferencedDimensions() {
+    default Set<Dimension> getAllGroupingDimensions() {
         return Stream.of(
                 getDimensions(),
-                getApiFilters().keySet(),
                 getLogicalMetrics().stream()
                         .map(LogicalMetric::getTemplateDruidQuery)
                         .filter(Objects::nonNull)
