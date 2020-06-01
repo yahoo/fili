@@ -72,12 +72,7 @@ class SingleDimensionNoRowsFilterDataServletSpec extends BaseDataServletComponen
                 "type" : "table"
             },
             "dimensions": [
-                "model",
-                {
-                    "dimension": "misc",
-                    "outputName": "other",
-                    "type": "default"
-                }
+                "model"
             ],
             "filter": {
                 "fields": [

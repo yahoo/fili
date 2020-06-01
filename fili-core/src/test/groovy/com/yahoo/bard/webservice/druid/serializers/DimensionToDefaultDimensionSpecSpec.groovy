@@ -66,7 +66,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize to apiName when apiName and physicalName of a dimension is the same"() {
         given:
         apiRequest.getDimensions() >> ([resources.d1])
-        apiRequest.getAllReferencedDimensions() >> ([resources.d1])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d1])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -76,7 +76,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize to dimension spec when the apiName and physicalName of a dimension is different"() {
         given:
         apiRequest.getDimensions() >> ([resources.d3])
-        apiRequest.getAllReferencedDimensions() >> ([resources.d3])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d3])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -86,7 +86,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize dimension of a nested query should only serialize the innermost query's dimension to a dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d3])
-        apiRequest.getAllReferencedDimensions() >> ([resources.d3])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d3])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         String serializedQuery = objectMapper.writeValueAsString(druidQuery)
 
