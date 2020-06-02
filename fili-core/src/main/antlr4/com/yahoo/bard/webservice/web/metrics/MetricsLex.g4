@@ -37,7 +37,4 @@ ESCAPED_VALUE : '(' ( '\\)' | ~[)] )* ')' -> type(ESCAPED_VALUE), popMode;
 
 UNESCAPED_VALUE : [a-zA-Z0-9_]+ -> type(VALUE), popMode;
 
-NUMERIC_VALUE : ((  SIGNS? DIGITS+ (DOT DIGITS*)? ( SCIENTIFIC_NOTATION SIGNS? DIGITS+) ?
-                | SIGNS? DOT DIGITS+ ( SCIENTIFIC_NOTATION SIGNS? DIGITS+ )?
-               ) {setText(getText().trim());} ) -> type(VALUE), popMode;
 

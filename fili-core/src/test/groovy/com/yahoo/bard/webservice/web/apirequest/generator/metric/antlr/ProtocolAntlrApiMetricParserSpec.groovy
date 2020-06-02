@@ -33,10 +33,13 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
         generator.apply(query) == expected
     }
 
+    // Ignorable whitespace used in many expamples.
     @Unroll
     def "Parser produces #metric and #params from text: #text"() {
         expect:
+        //generator.apply(text) == [new ApiMetric(text, metric, params)]
         generator.apply(text) == [new ApiMetric(text.replace(" ", ""), metric, params)]
+
 
         where:
         text                         | metric  | params
@@ -59,7 +62,26 @@ class ProtocolAntlrApiMetricParserSpec extends Specification {
         "ten(bar=(\\\\)))"              | "ten"    | ["bar": "\\)"]
         "eleven(bar=())"                | "eleven" | ["bar": ""]
         "twelve(bar=(\"hello\"\\)world))"   | "twelve" | ["bar": "\"hello\")world"]
+    }
 
+    // We're not injecting ignorable whitespace here because it's hard to frame the test to ignore
+    // whitespace in escaped expression.  Ignorable whitespace is tested above.
+    @Unroll
+    def "Parser correctly escapes whitespace for  #metric and #params from text: #text"() {
+        expect:
+        generator.apply(text) == [new ApiMetric(text, metric, params)]
+        where:
+        text                         | metric  | params
+        // unquoted values
 
+        "two()"                     | "two"   | [:]
+        // escaped values
+        "eight(bar=(ba z),one=(two))" | "eight"  | ["bar": "ba z", "one": "two"]
+
+        "nine(bar=(baz  ),1=2)"           | "nine"   | ["bar": "baz  ", "1": "2"]
+        "ten(bar=(|,😃,|))"             | "ten"    | ["bar": "|,😃,|"]
+        "ten(bar=(\\\\)))"              | "ten"    | ["bar": "\\)"]
+        "eleven(bar=('  '))"                | "eleven" | ["bar": "'  '"]
+        "twelve(bar=(\"hello\"\\)world))"   | "twelve" | ["bar": "\"hello\")world"]
     }
 }
