@@ -9,6 +9,9 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Antlr having syntax extended to more correctly support dynamic metrics](https://github.com/yahoo/fili/issues/1064)
+    * 
+
 - [Fix: Add withDimension in TemplateDruidQuery](https://github.com/yahoo/fili/pull/1058)
     * Modify a TDQ to add a dependent dimension.
     * Added getAllGroupingDimensions in DataApiRequest to get request,metric,filter dimensions and pass it along to query builder.
