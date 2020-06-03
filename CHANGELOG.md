@@ -10,7 +10,7 @@ Current
 ### Fixed:
 
 - [Fix: Antlr having syntax extended to more correctly support dynamic metrics](https://github.com/yahoo/fili/issues/1064)
-    * 
+    * String escaping corrected in Having Grammar
 
 - [Fix: Add withDimension in TemplateDruidQuery](https://github.com/yahoo/fili/pull/1058)
     * Modify a TDQ to add a dependent dimension.
