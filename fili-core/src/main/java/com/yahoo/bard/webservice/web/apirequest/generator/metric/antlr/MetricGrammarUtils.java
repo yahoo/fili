@@ -25,4 +25,13 @@ public class MetricGrammarUtils {
         parser.addErrorListener(ExceptionErrorListener.INSTANCE);
         return parser;
     }
+
+    public static String resolveEscapedString(String escapedString) {
+        String localCopy = escapedString;
+        // remove start and end quote
+        localCopy = localCopy.substring(1, localCopy.length() - 1);
+        // TODO replace this with a precompiled pattern
+        localCopy = localCopy.replace("\\)", ")");
+        return localCopy;
+    }
 }

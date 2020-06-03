@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.HavingOperation;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.antlr.MetricGrammarUtils;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric;
 import com.yahoo.bard.webservice.web.havingparser.HavingsBaseListener;
 import com.yahoo.bard.webservice.web.havingparser.HavingsParser;
@@ -30,9 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ApiHavingsListListener extends HavingsBaseListener {
     private static final Logger LOG = LoggerFactory.getLogger(ApiHavingsListListener.class);
+
+    private static final String MISSING_VALUE_FORMAT = "No recognized parsed value for parameter %s";
 
     private final Map<HavingsParser.HavingComponentContext, ApiHaving> havings = new HashMap<>();
     private final Map<LogicalMetric, Set<ApiHaving>> metricHavingsMap = new LinkedHashMap<>();
@@ -94,7 +98,17 @@ public class ApiHavingsListListener extends HavingsBaseListener {
 
     @Override
     public void enterParamValue(HavingsParser.ParamValueContext ctx) {
-        paramsSoFar.put(ctx.ID().getText(), ctx.VALUE().getText());
+        String id = ctx.ID().getText();
+        String value;
+        if (ctx.VALUE() != null) {
+            value = ctx.VALUE().getText();
+        } else if (ctx.ESCAPED_VALUE() != null) {
+            value = MetricGrammarUtils.resolveEscapedString(ctx.ESCAPED_VALUE().getText());
+        } else {
+            throw new IllegalStateException(String.format(MISSING_VALUE_FORMAT, id));
+        }
+
+        paramsSoFar.put(id, value);
     }
 
     /**
@@ -128,8 +142,12 @@ public class ApiHavingsListListener extends HavingsBaseListener {
                 .findFirst();
 
         if (! requestMetric.isPresent()) {
-            LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(metricApiText));
-            error = new BadHavingException(HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(metricApiText));
+            List<String> metricNames = logicalMetrics.stream()
+                    .map(LogicalMetric::getName)
+                    .collect(Collectors.toList());
+
+            LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(metricApiText, metricNames));
+            error = new BadHavingException(HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(metricApiText, metricNames));
             return null;
         }
 
