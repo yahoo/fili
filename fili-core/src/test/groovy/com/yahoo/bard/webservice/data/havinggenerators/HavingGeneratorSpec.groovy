@@ -236,8 +236,6 @@ class HavingGeneratorSpec extends Specification {
         'metric1-eq[1foo]'            | BadApiRequestException | 'Non-numeric value (multi-value)'
 
         // valid but with whitespace error thrown
-        'metric1 -eq[1]'            | BadApiRequestException   | 'no whitespace between metric and operator'
-        'metric1-noteq [1]'         | BadApiRequestException   | 'no whitespace between operator and values'
         'metric1-noteq[1.  0,-  2]' | BadApiRequestException   | 'no whitespace between value'
 
         // invalid scientifc notations

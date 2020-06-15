@@ -23,8 +23,9 @@ operator
 params
     : paramValue ( COMMA paramValue )*
     ;
+
 paramValue
-    : ID EQUALS VALUE
+    : ID EQUALS (VALUE | ESCAPED_VALUE)
     ;
 
 havingValues

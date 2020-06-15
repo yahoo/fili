@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Generates having objects based on the having query in the api request.
@@ -97,9 +98,12 @@ public class DefaultHavingApiGenerator implements HavingGenerator {
             }
 
             if (!unmatchedMetrics.isEmpty()) {
-                LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
+                List<String> metricNames = logicalMetrics.stream()
+                        .map(LogicalMetric::getName)
+                        .collect(Collectors.toList());
+                LOG.debug(HAVING_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString(), metricNames));
                 throw new BadApiRequestException(
-                    HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString())
+                    HAVING_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString(), metricNames)
                 );
 
             }

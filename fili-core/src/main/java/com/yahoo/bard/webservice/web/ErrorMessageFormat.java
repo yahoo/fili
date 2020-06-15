@@ -114,7 +114,9 @@ public enum ErrorMessageFormat implements MessageFormatter {
     HAVING_ERROR("Having expression '%s' resulted in the following error: %s."),
     HAVING_METRIC_UNDEFINED("Having metric '%s' does not exist."),
     HAVING_METRIC_NOT_IN_TABLE("Having metric '%s' is not supported by the table '%s'."),
-    HAVING_METRICS_NOT_IN_QUERY_FORMAT("Requested having metric(s) '%s' were not selected in the metrics expression."),
+    HAVING_METRICS_NOT_IN_QUERY_FORMAT(
+            "Requested having metric(s) '%s' were not selected in the metrics expression. Perhaps you meant: %s"
+    ),
     HAVING_OPERATOR_INVALID("Having operator '%s' is invalid."),
 
     HAVING_INVALID_WITH_DETAIL("Having expression '%s' is invalid. (%s)"),
