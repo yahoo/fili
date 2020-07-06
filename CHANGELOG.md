@@ -53,6 +53,8 @@ Current
 
 ### Added:
 
+- [Default OWASP checking on bard-core](https://github.com/yahoo/fili/issues/1067)
+
 - [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
    * Add `withDimensions` to `TimeSeriesQuery` with `dimensions` parameter.
        - Allows for creating a `GroupByQuery` from a `TimeSeriesQuery`.
@@ -113,7 +115,7 @@ Current
 
 - [Updated dependency code](https://github.com/yahoo/fili/issues/1066)
    * Removed expired suppressions
-   * Suppressed transitive hibernate validator dependency with OWASP issue
+   * Suppressed transitive hibernate validator dependency with OWASP issue 
  
 - [Changing parameter value escaping from single quote to paranetheses](https://github.com/yahoo/fili/issues/1061) 
 
