@@ -110,6 +110,11 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+
+- [Updated dependency code](https://github.com/yahoo/fili/issues/1066)
+   * Removed expired suppressions
+   * Suppressed transitive hibernate validator dependency with OWASP issue 
+ 
 - [Changing parameter value escaping from single quote to paranetheses](https://github.com/yahoo/fili/issues/1061) 
 
 - [Refactored `FilterBinders` to allow for injection of filter parsing strategies](https://github.com/yahoo/fili/pull/1055)

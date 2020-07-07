@@ -104,6 +104,7 @@
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
         <version.jetty>9.4.20.v20190813</version.jetty>
+        <version.hibernate>5.4.3.Final</version.hibernate>
 
         <version.lombok>1.18.8</version.lombok>
 
@@ -380,6 +381,10 @@
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-validator</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
