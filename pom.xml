@@ -543,6 +543,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${version.groovy}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Lucene -->
