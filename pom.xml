@@ -106,9 +106,6 @@
         <version.jetty>9.4.20.v20190813</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
-        <version.lombok>1.18.8</version.lombok>
-
-
         <version.spring>5.1.13.RELEASE</version.spring>
         <version.groovy>2.4.15</version.groovy>
         <version.jackson>2.10.0</version.jackson>
@@ -1056,7 +1053,6 @@
                     **/*Main.java,
                     **/*Params.java
                 </sonar.coverage.exclusions>
-                <sonar.java.libraries>$HOME/.m2/repository/org/projectlombok/lombok/${version.lombok}/lombok-${version.lombok}.jar</sonar.java.libraries>
             </properties>
             <build>
                 <pluginManagement>
