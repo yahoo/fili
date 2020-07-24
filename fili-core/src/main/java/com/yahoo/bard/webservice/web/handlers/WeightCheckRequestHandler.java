@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -116,9 +118,17 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
             final ResponseProcessor response,
             final long queryRowLimit
     ) {
+        final AtomicReference<RequestContext> contextRef = new AtomicReference<>(context);
+        final AtomicReference<DataApiRequest> requestRef = new AtomicReference<>(request);
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
+        final AtomicReference<ResponseProcessor> responseProcessorRef = new AtomicReference<>(response);
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode jsonResult) {
+                RequestContext requestContext = contextRef.getAndSet(null);
+                DataApiRequest dataApiRequest = requestRef.getAndSet(null);
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
+                ResponseProcessor responseProcessor = responseProcessorRef.getAndSet(null);
                 try {
                     // The result will contain either one result reflecting the row count or
                     // none if the request matches no rows.
@@ -138,7 +148,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                             String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
 
                             LOG.debug(reason);
-                            response.getErrorCallback(druidQuery).dispatch(
+                            responseProcessor.getErrorCallback(query).dispatch(
                                 507, //  Insufficient Storage
                                 reason,
                                 description
@@ -146,10 +156,10 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                             return;
                         }
                     }
-                    next.handleRequest(context, request, druidQuery, response);
+                    next.handleRequest(requestContext, dataApiRequest, query, responseProcessor);
                 } catch (Throwable e) {
                     LOG.info("Exception processing druid call in success", e);
-                    response.getFailureCallback(druidQuery).dispatch(e);
+                    responseProcessor.getFailureCallback(query).dispatch(e);
                 }
             }
         };

@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -76,7 +77,7 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      * ["wikiticker"]
      */
     private void loadAllDatasources() {
-        List<Future<Response>> fullTableResponses = new ArrayList<>();
+        final List<Future<Response>> fullTableResponses = new ArrayList<>();
         Future<Response> responseFuture = queryDruid(rootNode -> {
             if (rootNode.isArray()) {
                 rootNode.forEach(jsonNode -> {
@@ -249,10 +250,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
      */
     private Future<Response> queryDruid(SuccessCallback successCallback, String url) {
         LOG.debug("Fetching {}", url);
+        final AtomicReference<SuccessCallback> successCallbackRef = new AtomicReference<>(successCallback);
         return druidWebService.getJsonObject(
                 rootNode -> {
+                    SuccessCallback successCallback1 = successCallbackRef.getAndSet(null);
                     LOG.debug("Succesfully fetched {}", url);
-                    successCallback.invoke(rootNode);
+                    successCallback1.invoke(rootNode);
                 },
                 (statusCode, reasonPhrase, responseBody) -> {
                     LOG.error("HTTPError {} - {} for {}", statusCode, reasonPhrase, url);

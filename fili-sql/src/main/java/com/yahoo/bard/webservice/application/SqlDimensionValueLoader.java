@@ -34,6 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -104,19 +105,21 @@ public class SqlDimensionValueLoader implements DimensionValueLoader {
      * @return the callback to load dimension values.
      */
     private SuccessCallback buildSuccessCallback(Dimension dimension) {
+        final AtomicReference<Dimension> dimensionAtomicReference = new AtomicReference<>(dimension);
         return rootNode -> {
+            Dimension dimension1 = dimensionAtomicReference.getAndSet(null);
             rootNode.forEach(row -> {
                 JsonNode eventRow = row.get("event");
 
-                String dimensionValue = eventRow.get(dimension.getApiName()).asText();
+                String dimensionValue = eventRow.get(dimension1.getApiName()).asText();
 
-                if (dimension.findDimensionRowByKeyValue(dimensionValue) == null) {
+                if (dimension1.findDimensionRowByKeyValue(dimensionValue) == null) {
                     DimensionRow dimensionRow = dimension.createEmptyDimensionRow(dimensionValue);
-                    updateDimensionWithValue(dimension, dimensionRow);
+                    updateDimensionWithValue(dimension1, dimensionRow);
                 }
             });
 
-            updateDimension(dimension);
+            updateDimension(dimension1);
         };
     }
 

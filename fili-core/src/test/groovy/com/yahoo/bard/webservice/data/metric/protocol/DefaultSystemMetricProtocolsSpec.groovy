@@ -17,14 +17,15 @@ class DefaultSystemMetricProtocolsSpec extends Specification {
     def setup() {
         p.getContractName() >> testProtocol
         backupDictionary = new ProtocolDictionary(protocolDictionary)
-        backupStandardProtocols = DefaultSystemMetricProtocols.STANDARD_PROTOCOLS
+        backupStandardProtocols = new HashSet(DefaultSystemMetricProtocols.STANDARD_PROTOCOLS)
     }
 
     def cleanup() {
         protocolDictionary.clear()
         protocolDictionary.putAll(backupDictionary)
-        backupStandardProtocols.clear()
-        backupStandardProtocols.addAll(backupStandardProtocols)
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.clear()
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.addAll(backupStandardProtocols)
+        def foo = []
     }
 
     def "Add a Standard Protocol modifies default contracts"() {

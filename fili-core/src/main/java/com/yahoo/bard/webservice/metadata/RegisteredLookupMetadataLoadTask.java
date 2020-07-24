@@ -8,8 +8,6 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
-import com.yahoo.bard.webservice.druid.client.FailureCallback;
-import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.RegisteredLookupExtractionFunction;
 
@@ -26,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -66,9 +65,6 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
 
     private final DruidWebService druidClient;
     private final DimensionDictionary dimensionDictionary;
-    private final SuccessCallback successCallback;
-    private final FailureCallback failureCallback;
-    private final HttpErrorCallback errorCallback;
     private final Set<String> pendingLookups;
 
     private Set<String> lookupTiers;
@@ -89,9 +85,6 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
         );
         this.druidClient = druidClient;
         this.dimensionDictionary = dimensionDictionary;
-        this.successCallback = buildLookupSuccessCallback();
-        this.failureCallback = getFailureCallback();
-        this.errorCallback = getErrorCallback();
         this.pendingLookups = new HashSet<>();
         this.lookupTiers = getTiers(SYSTEM_CONFIG.getStringProperty(TIERS_KEY, "__default"));
     }
@@ -104,9 +97,9 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
                 .peek(tier -> LOG.trace("Querying metadata for lookup tier: {}", tier))
                 .forEach(lookupTier -> {
                     druidClient.getJsonObject(
-                            successCallback,
-                            errorCallback,
-                            failureCallback,
+                            buildLookupSuccessCallback(),
+                            getErrorCallback(),
+                            getFailureCallback(),
                             String.format(LOOKUP_QUERY_FORMAT, lookupTier)
                     );
                 });
@@ -154,7 +147,11 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
      * @return the callback that has actions on lookups from a successful Druid response
      */
     protected SuccessCallback buildLookupSuccessCallback() {
+        final AtomicReference<Set<String>> pendingRef = new AtomicReference<>(pendingLookups);
+        final AtomicReference<DimensionDictionary> dimennsionDictionaryRef = new AtomicReference<>(dimensionDictionary);
         return rootNode -> {
+            DimensionDictionary localDimensionDictionary = dimennsionDictionaryRef.getAndSet(null);
+            Set<String> localPending = pendingRef.getAndSet(null);
             Map<String, Boolean> lookupStatuses = new HashMap<>();
             Iterator<Map.Entry<String, JsonNode>> entries = rootNode.fields();
             while (entries.hasNext()) {
@@ -162,8 +159,8 @@ public class RegisteredLookupMetadataLoadTask extends LoadTask<Boolean> {
                 lookupStatuses.put(entry.getKey(), entry.getValue().get("loaded").asBoolean());
             }
 
-            pendingLookups.addAll(
-                    dimensionDictionary.findAll().stream()
+            localPending.addAll(
+                    localDimensionDictionary.findAll().stream()
                             .filter(dimension -> dimension instanceof RegisteredLookupDimension)
                             .map(dimension -> (RegisteredLookupDimension) dimension)
                             .map(RegisteredLookupDimension::getRegisteredLookupExtractionFns)

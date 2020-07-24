@@ -177,9 +177,11 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
      * @return The callback itself.
      */
     protected SuccessCallback buildDataSourceMetadataSuccessCallback(DataSourceName dataSourceName) {
+        final AtomicReference<DataSourceMetadataService> metadataRef = new AtomicReference<>(this.metadataService);
         return rootNode -> {
             try {
-                metadataService.update(dataSourceName, mapper.treeToValue(rootNode, DataSourceMetadata.class));
+                metadataRef.getAndSet(null)
+                        .update(dataSourceName, mapper.treeToValue(rootNode, DataSourceMetadata.class));
             } catch (IOException e) {
                 LOG.error(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);
                 throw new UnsupportedOperationException(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);
@@ -212,6 +214,7 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
      */
     private final class TaskHttpErrorCallback extends LoadTask<?>.TaskHttpErrorCallback {
         private final DataSourceName dataSourceName;
+        AtomicReference<DataSourceMetadataService> metadataServiceRef;
 
         /**
          * Constructor.
@@ -220,10 +223,12 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
          */
         TaskHttpErrorCallback(DataSourceName dataSourceName) {
             this.dataSourceName = dataSourceName;
+            metadataServiceRef = new AtomicReference<>(metadataService);
         }
 
         @Override
         public void invoke(int statusCode, String reason, String responseBody) {
+            DataSourceMetadataService localMetadata = metadataServiceRef.getAndSet(null);
             // No Content is an expected but A-typical response.
             // Usually, it means Druid knows about the data source, but no segments have been loaded
             if (statusCode == NO_CONTENT.getStatusCode()) {
@@ -234,7 +239,7 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
                         dataSourceName.asName()
                 );
                 LOG.warn(msg);
-                metadataService.update(
+                localMetadata.update(
                         dataSourceName,
                         new DataSourceMetadata(dataSourceName.asName(), Collections.emptyMap(), Collections.emptyList())
                 );

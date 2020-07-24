@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This response processor receives a list of expected intervals.  As responses arrives, it stores the responses until
@@ -75,11 +76,14 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
 
     @Override
     public FailureCallback getFailureCallback(final DruidAggregationQuery<?> druidQuery) {
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
+        final AtomicReference<ResponseProcessor> nextRef = new AtomicReference<>(next);
         return new FailureCallback() {
-            final FailureCallback nextFail = next.getFailureCallback(druidQuery);
-
             @Override
             public void invoke(Throwable error) {
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
+                ResponseProcessor localNext = nextRef.getAndSet(null);
+                final FailureCallback nextFail = localNext.getFailureCallback(query);
                 if (failed.compareAndSet(false, true)) {
                     nextFail.invoke(error);
                 }
@@ -89,11 +93,12 @@ public class SplitQueryResponseProcessor implements ResponseProcessor {
 
     @Override
     public HttpErrorCallback getErrorCallback(final DruidAggregationQuery<?> druidQuery) {
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
         return new HttpErrorCallback() {
-            final HttpErrorCallback nextError = next.getErrorCallback(druidQuery);
-
             @Override
             public void invoke(int statusCode, String reasonPhrase, String responseBody) {
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
+                HttpErrorCallback nextError = next.getErrorCallback(query);
                 if (failed.compareAndSet(false, true)) {
                     nextError.invoke(statusCode, reasonPhrase, responseBody);
                 }

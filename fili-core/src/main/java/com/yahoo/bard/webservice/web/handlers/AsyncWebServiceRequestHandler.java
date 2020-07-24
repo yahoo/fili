@@ -17,6 +17,8 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -54,10 +56,14 @@ public class AsyncWebServiceRequestHandler extends BaseDataRequestHandler {
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response
     ) {
+        final AtomicReference<ResponseProcessor> reponseProcessorRef = new AtomicReference<>(response);
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
         SuccessCallback success = new SuccessCallback() {
             @Override
             public void invoke(JsonNode rootNode) {
-                response.processResponse(rootNode, druidQuery, new LoggingContext(RequestLog.copy()));
+                ResponseProcessor responseProcessor = reponseProcessorRef.getAndSet(null);
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
+                responseProcessor.processResponse(rootNode, query, new LoggingContext(RequestLog.copy()));
             }
         };
         HttpErrorCallback error = response.getErrorCallback(druidQuery);

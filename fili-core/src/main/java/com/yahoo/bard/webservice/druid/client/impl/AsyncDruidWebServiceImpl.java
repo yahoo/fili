@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -284,7 +285,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
             final AtomicLong outstanding
     ) {
         RequestLog.startTiming(timerName);
-        final RequestLog logCtx = RequestLog.dump();
+        final AtomicReference<RequestLog> logCtx = new AtomicReference<>(RequestLog.dump());
         try {
             return requestBuilder.execute(
                 new AsyncCompletionHandler<Response>() {
@@ -292,8 +293,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                     public Response onCompleted(Response response) {
                         String druidQueryId = response.getHeader("X-Druid-Query-Id");
                         Status status = Status.fromStatusCode(response.getStatusCode());
-                        logRequest(logCtx, timerName, outstanding, druidQueryId, status);
-
+                        logRequest(logCtx.getAndSet(null), timerName, outstanding, druidQueryId, status);
                         if (hasError(status)) {
                             markError(status, response, druidQueryId, error);
                         } else {
@@ -311,7 +311,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
                     @Override
                     public void onThrowable(Throwable t) {
-                        RequestLog.restore(logCtx);
+                        RequestLog.restore(logCtx.getAndSet(null));
                         RequestLog.stopTiming(timerName);
                         if (outstanding.decrementAndGet() == 0) {
                             RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
@@ -322,7 +322,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                     }
                 });
         } catch (RuntimeException t) {
-            RequestLog.restore(logCtx);
+            RequestLog.restore(logCtx.get());
             RequestLog.stopTiming(timerName);
             if (outstanding.decrementAndGet() == 0) {
                 RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);

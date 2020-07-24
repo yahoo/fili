@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.validation.constraints.NotNull;
 
@@ -87,15 +88,19 @@ public class SqlRequestHandler implements DataRequestHandler {
         boolean isSqlBacked = druidQuery.getDataSource()
                 .getPhysicalTable()
                 .getSourceTable() instanceof SqlPhysicalTable;
+        final AtomicReference<DruidAggregationQuery<?>> druidQueryRef = new AtomicReference<>(druidQuery);
+        final AtomicReference<ResponseProcessor> responseProcessorRef = new AtomicReference<>(response);
 
         if (sqlConverter != null && isSqlBacked) {
             LOG.info("Intercepting for sql backend");
-            LoggingContext copy = new LoggingContext(RequestLog.copy());
+            final AtomicReference<LoggingContext> logCtx = new AtomicReference<>(new LoggingContext(RequestLog.copy()));
             SuccessCallback success = rootNode -> {
+                DruidAggregationQuery<?> query = druidQueryRef.getAndSet(null);
+                ResponseProcessor responseProcessor = responseProcessorRef.getAndSet(null);
                 response.processResponse(
                         rootNode,
-                        new SqlAggregationQuery(druidQuery),
-                        copy
+                        new SqlAggregationQuery(query),
+                        logCtx.getAndSet(null)
                 );
             };
             FailureCallback failure = response.getFailureCallback(druidQuery);

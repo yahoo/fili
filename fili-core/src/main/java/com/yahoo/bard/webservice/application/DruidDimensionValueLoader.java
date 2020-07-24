@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -168,18 +169,20 @@ public class DruidDimensionValueLoader implements DimensionValueLoader {
      * @return the callback
      */
     private SuccessCallback buildDruidDimensionsSuccessCallback(Dimension dimension) {
+        AtomicReference<Dimension> dimensionRef = new AtomicReference<Dimension>(dimension);
         return rootNode -> {
+            Dimension dimension1 = dimensionRef.getAndSet(null);
             rootNode.forEach(intervalNode -> {
                 intervalNode.get("result").forEach(dim -> {
                     String value = dim.get("value").asText();
-                    if (dimension.findDimensionRowByKeyValue(value) == null) {
-                        DimensionRow dimRow = dimension.createEmptyDimensionRow(value);
-                        updateDimensionWithValue(dimension, dimRow);
+                    if (dimension1.findDimensionRowByKeyValue(value) == null) {
+                        DimensionRow dimRow = dimension1.createEmptyDimensionRow(value);
+                        updateDimensionWithValue(dimension1, dimRow);
                     }
                 });
             });
 
-            updateDimension(dimension);
+            updateDimension(dimension1);
         };
     }
 }

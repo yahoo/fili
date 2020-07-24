@@ -21,6 +21,7 @@ import rx.subjects.Subject;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -104,15 +105,19 @@ public abstract class MappingResponseProcessor implements ResponseProcessor {
             final Subject responseEmitter,
             final DruidAggregationQuery<?> druidQuery
     ) {
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
+        final AtomicReference<Subject> subjectRef = new AtomicReference<>(responseEmitter);
         return new HttpErrorCallback() {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
-                LOG.error(ErrorMessageFormat.ERROR_FROM_DRUID.logFormat(responseBody, statusCode, reason, druidQuery));
-                responseEmitter.onError(new ResponseException(
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
+                Subject responseEmitter1 = subjectRef.getAndSet(null);
+                LOG.error(ErrorMessageFormat.ERROR_FROM_DRUID.logFormat(responseBody, statusCode, reason, query));
+                responseEmitter1.onError(new ResponseException(
                         statusCode,
                         reason,
                         responseBody,
-                        druidQuery,
+                        query,
                         null,
                         getObjectMappers().getMapper().writer()
                 ));

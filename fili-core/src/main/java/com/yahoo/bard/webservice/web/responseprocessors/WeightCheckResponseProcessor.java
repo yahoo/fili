@@ -11,6 +11,8 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * A response processor which wraps a timer around the outer most response processor only in the event of an error
  * response.
@@ -48,13 +50,15 @@ public class WeightCheckResponseProcessor implements ResponseProcessor {
 
     @Override
     public HttpErrorCallback getErrorCallback(final DruidAggregationQuery<?> druidQuery) {
-    return new HttpErrorCallback() {
+        final AtomicReference<DruidAggregationQuery<?>> queryRef = new AtomicReference<>(druidQuery);
+        return new HttpErrorCallback() {
             @Override
             public void invoke(int statusCode, String reason, String responseBody) {
+                DruidAggregationQuery<?> query = queryRef.getAndSet(null);
                 if (RequestLog.isRunning(REQUEST_WORKFLOW_TIMER)) {
                     RequestLog.stopTiming(REQUEST_WORKFLOW_TIMER);
                 }
-                next.getErrorCallback(druidQuery).invoke(statusCode, reason, responseBody);
+                next.getErrorCallback(query).invoke(statusCode, reason, responseBody);
             }
         };
     }

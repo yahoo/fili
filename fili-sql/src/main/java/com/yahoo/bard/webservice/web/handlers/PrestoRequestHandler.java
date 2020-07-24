@@ -16,6 +16,8 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import javax.validation.constraints.NotNull;
 
 /**
@@ -57,13 +59,17 @@ public class PrestoRequestHandler implements DataRequestHandler {
         boolean isSqlBacked = druidQuery.getDataSource()
                 .getPhysicalTable()
                 .getSourceTable() instanceof SqlPhysicalTable;
+        final AtomicReference<DruidAggregationQuery<?>> druidQueryRef = new AtomicReference<>(druidQuery);
+        final AtomicReference<ResponseProcessor> responseProcessorRef = new AtomicReference<>(response);
         if (isSqlBacked) {
-            LoggingContext copy = new LoggingContext(RequestLog.copy());
+            AtomicReference<LoggingContext> logCtx = new AtomicReference<>(new LoggingContext(RequestLog.copy()));
             SuccessCallback success = rootNode -> {
-                response.processResponse(
+                DruidAggregationQuery<?> query = druidQueryRef.getAndSet(null);
+                ResponseProcessor responseProcessor = responseProcessorRef.getAndSet(null);
+                responseProcessor.processResponse(
                         rootNode,
-                        new SqlAggregationQuery(druidQuery),
-                        copy
+                        new SqlAggregationQuery(query),
+                        logCtx.getAndSet(null)
                 );
             };
             FailureCallback failure = response.getFailureCallback(druidQuery);

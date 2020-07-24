@@ -28,6 +28,15 @@ public class DruidServiceConfig {
     }
 
     /**
+     * The name for this druid service.
+     *
+     * @return a string named
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * The URL for the primary servlet of the druid service.
      *
      * @return an URL as a string
