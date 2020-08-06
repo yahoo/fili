@@ -113,6 +113,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Added extension capabilities to the default parsing of formats](https://github.com/yahoo/fili/issues/1077)
+   * Added static map for response formats to `DefaultResponseFormatGenerator`
+   * Added unit test for `DefaultResponseFormatGenerator`
 
 - [Updated dependency code](https://github.com/yahoo/fili/issues/1066)
    * Removed expired suppressions
