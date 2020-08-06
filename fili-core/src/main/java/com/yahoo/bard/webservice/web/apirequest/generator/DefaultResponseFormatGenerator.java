@@ -5,12 +5,11 @@ package com.yahoo.bard.webservice.web.apirequest.generator;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
 
 import com.yahoo.bard.webservice.MessageFormatter;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.slf4j.Logger;
@@ -89,7 +88,9 @@ public class DefaultResponseFormatGenerator implements Generator<ResponseFormatT
      * @return the response format.
      */
     public static ResponseFormatType generateResponseFormat(String format) {
-        ResponseFormatType formatType = RESPONSE_FORMAT_TYPE_MAP.get(format.toUpperCase(Locale.ENGLISH));
+        ResponseFormatType formatType = format == null ?
+                DefaultResponseFormatType.JSON :
+                RESPONSE_FORMAT_TYPE_MAP.get(format.toUpperCase(Locale.ENGLISH));
         if (formatType == null) {
             LOG.error(errorMessageFormat.logFormat(format));
             throw new BadApiRequestException(errorMessageFormat.format(format));
