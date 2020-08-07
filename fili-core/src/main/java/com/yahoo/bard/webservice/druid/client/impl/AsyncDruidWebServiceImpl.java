@@ -305,8 +305,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
                         }
 
-                        // we consumed this response, so pass null to any chains
-                        return null;
+                        // If we don't return non null, the future will not mark as done
+                        return response;
                     }
 
                     @Override
