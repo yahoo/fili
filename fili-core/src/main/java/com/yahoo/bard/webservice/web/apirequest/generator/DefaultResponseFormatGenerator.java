@@ -4,17 +4,21 @@ package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.ACCEPT_FORMAT_INVALID;
 
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.MessageFormatter;
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Default generator implementation for binding {@link ResponseFormatType}. Only recognizes response formats from the
@@ -23,6 +27,32 @@ import java.util.Locale;
 public class DefaultResponseFormatGenerator implements Generator<ResponseFormatType> {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultResponseFormatType.class);
+
+    private static final Map<String, ResponseFormatType> RESPONSE_FORMAT_TYPE_MAP;
+    private static MessageFormatter errorMessageFormat = ACCEPT_FORMAT_INVALID;
+
+    static {
+        RESPONSE_FORMAT_TYPE_MAP = new ConcurrentHashMap();
+        Arrays.stream(DefaultResponseFormatType.values())
+                .forEach(defaultResponseFormatType -> RESPONSE_FORMAT_TYPE_MAP.put(
+                        defaultResponseFormatType.name(),
+                        defaultResponseFormatType
+                ));
+    }
+
+    public static void addFormatType(String name, ResponseFormatType type) {
+        RESPONSE_FORMAT_TYPE_MAP.put(name.toUpperCase(Locale.ENGLISH), type);
+    }
+
+    public static ResponseFormatType removeFormatType(String name) {
+        return RESPONSE_FORMAT_TYPE_MAP.remove(name.toUpperCase(Locale.ENGLISH));
+    }
+
+    public static MessageFormatter setMessageFormatter(MessageFormatter messageFormatter) {
+        MessageFormatter previous = errorMessageFormat;
+        errorMessageFormat = messageFormatter;
+        return previous;
+    }
 
     @Override
     public ResponseFormatType bind(
@@ -58,13 +88,13 @@ public class DefaultResponseFormatGenerator implements Generator<ResponseFormatT
      * @return the response format.
      */
     public static ResponseFormatType generateResponseFormat(String format) {
-        try {
-            return format == null ?
-                    DefaultResponseFormatType.JSON :
-                    DefaultResponseFormatType.valueOf(format.toUpperCase(Locale.ENGLISH));
-        } catch (IllegalArgumentException e) {
-            LOG.error(ACCEPT_FORMAT_INVALID.logFormat(format), e);
-            throw new BadApiRequestException(ACCEPT_FORMAT_INVALID.format(format));
+        ResponseFormatType formatType = format == null ?
+                DefaultResponseFormatType.JSON :
+                RESPONSE_FORMAT_TYPE_MAP.get(format.toUpperCase(Locale.ENGLISH));
+        if (formatType == null) {
+            LOG.error(errorMessageFormat.logFormat(format));
+            throw new BadApiRequestException(errorMessageFormat.format(format));
         }
+        return formatType;
     }
 }
