@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SLICE_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -14,6 +13,7 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
 
@@ -143,11 +143,6 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             PhysicalTableDictionary tableDictionary,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        if (tableDictionary.isEmpty()) {
-            String msg = EMPTY_DICTIONARY.logFormat("Slices cannot be found. Physical Table");
-            throw new BadApiRequestException(msg);
-        }
-
         LinkedHashSet<Map<String, String>> generated = tableDictionary.entrySet().stream()
                 .map(
                         e -> {
@@ -184,18 +179,12 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        if (tableDictionary.isEmpty()) {
-            String msg = EMPTY_DICTIONARY.logFormat("Slices cannot be found. Physical Table");
-            LOG.error(msg);
-            throw new BadApiRequestException(msg);
-        }
-
         PhysicalTable table = tableDictionary.get(sliceName);
 
         if (table == null) {
             String msg = SLICE_UNDEFINED.logFormat(sliceName);
             LOG.error(msg);
-            throw new BadApiRequestException(msg);
+            throw new MissingResourceApiRequestException(msg);
         }
 
         Map<Column, SimplifiedIntervalList> columnCache = table.getAllAvailableIntervals();

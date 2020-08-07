@@ -159,6 +159,7 @@ public class MetricsServlet extends EndpointServlet {
      * Get the details of a specific logical metric.
      *
      * @param metricName  Logical metric name
+     * @param format The format for the response (e.g. json, csv)
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The logical metric
@@ -170,6 +171,7 @@ public class MetricsServlet extends EndpointServlet {
     @Path("/{metricName}")
     public Response getMetric(
             @PathParam("metricName") String metricName,
+            @PathParam("format") String format,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -181,6 +183,7 @@ public class MetricsServlet extends EndpointServlet {
 
             apiRequest = new MetricsApiRequestImpl(
                     metricName,
+                    format,
                     null,
                     "",
                     "",

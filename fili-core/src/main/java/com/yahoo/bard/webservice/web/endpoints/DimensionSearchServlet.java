@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
+import com.yahoo.bard.webservice.data.dimension.SearchQuerySearchProvider;
 import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.DimensionRequest;
@@ -20,7 +21,6 @@ import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
-import com.yahoo.bard.webservice.data.dimension.SearchQuerySearchProvider;
 
 import com.codahale.metrics.annotation.Timed;
 

@@ -106,7 +106,7 @@ class DimensionsApiRequestImplSpec extends Specification {
 
         where:
         name    | filter                 | dictionary      | exception              | reason
-        "color" | "color|desc-in[color]" | emptyDictionary | BadApiRequestException | "Dimension Dictionary is empty.*"
+        "color" | "color|desc-in[color]" | emptyDictionary | BadApiRequestException | "Dimension.* do not exist.*"
         "blank" | "color|desc-in[color]" | fullDictionary  | BadApiRequestException | "Dimension.* do not exist.*"
         null    | "blank|desc-in[blank]" | fullDictionary  | BadApiRequestException | "Filter.*does not exist.*"
         //More enhanced dimension dictionary is needed to test what happens when a filter matches multiple dimensions

@@ -40,6 +40,7 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Timeout
+import spock.lang.Unroll
 
 import javax.ws.rs.core.Response
 
@@ -892,6 +893,35 @@ class ErrorDataServletSpec extends Specification {
 
         then: "Return the empty result query"
         r.getStatus() == 200
+    }
+
+    @Unroll
+    def "Test undefined #servlet results in 404 result"() {
+        setup:
+        JerseyTestBinder testBinder = new JerseyTestBinder(servlet)
+        testWebService = jtb.druidWebService
+
+        testWebService.jsonResponse = {"[]"}
+        testWebService.weightResponse = "[]"
+
+        when: "No rows returned"
+        Response r = testBinder.getHarness().target(path)
+                .request().get()
+        String text = r.readEntity(String.class)
+
+        then: "Return the empty result query"
+        text == "Exception processing request: " + message
+        r.getStatus() == 404
+
+        cleanup:
+        testBinder.tearDown()
+
+        where:
+        servlet                 | path             | message
+        MetricsServlet.class    | "metrics/foo"    | "Metric(s) 'foo' do not exist."
+        DimensionsServlet.class | "dimensions/foo" | "Dimension(s) 'foo' do not exist."
+        TablesServlet.class     | "tables/foo"     | "Table with name 'foo' does not exist."
+        SlicesServlet           | "slices/foo"     | "Slice with name 'foo' does not exist."
     }
 
     /**
