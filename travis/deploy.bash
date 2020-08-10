@@ -45,6 +45,7 @@ mvn -version
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build
 MAVEN_RETURN_CODE=$?
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
+mvn -B org.owasp:dependency-check-maven:check -Dformat=ALL
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn sonar:sonar -Dsonar.projectKey=yahoo_fili -Dsonar.organization=yahoo -Dsonar.login=${SONAR_TOKEN} -Pcoverage.report,sonar
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Maven verify did not succeed."
