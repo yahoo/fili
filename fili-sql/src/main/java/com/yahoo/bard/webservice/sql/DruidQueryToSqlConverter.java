@@ -812,7 +812,6 @@ public class DruidQueryToSqlConverter {
     protected String writeSql(SqlPrettyWriter sqlWriter, RelToSqlConverter relToSql, RelNode query) {
         sqlWriter.reset();
         SqlSelect select = relToSql.visitChild(0, query).asSelect();
-//        SqlSelect select = relToSql.visitInput(query, 0).asSelect();
         return sqlWriter.format(select);
     }
 
