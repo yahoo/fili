@@ -55,6 +55,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add ability in fili-sql to translate FilteredAggregation into SQL](https://github.com/yahoo/fili/pull/1083)
+   * Translate a Druid query with `n` FilteredAggregation into SQL using `\(n + 1\)` subquery unions. 
+       - See PR description for details  
 
 - [Add ability to convert `TimeSeriesQuery` to `GroupByQuery`](https://github.com/yahoo/fili/issues/1059)
    * Add `withDimensions` to `TimeSeriesQuery` with `dimensions` parameter.
