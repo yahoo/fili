@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.util.Utils;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * All the default aggregation types supported for use with a sql backend.
@@ -23,6 +23,18 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
 
     private final Set<String> validDruidAggregations;
     private final SqlAggFunction sqlAggFunction;
+    public static Map<String, SqlAggregationType> defaultDruidToSqlAggregation;
+    static {
+        Map<String, SqlAggregationType> druidToSqlAggregation = new HashMap<>();
+        Arrays.stream(DefaultSqlAggregationType.values())
+                .forEach(defaultSqlAggregationType -> {
+                    defaultSqlAggregationType.getSupportedDruidAggregations()
+                            .forEach(druidAggregation -> {
+                                druidToSqlAggregation.put(druidAggregation, defaultSqlAggregationType);
+                            });
+                });
+        defaultDruidToSqlAggregation = Collections.unmodifiableMap(druidToSqlAggregation);
+    }
 
     /**
      * Construct an DefaultSqlAggregationType with a keyword to look for in a
