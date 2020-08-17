@@ -61,7 +61,6 @@ public class HavingEvaluator implements ReflectiveVisitor {
         if (having == null) {
             return null;
         }
-
         return dispatcher.invoke(having, builder, apiToFieldMapper);
     }
 
@@ -106,7 +105,7 @@ public class HavingEvaluator implements ReflectiveVisitor {
         }
         return builder.call(
                 operator,
-                builder.field(apiToFieldMapper.apply(having.getAggregation())),
+                builder.field(having.getAggregation()),
                 builder.literal(having.getValue())
         );
     }

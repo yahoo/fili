@@ -23,9 +23,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
@@ -134,12 +131,10 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * Steps are:
      * <ul>
      *     <li>1. Replace Time functions with String Functions to be used for HIVE tables</li>
-     *     <li>2. Convert datestamp from Date format to String format</li>
-     *     <Li>3. Specify Catalog in FROM expression</Li>
-     *     <li>4. Calcite wrap column name in single quotes which is not allowed in Presto
+     *     <li>2. Calcite wrap column name in single quotes which is not allowed in Presto
      *            as Presto is not ANSI compliant.
      *            Replace single quotation marks with double quotation marks.</li>
-     *     <li>5. Convert FETCH NEXT n ROWS expression to prestodb-supported LIMIT n expression</li>
+     *     <li>3. Convert FETCH NEXT n ROWS expression to prestodb-supported LIMIT n expression</li>
      * </ul>
      *
      * @param sqlQuery The sql query converted from druid query.
@@ -157,7 +152,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         matcher.matches();
         String timestampColumn = matcher.group(1);
 
-        String fixTimePrestoQuery = sqlQuery
+        String fixVarcharCastQuery = sqlQuery.replace("CHARACTER SET \"ISO-8859-1\"", "");
+        String fixTimePrestoQuery = fixVarcharCastQuery
                 .replace(
                         String.format("DAYOFYEAR(\"%s\")", timestampColumn),
                         String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn)
@@ -174,26 +170,6 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                         String.format("HOUR(\"%s\")", timestampColumn),
                         String.format("SUBSTRING(%s,9,2)", timestampColumn)
                 );
-
-        int datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" >", timestampColumn));
-        int datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
-        fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 9, datestampNumericStartPosition + 11) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 12, datestampNumericStartPosition + 14) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 15, datestampNumericStartPosition + 17) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
-
-        datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" <", timestampColumn));
-        datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
-        fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 9, datestampNumericStartPosition + 11) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 12, datestampNumericStartPosition + 14) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 15, datestampNumericStartPosition + 17) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
 
         String fixCatalogPrestoQuery = fixTimePrestoQuery;
 
@@ -212,53 +188,6 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         }
 
         String fixFilterPrestoQuery = fixQuotePrestoQuery;
-        // find the where clause
-        String whereClause = "";
-        for (String line : fixFilterPrestoQuery.split("\n")) {
-            if (line.trim().substring(0, 5).equals("WHERE")) {
-                whereClause = line;
-                break;
-            }
-        }
-        whereClause = whereClause.substring(5);
-        String[] andClauses = whereClause.split(" AND ");
-        List<String> filterClauses = new ArrayList<>();
-        for (String andClause : andClauses) {
-            if (andClause.charAt(0) == '(') {
-                andClause = andClause.substring(1);
-            }
-            if (andClause.charAt(andClause.length() - 1) == ')') {
-                andClause = andClause.substring(0, andClause.length() - 1);
-            }
-            filterClauses.addAll(Arrays.asList(andClause.split(" OR ")));
-        }
-        String fieldName;
-        String fieldValue;
-        String filterClause;
-        String filterClauseFixed;
-        int equalIndex;
-        int notEqualIndex;
-        int comparatorIndex;
-        // could be either <> or =
-        String comparator;
-        for (int i = 2; i < filterClauses.size(); i++) {
-            filterClause = filterClauses.get(i);
-            equalIndex = filterClause.indexOf("=");
-            notEqualIndex = filterClause.indexOf("<>");
-            if (equalIndex != -1 && (notEqualIndex == -1 || equalIndex < notEqualIndex)) {
-                comparatorIndex = equalIndex;
-                comparator = "=";
-            } else if (notEqualIndex != -1 && (equalIndex == -1 || notEqualIndex < equalIndex)) {
-                comparatorIndex = notEqualIndex;
-                comparator = "<>";
-            } else {
-                continue;
-            }
-            fieldName = filterClause.substring(0, comparatorIndex).trim();
-            fieldValue = filterClause.substring(comparatorIndex + comparator.length()).trim();
-            filterClauseFixed = String.format("CAST(%s AS varchar) %s %s", fieldName, comparator, fieldValue);
-            fixFilterPrestoQuery = fixFilterPrestoQuery.replace(filterClause, filterClauseFixed);
-        }
         return fetchToLimitHelper(fixFilterPrestoQuery);
     }
 

@@ -38,4 +38,14 @@ public class TimestampUtils {
     public static Timestamp timestampFromDateTime(DateTime dateTime) {
         return Timestamp.valueOf(dateTime.toString("yyyy-MM-dd HH:mm:ss.S"));
     }
+
+    /**
+     * Convert a DateTime to a string with specified format.
+     * @param dateTime the Datetime object
+     * @param format the format string
+     * @return the dateTime string
+     */
+    public static String dateTimeToString(DateTime dateTime, String format) {
+        return dateTime.toString(format);
+    }
 }
