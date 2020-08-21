@@ -55,6 +55,7 @@ public class DruidQueryToSqlConverter {
     private final PostAggregationEvaluator postAggregationEvaluator;
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
+    public static final String ZERO_PLACEHOLDER = "zero";
 
     /**
      * Constructs the default converter.
@@ -310,7 +311,7 @@ public class DruidQueryToSqlConverter {
         List<RelBuilder.AggCall> aggCalls = new ArrayList<>();
         for (Aggregation agg : aggs) {
             RelBuilder.AggCall aggCall = builder.aggregateCall(
-                    SqlStdOperatorTable.MAX,
+                    SqlStdOperatorTable.SUM,
                     false,
                     null,
                     agg.getName(),
@@ -397,24 +398,17 @@ public class DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
-        Boolean isFilteredAggPresent = false;
-        for (Aggregation agg : druidQuery.getAggregations()) {
-            if (agg instanceof FilteredAggregation) {
-                isFilteredAggPresent = true;
-            }
-        }
+        boolean isFilteredAggPresent = druidQuery.getAggregations()
+                .stream()
+                .anyMatch(agg -> agg instanceof FilteredAggregation);
 
         if (isFilteredAggPresent) {
-            return convertDruidQueryWithFilteredAgg (
-                    druidQuery,
-                    apiToFieldMapper,
-                    sqlTable
-            );
+            return convertDruidQueryWithFilteredAgg (druidQuery, apiToFieldMapper, sqlTable);
         }
 
         RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
         builder = builder.scan(sqlTable.getName());
-        return  builder
+        return builder
                 .filter(
                         getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
                 )
@@ -629,11 +623,37 @@ public class DruidQueryToSqlConverter {
         return Collections.singletonList(filter);
     }
 
+    private void sqlAggregationHelper(
+            String aggType,
+            Aggregation agg,
+            String name,
+            ApiToFieldMapper apiToFieldMapper,
+            Map<String, SqlAggregation> sqlAggregationMap
+            ) {
+        SqlAggregation sqlAggregation =
+                defaultDruidToSqlAggregation.get(aggType).getSqlAggregation(agg, apiToFieldMapper);
+        sqlAggregationMap.put(name, sqlAggregation);
+    }
+
+    /**
+     * Build the corresponding aggregations based on what is the nature of the aggregation and
+     * which subquery the aggregation rests in.
+     * For example when:
+     * filtered = true ==> only the targetAgg is being created and everything else is zeroed out
+     * filtered = false ==> Filtered Aggregation columns are zeroed out, but normal aggregations are added in
+     *
+     * @param builder the RelBuilder instance
+     * @param druidQuery the druid query
+     * @param apiToFieldMapper  The mapping from api to physical name.
+     * @param filtered if the function is called in a filtered aggregation sub query
+     * @param targetAgg the target FilteredAggregation instance to build in the subquery
+     * @return A list of all the AggCall instances
+     */
     protected List<RelBuilder.AggCall> getQueryFilteredAggregations(
             RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper,
-            Boolean filtered,
+            boolean filtered,
             FilteredAggregation targetAgg
     ) {
         List<RelBuilder.AggCall> res = new ArrayList<>();
@@ -645,34 +665,54 @@ public class DruidQueryToSqlConverter {
                 if (agg.equals(targetAgg)) {
                     Aggregation innerAgg = ((FilteredAggregation) agg).getAggregation();
                     String aggType = innerAgg.getType();
-                    SqlAggregation sqlAggregation =
-                            defaultDruidToSqlAggregation.get(aggType).getSqlAggregation(innerAgg, apiToFieldMapper);
-                    sqlAggregationMap.put(agg.getName(), sqlAggregation);
+                    sqlAggregationHelper(
+                            aggType,
+                            innerAgg,
+                            agg.getName(),
+                            apiToFieldMapper,
+                            sqlAggregationMap
+                    );
                 } else {
                     if (agg instanceof FilteredAggregation) {
                         Aggregation innerAgg = ((FilteredAggregation) agg).getAggregation();
-                        Aggregation effectiveZeroSumAgg = innerAgg.withFieldName("zero");
-                        SqlAggregation sqlAggregation =
-                                defaultDruidToSqlAggregation.get(innerAgg.getType())
-                                        .getSqlAggregation(effectiveZeroSumAgg, apiToFieldMapper);
-                        sqlAggregationMap.put(innerAgg.getName(), sqlAggregation);
+                        Aggregation effectiveZeroSumAgg = innerAgg.withFieldName(ZERO_PLACEHOLDER);
+                        sqlAggregationHelper(
+                                innerAgg.getType(),
+                                effectiveZeroSumAgg,
+                                innerAgg.getName(),
+                                apiToFieldMapper,
+                                sqlAggregationMap
+                        );
                     } else {
-                        Aggregation effectiveZeroSumAgg = agg.withFieldName("zero");
-                        SqlAggregation sqlAggregation =
-                                defaultDruidToSqlAggregation.get(agg.getType())
-                                        .getSqlAggregation(effectiveZeroSumAgg, apiToFieldMapper);
-                        sqlAggregationMap.put(agg.getName(), sqlAggregation);
+                        Aggregation effectiveZeroSumAgg = agg.withFieldName(ZERO_PLACEHOLDER);
+                        sqlAggregationHelper(
+                                agg.getType(),
+                                effectiveZeroSumAgg,
+                                agg.getName(),
+                                apiToFieldMapper,
+                                sqlAggregationMap
+                        );
                     }
                 }
             } else {
                 if (agg instanceof FilteredAggregation) {
                     Aggregation innerAgg = ((FilteredAggregation) agg).getAggregation();
-                    Aggregation effectiveZeroSumAgg = innerAgg.withFieldName("zero");
-                    SqlAggregation sqlAggregation =
-                            defaultDruidToSqlAggregation.get(innerAgg.getType())
-                                    .getSqlAggregation(effectiveZeroSumAgg, apiToFieldMapper);
-                    sqlAggregationMap.put(innerAgg.getName(), sqlAggregation);
+                    Aggregation effectiveZeroSumAgg = innerAgg.withFieldName(ZERO_PLACEHOLDER);
+                    sqlAggregationHelper(
+                            innerAgg.getType(),
+                            effectiveZeroSumAgg,
+                            innerAgg.getName(),
+                            apiToFieldMapper,
+                            sqlAggregationMap
+                    );
                 } else {
+                    sqlAggregationHelper(
+                            agg.getType(),
+                            agg,
+                            agg.getName(),
+                            apiToFieldMapper,
+                            sqlAggregationMap
+                    );
                     SqlAggregation sqlAggregation =
                             defaultDruidToSqlAggregation.get(agg.getType()).getSqlAggregation(agg, apiToFieldMapper);
                     sqlAggregationMap.put(agg.getName(), sqlAggregation);
@@ -681,7 +721,7 @@ public class DruidQueryToSqlConverter {
         }
 
         for (SqlAggregation sqlAggregation: sqlAggregationMap.values()) {
-            if (sqlAggregation.getSqlAggregationFieldName().equals("zero")) {
+            if (sqlAggregation.getSqlAggregationFieldName().equals(ZERO_PLACEHOLDER)) {
                 res.add(builder.aggregateCall(
                         sqlAggregation.getSqlAggFunction(),
                         false,
@@ -716,9 +756,8 @@ public class DruidQueryToSqlConverter {
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper
     ) {
-        List<RelBuilder.AggCall> res = druidQuery.getAggregations()
+        return druidQuery.getAggregations()
                 .stream()
-                .filter(aggregation -> !aggregation.getType().equals("filtered"))
                 .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
@@ -738,7 +777,6 @@ public class DruidQueryToSqlConverter {
                     );
                 })
                 .collect(Collectors.toList());
-        return res;
     }
 
     /**
