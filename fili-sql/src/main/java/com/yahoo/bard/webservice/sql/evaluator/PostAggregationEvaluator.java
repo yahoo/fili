@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 public class PostAggregationEvaluator implements ReflectiveVisitor {
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
+    private final static String MULTI_OP_CALL_ERROR_MSG =
+            "It takes two or more fields to do a add operation, but only got %d";
     /**
      * Constructor.
      * */
@@ -132,8 +134,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      */
     private RexNode buildMultiOpCall(List<RexNode> addFields, RelBuilder builder, SqlBinaryOperator operator) {
         if (addFields.size() < 2) {
-            throw new IllegalStateException("It takes more than two fields to do a add operation, but get "
-                    + addFields.size());
+            throw new IllegalStateException(String.format(MULTI_OP_CALL_ERROR_MSG, addFields.size()));
         }
         RexNode previousAdd = builder.call(
                 operator,
@@ -157,6 +158,7 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * @return the RexNode of sql arithmetic
      *
      * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
+     * @throws IllegalStateException for when buildMultiOpCall doesn't receive correct number of ops
      */
     public RexNode evaluate(
             ArithmeticPostAggregation arithmeticPostAggregation,
@@ -178,11 +180,13 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
                         arithmeticPostAggregation.getName()
                 );
             case MINUS:
+                assert innerFields.size() == 2;
                 return builder.alias(
                         builder.call(SqlStdOperatorTable.MINUS, innerFields),
                         arithmeticPostAggregation.getName()
                 );
             case DIVIDE:
+                assert innerFields.size() == 2;
                 List<RexNode> temp = new ArrayList<>();
                 //cast Integer to Double to avoid truncation
                 RexNode numerator =

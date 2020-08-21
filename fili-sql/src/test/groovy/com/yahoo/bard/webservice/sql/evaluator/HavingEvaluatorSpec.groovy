@@ -78,7 +78,6 @@ class HavingEvaluatorSpec extends Specification {
         String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
                 asSelect().
                 toString();
-        print(sql)
         sql.contains(expectedHavingSql)
         where: "we have"
         having                                                               | aggregations               | expectedHavingSql

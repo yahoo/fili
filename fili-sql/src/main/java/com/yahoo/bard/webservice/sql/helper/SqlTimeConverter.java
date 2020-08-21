@@ -174,7 +174,8 @@ public class SqlTimeConverter {
                 .stream()
                 .map(sqlDatePartFunction ->
                         builder.alias(builder.call(
-                                sqlDatePartFunction, builder.field(timeColumn)),
+                                sqlDatePartFunction,
+                                builder.field(timeColumn)),
                                 sqlDatePartFunction.getName()
                         )
                 )
