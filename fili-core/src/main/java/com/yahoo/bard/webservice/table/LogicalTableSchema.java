@@ -30,6 +30,16 @@ public class LogicalTableSchema extends BaseSchema {
     }
 
     /**
+     * Copy Constructor.
+     *
+     * @param granularity  The granularity for this schema.
+     * @param columns  The columns for this schema.
+     */
+    protected LogicalTableSchema(Granularity granularity, Iterable<Column> columns) {
+        super(granularity, columns);
+    }
+
+    /**
      * Convert the tables in the table group to a set of dimension and metric columns.
      *
      * @param tableGroup  The collection of table group physical tables.
