@@ -130,7 +130,6 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
                 name,
                 category,
                 longName,
-                granularity,
                 retention,
                 description,
                 tableGroup,
@@ -145,7 +144,6 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
      * @param name  The logical table name
      * @param category  The category of the logical table
      * @param longName  The long name of the logical table
-     * @param granularity  The logical table time grain
      * @param retention  The period the data in the logical table is retained for
      * @param description  The description for this logical table
      * @param tableGroup  The tablegroup for the logical table
@@ -156,7 +154,6 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
             @NotNull String name,
             String category,
             String longName,
-            @NotNull Granularity granularity,
             ReadablePeriod retention,
             String description,
             TableGroup tableGroup,
@@ -169,7 +166,7 @@ public class LogicalTable implements Table, Comparable<LogicalTable> {
         this.longName = longName;
         this.retention = retention;
         this.description = description;
-        this.comparableParam = name + granularity.toString();
+        this.comparableParam = name + schema.getGranularity().toString();
         this.schema = schema;
         this.viewFilters = viewFilters == null ? null : new ApiFilters(viewFilters);
     }

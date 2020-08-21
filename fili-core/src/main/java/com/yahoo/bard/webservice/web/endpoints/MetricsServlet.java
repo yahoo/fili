@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
+import static com.yahoo.bard.webservice.web.endpoints.views.DefaultMetadataViewFormatters.metricMetadataFormatter;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
@@ -11,10 +12,12 @@ import com.yahoo.bard.webservice.exception.MetadataExceptionHandler;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.MetricRequest;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
+import com.yahoo.bard.webservice.web.MetadataObject;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
+import com.yahoo.bard.webservice.web.endpoints.views.MetricMetadataFormatter;
 
 import com.codahale.metrics.annotation.Timed;
 
@@ -22,13 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -89,6 +87,22 @@ public class MetricsServlet extends EndpointServlet {
     }
 
     /**
+     * Get the URL of the logical metric.
+     *
+     * @param logicalMetric  Logical metric to get the URL of
+     * @param uriInfo  URI Info for the request
+     *
+     * @return The absolute URL for the logical metric
+     */
+    public static String getLogicalMetricUrl(LogicalMetric logicalMetric, UriInfo uriInfo) {
+        return uriInfo.getBaseUriBuilder()
+                .path(MetricsServlet.class)
+                .path(MetricsServlet.class, "getMetric")
+                .build(logicalMetric.getName())
+                .toASCIIString();
+    }
+
+    /**
      * Get all the logical metrics as a summary list.
      *
      * @param perPage  number of values to return per page
@@ -105,7 +119,7 @@ public class MetricsServlet extends EndpointServlet {
      *     "metrics": <List of Metric Summaries>
      * }
      * }
-     * @see MetricsServlet#getLogicalMetricListSummaryView(Collection, UriInfo)
+     * @see MetricMetadataFormatter#formatMetricSummaryList(Collection, UriInfo)
      */
     @GET
     @Timed
@@ -138,7 +152,7 @@ public class MetricsServlet extends EndpointServlet {
             Response response = paginateAndFormatResponse(
                     apiRequest,
                     containerRequestContext,
-                    getLogicalMetricListSummaryView(apiRequest.getMetrics(), uriInfo),
+                    metricMetadataFormatter.formatMetricSummaryList(apiRequest.getMetrics(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "metrics" : "rows",
                     null
             );
@@ -162,7 +176,7 @@ public class MetricsServlet extends EndpointServlet {
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The logical metric
-     * @see MetricsServlet#getLogicalMetricFullView(LogicalMetric, LogicalTableDictionary, UriInfo)
+     * @see MetricMetadataFormatter#formatLogicalMetricWithJoins(LogicalMetric, LogicalTableDictionary, UriInfo)
      */
     @GET
     @Timed
@@ -191,7 +205,7 @@ public class MetricsServlet extends EndpointServlet {
                 apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Map<String, Object> result = getLogicalMetricFullView(
+            MetadataObject result = metricMetadataFormatter.formatLogicalMetricWithJoins(
                     apiRequest.getMetric(),
                     logicalTableDictionary,
                     uriInfo
@@ -211,85 +225,5 @@ public class MetricsServlet extends EndpointServlet {
         }
 
         return responseSender.get();
-    }
-
-    /**
-     * Get the summary list view of the logical metrics.
-     *
-     * @param logicalMetrics  Collection of logical metrics to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the logical metrics
-     */
-    public static Set<Map<String, String>> getLogicalMetricListSummaryView(
-            Collection<LogicalMetric> logicalMetrics,
-            UriInfo uriInfo
-    ) {
-        return logicalMetrics.stream()
-                .map(logicalMetric -> getLogicalMetricSummaryView(logicalMetric, uriInfo))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the logical metric.
-     *
-     * @param logicalMetric  Logical metric to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary view of the logical metric
-     */
-    public static Map<String, String> getLogicalMetricSummaryView(LogicalMetric logicalMetric, UriInfo uriInfo) {
-        Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalMetric.getCategory());
-        resultRow.put("name", logicalMetric.getName());
-        resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("type", logicalMetric.getType());
-        resultRow.put("uri", getLogicalMetricUrl(logicalMetric, uriInfo));
-        return resultRow;
-    }
-
-    /**
-     * Get the full view of the logical metric.
-     *
-     * @param logicalMetric  Logical metric to get the view of
-     * @param logicalTableDictionary  Logical Table Dictionary to look up the logical tables this metric is on
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Full view of the logical metric
-     */
-    public static Map<String, Object> getLogicalMetricFullView(
-            LogicalMetric logicalMetric,
-            LogicalTableDictionary logicalTableDictionary,
-            UriInfo uriInfo
-    ) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalMetric.getCategory());
-        resultRow.put("name", logicalMetric.getName());
-        resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("description", logicalMetric.getDescription());
-        resultRow.put(
-                "tables",
-                TablesServlet.getLogicalTableListSummaryView(
-                        logicalTableDictionary.findByLogicalMetric(logicalMetric),
-                        uriInfo
-                )
-        );
-        return resultRow;
-    }
-
-    /**
-     * Get the URL of the logical metric.
-     *
-     * @param logicalMetric  Logical metric to get the URL of
-     * @param uriInfo  URI Info for the request
-     *
-     * @return The absolute URL for the logical metric
-     */
-    public static String getLogicalMetricUrl(LogicalMetric logicalMetric, UriInfo uriInfo) {
-        return uriInfo.getBaseUriBuilder()
-                .path(MetricsServlet.class)
-                .path(MetricsServlet.class, "getMetric")
-                .build(logicalMetric.getName())
-                .toASCIIString();
     }
 }
