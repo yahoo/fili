@@ -12,7 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -109,8 +108,8 @@ public class TableFullViewFormatter extends TableMetadataFormatter {
         resultRow.put("longName", StringUtils.capitalize(logicalTable.getGranularity().getName()));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
         resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
-        resultRow.put("dimensions", formatDimensionRollup(logicalTable.getDimensions()));
-        resultRow.put("metrics", formatMetricRollup(logicalTable.getLogicalMetrics()));
+        resultRow.put("dimensions", formatDimensionsRollup(logicalTable.getDimensions(), uriInfo));
+        resultRow.put("metrics", formatMetricsRollup(logicalTable.getLogicalMetrics(), uriInfo));
         return resultRow;
     }
 
@@ -118,42 +117,70 @@ public class TableFullViewFormatter extends TableMetadataFormatter {
      * Get the summary list view of the dimensions.
      *
      * @param dimensions  Collection of dimensions to get the summary view for
+     * @param uriInfo  Uri information to construct the uri's
      *
      * @return Summary list view of the dimensions
      */
-    protected Set<Map<String, Object>> formatDimensionRollup(Collection<Dimension> dimensions) {
+    protected Set<MetadataObject> formatDimensionsRollup(Collection<Dimension> dimensions, UriInfo uriInfo) {
         return dimensions.stream()
-                .map(dimension -> {
-                    Map<String, Object> resultRow = new LinkedHashMap<>();
-                    resultRow.put("category", dimension.getCategory());
-                    resultRow.put("name", dimension.getApiName());
-                    resultRow.put("longName", dimension.getLongName());
-                    resultRow.put("cardinality", dimension.getCardinality());
-                    resultRow.put("fields", dimension.getDimensionFields());
-                    resultRow.put("storageStrategy", dimension.getStorageStrategy());
-                    return resultRow;
-                })
+                .map(dimension -> formatDimensionRollup(dimension, uriInfo))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Get the summary list view of a dimension.
+     *
+     * @param dimension  Dimensions to get the summary view for
+     * @param uriInfo  Uri information to construct the uri's
+     *
+     * @return Summary list view of the dimensions
+     */
+    protected MetadataObject formatDimensionRollup(Dimension dimension, UriInfo uriInfo) {
+        MetadataObject resultRow = new MetadataObject();
+        resultRow.put("category", dimension.getCategory());
+        resultRow.put("name", dimension.getApiName());
+        resultRow.put("longName", dimension.getLongName());
+        resultRow.put("cardinality", dimension.getCardinality());
+        resultRow.put("fields", dimension.getDimensionFields());
+        resultRow.put("storageStrategy", dimension.getStorageStrategy());
+        return resultRow;
     }
     /**
      * Get the summary of the logical metrics used in the full view format.
      * Unlike the regular summary, rollup doesn't want URIs
      *
      * @param logicalMetrics  Collection of logical metrics to get the rollup view for
+     * @param uriInfo  Uri information to construct the uri's
      *
      * @return Summary view of the logical metric
      */
-    protected Set<Map<String, String>> formatMetricRollup(
-            Collection<LogicalMetric> logicalMetrics
+    protected Set<MetadataObject> formatMetricsRollup(
+            Collection<LogicalMetric> logicalMetrics,
+            UriInfo uriInfo
     ) {
         return logicalMetrics.stream()
-                .map(logicalMetric -> {
-                    Map<String, String> resultRow = new LinkedHashMap<>();
-                    resultRow.put("category", logicalMetric.getCategory());
-                    resultRow.put("name", logicalMetric.getName());
-                    resultRow.put("longName", logicalMetric.getLongName());
-                    resultRow.put("type", logicalMetric.getType());
-                    return resultRow;
-                }).collect(Collectors.toCollection(LinkedHashSet::new));
+                .map(logicalMetric -> formatMetricRollup(logicalMetric, uriInfo))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    /**
+     * Get the summary of a logical metric used in the full view format.
+     * Unlike the regular summary, rollup doesn't use URIs by default.
+     *
+     * @param logicalMetric  logical metric to get the rollup view for
+     * @param uriInfo  Uri information to construct the uri's
+     *
+     * @return Summary view of the logical metric
+     */
+    protected MetadataObject formatMetricRollup(
+            LogicalMetric logicalMetric,
+            UriInfo uriInfo
+    ) {
+        MetadataObject resultRow = new MetadataObject();
+        resultRow.put("category", logicalMetric.getCategory());
+        resultRow.put("name", logicalMetric.getName());
+        resultRow.put("longName", logicalMetric.getLongName());
+        resultRow.put("type", logicalMetric.getType());
+        return resultRow;
     }
 }
