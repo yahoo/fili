@@ -119,6 +119,9 @@ Current
 
 ### Changed:
 
+- [Additional refactor for better extensibility ](https://github.com/yahoo/fili/issues/1084)
+   * `TableFullViewFormatter` needed some more generality to make it easier to extend.
+
 - [Refactored metadata generation into testable classes ](https://github.com/yahoo/fili/issues/1084)
    * Created metadata formatter classes to hold code to generate metadata endpoint responses.
    * Created `MetadataObject` to encapsulate `Map<String, Object>` patterns.
