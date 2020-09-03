@@ -380,6 +380,10 @@
                         <artifactId>netty</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.fasterxml.jackson.dataformat</groupId>
+                        <artifactId>jackson-dataformat-smile</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-validator</artifactId>
                     </exclusion>
