@@ -1,3 +1,5 @@
+// Copyright 2020 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.evaluator
 
 import com.yahoo.bard.webservice.database.Database
@@ -21,6 +23,7 @@ import static com.yahoo.bard.webservice.sql.builders.Filters.and
 import static com.yahoo.bard.webservice.sql.builders.Filters.not
 import static com.yahoo.bard.webservice.sql.builders.Filters.or
 import static com.yahoo.bard.webservice.sql.builders.Filters.search
+import static com.yahoo.bard.webservice.sql.builders.Filters.select
 
 class PrestoFilterEvaluatorSpec extends Specification {
     static Connection CONNECTION = Database.initializeDatabase()
@@ -44,6 +47,7 @@ class PrestoFilterEvaluatorSpec extends Specification {
 
         where: "we have"
         filter                                             | filterString
+        select(API + IS_ROBOT, "value")                    | "WHERE CAST(`isRobot` AS VARCHAR) = 'value'"
         search(API + IS_ROBOT)                             | "WHERE CAST(`isRobot` AS VARCHAR) LIKE ''"
         or(search(API + IS_ROBOT), search(API + IS_ROBOT)) | "WHERE CAST(`isRobot` AS VARCHAR) LIKE ''"
         not(not(not(search(API + IS_ROBOT))))              | "WHERE CAST(`isRobot` AS VARCHAR) NOT LIKE ''"
