@@ -13,6 +13,25 @@ import java.util.Locale;
 
 
 public class PrestoFilterEvaluator extends FilterEvaluator {
+
+    /**
+     * Evaluates a Selector filter.
+     *
+     * @param selectorFilter  A selectorFilter to be evaluated.
+     * @param builder  The RelBuilder used to build queries with Calcite.
+     * @param apiToFieldMapper  A function to get the aliased aggregation's name from the metric name.
+     *
+     * @return a RexNode containing an equivalent filter to the one given.
+     */
+    public RexNode evaluate(SelectorFilter selectorFilter, RelBuilder builder, ApiToFieldMapper apiToFieldMapper) {
+        String apiName = selectorFilter.getDimension().getApiName();
+        return builder.call(
+                SqlStdOperatorTable.EQUALS,
+                builder.cast(builder.field(apiToFieldMapper.apply(apiName)), SqlTypeName.VARCHAR),
+                builder.literal(selectorFilter.getValue())
+        );
+    }
+
     /**
      * Evaluates a SearchFilter filter. Currently doesn't support Fragment mode.
      *
