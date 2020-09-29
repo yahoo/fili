@@ -82,6 +82,7 @@ class MemcachedCacheSpec extends Specification {
     def "cache set and get #key"() {
         when: "set"
         DataCache<String> cache = (DataCache<String>) jtb.dataCache
+        //(Deprecate this return type to be void)
         cache.set(key, value)
         cache.set(key2, value2)
 

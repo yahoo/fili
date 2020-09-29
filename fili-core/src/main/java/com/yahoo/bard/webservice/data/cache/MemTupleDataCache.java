@@ -112,6 +112,7 @@ public class MemTupleDataCache<T extends Serializable, V extends Serializable>
         return super.get(hash(key));
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T meta, V value) {
         return set(hash(key), new DataEntry<>(key, meta, value));
