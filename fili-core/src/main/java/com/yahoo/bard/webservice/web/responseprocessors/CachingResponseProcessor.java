@@ -86,6 +86,7 @@ public class CachingResponseProcessor implements ResponseProcessor {
                 valueString = writer.writeValueAsString(json);
                 int valueLength = valueString.length();
                 if (valueLength <= maxDruidResponseLengthToCache) {
+                    //(Deprecate this return type to be void)
                     dataCache.set(cacheKey, valueString);
                 } else {
                     LOG.debug(
