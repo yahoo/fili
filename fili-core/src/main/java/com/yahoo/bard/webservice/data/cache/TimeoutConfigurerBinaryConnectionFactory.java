@@ -15,7 +15,7 @@ public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFa
      * Create a TimeoutConfigurerBinaryConnectionFactory with the default parameters.
      *
      */
-    TimeoutConfigurerBinaryConnectionFactory() {
+    public TimeoutConfigurerBinaryConnectionFactory() {
         this(DEFAULT_OPERATION_TIMEOUT);
     }
 
@@ -24,7 +24,7 @@ public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFa
      *
      * @param operationTimeout  The number of milliseconds to wait for timeout,
      */
-    TimeoutConfigurerBinaryConnectionFactory(Long operationTimeout) {
+    public TimeoutConfigurerBinaryConnectionFactory(Long operationTimeout) {
         super();
         this.operationTimeout = operationTimeout;
     }
@@ -42,6 +42,7 @@ public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFa
         this.operationTimeout = operationTimeout;
     }
 
+    @Override
     public long getOperationTimeout() {
         return  operationTimeout;
     }
