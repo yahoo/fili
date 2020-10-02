@@ -8,6 +8,9 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
+    * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
+
 - [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
     * Change to rollup formatter broke serialization of all timegrain.
 
