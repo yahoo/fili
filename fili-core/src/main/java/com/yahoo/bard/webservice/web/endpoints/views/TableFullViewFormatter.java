@@ -104,8 +104,8 @@ public class TableFullViewFormatter extends TableMetadataFormatter {
     protected MetadataObject tableSchemaForGrain(LogicalTable logicalTable, UriInfo uriInfo) {
         String grain = logicalTable.getGranularity().getName();
         MetadataObject resultRow = new MetadataObject();
-        resultRow.put("name", logicalTable.getGranularity().toString());
-        resultRow.put("longName", StringUtils.capitalize(logicalTable.getGranularity().getName()));
+        resultRow.put("name", grain);
+        resultRow.put("longName", StringUtils.capitalize(grain));
         resultRow.put("description", "The " + logicalTable.getName() + " " + grain + " grain");
         resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
         resultRow.put("dimensions", formatDimensionsRollup(logicalTable.getDimensions(), uriInfo));

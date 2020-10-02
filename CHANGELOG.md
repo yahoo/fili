@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
+    * Change to rollup formatter broke serialization of all timegrain.
 
 - [Fix: Fix missing VARCHAR cast for SelectorFilter](https://github.com/yahoo/fili/pull/1087)
     * The PrestoFilterEvaluator.java missed the evaluator for the SelectorFilter (equals) case. Fix by adding the evaluator and corresponding VARCHAR cast.

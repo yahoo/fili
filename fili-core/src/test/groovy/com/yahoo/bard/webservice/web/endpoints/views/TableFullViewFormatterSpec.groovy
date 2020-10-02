@@ -113,10 +113,23 @@ class TableFullViewFormatterSpec extends Specification {
 
         Set<MetadataObject> grainObjects = tableObject["timeGrains"]
         grainObjects.size() == 2
-        MetadataObject grainObject = (grainObjects as List)[0]
+
+        when:
+        MetadataObject grainObject = (grainObjects as List)[1]
+
+        then:
+        grainObject["name"] == "all"
+        grainObject["longName"] == "All"
+        grainObject["description"]  == "The base13 all grain"
+
+        when:
+        grainObject = (grainObjects as List)[0]
+
+        then:
         grainObject["name"] == "day"
         grainObject["longName"] == "Day"
         grainObject["description"]  == "The base13 day grain"
+
         Set<MetadataObject> dimensions = grainObject["dimensions"]
         MetadataObject dimensionObject = (grainObject["dimensions"] as List)[0]
         dimensionObject["name"] == resources.d1.apiName
