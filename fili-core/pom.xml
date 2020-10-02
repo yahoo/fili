@@ -283,6 +283,7 @@
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.avsc"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.json"/>
                                     <redirector
+                                        logError="true"
                                         output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"
                                         binaryOutput="true"/>
                                 </java>
