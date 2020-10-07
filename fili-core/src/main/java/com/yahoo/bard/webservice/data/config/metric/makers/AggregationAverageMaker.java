@@ -102,7 +102,7 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
     /**
      * Abstract method to build new renamed aggregation name.
      *
-     * @param name The dependent metric name need rename.=
+     * @param name The dependent metric name need rename.
      * @return Renamed metric name with specified prefix
      */
     @Override
