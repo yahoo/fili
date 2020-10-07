@@ -30,18 +30,22 @@ import spock.lang.Specification
 class AggregationAverageMakerSpec extends Specification{
 
     static final String NAME = "users"
+    static final String NAME_RENAMED = "__averager_renamed_users"
     static final String DESCRIPTION  = NAME
     static final String ESTIMATE_NAME = "users_estimate"
-    static final String ESTIMATE_SUM_NAME = "users_estimate_sum"
+    static final String ESTIMATE_NAME_RENAMED = "__averager_renamed_users_estimate"
+    static final String ESTIMATE_SUM_NAME_RENAMED = "__averager_renamed_users_estimate_sum"
     static final int SKETCH_SIZE = 16000
     static final ZonelessTimeGrain INNER_GRAIN = DAY
 
     @Shared
     FieldConverters converter = FieldConverterSupplier.sketchConverter
     Aggregation sketchMerge
+    Aggregation sketchMergeRenamed
 
     def setup(){
         sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
+        sketchMergeRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, SKETCH_SIZE)
         //Initializing the Sketch field converter
         FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter();
     }
@@ -67,7 +71,7 @@ class AggregationAverageMakerSpec extends Specification{
         and: """a test-specific inner post aggregation and the expected metric. The test-specific inner post aggregation
                 estimates the size of userSketchCount."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
+                ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(userSketchCount)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
@@ -81,7 +85,7 @@ class AggregationAverageMakerSpec extends Specification{
         given: """A logical metric for counting the number of users each day, using a sketch merge and sketch
             estimate rather than a sketch count."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
+                ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(sketchMerge)
         )
         TemplateDruidQuery sketchMergeAndEstimateQuery = new TemplateDruidQuery(
@@ -118,7 +122,7 @@ class AggregationAverageMakerSpec extends Specification{
         and: """the expected metric. Note that a sketch estimate is expected to be added automatically by the
                 AggregationAverageMaker."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
+                ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(sketchMerge)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
@@ -162,7 +166,7 @@ class AggregationAverageMakerSpec extends Specification{
      * @return The LogicalMetric expected by the tests
      */
     LogicalMetric buildExpectedMetric(PostAggregation innerPostAggregation){
-        Set<Aggregation> innerAggregations = [sketchMerge] as LinkedHashSet
+        Set<Aggregation> innerAggregations = [sketchMergeRenamed] as LinkedHashSet
         Set<PostAggregation> innerPostAggregations = [innerPostAggregation, AggregationAverageMaker.COUNT_INNER]
         TemplateDruidQuery innerQueryTemplate = new TemplateDruidQuery(
                 innerAggregations,
@@ -170,7 +174,7 @@ class AggregationAverageMakerSpec extends Specification{
                 DAY
         )
 
-        Aggregation outerSum = new DoubleSumAggregation(ESTIMATE_SUM_NAME, ESTIMATE_NAME)
+        Aggregation outerSum = new DoubleSumAggregation(ESTIMATE_SUM_NAME_RENAMED, ESTIMATE_NAME_RENAMED)
         FieldAccessorPostAggregation outerSumLookup = new FieldAccessorPostAggregation(outerSum)
         PostAggregation average = new ArithmeticPostAggregation(
                 NAME,

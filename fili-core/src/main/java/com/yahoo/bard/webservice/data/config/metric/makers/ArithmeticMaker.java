@@ -36,6 +36,8 @@ public class ArithmeticMaker extends BaseProtocolMetricMaker {
 
     private final Function<String, ResultSetMapper> resultSetMapperSupplier;
 
+    private static final String RENAMED_ARITHMETIC_PREFIX = "__airthmetic_renamed_";
+
     /**
      * Constructor.
      *
@@ -90,6 +92,17 @@ public class ArithmeticMaker extends BaseProtocolMetricMaker {
                 function,
                 NO_OP_MAP_PROVIDER
         );
+    }
+
+    /**
+     * Abstract method to build new aggregation name.
+     *
+     * @param name The dependent metric name need rename.=
+     * @return Renamed metric name with specified prefix
+     */
+    @Override
+    protected String getRenamedMetricNameWithPrefix(String name) {
+        return RENAMED_ARITHMETIC_PREFIX + name;
     }
 
     @Override

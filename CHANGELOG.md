@@ -8,6 +8,9 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
+    * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
+
 - [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
     * Change to rollup formatter broke serialization of all timegrain.
 
