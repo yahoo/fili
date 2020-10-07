@@ -57,6 +57,7 @@ class AggregationAverageMakerSpec extends Specification{
     def "Build a correct LogicalMetric when passed a sketch count aggregation."(){
         given: "a logical metric for counting the number of users each day"
         Aggregation userSketchCount = new ThetaSketchAggregation(NAME, NAME, 16000)
+        Aggregation userSketchCountRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, 16000)
         TemplateDruidQuery sketchQuery = new TemplateDruidQuery(
                 [userSketchCount] as Set,
                 [] as Set
@@ -72,7 +73,7 @@ class AggregationAverageMakerSpec extends Specification{
                 estimates the size of userSketchCount."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
                 ESTIMATE_NAME_RENAMED,
-                new FieldAccessorPostAggregation(userSketchCount)
+                new FieldAccessorPostAggregation(userSketchCountRenamed)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
         LogicalMetric actual = maker.make(NAME, NAME)
@@ -88,6 +89,10 @@ class AggregationAverageMakerSpec extends Specification{
                 ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(sketchMerge)
         )
+        PostAggregation sketchEstimateRenamed = new ThetaSketchEstimatePostAggregation(
+                ESTIMATE_NAME_RENAMED,
+                new FieldAccessorPostAggregation(sketchMergeRenamed)
+        )
         TemplateDruidQuery sketchMergeAndEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
                 [sketchEstimate] as Set
@@ -100,7 +105,7 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """The expected metric. Identical to the expected metric from the previous test, except that the
             sketchEstimate post aggregation is accessing a sketch merge, rather than a sketch count aggregation."""
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimateRenamed)
 
         expect:
         maker.make(NAME, NAME).equals(expectedMetric)
@@ -109,6 +114,7 @@ class AggregationAverageMakerSpec extends Specification{
     def "Build a correct LogicalMetric when passed only a sketch merge."(){
         given: "A Logical Metric containing only a sketch estimate"
         Aggregation sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
+        Aggregation sketchMergeRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, SKETCH_SIZE)
         TemplateDruidQuery sketchEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
                 [] as Set
@@ -123,7 +129,7 @@ class AggregationAverageMakerSpec extends Specification{
                 AggregationAverageMaker."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
                 ESTIMATE_NAME_RENAMED,
-                new FieldAccessorPostAggregation(sketchMerge)
+                new FieldAccessorPostAggregation(sketchMergeRenamed)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
