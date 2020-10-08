@@ -13,7 +13,8 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.util.CacheService;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -130,7 +131,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                         int rowCount = row.get("event").get("count").asInt();
 
                         if (rowCount > queryRowLimit) {
-                            CacheService.checkWeightLimitQuery(response, druidQuery, rowCount, queryRowLimit);
+                            checkWeightLimitQuery(response, druidQuery, rowCount, queryRowLimit);
                             return;
                         }
                     }
@@ -141,5 +142,34 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                 }
             }
         };
+    }
+
+    /**
+     * Check weight limit query.
+     *
+     * @param response response
+     * @param druidQuery druid query
+     * @param rowCount row count
+     * @param queryRowLimit query row limit
+     */
+    protected static void checkWeightLimitQuery(
+            ResponseProcessor response,
+            DruidAggregationQuery<?> druidQuery,
+            int rowCount,
+            long queryRowLimit
+    ) {
+        String reason = String.format(
+                ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
+                rowCount,
+                queryRowLimit
+        );
+        String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
+
+        LOG.debug(reason);
+        response.getErrorCallback(druidQuery).dispatch(
+                507, //  Insufficient Storage
+                reason,
+                description
+        );
     }
 }

@@ -9,14 +9,12 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
-import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
-import com.yahoo.bard.webservice.web.responseprocessors.CacheWeightCheckResponseProcessor;
+import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.web.util.CacheService;
-import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.util.Utils;
 
 
@@ -41,12 +39,9 @@ import javax.validation.constraints.NotNull;
  *     <li>If the cost is too high, return an error, otherwise subsequently submit the data request.
  * </ul>
  */
-public class CacheWeightCheckRequestHandler extends BaseDataRequestHandler {
+public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(WeightCheckRequestHandler.class);
 
-    protected final @NotNull DataRequestHandler next;
-    protected final @NotNull DruidWebService webService;
-    protected final @NotNull QueryWeightUtil queryWeightUtil;
     protected final @NotNull TupleDataCache<String, Long, String> dataCache;
     protected final @NotNull QuerySigningService<Long> querySigningService;
 
@@ -68,10 +63,12 @@ public class CacheWeightCheckRequestHandler extends BaseDataRequestHandler {
             @NotNull DataCache<?> dataCache,
             QuerySigningService<?> querySigningService
     ) {
-        super(mapper);
-        this.next = next;
-        this.webService = webService;
-        this.queryWeightUtil = queryWeightUtil;
+        super(
+                next,
+                webService,
+                queryWeightUtil,
+                mapper
+        );
         this.dataCache = (TupleDataCache<String, Long, String>) dataCache;
         this.querySigningService = (QuerySigningService<Long>) querySigningService;
     }
@@ -99,8 +96,8 @@ public class CacheWeightCheckRequestHandler extends BaseDataRequestHandler {
         }
 
         BardQueryInfo.getBardQueryInfo().incrementCountWeightCheck();
-        final CacheWeightCheckResponseProcessor weightCheckResponse =
-                new CacheWeightCheckResponseProcessor(response, cacheKey, dataCache, querySigningService, mapper);
+        final WeightCheckResponseProcessor weightCheckResponse =
+                new WeightCheckResponseProcessor(response);
         final DruidAggregationQuery<?> weightEvaluationQuery = queryWeightUtil.makeWeightEvaluationQuery(druidQuery);
         Granularity granularity = druidQuery.getInnermostQuery().getGranularity();
         final long queryRowLimit = queryWeightUtil.getQueryWeightThreshold(granularity);
@@ -111,14 +108,34 @@ public class CacheWeightCheckRequestHandler extends BaseDataRequestHandler {
             LOG.warn("Weight Query json exception:", e);
         }
 
-        final SuccessCallback weightQuerySuccess = buildSuccessCallback(
-                context,
-                request,
-                druidQuery,
-                weightCheckResponse,
-                queryRowLimit,
-                cacheKey
-        );
+        CacheService cacheService = new CacheService();
+        SuccessCallback weightQuerySuccess = null;
+        // Construct success callback based on cache hit or cache miss
+        if (context.isReadCache()) {
+            String cacheResponse =
+                    cacheService.readCache(context, dataCache, querySigningService, druidQuery, cacheKey);
+            // Cache hit
+            if (cacheResponse != null) {
+                weightQuerySuccess = super.buildSuccessCallback(
+                        context,
+                        request,
+                        druidQuery,
+                        weightCheckResponse,
+                        queryRowLimit
+                );
+            }
+        } else {
+            // Write to cache
+            weightQuerySuccess = buildCacheSuccessCallback(
+                    context,
+                    request,
+                    druidQuery,
+                    weightCheckResponse,
+                    queryRowLimit,
+                    cacheKey,
+                    cacheService
+            );
+        }
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
         FailureCallback failure = response.getFailureCallback(druidQuery);
         webService.postDruidQuery(context, weightQuerySuccess, error, failure, weightEvaluationQuery);
@@ -135,55 +152,38 @@ public class CacheWeightCheckRequestHandler extends BaseDataRequestHandler {
      * @param response  the response handler
      * @param queryRowLimit  The number of aggregating lines allowed
      * @param cacheKey Cache Key
+     * @param cacheService Cache Service
      *
      * @return The callback handler for the weight request
      */
-    protected SuccessCallback buildSuccessCallback(
+    protected SuccessCallback buildCacheSuccessCallback(
             final RequestContext context,
             final DataApiRequest request,
             final DruidAggregationQuery<?> druidQuery,
             final ResponseProcessor response,
             final long queryRowLimit,
-            final String cacheKey
+            final String cacheKey,
+            final CacheService cacheService
     ) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode jsonResult) {
-                ResponseProcessor nextResponse = response;
-
-                try {
-                    // The result will contain either one result reflecting the row count or
-                    // none if the request matches no rows.
-                    LOG.debug("{}", writer.writeValueAsString(jsonResult));
-                    JsonNode row = jsonResult.get(0);
-
-                    // If the weight limit query is empty or reports acceptable rows, run the full query
-                    if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
-                        if (rowCount > queryRowLimit) {
-                            CacheService.checkWeightLimitQuery(response, druidQuery, rowCount, queryRowLimit);
-                            return;
-                        }
-                    }
-
-                    if (context.isReadCache()) {
-                        String cacheResponse =
-                                CacheService.readCache(context, dataCache, querySigningService, druidQuery, cacheKey);
-                        RequestLog logCtx = RequestLog.dump();
-                        nextResponse.processResponse(
-                                mapper.readTree(cacheResponse),
-                                druidQuery,
-                                new LoggingContext(logCtx)
-                        );
-                    }
-
-                    // Cached value either doesn't exist or is invalid
-                    next.handleRequest(context, request, druidQuery, nextResponse);
-
-                } catch (Throwable e) {
-                    LOG.info("Exception processing druid call in success", e);
-                    response.getFailureCallback(druidQuery).dispatch(e);
-                }
+                cacheService.writeCache(
+                        response,
+                        jsonResult,
+                        dataCache,
+                        druidQuery,
+                        querySigningService,
+                        cacheKey,
+                        writer
+                );
+                buildSuccessCallback(
+                        context,
+                        request,
+                        druidQuery,
+                        response,
+                        queryRowLimit
+                );
             }
         };
     }

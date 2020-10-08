@@ -4,7 +4,13 @@ package com.yahoo.bard.webservice.web.util;
 
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.REQUEST_WORKFLOW_TIMER;
 import static com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow.RESPONSE_WORKFLOW_TIMER;
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DATA;
+import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
+import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -13,8 +19,9 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 
@@ -30,6 +37,13 @@ import java.util.Objects;
 public class CacheService {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheService.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private final long maxDruidResponseLengthToCache = SYSTEM_CONFIG.getLongProperty(
+            SYSTEM_CONFIG.getPackageVariableName(
+                    "druid_max_response_length_to_cache"
+            ),
+            Long.MAX_VALUE
+    );
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     public static final Meter CACHE_HITS = REGISTRY.meter("queries.meter.cache.hits");
     public static final Meter CACHE_POTENTIAL_HITS = REGISTRY.meter("queries.meter.cache.potential_hits");
@@ -47,7 +61,7 @@ public class CacheService {
      * @param cacheKey cache key
      * @return Response
      */
-    public static String readCache(
+    public String readCache(
             RequestContext context,
             TupleDataCache<String, Long, String> dataCache,
             QuerySigningService<Long> querySigningService,
@@ -89,32 +103,60 @@ public class CacheService {
         return null;
     }
 
+    public void writeCache(
+            ResponseProcessor response,
+            JsonNode json,
+            TupleDataCache<String, Long, String> dataCache,
+            DruidAggregationQuery<?> druidQuery,
+            QuerySigningService querySigningService,
+            String cacheKey,
+            ObjectWriter writer
+            ) {
+        if (CACHE_PARTIAL_DATA.isOn() || isCacheable(response)) {
+            String valueString = null;
+            try {
+                valueString = writer.writeValueAsString(json);
+                int valueLength = valueString.length();
+                if (valueLength <= maxDruidResponseLengthToCache) {
+                    dataCache.set(
+                            cacheKey,
+                            Long.parseLong(
+                                    String.valueOf(
+                                            querySigningService.getSegmentSetId(druidQuery).orElse(null)
+                                    )
+                            ),
+                            valueString
+                    );
+                } else {
+                    LOG.debug(
+                            "Response not cached. Length of {} exceeds max value length of {}",
+                            valueLength,
+                            maxDruidResponseLengthToCache
+                    );
+                }
+            } catch (Exception e) {
+                LOG.warn(
+                        "Unable to cache {}value of size: {}",
+                        valueString == null ? "null " : "",
+                        valueString == null ? "N/A" : valueString.length(),
+                        e
+                );
+            }
+        }
+    }
+
+
     /**
-     * Check weight limit query.
+     * A request is cacheable if it does not refer to partial data.
      *
      * @param response response
-     * @param druidQuery druid query
-     * @param rowCount row count
-     * @param queryRowLimit query row limit
+     *
+     * @return whether request can be cached
      */
-    public static void checkWeightLimitQuery(
-            ResponseProcessor response,
-            DruidAggregationQuery<?> druidQuery,
-            int rowCount,
-            long queryRowLimit
-    ) {
-        String reason = String.format(
-                ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
-                rowCount,
-                queryRowLimit
-        );
-        String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
+    public boolean isCacheable(ResponseProcessor response) {
+        SimplifiedIntervalList missingIntervals = getPartialIntervalsWithDefault(response.getResponseContext());
+        SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(response.getResponseContext());
 
-        LOG.debug(reason);
-        response.getErrorCallback(druidQuery).dispatch(
-                507, //  Insufficient Storage
-                reason,
-                description
-        );
+        return missingIntervals.isEmpty() && volatileIntervals.isEmpty();
     }
 }
