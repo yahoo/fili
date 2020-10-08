@@ -12,9 +12,18 @@ import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
+import com.yahoo.bard.webservice.druid.model.MetricField;
+import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.yahoo.bard.webservice.util.StreamUtils.not;
 
 /**
  * An expansion on the the base {@link MetricMaker} contract that leverages the functionality of {@link ProtocolMetric}.
@@ -75,13 +84,10 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      * Renames the provided logical metric if there is a name conflict between it and the final desired output name.
      * If there is no name conflict the input metric is returned unchanged. Otherwise, the input metric is renamed to
      * not conflict with the final output name.
-     * <p>
-     * This method specifically the {@link GeneratedMetricInfo} typing on the input metric if it has to be renamed. All
-     * other subclasses of {@link LogicalMetricInfo} are lost during the renaming. If maintaining more LogicalMetricInfo
-     * types is required, a withName method must «should be added to the LogicalMetricInfo interface.
      *
      * @param finalOutputName  The name to check for conflicts on
      * @param dependentMetric  The dependent metric to check for a conflicting name
+     *
      * @return  The metric without a name conflicting with finalOutputName
      */
      protected LogicalMetric renameIfConflicting(String finalOutputName, LogicalMetric dependentMetric) {
@@ -92,7 +98,7 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
         }
         String newName = getRenamedMetricNameWithPrefix(dependentMetricInfo.getName());
         while (ifConflicting(newName, dependentMetric)) {
-            newName = getRenamedMetricNameWithPrefix(dependentMetricInfo.getName());
+            newName = getRenamedMetricNameWithPrefix(newName);
         }
         LogicalMetricInfo resultInfo;
         if (dependentMetricInfo instanceof GeneratedMetricInfo) {
@@ -106,8 +112,10 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
     }
 
     /**
-     * Abstract method to build new aggregation name.
+     * Method to build new renamed metric name by adding prefix to it.
+     * This method would make sure all maker subclasses use unqiue prefix to build renamed name to avoid naming collision.
      * @param name The dependent metric name need rename.
+     *
      * @return Renamed metric name with specified prefix
      */
     abstract protected String getRenamedMetricNameWithPrefix(String name);
@@ -116,11 +124,16 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      * Method to determine if there is name conflict.
      * @param newName The dependent metric new name.
      * @param dependentMetric The dependent LogicalMetric.
+     *
      * @return Returns true if newName is already been used by the aggregations. otherwise false.
      */
     protected boolean ifConflicting(String newName, LogicalMetric dependentMetric) {
-        LogicalMetricInfo dependentMetricInfo = dependentMetric.getLogicalMetricInfo();
-        return java.util.Objects.equals(dependentMetricInfo.getName(), newName);
+        Set<Aggregation> aggregations = dependentMetric.getTemplateDruidQuery().getAggregations();
+        Set<PostAggregation> postAggregations = dependentMetric.getTemplateDruidQuery().getPostAggregations();
+        Set<String> allNames = Stream.concat(aggregations.stream(), postAggregations.stream())
+                .map(MetricField::getName)
+                .collect(Collectors.toSet());
+        return !allNames.add(newName);
     }
 
     /**

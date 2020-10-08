@@ -94,12 +94,6 @@ public class ArithmeticMaker extends BaseProtocolMetricMaker {
         );
     }
 
-    /**
-     * Abstract method to build new aggregation name.
-     *
-     * @param name The dependent metric name need rename.
-     * @return Renamed metric name with specified prefix
-     */
     @Override
     protected String getRenamedMetricNameWithPrefix(String name) {
         return RENAMED_ARITHMETIC_PREFIX + name;

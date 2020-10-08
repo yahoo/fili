@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
+
 import static com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
@@ -37,6 +40,7 @@ class AggregationAverageMakerSpec extends Specification{
     static final String ESTIMATE_SUM_NAME_RENAMED = "__averager_renamed_users_estimate_sum"
     static final int SKETCH_SIZE = 16000
     static final ZonelessTimeGrain INNER_GRAIN = DAY
+    AggregationAverageMaker averageMaker
 
     @Shared
     FieldConverters converter = FieldConverterSupplier.sketchConverter
@@ -135,6 +139,26 @@ class AggregationAverageMakerSpec extends Specification{
 
         expect:
         maker.make(NAME, NAME).equals(expectedMetric)
+    }
+
+    def "When output name collides with dependent metric name, dependent metric must be renamed"() {
+        setup:
+        String metricName = "inputMetric"
+        String finalMetricName = "inputMetric"
+        LogicalMetricInfo inputMetricInfo = new LogicalMetricInfo(metricName)
+        LogicalMetric inputMetric = new LogicalMetricImpl(
+                inputMetricInfo,
+                new TemplateDruidQuery([new LongSumAggregation(metricName, "unused")], []),
+                new NoOpResultSetMapper()
+        )
+        MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
+        maker.metrics.add(inputMetric)
+
+        when:
+        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric)
+
+        then:
+        result.getName() == AggregationAverageMaker.RENAMED_AVERAGER_PREFIX + metricName
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){

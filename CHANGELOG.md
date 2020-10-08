@@ -8,8 +8,6 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
-- [Fix: Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
-    * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
 
 - [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
     * Change to rollup formatter broke serialization of all timegrain.
@@ -65,6 +63,10 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
+    * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
+        - Subclasses of `BaseProtocolMetricMaker` must implement `getRenamedMetricNameWithPrefix` method to have unique rename prefix for corresponding maker. 
+    
 - [Add ability in fili-sql to translate FilteredAggregation into SQL](https://github.com/yahoo/fili/pull/1083)
    * Translate a Druid query with `n` FilteredAggregation into SQL using `(n + 1)` subquery unions. 
        - See PR description for details  

@@ -99,12 +99,6 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
         this.innerGrain = innerGrain;
     }
 
-    /**
-     * Abstract method to build new renamed aggregation name.
-     *
-     * @param name The dependent metric name need rename.
-     * @return Renamed metric name with specified prefix
-     */
     @Override
     protected String getRenamedMetricNameWithPrefix(String name) {
         return RENAMED_AVERAGER_PREFIX + name;
