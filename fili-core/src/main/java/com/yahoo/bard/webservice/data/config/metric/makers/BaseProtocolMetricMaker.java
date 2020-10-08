@@ -17,13 +17,11 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import java.util.Collections;
-import java.util.HashSet;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.yahoo.bard.webservice.util.StreamUtils.not;
 
 /**
  * An expansion on the the base {@link MetricMaker} contract that leverages the functionality of {@link ProtocolMetric}.
@@ -113,7 +111,8 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
 
     /**
      * Method to build new renamed metric name by adding prefix to it.
-     * This method would make sure all maker subclasses use unqiue prefix to build renamed name to avoid naming collision.
+     * This method would make sure all maker subclasses use unqiue prefix to build renamed name
+     * to avoid naming collision.
      * @param name The dependent metric name need rename.
      *
      * @return Renamed metric name with specified prefix
