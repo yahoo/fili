@@ -13,15 +13,12 @@ import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 import com.yahoo.bard.webservice.druid.model.MetricField;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
-import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import java.util.Collections;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * An expansion on the the base {@link MetricMaker} contract that leverages the functionality of {@link ProtocolMetric}.
@@ -131,8 +128,10 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      * @return Returns true if newName is already been used by the aggregations. otherwise false.
      */
     protected boolean ifConflicting(String newName, LogicalMetric dependentMetric) {
-        Set<String> aggregations = dependentMetric.getTemplateDruidQuery().getAggregations().stream().map(MetricField::getName).collect(Collectors.toSet());
-        Set<String> postAggregations = dependentMetric.getTemplateDruidQuery().getPostAggregations().stream().map(MetricField::getName).collect(Collectors.toSet());
+        Set<String> aggregations = dependentMetric.getTemplateDruidQuery().getAggregations().stream()
+                .map(MetricField::getName).collect(Collectors.toSet());
+        Set<String> postAggregations = dependentMetric.getTemplateDruidQuery().getPostAggregations()
+                .stream().map(MetricField::getName).collect(Collectors.toSet());
         return aggregations.contains(newName) || postAggregations.contains(newName);
     }
 
