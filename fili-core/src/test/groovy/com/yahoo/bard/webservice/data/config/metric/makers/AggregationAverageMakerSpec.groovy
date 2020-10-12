@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 
 import static com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME
@@ -145,20 +146,24 @@ class AggregationAverageMakerSpec extends Specification{
         setup:
         String metricName = "inputMetric"
         String finalMetricName = "inputMetric"
-        LogicalMetricInfo inputMetricInfo = new LogicalMetricInfo(metricName)
-        LogicalMetric inputMetric = new LogicalMetricImpl(
-                inputMetricInfo,
-                new TemplateDruidQuery([new LongSumAggregation(metricName, "unused")], []),
+        LogicalMetric inputMetric1 = new LogicalMetricImpl(
+                info,
+                new TemplateDruidQuery([new LongSumAggregation("inputMetric", "unused")], []),
                 new NoOpResultSetMapper()
         )
         MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
-        maker.metrics.add(inputMetric)
+        maker.metrics.add(inputMetric1)
 
         when:
-        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric)
+        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric1)
 
         then:
         result.getName() == AggregationAverageMaker.RENAMED_AVERAGER_PREFIX + metricName
+
+        where:
+        info                                             | infotype
+        new LogicalMetricInfo("inputMetric")                | "Logical Metric Info"
+        new GeneratedMetricInfo("inputMetric", "baseName")  | "Generated Metric Info"
     }
 
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){

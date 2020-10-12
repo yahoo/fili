@@ -36,6 +36,8 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      */
     protected final ProtocolSupport baseProtocolSupport;
 
+    private static final String DEFAULT_RENAMED_PREFIX = "__renamed_";
+
     /**
      * Construct a fully specified MetricMaker.
      *
@@ -117,7 +119,9 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      *
      * @return Renamed metric name with specified prefix
      */
-    abstract protected String getRenamedMetricNameWithPrefix(String name);
+    protected String getRenamedMetricNameWithPrefix(String name) {
+        return DEFAULT_RENAMED_PREFIX + name;
+    }
 
     /**
      * Method to determine if there is name conflict.
@@ -127,12 +131,9 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
      * @return Returns true if newName is already been used by the aggregations. otherwise false.
      */
     protected boolean ifConflicting(String newName, LogicalMetric dependentMetric) {
-        Set<Aggregation> aggregations = dependentMetric.getTemplateDruidQuery().getAggregations();
-        Set<PostAggregation> postAggregations = dependentMetric.getTemplateDruidQuery().getPostAggregations();
-        Set<String> allNames = Stream.concat(aggregations.stream(), postAggregations.stream())
-                .map(MetricField::getName)
-                .collect(Collectors.toSet());
-        return !allNames.add(newName);
+        Set<String> aggregations = dependentMetric.getTemplateDruidQuery().getAggregations().stream().map(MetricField::getName).collect(Collectors.toSet());
+        Set<String> postAggregations = dependentMetric.getTemplateDruidQuery().getPostAggregations().stream().map(MetricField::getName).collect(Collectors.toSet());
+        return aggregations.contains(newName) || postAggregations.contains(newName);
     }
 
     /**
