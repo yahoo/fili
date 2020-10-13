@@ -32,7 +32,7 @@ import java.util.Objects;
 
 
 /**
- * A static utility class for assisting with caching.
+ * A utility class to assist with caching.
  */
 public class CacheService {
 
@@ -54,11 +54,11 @@ public class CacheService {
     /**
      * Read cache.
      *
-     * @param context context
-     * @param dataCache data cache
-     * @param druidQuery druid query
-     * @param querySigningService Query signing service
-     * @param cacheKey cache key
+     * @param context The context data from the request processing chain
+     * @param dataCache The cache instance
+     * @param druidQuery The query being processed
+     * @param querySigningService The service to generate query signatures
+     * @param cacheKey Key into which to write a cache entry
      * @return Response
      */
     public String readCache(
@@ -106,13 +106,13 @@ public class CacheService {
     /**
      * Write cache.
      *
-     * @param response response
-     * @param json json
-     * @param dataCache data cache
-     * @param druidQuery druid query
-     * @param querySigningService Query signing service
-     * @param cacheKey cache key
-     * @param writer writer
+     * @param response The response handler
+     * @param json Json value to be written to cache as string
+     * @param dataCache The cache instance
+     * @param druidQuery The query being processed
+     * @param querySigningService The service to generate query signatures
+     * @param cacheKey Key into which to write a cache entry
+     * @param writer Writer
      */
     public void writeCache(
             ResponseProcessor response,
@@ -160,7 +160,7 @@ public class CacheService {
     /**
      * A request is cacheable if it does not refer to partial data.
      *
-     * @param response response
+     * @param response The response handler
      *
      * @return whether request can be cached
      */

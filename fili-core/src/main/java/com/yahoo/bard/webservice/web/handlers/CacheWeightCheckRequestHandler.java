@@ -33,6 +33,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Cache Weight check request handler determines whether a request should be processed based on estimated query cost.
+ * It also checks the cache for a matching request, else writes it to the cache.
  * <ul>
  *     <li>If the dimensions of the query are sufficiently low cardinality, the request is allowed.
  *     <li>Otherwise, send a simplified version of the query to druid asynchronously to measure the cardinality of the
@@ -48,14 +49,14 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     protected final @NotNull QuerySigningService<Long> querySigningService;
 
     /**
-     * Build a weight checking request handler.
+     * Build a cache weight checking request handler.
      *
      * @param next  The request handler to delegate the request to.
      * @param webService  The web service to use for weight checking
      * @param queryWeightUtil  A provider which measures estimated weight against allowed weights.
      * @param mapper  A JSON object mapper, used to parse the JSON response from the weight check.
-     * @param dataCache Data Cache
-     * @param querySigningService Query Signing Service
+     * @param dataCache The cache instance
+     * @param querySigningService The service to generate query signatures
      */
     public CacheWeightCheckRequestHandler(
             DataRequestHandler next,
@@ -150,18 +151,20 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     }
 
     /**
-     * Build a callback which continues the original request or refuses it with an HTTP INSUFFICIENT_STORAGE (507)
-     * status based on the cardinality of the requester 's query as measured by the weight check query.
+     * Build a callback that writes to the cache if request wasn't already cached. It then delegates to the
+     * WeightCheckRequestHandler callback which continues the original request or refuses it with an
+     * HTTP INSUFFICIENT_STORAGE (507)status based on the cardinality of the requester 's query as
+     * measured by the weight check query.
      *
      * @param context  The context data from the request processing chain
      * @param request  The API request itself
      * @param druidQuery  The query being processed
-     * @param response  the response handler
+     * @param response  The response handler
      * @param queryRowLimit  The number of aggregating lines allowed
-     * @param cacheKey Cache Key
-     * @param cacheService Cache Service
-     * @param weightCheckRequestHandler weightCheckRequestHandler
-     * @param writeCache Write to Cache
+     * @param cacheKey Key into which to write a cache entry
+     * @param cacheService CacheService object
+     * @param weightCheckRequestHandler WeightCheckRequestHandler object
+     * @param writeCache Read or Write cache flag
      *
      * @return The callback handler for the weight request
      */

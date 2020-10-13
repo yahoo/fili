@@ -105,7 +105,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
      * @param context  The context data from the request processing chain
      * @param request  The API request itself
      * @param druidQuery  The query being processed
-     * @param response  the response handler
+     * @param response  The response handler
      * @param queryRowLimit  The number of aggregating lines allowed
      *
      * @return The callback handler for the weight request
@@ -147,10 +147,10 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
     /**
      * Check weight limit query.
      *
-     * @param response response
-     * @param druidQuery druid query
-     * @param rowCount row count
-     * @param queryRowLimit query row limit
+     * @param response The response handler
+     * @param druidQuery The query being processed
+     * @param rowCount Row count from the json result
+     * @param queryRowLimit The number of aggregating lines allowed
      */
     protected static void checkWeightLimitQuery(
             ResponseProcessor response,

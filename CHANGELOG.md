@@ -62,6 +62,11 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add ability to cahce weight checks](https://github.com/yahoo/fili/pull/1083)
+   * Added `CacheWeightCheckRequestHandler` to support caching weight checks. 
+       - `CacheWeightCheckRequestHandler` delegates to `WeightCheckRequestHandler` to determine whether a request should be processed based on estimated query cost.
+       - It also checks the cache for a matching request, else writes it to the cache using `CacheService` utility.
+       
 - [Add ability in fili-sql to translate FilteredAggregation into SQL](https://github.com/yahoo/fili/pull/1083)
    * Translate a Druid query with `n` FilteredAggregation into SQL using `(n + 1)` subquery unions. 
        - See PR description for details  
