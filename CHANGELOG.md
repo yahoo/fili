@@ -66,6 +66,7 @@ Current
 - [Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
     * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
         - Subclasses of `BaseProtocolMetricMaker` can implement `getRenamedMetricNameWithPrefix` method to have unique rename prefix for corresponding maker. 
+        - Default implementation will add Prefix `__renamed_` whenever there is aggregation name collision. 
     
 - [Add ability in fili-sql to translate FilteredAggregation into SQL](https://github.com/yahoo/fili/pull/1083)
    * Translate a Druid query with `n` FilteredAggregation into SQL using `(n + 1)` subquery unions. 
