@@ -55,6 +55,8 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
 
     private static final int DEPENDENT_METRICS_REQUIRED = 1;
 
+    private static final String RENAMED_AVERAGER_PREFIX = "__averager_renamed_";
+
     public static final String PROTOCOL_NAME = ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME;
 
     public static final PostAggregation COUNT_INNER = new ConstantPostAggregation("one", 1);
@@ -95,6 +97,11 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
     ) {
         super(metrics, protocolSupport.blacklistProtocol(PROTOCOL_NAME));
         this.innerGrain = innerGrain;
+    }
+
+    @Override
+    protected String getRenamedMetricNameWithPrefix(String name) {
+        return RENAMED_AVERAGER_PREFIX + name;
     }
 
     @Override

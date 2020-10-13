@@ -49,11 +49,11 @@ public class QueryPlanningConstraint extends BaseDataSourceConstraint {
      * @param requestGranularity  The requested granularity of on the requested table
      */
     public QueryPlanningConstraint(
-            Set<Dimension> requestDimensions,
-            Set<Dimension> filterDimensions,
-            Set<Dimension> metricDimensions,
-            Set<String> metricNames,
-            ApiFilters apiFilters,
+            @NotNull Set<Dimension> requestDimensions,
+            @NotNull Set<Dimension> filterDimensions,
+            @NotNull Set<Dimension> metricDimensions,
+            @NotNull Set<String> metricNames,
+            @NotNull ApiFilters apiFilters,
             LogicalTable logicalTable,
             List<Interval> intervals,
             Set<LogicalMetric> logicalMetrics,
