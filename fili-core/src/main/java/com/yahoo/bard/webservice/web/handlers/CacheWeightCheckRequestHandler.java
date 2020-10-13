@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 
@@ -41,6 +42,7 @@ import javax.validation.constraints.NotNull;
  */
 public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(WeightCheckRequestHandler.class);
+
 
     protected final @NotNull TupleDataCache<String, Long, String> dataCache;
     protected final @NotNull QuerySigningService<Long> querySigningService;
@@ -85,16 +87,6 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             return next.handleRequest(context, request, druidQuery, response);
         }
 
-        String cacheKey = null;
-        try {
-            JsonNode root = mapper.valueToTree(druidQuery);
-            Utils.canonicalize(root , mapper, false);
-
-            cacheKey = writer.writeValueAsString(root);
-        } catch (JsonProcessingException e) {
-            LOG.warn("Cache key cannot be built: ", e);
-        }
-
         BardQueryInfo.getBardQueryInfo().incrementCountWeightCheck();
         final WeightCheckResponseProcessor weightCheckResponse =
                 new WeightCheckResponseProcessor(response);
@@ -109,6 +101,15 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         }
 
         CacheService cacheService = new CacheService();
+        String cacheKey = null;
+        try {
+            cacheKey = getKey(druidQuery, mapper, writer);
+        } catch (JsonProcessingException e) {
+            LOG.warn("Cache key cannot be built: ", e);
+        }
+
+        WeightCheckRequestHandler weightCheckRequestHandler =
+                new WeightCheckRequestHandler(next, webService, queryWeightUtil, mapper);
         SuccessCallback weightQuerySuccess = null;
         // Construct success callback based on cache hit or cache miss
         if (context.isReadCache()) {
@@ -116,12 +117,16 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                     cacheService.readCache(context, dataCache, querySigningService, druidQuery, cacheKey);
             // Cache hit
             if (cacheResponse != null) {
-                weightQuerySuccess = super.buildSuccessCallback(
+                weightQuerySuccess = buildCacheSuccessCallback(
                         context,
                         request,
                         druidQuery,
                         weightCheckResponse,
-                        queryRowLimit
+                        queryRowLimit,
+                        cacheKey,
+                        cacheService,
+                        weightCheckRequestHandler,
+                        false
                 );
             }
         } else {
@@ -133,7 +138,9 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                     weightCheckResponse,
                     queryRowLimit,
                     cacheKey,
-                    cacheService
+                    cacheService,
+                    weightCheckRequestHandler,
+                    true
             );
         }
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
@@ -153,6 +160,8 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
      * @param queryRowLimit  The number of aggregating lines allowed
      * @param cacheKey Cache Key
      * @param cacheService Cache Service
+     * @param weightCheckRequestHandler weightCheckRequestHandler
+     * @param writeCache Write to Cache
      *
      * @return The callback handler for the weight request
      */
@@ -163,28 +172,51 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             final ResponseProcessor response,
             final long queryRowLimit,
             final String cacheKey,
-            final CacheService cacheService
+            final CacheService cacheService,
+            final WeightCheckRequestHandler weightCheckRequestHandler,
+            final Boolean writeCache
     ) {
         return new SuccessCallback() {
+            SuccessCallback superSuccessCallback = weightCheckRequestHandler.buildSuccessCallback(
+                    context,
+                    request,
+                    druidQuery,
+                    response,
+                    queryRowLimit
+            );
             @Override
             public void invoke(JsonNode jsonResult) {
-                cacheService.writeCache(
-                        response,
-                        jsonResult,
-                        dataCache,
-                        druidQuery,
-                        querySigningService,
-                        cacheKey,
-                        writer
-                );
-                buildSuccessCallback(
-                        context,
-                        request,
-                        druidQuery,
-                        response,
-                        queryRowLimit
-                );
+                if (writeCache) {
+                    cacheService.writeCache(
+                            response,
+                            jsonResult,
+                            dataCache,
+                            druidQuery,
+                            querySigningService,
+                            cacheKey,
+                            writer
+                    );
+                }
+                superSuccessCallback.invoke(jsonResult);
             }
         };
+    }
+
+    /**
+     * Construct the cache key.
+     * Current implementation includes all the fields of the druidQuery besides the context.
+     *
+     * @param druidQuery  The druid query.
+     * @param mapper Mapper
+     * @param writer Writer
+     *
+     * @return The cache key as a String.
+     * @throws JsonProcessingException if the druid query cannot be serialized to JSON
+     */
+    protected String getKey(DruidAggregationQuery<?> druidQuery, ObjectMapper mapper, ObjectWriter writer)
+            throws JsonProcessingException {
+        JsonNode root = mapper.valueToTree(druidQuery);
+        Utils.canonicalize(root , mapper, false);
+        return writer.writeValueAsString(root);
     }
 }

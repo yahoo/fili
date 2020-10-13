@@ -8,6 +8,7 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DAT
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
@@ -20,7 +21,6 @@ import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -103,6 +103,17 @@ public class CacheService {
         return null;
     }
 
+    /**
+     * Write cache.
+     *
+     * @param response response
+     * @param json json
+     * @param dataCache data cache
+     * @param druidQuery druid query
+     * @param querySigningService Query signing service
+     * @param cacheKey cache key
+     * @param writer writer
+     */
     public void writeCache(
             ResponseProcessor response,
             JsonNode json,
