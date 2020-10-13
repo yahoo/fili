@@ -146,16 +146,16 @@ class AggregationAverageMakerSpec extends Specification{
         setup:
         String metricName = "inputMetric"
         String finalMetricName = "inputMetric"
-        LogicalMetric inputMetric1 = new LogicalMetricImpl(
+        LogicalMetric inputMetric = new LogicalMetricImpl(
                 info,
                 new TemplateDruidQuery([new LongSumAggregation("inputMetric", "unused")], []),
                 new NoOpResultSetMapper()
         )
         MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
-        maker.metrics.add(inputMetric1)
+        maker.metrics.add(inputMetric)
 
         when:
-        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric1)
+        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric)
 
         then:
         result.getName() == AggregationAverageMaker.RENAMED_AVERAGER_PREFIX + metricName
