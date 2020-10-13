@@ -74,7 +74,7 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
         TemplateDruidQuery partialQuery = makePartialQuery(logicalMetricInfo, renamedDependentMetrics);
         ResultSetMapper calculation = makeCalculation(logicalMetricInfo, renamedDependentMetrics);
         ProtocolSupport protocolSupport = makeProtocolSupport(logicalMetricInfo, renamedDependentMetrics);
-        
+
         return new ProtocolMetricImpl(logicalMetricInfo, partialQuery, calculation, protocolSupport);
     }
 
