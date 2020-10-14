@@ -22,8 +22,6 @@ class ProtocolSupportSpec extends Specification {
     String protocolName3 = "baz"
     String protocolNameNotFoo = "notFoo"
 
-
-
     def setup() {
         fooProtocol = new Protocol(protocolName1, metricTransformer)
         barProtocol = new Protocol(protocolName2, metricTransformer)
@@ -120,7 +118,6 @@ class ProtocolSupportSpec extends Specification {
         test1.accepts("bar")
         test1.accepts("baz")
     }
-
 
     def "With protocols throws an error if adding a protocol whose parameter is already in use"() {
         when:

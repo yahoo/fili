@@ -84,9 +84,8 @@ public class ProtocolChain {
                 // This protocol isn't being triggered
                 continue;
             }
+
             ProtocolSupport protocolSupport = soFarProtocolMetric.getProtocolSupport();
-
-
             if (!protocolSupport.acceptsParameter(coreParameter)) {
                 String message = "Protocol triggering parameter is sent on incompatible protocol.";
                 if (strictValidation) {

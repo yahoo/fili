@@ -42,7 +42,6 @@ public class ProtocolSupport {
      */
     private final Map<String, Protocol> protocolParameterMap;
 
-
     /**
      * Name of the ProtocolSupport instance. Name is optional and exists solely as a convenience for metadata
      */
@@ -222,7 +221,6 @@ public class ProtocolSupport {
         addingProtocols.stream()
                 .forEach(protocol -> newProtocols.put(protocol.getCoreParameterName(), protocol));
 
-
         // Remove any added protocols from the blacklist
         Set<String> newBlackList = new HashSet<String>(blacklist);
         newProtocols.values().stream()
@@ -231,6 +229,7 @@ public class ProtocolSupport {
 
         return new ProtocolSupport(newProtocols.values(), newBlackList);
     }
+
     /**
      * Retrieve the protocol value for a given protocol contract name.
      *
