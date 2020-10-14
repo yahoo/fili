@@ -94,6 +94,7 @@ class ProtocolChainSpec extends Specification {
         chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then: "only the recognized parameter is checked and applied"
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
         1 * protocolSupport.accepts(protocol1Name) >> true
         1 * protocolSupport.acceptsParameter(protocol1Name) >> true
         1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters) // all provided parameters are passed to accept
