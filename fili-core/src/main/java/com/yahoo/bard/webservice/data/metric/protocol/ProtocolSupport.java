@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.metric.protocol;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,6 +36,12 @@ public class ProtocolSupport {
      * Protocols supported for this metric, keyed by contract name.
      */
     private final Map<String, Protocol> protocolMap;
+
+    /**
+     * Protocols supported for this metric, keyed by contract name.
+     */
+    private final Map<String, Protocol> protocolParameterMap;
+
 
     /**
      * Name of the ProtocolSupport instance. Name is optional and exists solely as a convenience for metadata
@@ -80,6 +87,8 @@ public class ProtocolSupport {
             String name
     ) {
         protocolMap = protocols.stream().collect(Collectors.toMap(Protocol::getContractName, Function.identity()));
+        protocolParameterMap = protocols.stream()
+                .collect(Collectors.toMap(Protocol::getCoreParameterName, Function.identity()));
         this.blacklist = blacklist;
         this.name = name;
     }
@@ -93,6 +102,18 @@ public class ProtocolSupport {
      */
     public boolean accepts(String protocolName) {
         return ! blacklist.contains(protocolName) && protocolMap.containsKey(protocolName);
+    }
+
+    /**
+     * Determine if this protocol is supported.
+     *
+     * @param parameterName The core parameter for a protocol.
+     *
+     * @return true if this protocol is not blacklisted and supplied by protocol map.
+     */
+    public boolean acceptsParameter(String parameterName) {
+        Protocol protocol = protocolParameterMap.get(parameterName);
+        return  protocol != null && ! blacklist.contains(protocol.getContractName());
     }
 
     /**
@@ -188,6 +209,28 @@ public class ProtocolSupport {
         return new ProtocolSupport(newProtocols, newBlackList);
     }
 
+    /**
+     * Create a copy which supports additional protocols.
+     *
+     * @param addingProtocols  Additional protocols to support.
+     *
+     * @return A protocol support which accepts these protocols.
+     */
+    public ProtocolSupport withReplaceProtocols(Collection<Protocol> addingProtocols) {
+        // Add any addedProtocols to the map, replacing if contract name conflicts
+        Map<String, Protocol> newProtocols = new HashMap<>(this.protocolParameterMap);
+        addingProtocols.stream()
+                .forEach(protocol -> newProtocols.put(protocol.getCoreParameterName(), protocol));
+
+
+        // Remove any added protocols from the blacklist
+        Set<String> newBlackList = new HashSet<String>(blacklist);
+        newProtocols.values().stream()
+                .map(Protocol::getContractName)
+                .forEach(name -> newBlackList.remove(name));
+
+        return new ProtocolSupport(newProtocols.values(), newBlackList);
+    }
     /**
      * Retrieve the protocol value for a given protocol contract name.
      *
