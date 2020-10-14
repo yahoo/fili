@@ -129,6 +129,12 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Better supporrt for different protocols on a single parameter name](https://github.com/yahoo/fili/issues/1097)
+    * Added 'acceptsParameter' contract to `ProtocolSupport` and 'withReplaceProtocols' to support replacement of
+    contract names.
+    * Shifted validation error in `ProtocolChain` to check for parameter missing instead of protocol missing.
+    * Stripped out consumed protocol core parameters to avoid retriggering core parameters on divergent protocols.
+
 
 - [Memcached not blocking on set](https://github.com/yahoo/fili/issues/1089)
     * Added TimeoutConfigureBinaryConnectionFactory to make Memached timeout configuration driven
