@@ -28,7 +28,7 @@ import com.yahoo.bard.webservice.web.handlers.TopNMapperRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler;
-import com.yahoo.bard.webservice.web.util.*;
+import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
