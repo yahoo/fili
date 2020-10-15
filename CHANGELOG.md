@@ -65,6 +65,11 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
+    * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
+        - Subclasses of `BaseProtocolMetricMaker` can implement `getRenamedMetricNameWithPrefix` method to have unique rename prefix for corresponding maker. 
+        - Default implementation will add Prefix `__renamed_` whenever there is aggregation name collision. 
+    
 - [Add ability in fili-sql to translate FilteredAggregation into SQL](https://github.com/yahoo/fili/pull/1083)
    * Translate a Druid query with `n` FilteredAggregation into SQL using `(n + 1)` subquery unions. 
        - See PR description for details  
@@ -126,6 +131,12 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Better supporrt for different protocols on a single parameter name](https://github.com/yahoo/fili/issues/1097)
+    * Added 'acceptsParameter' contract to `ProtocolSupport` and 'withReplaceProtocols' to support replacement of
+    contract names.
+    * Shifted validation error in `ProtocolChain` to check for parameter missing instead of protocol missing.
+    * Stripped out consumed protocol core parameters to avoid retriggering core parameters on divergent protocols.
+
 
 - [Memcached not blocking on set](https://github.com/yahoo/fili/issues/1089)
     * Added TimeoutConfigureBinaryConnectionFactory to make Memached timeout configuration driven

@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.metric.protocol.MetadataApplyTransformer
 import com.yahoo.bard.webservice.data.metric.protocol.MetricTransformer
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric
 
 import spock.lang.Ignore
@@ -23,10 +24,15 @@ class ProtocolChainSpec extends Specification {
     MetricTransformer transformer2
     Protocol p2
 
+    String protocol3Name
+    Protocol p3
+
     String interactionMetricRawName
     String interactionMetricBaseName
     GeneratedMetricInfo interactionMetricResultMetadata
     ProtocolMetric interactionMetric
+
+    ProtocolSupport protocolSupport = Mock(ProtocolSupport)
 
     def setup() {
         protocol1Name = "p1"
@@ -37,16 +43,21 @@ class ProtocolChainSpec extends Specification {
         transformer2 = new MetadataApplyTransformer()
         p2 = new Protocol(protocol2Name, transformer2)
 
+        protocol3Name = "p3"
+        p3 = new Protocol(protocol3Name, protocol1Name, transformer2)
+
+
         interactionMetricRawName = "RAW_interactionMetric"
         interactionMetricBaseName = "interactionMetric"
         interactionMetricResultMetadata = new GeneratedMetricInfo(interactionMetricRawName, interactionMetricBaseName)
         interactionMetric = Mock(ProtocolMetric)
+        interactionMetric.getProtocolSupport() >> protocolSupport
     }
 
     def "Accepted core parameter is applied to protocol metric"() {
         setup:
         ProtocolChain chain = new ProtocolChain([p1], true)
-        Map<String, String> parameters = [(protocol1Name): "unused"]
+        Map<String, String> parameters = [(protocol1Name): "value"]
         ApiMetric testApiMetric = new ApiMetric(
                 interactionMetricRawName,
                 interactionMetricBaseName,
@@ -57,10 +68,12 @@ class ProtocolChainSpec extends Specification {
         chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then:
-        1 * interactionMetric.accepts(protocol1Name) >> true
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> true
+        1 * protocolSupport.accepts(protocol1Name) >> true
         1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters)
-        0 * interactionMetric.accepts(_)
-        0 * interactionMetric.accept(_, _, _)
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        0 * protocolSupport.accepts(_)
+        0 * interactionMetric._
     }
 
     def "Unrecognized core parameters are ignored"() {
@@ -81,10 +94,12 @@ class ProtocolChainSpec extends Specification {
         chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then: "only the recognized parameter is checked and applied"
-        1 * interactionMetric.accepts(protocol1Name) >> true
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        1 * protocolSupport.accepts(protocol1Name) >> true
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> true
         1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters) // all provided parameters are passed to accept
-        0 * interactionMetric.accepts(_)
-        0 * interactionMetric.accept(_, _, _)
+        0 * interactionMetric._
+        0 * protocolSupport._
     }
 
     def "Protocol metrics that produce non-protocol metrics successfully finish apply loop with no errors"() {
@@ -106,11 +121,14 @@ class ProtocolChainSpec extends Specification {
         LogicalMetric expected = chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then: "p1 is successfully applied and produces a standard logical metric"
-        1 * interactionMetric.accepts(protocol1Name) >> true
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        1 * protocolSupport.accepts(protocol1Name) >> true
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> true
         1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters) >> resultInteractionMetric
 
         and: "no more protocols are attempted to be applied to the original metric"
         0 * interactionMetric._
+        0 * protocolSupport._
 
         and: "no protocols are attempted to be applied to the new metric"
         0 * resultInteractionMetric._
@@ -133,7 +151,9 @@ class ProtocolChainSpec extends Specification {
         chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then:
-        1 * interactionMetric.accepts(protocol1Name) >> false
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> false
+        0 * protocolSupport._
         thrown(IllegalArgumentException)
     }
 
@@ -152,8 +172,56 @@ class ProtocolChainSpec extends Specification {
         LogicalMetric expected = chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
 
         then:
-        1 * interactionMetric.accepts(protocol1Name) >> false
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> false
         0 * interactionMetric._
+        0 * protocolSupport._
         expected == interactionMetric
+    }
+
+    def "When two protocols have the same parameters and the match is on the first protocol the second protocol isn't triggered"() {
+        setup:
+        ProtocolChain chain = new ProtocolChain([p1, p2, p3], true)
+        Map<String, String> parameters = [(protocol1Name): "value"]
+        ApiMetric testApiMetric = new ApiMetric(
+                interactionMetricRawName,
+                interactionMetricBaseName,
+                parameters,
+        )
+
+        when:
+        chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
+
+        then:
+        1 * protocolSupport.acceptsParameter(protocol1Name) >> true
+        1 * protocolSupport.accepts(protocol1Name) >> true
+        1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters) >> interactionMetric
+        // Because the parameter is removed of the first pass, this only fires once
+        1 * interactionMetric.getProtocolSupport() >> protocolSupport
+        0 * protocolSupport.accepts(_)
+        0 * interactionMetric._
+    }
+
+    def "When two protocols have the same parameters and the match is on the second protocol the first is skipped"() {
+        setup:
+        ProtocolChain chain = new ProtocolChain([p3, p1, p2], true)
+        Map<String, String> parameters = [(protocol1Name): "value"]
+        ApiMetric testApiMetric = new ApiMetric(
+                interactionMetricRawName,
+                interactionMetricBaseName,
+                parameters,
+        )
+
+        when:
+        chain.applyProtocols(interactionMetricResultMetadata, testApiMetric, interactionMetric)
+
+        then:
+        2 * protocolSupport.acceptsParameter(protocol1Name) >> true
+        1 * protocolSupport.accepts(protocol3Name) >> false
+        1 * protocolSupport.accepts(protocol1Name) >> true
+        1 * interactionMetric.accept(interactionMetricResultMetadata, protocol1Name, parameters) >> interactionMetric
+        2 * interactionMetric.getProtocolSupport() >> protocolSupport
+        0 * protocolSupport.accepts(_)
+        0 * interactionMetric._
     }
 }

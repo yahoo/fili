@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo;
 import com.yahoo.bard.webservice.data.metric.protocol.Protocol;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.data.metric.protocol.UnknownProtocolValueException;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.antlr.ProtocolAntlrApiMetricParser;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric;
@@ -13,7 +14,9 @@ import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Protocol Chain attempts to apply a set of protocols to a logical metric to produce additional metrics.
@@ -62,21 +65,28 @@ public class ProtocolChain {
             GeneratedMetricInfo resultMetadata,
             ApiMetric apiMetric,
             LogicalMetric fromMetric
-    )
-            throws UnknownProtocolValueException {
+    ) throws UnknownProtocolValueException {
+
         LogicalMetric soFar = fromMetric;
+        Map<String, String> parameters = new HashMap<>(apiMetric.getParameters());
 
         for (Protocol p: protocols) {
-            if (! apiMetric.getParameters().containsKey(p.getCoreParameterName()))  {
+            if (!(soFar instanceof ProtocolMetric)) {
+                // If it's not a protocol metric, it can't accept parameter signals
+                // It may have been transformed in an earlier iteration
+                break;
+            }
+            ProtocolMetric soFarProtocolMetric = (ProtocolMetric) soFar;
+            String contractName = p.getContractName();
+            String coreParameter = p.getCoreParameterName();
+
+            if (! parameters.containsKey(coreParameter))  {
+                // This protocol isn't being triggered
                 continue;
             }
 
-            if (!(soFar instanceof ProtocolMetric)) {
-                break;
-            }
-
-            ProtocolMetric soFarProtocolMetric = (ProtocolMetric) soFar;
-            if (!soFarProtocolMetric.accepts(p.getContractName())) {
+            ProtocolSupport protocolSupport = soFarProtocolMetric.getProtocolSupport();
+            if (!protocolSupport.acceptsParameter(coreParameter)) {
                 String message = "Protocol triggering parameter is sent on incompatible protocol.";
                 if (strictValidation) {
                     throw new IllegalArgumentException(message);
@@ -85,8 +95,16 @@ public class ProtocolChain {
                     continue;
                 }
             }
+            if (! protocolSupport.accepts(contractName)) {
+                // A different protocol implements this contract on this metric, so skip.
+                continue;
+            }
+            soFar = soFarProtocolMetric.accept(resultMetadata, p.getContractName(), parameters);
 
-            soFar = soFarProtocolMetric.accept(resultMetadata, p.getContractName(), apiMetric.getParameters());
+            // Don't attempt to apply this core parameter on a subsequent protocol.  This avoids bootstrapping
+            // issues where one protocol responds to a parameters, blacklists it on the resulting protocol and then
+            // another protocol with the same triggering parameter gets evaluated.
+            parameters.remove(coreParameter);
         }
         return soFar;
     }
