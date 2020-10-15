@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.util
 
-import com.codahale.metrics.Meter
-import com.codahale.metrics.MetricRegistry
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -30,7 +28,6 @@ import com.fasterxml.jackson.databind.JsonNode
 
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedHashMap
-import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 
 import static com.yahoo.bard.webservice.async.ResponseContextUtils.createResponseContext
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
@@ -38,9 +35,6 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 
 class CacheServiceSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
-    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry()
-    public static final Meter CACHE_POTENTIAL_HITS = REGISTRY.meter("queries.meter.cache.potential_hits")
-    public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses")
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
     ResponseProcessor response
@@ -123,7 +117,6 @@ class CacheServiceSpec extends Specification {
     def "Test handle request cache miss"() {
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
-        CACHE_MISSES.getCount() == 0
 
         when: "A request is sent that has a cache miss"
         String cachedValue = cacheService.readCache(requestContext, groupByQuery)
@@ -136,15 +129,11 @@ class CacheServiceSpec extends Specification {
 
         and: "The count of fact query cache hit is not incremented"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
-
-        and:
-        CACHE_MISSES.getCount() == 1
     }
 
     def "Test handle request cache miss due to segment invalidation"() {
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
-        CACHE_POTENTIAL_HITS.getCount() == 0
 
         when: "A request is sent that has a cache miss"
         String cachedValue = cacheService.readCache(requestContext, groupByQuery)
@@ -157,9 +146,6 @@ class CacheServiceSpec extends Specification {
 
         and: "The count of fact query cache hit is not incremented"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
-
-        and:
-        CACHE_POTENTIAL_HITS.getCount() == 1
     }
 
     def "Cache write completes with good cache key"() {
