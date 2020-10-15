@@ -70,12 +70,11 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
         String cacheKey = null;
         try {
             cacheKey = getKey(druidQuery);
-            CacheService cacheService = new CacheService();
 
             if (context.isReadCache()) {
-
+                CacheService cacheService = new CacheService(dataCache, querySigningService, mapper);
                 String cacheResponse =
-                        cacheService.readCache(context, dataCache, querySigningService, druidQuery, cacheKey);
+                        cacheService.readCache(context, druidQuery);
                 RequestLog logCtx = RequestLog.dump();
                 nextResponse.processResponse(
                         mapper.readTree(cacheResponse),

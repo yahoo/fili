@@ -8,6 +8,8 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DAT
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -18,6 +20,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
+import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
@@ -50,25 +53,42 @@ public class CacheService {
     public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
     public static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
 
+    TupleDataCache<String, Long, String> dataCache;
+    QuerySigningService<Long> querySigningService;
+    ObjectMapper objectMapper;
+    ObjectWriter writer;
+    /**
+     * Constructor.
+     *
+     * @param dataCache  The cache instance
+     * @param querySigningService  The service to generate query signatures
+     * @param objectMapper A JSON object mapper, used to parse JSON response
+     */
+    public CacheService(
+            final TupleDataCache<String, Long, String> dataCache,
+            final QuerySigningService<Long> querySigningService,
+            ObjectMapper objectMapper
+    ) {
+        this.dataCache = dataCache;
+        this.querySigningService = querySigningService;
+        this.objectMapper = objectMapper;
+        this.writer = objectMapper.writer();
+    }
+
 
     /**
      * Read cache.
      *
      * @param context The context data from the request processing chain
-     * @param dataCache The cache instance
      * @param druidQuery The query being processed
-     * @param querySigningService The service to generate query signatures
-     * @param cacheKey Key into which to write a cache entry
+     *
      * @return Response
      */
     public String readCache(
             RequestContext context,
-            TupleDataCache<String, Long, String> dataCache,
-            QuerySigningService<Long> querySigningService,
-            DruidAggregationQuery<?> druidQuery,
-            String cacheKey
-    ) {
-        final TupleDataCache.DataEntry<String, Long, String> cacheEntry = dataCache.get(cacheKey);
+            DruidAggregationQuery<?> druidQuery
+    ) throws JsonProcessingException {
+        final TupleDataCache.DataEntry<String, Long, String> cacheEntry = dataCache.get(getKey(druidQuery));
         CACHE_REQUESTS.mark(1);
 
         if (cacheEntry != null) {
@@ -108,22 +128,15 @@ public class CacheService {
      *
      * @param response The response handler
      * @param json Json value to be written to cache as string
-     * @param dataCache The cache instance
      * @param druidQuery The query being processed
-     * @param querySigningService The service to generate query signatures
-     * @param cacheKey Key into which to write a cache entry
-     * @param writer Writer
      */
     public void writeCache(
             ResponseProcessor response,
             JsonNode json,
-            TupleDataCache<String, Long, String> dataCache,
-            DruidAggregationQuery<?> druidQuery,
-            QuerySigningService querySigningService,
-            String cacheKey,
-            ObjectWriter writer
-            ) {
+            DruidAggregationQuery<?> druidQuery
+            ) throws JsonProcessingException {
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable(response)) {
+            String cacheKey = getKey(druidQuery);
             String valueString = null;
             try {
                 valueString = writer.writeValueAsString(json);
@@ -169,5 +182,21 @@ public class CacheService {
         SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(response.getResponseContext());
 
         return missingIntervals.isEmpty() && volatileIntervals.isEmpty();
+    }
+
+    /**
+     * Construct the cache key.
+     * Current implementation includes all the fields of the druidQuery besides the context.
+     *
+     * @param druidQuery  The druid query.
+     *
+     * @return The cache key as a String.
+     * @throws JsonProcessingException if the druid query cannot be serialized to JSON
+     */
+    protected String getKey(DruidAggregationQuery<?> druidQuery)
+            throws JsonProcessingException {
+        JsonNode root = objectMapper.valueToTree(druidQuery);
+        Utils.canonicalize(root, objectMapper, false);
+        return writer.writeValueAsString(root);
     }
 }

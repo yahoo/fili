@@ -24,11 +24,11 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil
-import com.yahoo.bard.webservice.web.util.CacheService
 import com.yahoo.bard.webservice.web.RequestUtils
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache
+import com.yahoo.bard.webservice.web.util.CacheService
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParser
@@ -49,10 +49,11 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
     DataRequestHandler next
     DruidWebService webService
     QueryWeightUtil queryWeightUtil
-    ObjectMapper mapper
     ObjectWriter writer
     TupleDataCache<String, Long, String> dataCache
     QuerySigningService<Long> querySigningService
+    CacheService cacheService
+    CacheWeightCheckRequestHandler handler
 
     RequestContext context
     DataApiRequest request
@@ -66,9 +67,8 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         next = Mock(DataRequestHandler)
         webService = Mock(DruidWebService)
         queryWeightUtil = Mock(QueryWeightUtil)
-        mapper = Mock(ObjectMapper)
         writer = Mock(ObjectWriter)
-        mapper.writer() >> writer
+        MAPPER.writer() >> writer
         context = Mock(RequestContext)
         request = Mock(DataApiRequest)
         dataCache = Mock(TupleDataCache)
@@ -78,6 +78,14 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         response = Mock(WeightCheckResponseProcessor)
         bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
         json = new JsonNodeFactory().arrayNode()
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
+        handler = new CacheWeightCheckRequestHandler(
+                next,
+                webService,
+                queryWeightUtil,
+                MAPPER,
+                cacheService
+        )
     }
 
     def cleanup() {
@@ -85,35 +93,16 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
     }
 
     def "Test constructor"() {
-        setup:
-        CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper,
-                dataCache,
-                querySigningService
-        )
-
         expect:
         handler.next == next
         handler.webService == webService
         handler.queryWeightUtil == queryWeightUtil
-        handler.mapper == mapper
-        handler.dataCache == dataCache
-        handler.querySigningService == querySigningService
+        handler.mapper == MAPPER
+        handler.cacheService == cacheService
     }
 
     def "Test handle request with request passing quick weight check"() {
         setup:
-        CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper,
-                dataCache,
-                querySigningService
-        )
         1 * queryWeightUtil.skipWeightCheckQuery(groupByQuery) >> true
         1 * next.handleRequest(context, request, groupByQuery, response) >> true
 
@@ -137,22 +126,15 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         ) {
             @Override
             public SuccessCallback buildCacheSuccessCallback(
-                    final RequestContext context,
-                    final DataApiRequest request,
-                    final DruidAggregationQuery<?> groupByQuery,
-                    final ResponseProcessor response,
-                    final long queryRowLimit,
-                    final String cacheKey,
+                    final SuccessCallback classicSuccessCallback,
                     final CacheService cacheService,
-                    final WeightCheckRequestHandler weightCheckRequestHandler,
-                    final Boolean writeCache
+                    final DruidAggregationQuery<?> groupByQuery,
+                    final ResponseProcessor response
             ) {
-                assert queryRowLimit == 5
                 groupByQuery.clone()
                 return success
             }
@@ -185,22 +167,15 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         ) {
             @Override
             public SuccessCallback buildCacheSuccessCallback(
-                    final RequestContext context,
-                    final DataApiRequest request,
-                    final DruidAggregationQuery<?> groupByQuery,
-                    final ResponseProcessor response,
-                    final long queryRowLimit,
-                    final String cacheKey,
+                    final SuccessCallback classicSuccessCallback,
                     final CacheService cacheService,
-                    final WeightCheckRequestHandler weightCheckRequestHandler,
-                    final Boolean writeCache
+                    final DruidAggregationQuery<?> groupByQuery,
+                    final ResponseProcessor response
             ) {
-                assert queryRowLimit == 5
                 groupByQuery.clone()
                 return success
             }
@@ -230,15 +205,16 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         RequestContext requestContext = new RequestContext(containerRequestContext, true)
+        requestContext.isReadCache() >> true
+        MAPPER.valueToTree(groupByQuery) >> json
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
-        requestContext.isReadCache() >> true
 
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
@@ -265,15 +241,15 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         RequestContext requestContext = new RequestContext(containerRequestContext, true)
+        requestContext.isReadCache() >> true
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
-        requestContext.isReadCache() >> true
 
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
@@ -293,7 +269,6 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
 
     def "Test cache hit with weight check"() {
         setup:
-        setup:
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
@@ -304,26 +279,19 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         RequestContext requestContext = new RequestContext(containerRequestContext, true)
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
         requestContext.isReadCache() >> true
         int expectedCount = 60
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        )
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
@@ -351,7 +319,6 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
 
     def "Test cache hit with weight check when exception thrown by cache read"() {
         setup:
-        setup:
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
@@ -362,27 +329,20 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
         RequestContext requestContext = new RequestContext(containerRequestContext, true)
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
         requestContext.isReadCache() >> true
         int expectedCount = 60
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
         cacheService.readCache() >> {new Exception()}
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        )
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
@@ -414,25 +374,18 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
         int expectedCount = 60
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        )
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
@@ -463,26 +416,18 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
         int expectedCount = 60
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
-        cacheService.writeCache() >> {new Exception()}
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        )
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
@@ -513,25 +458,18 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
-        )
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
+                cacheService
         )
         int expectedCount = 200
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
@@ -565,25 +503,18 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         SimplifiedIntervalList intervals = new SimplifiedIntervalList()
         ResponseContext responseContext =  createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): intervals])
         response.getResponseContext() >> responseContext
+        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
         CacheWeightCheckRequestHandler handler = new CacheWeightCheckRequestHandler(
                 next,
                 webService,
                 queryWeightUtil,
                 MAPPER,
-                dataCache,
-                querySigningService
+                cacheService
         )
-        WeightCheckRequestHandler weightCheckRequestHandler = new WeightCheckRequestHandler(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        )
-        int expectedCount = 200
+        int expectedCount = 60
         int limit = 100
-        String cacheKey = "key1"
-        CacheService cacheService = new CacheService()
-        SuccessCallback success = handler.buildCacheSuccessCallback(context, request, groupByQuery, response, limit, cacheKey, cacheService, weightCheckRequestHandler, true)
+        SuccessCallback classicSuccessCallback = handler.buildSuccessCallback(context, request, groupByQuery, response, limit)
+        SuccessCallback success = handler.buildCacheSuccessCallback(classicSuccessCallback, cacheService, groupByQuery, response)
         String weightResponse = """
         [ {
             "version" : "v1",
