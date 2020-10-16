@@ -131,7 +131,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                         int rowCount = row.get("event").get("count").asInt();
 
                         if (rowCount > queryRowLimit) {
-                            checkWeightLimitQuery(response, druidQuery, rowCount, queryRowLimit);
+                            dispatchInsufficientStorage(response, druidQuery, rowCount, queryRowLimit);
                             return;
                         }
                     }
@@ -145,14 +145,15 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
     }
 
     /**
-     * Check weight limit query.
+     * Dispatch an HTTP INSUFFICIENT_STORAGE (507) status based on the cardinality of the requester 's query
+     * as measured by the weight check query.
      *
      * @param response The response handler
      * @param druidQuery The query being processed
      * @param rowCount Row count from the json result
      * @param queryRowLimit The number of aggregating lines allowed
      */
-    protected static void checkWeightLimitQuery(
+    protected static void dispatchInsufficientStorage(
             ResponseProcessor response,
             DruidAggregationQuery<?> druidQuery,
             int rowCount,

@@ -30,6 +30,7 @@ import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -67,6 +68,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
     protected final @NotNull QuerySigningService<?> querySigningService;
     protected final @NotNull ObjectMapper mapper;
     protected final @NotNull VolatileIntervalsService volatileIntervalsService;
+    protected final @NotNull QuerySignedCacheService querySignedCacheService;
 
     /**
      * Constructor.
@@ -78,6 +80,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
      * @param partialDataHandler  Handler for dealing with the partial data step
      * @param querySigningService  Service to sign a query based on it's segment metadata
      * @param volatileIntervalsService  Service to get volatile intervals from
+     * @param querySignedCacheService  Service for cache support
      * @param mapper  JSON mapper
      */
     @Inject
@@ -89,6 +92,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
             PartialDataHandler partialDataHandler,
             QuerySigningService<?> querySigningService,
             VolatileIntervalsService volatileIntervalsService,
+            QuerySignedCacheService querySignedCacheService,
             ObjectMapper mapper
     ) {
         this.dataCache = dataCache;
@@ -98,6 +102,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
         this.partialDataHandler = partialDataHandler;
         this.querySigningService = querySigningService;
         this.volatileIntervalsService = volatileIntervalsService;
+        this.querySignedCacheService = querySignedCacheService;
         this.mapper = mapper;
     }
 
@@ -115,7 +120,7 @@ public class SqlWorkflow implements RequestWorkflowProvider {
         if (CacheFeatureFlag.TTL.isOn()) {
             handler = new CacheRequestHandler(handler, dataCache, mapper);
         } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-            handler = new CacheV2RequestHandler(handler, dataCache, querySigningService, mapper);
+            handler = new CacheV2RequestHandler(handler, dataCache, querySigningService, querySignedCacheService, mapper);
         } else if (CacheFeatureFlag.ETAG.isOn()) {
             handler = new EtagCacheRequestHandler(
                     handler,

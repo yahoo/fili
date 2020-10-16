@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.LoggingContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
-import com.yahoo.bard.webservice.web.util.CacheService;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +36,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
     protected final @NotNull DataRequestHandler next;
     protected final @NotNull TupleDataCache<String, Long, String> dataCache;
     protected final @NotNull QuerySigningService<Long> querySigningService;
+    protected final @NotNull QuerySignedCacheService querySignedCacheService;
 
     /**
      * Build a Cache request handler.
@@ -43,6 +44,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
      * @param next  The next handler in the chain
      * @param dataCache  The cache instance
      * @param querySigningService The service to generate query signatures
+     * @param querySignedCacheService The service for cache support
      * @param mapper  The mapper for all JSON processing
      */
     @SuppressWarnings("unchecked")
@@ -50,12 +52,14 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
             DataRequestHandler next,
             @NotNull DataCache<?> dataCache,
             QuerySigningService<?> querySigningService,
+            QuerySignedCacheService querySignedCacheService,
             ObjectMapper mapper
     ) {
         super(mapper);
         this.next = next;
         this.dataCache = (TupleDataCache<String, Long, String>) dataCache;
         this.querySigningService = (QuerySigningService<Long>) querySigningService;
+        this.querySignedCacheService = querySignedCacheService;
     }
 
     @Override
@@ -72,9 +76,8 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
             cacheKey = getKey(druidQuery);
 
             if (context.isReadCache()) {
-                CacheService cacheService = new CacheService(dataCache, querySigningService, mapper);
                 String cacheResponse =
-                        cacheService.readCache(context, druidQuery);
+                        querySignedCacheService.readCache(context, druidQuery);
                 RequestLog logCtx = RequestLog.dump();
                 nextResponse.processResponse(
                         mapper.readTree(cacheResponse),

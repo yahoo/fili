@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.util.CacheService;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -39,7 +39,8 @@ import javax.validation.constraints.NotNull;
 public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(WeightCheckRequestHandler.class);
 
-    protected final @NotNull CacheService cacheService;
+    protected final @NotNull
+    QuerySignedCacheService querySignedCacheService;
 
     /**
      * Build a cache weight checking request handler.
@@ -48,14 +49,14 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
      * @param webService  The web service to use for weight checking
      * @param queryWeightUtil  A provider which measures estimated weight against allowed weights.
      * @param mapper  A JSON object mapper, used to parse the JSON response from the weight check.
-     * @param cacheService The service for cache support
+     * @param querySignedCacheService The service for cache support
      */
     public CacheWeightCheckRequestHandler(
             DataRequestHandler next,
             DruidWebService webService,
             QueryWeightUtil queryWeightUtil,
             ObjectMapper mapper,
-            CacheService cacheService
+            QuerySignedCacheService querySignedCacheService
     ) {
         super(
                 next,
@@ -63,7 +64,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 queryWeightUtil,
                 mapper
         );
-        this.cacheService = (CacheService) cacheService;
+        this.querySignedCacheService = querySignedCacheService;
     }
 
     @Override
@@ -103,7 +104,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
 
         SuccessCallback cahingSuccessCallback = buildCacheSuccessCallback(
                 classicCallback,
-                cacheService,
+                querySignedCacheService,
                 druidQuery,
                 weightCheckResponse
         );
@@ -115,7 +116,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
 
 
         try {
-            String cacheResponse = cacheService.readCache(context, druidQuery);
+            String cacheResponse = querySignedCacheService.readCache(context, druidQuery);
             // There is a cache hit, so no more cache interactions are necessary.
 
             if (cacheResponse != null) {
@@ -140,7 +141,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
      * measured by the weight check query.
      *
      * @param successCallback  The weight check success callback
-     * @param cacheService The service for cache support
+     * @param querySignedCacheService The service for cache support
      * @param druidQuery  The query being processed
      * @param response  The response handler
      *
@@ -148,7 +149,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
      */
     protected SuccessCallback buildCacheSuccessCallback(
             SuccessCallback successCallback,
-            CacheService cacheService,
+            QuerySignedCacheService querySignedCacheService,
             DruidAggregationQuery druidQuery,
             ResponseProcessor response
     ) {
@@ -158,9 +159,10 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 // send the response to the user before waiting to cache
                 successCallback.invoke(jsonResult);
                 try {
-                    cacheService.writeCache(response, jsonResult, druidQuery);
+                    querySignedCacheService.writeCache(response, jsonResult, druidQuery);
                 } catch (JsonProcessingException e) {
                     // Warn on cache write exception only
+                    LOG.warn("Cache write json exception:", e);
                 }
             }
         };

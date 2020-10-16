@@ -135,8 +135,7 @@ import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
-import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.util.ResponseUtils;
+import com.yahoo.bard.webservice.web.util.*;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -325,6 +324,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getPhysicalTableResolver()).to(PhysicalTableResolver.class);
                 bind(PartialDataHandler.class).to(PartialDataHandler.class);
                 bind(getVolatileIntervalsService()).to(VolatileIntervalsService.class);
+                bind(QuerySignedCacheService.class).to(QuerySignedCacheService.class);
 
                 QuerySigningService<?> querySigningService = buildQuerySigningService(
                         loader.getPhysicalTableDictionary(),

@@ -25,6 +25,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 
 import com.fasterxml.jackson.databind.JsonNode
+import spock.lang.Unroll
 
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedHashMap
@@ -33,13 +34,13 @@ import static com.yahoo.bard.webservice.async.ResponseContextUtils.createRespons
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.MISSING_INTERVALS_CONTEXT_KEY
 import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys.VOLATILE_INTERVALS_CONTEXT_KEY
 
-class CacheServiceSpec extends Specification {
+class QuerySignedCacheServiceSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
     ResponseProcessor response
     TupleDataCache<String, Long, String> dataCache
-    CacheService cacheService
+    QuerySignedCacheService cacheService
     BardQueryInfo bardQueryInfo
     JsonNode json
 
@@ -55,7 +56,7 @@ class CacheServiceSpec extends Specification {
 
     def setup() {
         response = Mock(WeightCheckResponseProcessor)
-        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
+        cacheService = new QuerySignedCacheService(dataCache, querySigningService, MAPPER)
         bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
         dataCache = Mock(TupleDataCache)
         json = new JsonNodeFactory().arrayNode()
@@ -65,13 +66,14 @@ class CacheServiceSpec extends Specification {
         containerRequestContext = Mock(ContainerRequestContext)
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
-        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
+        cacheService = new QuerySignedCacheService(dataCache, querySigningService, MAPPER)
         requestContext = new RequestContext(containerRequestContext, true)
         requestContext.isReadCache() >> true
         MAPPER.valueToTree(groupByQuery) >> json
     }
 
-    def "Test if request is cachable"() {
+    @Unroll
+    def "If #description then is cacheable is #expected"() {
         setup:
         response.getResponseContext() >> context
 
@@ -79,17 +81,16 @@ class CacheServiceSpec extends Specification {
         cacheService.isCacheable(response) == expected
 
         where:
-        expected | context
-        true     | [:]
-        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        false    | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        true     | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
-        true     | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
-        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
-        false    | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList(), (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        expected | description                                            | context
+        false    | "missing intervals is non empty"                       | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        false    | "volatile intervals is non empty"                      | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        true     | "missing intervals is present and empty"               | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
+        true     | "volatile intervals is present and empty"              | createResponseContext([(VOLATILE_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList()])
+        false    | "missing and volatile intervals are non empty"         | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals, (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
+        false    | "missing and volatile intervals are present and empty" | createResponseContext([(MISSING_INTERVALS_CONTEXT_KEY.name): new SimplifiedIntervalList(), (VOLATILE_INTERVALS_CONTEXT_KEY.name): nonEmptyIntervals])
     }
 
-    def "Test getting key from druid query to check match with cache"() {
+    def "Get key from druid query to check match with cache"() {
         setup:
         String expectedResponse = """{"aggregations":[],"context":{},"dataSource":{"name":"dataSource","type":"table"},"dimensions":[],"granularity":{"period":"P1D","type":"period"},"intervals":[],"postAggregations":[],"queryType":"groupBy"}"""
 
@@ -97,7 +98,7 @@ class CacheServiceSpec extends Specification {
         cacheService.getKey(groupByQuery) == expectedResponse
     }
 
-    def "Test handle request on cache hit responds to the request"() {
+    def "Cache hit responds to the read request with appropriate cached value"() {
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
@@ -114,7 +115,7 @@ class CacheServiceSpec extends Specification {
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 1
     }
 
-    def "Test handle request cache miss"() {
+    def "Cache miss returns null value to the read request"() {
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
@@ -131,7 +132,7 @@ class CacheServiceSpec extends Specification {
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 
-    def "Test handle request cache miss due to segment invalidation"() {
+    def "Cache miss due to segment invalidation returns null value to the read request"() {
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
 
@@ -186,7 +187,7 @@ class CacheServiceSpec extends Specification {
         SYSTEM_CONFIG.resetProperty(max_druid_response_length_to_cache_key, smallMaxLength.toString())
 
         and: "A caching service to test"
-        cacheService = new CacheService(dataCache, querySigningService, MAPPER)
+        cacheService = new QuerySignedCacheService(dataCache, querySigningService, MAPPER)
 
         expect: "The JSON representation is longer than the small max length"
         MAPPER.writer().writeValueAsString(json).length() > smallMaxLength
