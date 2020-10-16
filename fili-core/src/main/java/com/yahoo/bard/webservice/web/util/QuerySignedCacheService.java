@@ -31,6 +31,7 @@ import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.*;
 import java.util.Objects;
 
 
@@ -64,9 +65,10 @@ public class QuerySignedCacheService implements CacheService {
      * @param querySigningService  The service to generate query signatures
      * @param objectMapper A JSON object mapper, used to parse JSON response
      */
+    @Inject
     public QuerySignedCacheService(
-            final TupleDataCache<String, Long, String> dataCache,
-            final QuerySigningService<Long> querySigningService,
+            TupleDataCache<String, Long, String> dataCache,
+            QuerySigningService<Long> querySigningService,
             ObjectMapper objectMapper
     ) {
         this.dataCache = dataCache;

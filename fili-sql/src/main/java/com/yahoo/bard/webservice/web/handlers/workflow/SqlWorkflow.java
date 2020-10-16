@@ -120,7 +120,8 @@ public class SqlWorkflow implements RequestWorkflowProvider {
         if (CacheFeatureFlag.TTL.isOn()) {
             handler = new CacheRequestHandler(handler, dataCache, mapper);
         } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-            handler = new CacheV2RequestHandler(handler, dataCache, querySigningService, querySignedCacheService, mapper);
+            handler =
+                    new CacheV2RequestHandler(handler, dataCache, querySigningService, querySignedCacheService, mapper);
         } else if (CacheFeatureFlag.ETAG.isOn()) {
             handler = new EtagCacheRequestHandler(
                     handler,

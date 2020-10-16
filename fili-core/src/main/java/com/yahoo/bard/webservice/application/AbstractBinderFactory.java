@@ -41,6 +41,7 @@ import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.PreResponseDeserializer;
 import com.yahoo.bard.webservice.data.cache.DataCache;
+import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
@@ -324,7 +325,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(getPhysicalTableResolver()).to(PhysicalTableResolver.class);
                 bind(PartialDataHandler.class).to(PartialDataHandler.class);
                 bind(getVolatileIntervalsService()).to(VolatileIntervalsService.class);
-                bind(QuerySignedCacheService.class).to(QuerySignedCacheService.class);
 
                 QuerySigningService<?> querySigningService = buildQuerySigningService(
                         loader.getPhysicalTableDictionary(),
@@ -350,6 +350,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 }
 
                 bind(querySigningService).to(QuerySigningService.class);
+
+                bind(buildQuerySignedCacheService(
+                        buildLocalSignatureCache(),
+                        querySigningService,
+                        getMapper()
+                )).to(CacheService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
 
@@ -864,6 +870,28 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             DataSourceMetadataService dataSourceMetadataService
     ) {
         return new SegmentIntervalsHashIdGenerator(dataSourceMetadataService, buildSigningFunctions());
+    }
+
+    /**
+     * Build a QuerySignedCacheService.
+     *
+     * @param dataCache  The cache instance
+     * @param querySigningService  The service to generate query signatures
+     * @param objectMapper A JSON object mapper, used to parse JSON response
+     *
+     * @return A QuerySignedCacheService
+     */
+    @SuppressWarnings("unchecked")
+    protected QuerySignedCacheService buildQuerySignedCacheService(
+            DataCache<?> dataCache,
+            QuerySigningService<?> querySigningService,
+            ObjectMapper objectMapper
+    ) throws ClassCastException {
+        return new QuerySignedCacheService(
+                (TupleDataCache<String, Long, String>) dataCache,
+                (QuerySigningService<Long>) querySigningService,
+                objectMapper
+        );
     }
 
     /**

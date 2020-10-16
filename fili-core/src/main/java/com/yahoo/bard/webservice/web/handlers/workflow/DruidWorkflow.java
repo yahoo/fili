@@ -27,7 +27,7 @@ import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.TopNMapperRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler;
-import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler;
+import com.yahoo.bard.webservice.web.handlers.CacheWeightCheckRequestHandler;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
@@ -134,7 +134,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         }
 
         // Requests sent to the NonUI we service are checked to see if they are too heavy to process
-        handler = new WeightCheckRequestHandler(handler, webService, weightUtil, mapper);
+        handler = new CacheWeightCheckRequestHandler(handler, webService, weightUtil, mapper, querySignedCacheService);
 
         handler = new DebugRequestHandler(handler, mapper);
 

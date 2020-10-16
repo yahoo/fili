@@ -30,7 +30,7 @@ import com.yahoo.bard.webservice.web.handlers.DruidPartialDataRequestHandler
 import com.yahoo.bard.webservice.web.handlers.EtagCacheRequestHandler
 import com.yahoo.bard.webservice.web.handlers.SplitQueryRequestHandler
 import com.yahoo.bard.webservice.web.handlers.WebServiceSelectorRequestHandler
-import com.yahoo.bard.webservice.web.handlers.WeightCheckRequestHandler
+import com.yahoo.bard.webservice.web.handlers.CacheWeightCheckRequestHandler
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -193,7 +193,7 @@ class DruidWorkflowSpec extends Specification {
         handlers = getHandlerChain(defaultHandler.webServiceHandler.next)
 
         then:
-        [AsyncWebServiceRequestHandler, DebugRequestHandler, WeightCheckRequestHandler].every {
+        [AsyncWebServiceRequestHandler, DebugRequestHandler, CacheWeightCheckRequestHandler].every {
             handlers.find(byClass(it)) != null
         }
     }
