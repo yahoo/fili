@@ -58,12 +58,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             ObjectMapper mapper,
             QuerySignedCacheService querySignedCacheService
     ) {
-        super(
-                next,
-                webService,
-                queryWeightUtil,
-                mapper
-        );
+        super(next, webService, queryWeightUtil, mapper);
         this.querySignedCacheService = querySignedCacheService;
     }
 

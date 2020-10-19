@@ -78,14 +78,7 @@ public class QuerySignedCacheService implements CacheService {
     }
 
 
-    /**
-     * Read cache.
-     *
-     * @param context The context data from the request processing chain
-     * @param druidQuery The query being processed
-     *
-     * @return Response
-     */
+    @Override
     public String readCache(
             RequestContext context,
             DruidAggregationQuery<?> druidQuery
@@ -125,13 +118,7 @@ public class QuerySignedCacheService implements CacheService {
         return null;
     }
 
-    /**
-     * Write cache.
-     *
-     * @param response The response handler
-     * @param json Json value to be written to cache as string
-     * @param druidQuery The query being processed
-     */
+    @Override
     public void writeCache(
             ResponseProcessor response,
             JsonNode json,
@@ -172,13 +159,7 @@ public class QuerySignedCacheService implements CacheService {
     }
 
 
-    /**
-     * A request is cacheable if it does not refer to partial data.
-     *
-     * @param response The response handler
-     *
-     * @return whether request can be cached
-     */
+    @Override
     public boolean isCacheable(ResponseProcessor response) {
         SimplifiedIntervalList missingIntervals = getPartialIntervalsWithDefault(response.getResponseContext());
         SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(response.getResponseContext());
