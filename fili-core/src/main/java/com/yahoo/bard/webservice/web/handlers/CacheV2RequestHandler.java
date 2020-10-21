@@ -76,18 +76,21 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
             cacheKey = getKey(druidQuery);
 
             if (context.isReadCache()) {
-                String cacheResponse =
-                        querySignedCacheService.readCache(context, druidQuery);
-                RequestLog logCtx = RequestLog.dump();
-                nextResponse.processResponse(
-                        mapper.readTree(cacheResponse),
-                        druidQuery,
-                        new LoggingContext(logCtx)
-                );
-                return true;
+                String cacheResponse = querySignedCacheService.readCache(context, druidQuery);
+                if (cacheResponse != null) {
+                    RequestLog logCtx = RequestLog.dump();
+                    nextResponse.processResponse(
+                            mapper.readTree(cacheResponse),
+                            druidQuery,
+                            new LoggingContext(logCtx)
+                    );
+                    return true;
+                }
             }
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             LOG.warn("Cache key cannot be built: ", e);
+        } catch (Exception e) {
+            LOG.warn("Error processing cache read: ", e);
         }
 
         // Cached value either doesn't exist or is invalid

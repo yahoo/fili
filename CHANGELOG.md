@@ -9,6 +9,9 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Add null check for cache response to CacheV2RequestHandler](https://github.com/yahoo/fili/pull/1099)
+    * Added null check to response from cache read that delegates to next handler.
+
 - [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
     * Change to rollup formatter broke serialization of all timegrain.
 

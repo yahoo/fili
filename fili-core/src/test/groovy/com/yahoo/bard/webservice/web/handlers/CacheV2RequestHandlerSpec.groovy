@@ -253,4 +253,21 @@ class CacheV2RequestHandlerSpec extends Specification {
         and: "The count of fact query cache hit is not incremented"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
+
+    def "Request with null cache response delegates to next handler with cache response processor"() {
+        setup:
+        querySignedCacheService.readCache(requestContext, groupByQuery) >> null
+
+        when: "Query that retrieves null cache response"
+        boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
+
+        then: "Continue the request to the next handler with a CacheV2ResponseProcessor"
+        1 * next.handleRequest(requestContext, apiRequest, groupByQuery, _ as CacheV2ResponseProcessor) >> true
+
+        and: "We don't immediately process the response"
+        0 * response.processResponse(json, groupByQuery, _)
+
+        then: "The request is marked as processed"
+        requestProcessed
+    }
 }
