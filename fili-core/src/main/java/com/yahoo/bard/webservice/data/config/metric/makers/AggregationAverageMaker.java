@@ -148,11 +148,6 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
         );
         Set<PostAggregation> outerPostAggs = Collections.singleton(average);
 
-        if (innerQuery.getDimensions().size() > 0) {
-            Collection<Dimension> dimensions = innerQuery.getDimensions();
-            return new TemplateDruidQuery(outerAggs, outerPostAggs, innerQuery, (ZonelessTimeGrain) null, dimensions);
-        }
-
         // Build the resulting query template
         return new TemplateDruidQuery(outerAggs, outerPostAggs, innerQuery);
     }
