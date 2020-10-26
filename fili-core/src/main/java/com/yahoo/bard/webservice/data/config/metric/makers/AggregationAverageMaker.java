@@ -5,10 +5,13 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE;
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
+import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
+import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolSupport;
 import com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol;
@@ -24,8 +27,10 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import com.google.common.collect.ImmutableSet;
+import com.yahoo.bard.webservice.web.ChainingResultSetMapper;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -143,6 +148,11 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
         );
         Set<PostAggregation> outerPostAggs = Collections.singleton(average);
 
+        if (innerQuery.getDimensions().size() > 0) {
+            Collection<Dimension> dimensions = innerQuery.getDimensions();
+            return new TemplateDruidQuery(outerAggs, outerPostAggs, innerQuery, (ZonelessTimeGrain) null, dimensions);
+        }
+
         // Build the resulting query template
         return new TemplateDruidQuery(outerAggs, outerPostAggs, innerQuery);
     }
@@ -231,5 +241,17 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
         return originalSourceMetric instanceof SketchAggregation ?
                 getSketchConverter().asSketchEstimate((SketchAggregation) originalSourceMetric) :
                 originalSourceMetric;
+    }
+
+    @Override
+    protected ResultSetMapper makeCalculation(
+            final LogicalMetricInfo logicalMetricInfo, final List<LogicalMetric> dependentMetrics
+    ) {
+        if (!(dependentMetrics.get(0).getCalculation() instanceof NoOpResultSetMapper)) {
+            return ChainingResultSetMapper.createAndRenameResultSetMapperChain(logicalMetricInfo,
+                    dependentMetrics.get(0).getCalculation());
+        }
+
+        return NO_OP_MAPPER;
     }
 }

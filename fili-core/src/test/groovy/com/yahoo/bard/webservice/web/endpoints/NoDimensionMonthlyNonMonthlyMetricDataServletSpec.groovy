@@ -25,7 +25,12 @@ class NoDimensionMonthlyNonMonthlyMetricDataServletSpec extends BaseDataServletC
                 "dateTime": ["2014-06-01%2F2014-07-01"]
         ]
     }
-
+    /**
+     * We are expecting results to be rounded up here since we added ChainingResultSetMapper logic in AggregationAverageMaker
+     * which rounds up the sketch. So result of dayAvgUsers would be "3" and NOT "2.5"
+     *
+     * @return expected Api Response
+     */
     @Override
     String getExpectedApiResponse() {
         """{
@@ -33,7 +38,7 @@ class NoDimensionMonthlyNonMonthlyMetricDataServletSpec extends BaseDataServletC
                 {
                     "dateTime" : "2014-06-01 00:00:00.000",
                     "users" : 75,
-                    "dayAvgUsers" : 2.5
+                    "dayAvgUsers" : 3
                 }
             ]
         }"""

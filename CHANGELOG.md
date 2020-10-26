@@ -66,6 +66,11 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/2000)
+    * Added `ChainingResultSetMapper` to provide ablity to delegate to all ResultSetMappers in its list.
+        - It provides functionality to retain the existing calculations and also add the new ResultSetMapper at query time.
+        - It implements `RenameableResultSetMapper` in order to rename mappers with the provided new name.
+        
 - [Add ability to cahce weight checks](https://github.com/yahoo/fili/pull/1094)
    * Add `CacheWeightCheckRequestHandler` to support caching weight checks. 
        - `CacheWeightCheckRequestHandler` delegates to `WeightCheckRequestHandler` to determine whether a request should be processed based on estimated query cost.
