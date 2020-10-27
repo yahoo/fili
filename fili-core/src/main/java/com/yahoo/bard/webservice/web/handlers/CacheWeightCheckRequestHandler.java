@@ -119,10 +119,8 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 classicCallback.invoke(rootNode);
                 return true;
             }
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            LOG.warn("Caching issue during weight check." + e.getMessage(), e);
         }
 
         webService.postDruidQuery(context, cahingSuccessCallback, error, failure, weightEvaluationQuery);
