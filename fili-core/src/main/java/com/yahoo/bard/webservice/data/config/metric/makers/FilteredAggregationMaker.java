@@ -83,7 +83,7 @@ public class FilteredAggregationMaker extends MetricMaker {
                 new TemplateDruidQuery(
                         ImmutableSet.of(filteredAggregation),
                         Collections.emptySet(),
-                        sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null)
+                        sourceMetric.getTemplateDruidQuery().getInnerQuery().get()
                 ),
                 sourceMetric.getCalculation()
         );
