@@ -65,8 +65,10 @@ public class FilteredAggregationMaker extends MetricMaker {
                 filter
         );
 
+        TemplateDruidQuery nestedQuery = sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null);
+
         //invoke appropriate TDQ constructor when nested query is null
-        if (!sourceMetric.getTemplateDruidQuery().getInnerQuery().isPresent()) {
+        if (nestedQuery == null) {
             return new ProtocolMetricImpl(
                     logicalMetricInfo,
                     new TemplateDruidQuery(
@@ -83,7 +85,7 @@ public class FilteredAggregationMaker extends MetricMaker {
                 new TemplateDruidQuery(
                         ImmutableSet.of(filteredAggregation),
                         Collections.emptySet(),
-                        sourceMetric.getTemplateDruidQuery().getInnerQuery().get()
+                        nestedQuery
                 ),
                 sourceMetric.getCalculation()
         );
