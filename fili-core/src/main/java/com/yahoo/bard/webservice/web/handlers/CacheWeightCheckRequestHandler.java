@@ -12,14 +12,12 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
-import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
+import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +72,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             return next.handleRequest(context, request, druidQuery, response);
         }
 
-        BardQueryInfo.getBardQueryInfo().incrementCountWeightCheck();
+        BardQueryInfo.incrementCountWeightCheck();
         final WeightCheckResponseProcessor weightCheckResponse =
                 new WeightCheckResponseProcessor(response);
         final DruidAggregationQuery<?> weightEvaluationQuery = queryWeightUtil.makeWeightEvaluationQuery(druidQuery);
@@ -97,7 +95,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
         FailureCallback failure = response.getFailureCallback(druidQuery);
 
-        SuccessCallback cahingSuccessCallback = buildCacheSuccessCallback(
+        SuccessCallback cachingSuccessCallback = buildCacheSuccessCallback(
                 classicCallback,
                 querySignedCacheService,
                 druidQuery,
@@ -105,7 +103,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         );
         // No possible cache hit, so just run the query and save to cache
         if (!context.isReadCache()) {
-            webService.postDruidQuery(context, cahingSuccessCallback, error, failure, weightEvaluationQuery);
+            webService.postDruidQuery(context, cachingSuccessCallback, error, failure, weightEvaluationQuery);
             return true;
         }
 
@@ -123,7 +121,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             LOG.warn("Caching issue during weight check." + e.getMessage(), e);
         }
 
-        webService.postDruidQuery(context, cahingSuccessCallback, error, failure, weightEvaluationQuery);
+        webService.postDruidQuery(context, cachingSuccessCallback, error, failure, weightEvaluationQuery);
         return true;
     }
 
@@ -146,17 +144,14 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
             DruidAggregationQuery druidQuery,
             ResponseProcessor response
     ) {
-        return new SuccessCallback() {
-            @Override
-            public void invoke(JsonNode jsonResult) {
-                // send the response to the user before waiting to cache
-                successCallback.invoke(jsonResult);
-                try {
-                    querySignedCacheService.writeCache(response, jsonResult, druidQuery);
-                } catch (JsonProcessingException e) {
-                    // Warn on cache write exception only
-                    LOG.warn("Cache write json exception:", e);
-                }
+        return jsonResult -> {
+            // send the response to the user before waiting to cache
+            successCallback.invoke(jsonResult);
+            try {
+                querySignedCacheService.writeCache(response, jsonResult, druidQuery);
+            } catch (JsonProcessingException e) {
+                // Warn on cache write exception only
+                LOG.warn("Cache write json exception:", e);
             }
         };
     }
