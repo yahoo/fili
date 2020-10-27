@@ -66,7 +66,7 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
-- [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/2000)
+- [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/1100)
     * Added `ChainingResultSetMapper` to provide ablity to delegate to all ResultSetMappers in its list.
         - It provides functionality to retain the existing calculations and also add the new `ResultSetMapper` at query time.
         - It implements `RenameableResultSetMapper` in order to rename mappers with the provided new name.
