@@ -68,9 +68,9 @@ Current
 ### Added:
 - [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/2000)
     * Added `ChainingResultSetMapper` to provide ablity to delegate to all ResultSetMappers in its list.
-        - It provides functionality to retain the existing calculations and also add the new ResultSetMapper at query time.
+        - It provides functionality to retain the existing calculations and also add the new `ResultSetMapper` at query time.
         - It implements `RenameableResultSetMapper` in order to rename mappers with the provided new name.
-        - Added @NotNull constraint on nestedQuery parameter for one of the TDQ constructor
+        - Added `@NotNull` constraint on nestedQuery parameter for one of the TDQ constructor
         
 - [Add ability to cahce weight checks](https://github.com/yahoo/fili/pull/1094)
    * Add `CacheWeightCheckRequestHandler` to support caching weight checks. 
