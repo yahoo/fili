@@ -82,7 +82,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         try {
             LOG.debug("Weight query {}", writer.writeValueAsString(weightEvaluationQuery));
         } catch (JsonProcessingException e) {
-            LOG.warn("Weight Query json exception:", e);
+            // Why log an error writing a log?  That's silly.
         }
 
         SuccessCallback classicCallback = super.buildSuccessCallback(
@@ -118,7 +118,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 return true;
             }
         } catch (JsonProcessingException e) {
-            LOG.warn("Caching issue during weight check. {}", e.getMessage(), e);
+            LOG.warn(String.format("Caching read exception during weight check. %s", e.getMessage()), e);
         }
 
         webService.postDruidQuery(context, cachingSuccessCallback, error, failure, weightEvaluationQuery);
@@ -151,7 +151,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 querySignedCacheService.writeCache(response, jsonResult, druidQuery);
             } catch (JsonProcessingException e) {
                 // Warn on cache write exception only
-                LOG.warn("Cache write json exception:", e);
+                LOG.warn(String.format("Caching writing exception. %s", e.getMessage()), e);
             }
         };
     }
