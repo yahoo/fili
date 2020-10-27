@@ -94,7 +94,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     public TemplateDruidQuery(
             Collection<Aggregation> aggregations,
             Collection<PostAggregation> postAggregations,
-            TemplateDruidQuery nestedQuery
+            @NotNull TemplateDruidQuery nestedQuery
     ) {
         this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null, nestedQuery.getDimensions());
     }
