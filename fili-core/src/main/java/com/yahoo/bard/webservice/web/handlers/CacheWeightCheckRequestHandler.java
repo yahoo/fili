@@ -118,7 +118,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
                 return true;
             }
         } catch (JsonProcessingException e) {
-            LOG.warn("Caching issue during weight check." + e.getMessage(), e);
+            LOG.warn("Caching issue during weight check. {}", e.getMessage(), e);
         }
 
         webService.postDruidQuery(context, cachingSuccessCallback, error, failure, weightEvaluationQuery);
