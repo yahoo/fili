@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
@@ -64,12 +65,27 @@ public class FilteredAggregationMaker extends MetricMaker {
                 filter
         );
 
+        TemplateDruidQuery nestedQuery = sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null);
+
+        //invoke appropriate TDQ constructor when nested query is null
+        if (nestedQuery == null) {
+            return new ProtocolMetricImpl(
+                    logicalMetricInfo,
+                    new TemplateDruidQuery(
+                            ImmutableSet.of(filteredAggregation),
+                            Collections.emptySet(),
+                            (ZonelessTimeGrain) null
+                    ),
+                    sourceMetric.getCalculation()
+            );
+        }
+
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
                 new TemplateDruidQuery(
                         ImmutableSet.of(filteredAggregation),
                         Collections.emptySet(),
-                        sourceMetric.getTemplateDruidQuery().getInnerQuery().orElse(null)
+                        nestedQuery
                 ),
                 sourceMetric.getCalculation()
         );
