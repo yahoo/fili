@@ -11,11 +11,11 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.RenamableResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class ChainingResultSetMapper  extends ResultSetMapper implements RenamableResultSetMapper {
 
     private final List<ResultSetMapper> chainedResultSetMappers;
-    private static final Logger LOG = LoggerFactory.getLogger(ChainingResultSetMapper.class);
 
     /**
      * Constructor that accepts list of chained ResultSetMappers and filter out any NoOp Mappers.
@@ -131,5 +130,19 @@ public class ChainingResultSetMapper  extends ResultSetMapper implements Renamab
         }
 
         return finalResultSet;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        ChainingResultSetMapper that = (ChainingResultSetMapper) o;
+        return super.equals(o) &&
+                Objects.equals(chainedResultSetMappers, that.chainedResultSetMappers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), chainedResultSetMappers);
     }
 }
