@@ -96,7 +96,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             TemplateDruidQuery nestedQuery
     ) {
-        this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null, Collections.emptySet());
+        this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null, nestedQuery.getDimensions());
     }
 
     /**
@@ -131,7 +131,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             TemplateDruidQuery nestedQuery,
             ZonelessTimeGrain timeGrain,
-            Collection<Dimension>  dimensions
+            Collection<Dimension> dimensions
     ) {
         // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
         this.aggregations = Collections.unmodifiableSet(new LinkedHashSet<>(aggregations));
@@ -196,7 +196,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                     Collections.emptySet(),
                     nestedQuery,
                     null,
-                    Collections.emptySet());
+                    nestedQuery.getDimensions());
         } else {
             innerQuery = new TemplateDruidQuery(
                     innerAggregations,

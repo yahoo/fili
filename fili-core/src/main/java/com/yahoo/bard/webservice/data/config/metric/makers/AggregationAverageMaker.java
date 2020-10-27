@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import static com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE;
 import static com.yahoo.bard.webservice.druid.util.FieldConverterSupplier.getSketchConverter;
 
-import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -30,7 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.web.ChainingResultSetMapper;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -243,8 +241,10 @@ public class AggregationAverageMaker extends BaseProtocolMetricMaker {
             final LogicalMetricInfo logicalMetricInfo, final List<LogicalMetric> dependentMetrics
     ) {
         if (!(dependentMetrics.get(0).getCalculation() instanceof NoOpResultSetMapper)) {
-            return ChainingResultSetMapper.createAndRenameResultSetMapperChain(logicalMetricInfo,
-                    dependentMetrics.get(0).getCalculation());
+            return ChainingResultSetMapper.createAndRenameResultSetMapperChain(
+                    logicalMetricInfo,
+                    dependentMetrics.get(0).getCalculation()
+            );
         }
 
         return NO_OP_MAPPER;

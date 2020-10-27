@@ -11,10 +11,12 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.RenamableResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This Mapper provides ability to chain additional ResultSetMappers along with the mappers from dependent metric.
@@ -22,17 +24,19 @@ import java.util.List;
  */
 public class ChainingResultSetMapper  extends ResultSetMapper implements RenamableResultSetMapper {
 
-    List<ResultSetMapper> chainedResultSetMappers;
-    public static final NoOpResultSetMapper NO_OP_MAPPER = new NoOpResultSetMapper();
+    private final List<ResultSetMapper> chainedResultSetMappers;
+    private static final Logger LOG = LoggerFactory.getLogger(ChainingResultSetMapper.class);
 
     /**
-     * Constructor.
+     * Constructor that accepts list of chained ResultSetMappers and filter out any NoOp Mappers.
      *
      * @param chainedResultSetMappers  The Combined list of ResultSetMappers from dependent metric and
      *                                 additional Mappers to be chained.
      */
     public ChainingResultSetMapper(List<ResultSetMapper> chainedResultSetMappers) {
-        this.chainedResultSetMappers = chainedResultSetMappers;
+        this.chainedResultSetMappers = chainedResultSetMappers.stream()
+                                        .filter(m -> !(m instanceof NoOpResultSetMapper))
+                                        .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -45,7 +49,16 @@ public class ChainingResultSetMapper  extends ResultSetMapper implements Renamab
      */
     public static ResultSetMapper createAndRenameResultSetMapperChain(LogicalMetricInfo info,
                                                                       ResultSetMapper... mappers) {
-        List<ResultSetMapper> chainedResultSetMappers = Arrays.asList(mappers);
+        List<ResultSetMapper> chainedResultSetMappers = new ArrayList<>();
+
+        for (ResultSetMapper mapper : mappers) {
+            if (mapper instanceof ChainingResultSetMapper) {
+                chainedResultSetMappers.addAll(((ChainingResultSetMapper) mapper).getMappersList());
+            }
+            else {
+                chainedResultSetMappers.add(mapper);
+            }
+        }
 
         return getRenamedMappers(chainedResultSetMappers, info.getName());
     }
@@ -56,8 +69,7 @@ public class ChainingResultSetMapper  extends ResultSetMapper implements Renamab
     }
 
     /**
-     * This method loop through all ResultSetMappers and Rename them if necessary and
-     * also ignores NoOp Mappers from the list.
+     * This method loop through all ResultSetMappers and Rename them if necessary.
      *
      * @param chainedResultSetMappers  The List of ResultSetMappers in Chain.
      * @param newColumnName  The new name of the mapper
@@ -73,12 +85,21 @@ public class ChainingResultSetMapper  extends ResultSetMapper implements Renamab
             if (m instanceof RenamableResultSetMapper) {
                 renamedMapper = ((RenamableResultSetMapper) m).withColumnName(newColumnName);
                 renamedMapperList.add(renamedMapper);
-            } else if (!(m instanceof NoOpResultSetMapper)) {
+            } else {
                 renamedMapperList.add(m);
             }
         }
 
         return new ChainingResultSetMapper(renamedMapperList);
+    }
+
+    /**
+     * Getter to return list of chained mappers.
+     *
+     * @return  The List of ResultSetMappers in chain.
+     */
+    public List<ResultSetMapper> getMappersList() {
+        return new ArrayList<>(chainedResultSetMappers);
     }
 
     @Override
