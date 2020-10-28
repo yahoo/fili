@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
+    * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
 
 - [Fix: Add null check for cache response to CacheV2RequestHandler](https://github.com/yahoo/fili/pull/1099)
     * Added null check to response from cache read that delegates to next handler.
@@ -143,6 +145,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Logging of AllGranularity to use friendlier serialization](https://github.com/yahoo/fili/issues/1103)
+   * Switched to using getName
+
 - [Better supporrt for different protocols on a single parameter name](https://github.com/yahoo/fili/issues/1097)
     * Added 'acceptsParameter' contract to `ProtocolSupport` and 'withReplaceProtocols' to support replacement of
     contract names.
@@ -230,6 +235,8 @@ Current
    * Redis `KeyValueStore` implementation and support removed. 
 
 ### Fixed:
+- [Fix vulnerability in printing stack trace instead of using logger](https://github.com/yahoo/fili/issues/1101)
+   * Printing stack trace directly to standard.err is not safe.  Using logger instead.
 
 - [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
    * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
