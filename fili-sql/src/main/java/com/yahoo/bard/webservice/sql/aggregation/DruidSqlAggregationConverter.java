@@ -3,13 +3,13 @@
 package com.yahoo.bard.webservice.sql.aggregation;
 
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
-
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+
+import static com.yahoo.bard.webservice.sql.aggregation.DefaultSqlAggregationType.defaultDruidToSqlAggregation;
 
 /**
  * The default implementation of  mapping from Druid's {@link Aggregation} to a {@link SqlAggregation}.
@@ -19,10 +19,10 @@ public class DruidSqlAggregationConverter
     private Map<String, SqlAggregationType> druidToSqlAggregation;
 
     /**
-     * Constructors a map from druid to sql aggregations using {@link #getDefaultDruidToSqlAggregation()}.
+     * Constructors a map from druid to sql aggregations using defaultDruidToSqlAggregation.
      */
     public DruidSqlAggregationConverter() {
-        this(getDefaultDruidToSqlAggregation());
+        this(defaultDruidToSqlAggregation);
     }
 
     /**
@@ -34,22 +34,6 @@ public class DruidSqlAggregationConverter
         this.druidToSqlAggregation = druidToSqlAggregation;
     }
 
-    /**
-     * The default mapping from druid to sql aggregations defined by {@link DefaultSqlAggregationType}.
-     *
-     * @return the mapping from druid aggregation names to sql aggregation types.
-     */
-    public static Map<String, SqlAggregationType> getDefaultDruidToSqlAggregation() {
-        Map<String, SqlAggregationType> druidToSqlAggregation = new HashMap<>();
-        Arrays.stream(DefaultSqlAggregationType.values())
-                .forEach(defaultSqlAggregationType -> {
-                    defaultSqlAggregationType.getSupportedDruidAggregations()
-                            .forEach(druidAggregation -> {
-                                druidToSqlAggregation.put(druidAggregation, defaultSqlAggregationType);
-                            });
-                });
-        return druidToSqlAggregation;
-    }
 
     /**
      * Finds the corresponding {@link SqlAggregation} from a druid aggregation.
@@ -63,6 +47,11 @@ public class DruidSqlAggregationConverter
     @Override
     public Optional<SqlAggregation> apply(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
         String aggregationType = aggregation.getType();
+        if (aggregationType.equals("filtered")) {
+            FilteredAggregation filteredAggregation = (FilteredAggregation) aggregation;
+            Aggregation agg = filteredAggregation.getAggregation();
+            aggregationType = agg.getType();
+        }
         return Optional.ofNullable(druidToSqlAggregation.get(aggregationType))
                 .map(sqlAggregationType -> sqlAggregationType.getSqlAggregation(aggregation, apiToFieldMapper));
     }

@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
+import static com.yahoo.bard.webservice.web.endpoints.views.DefaultMetadataViewFormatters.dimensionMetadataFormatter;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
@@ -21,21 +22,18 @@ import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
+import com.yahoo.bard.webservice.web.endpoints.views.DimensionMetadataFormatter;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.collect.Streams;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -97,6 +95,38 @@ public class DimensionsServlet extends EndpointServlet {
     }
 
     /**
+     * Get the URL of the dimension.
+     *
+     * @param dimension  Dimension to get the URL of
+     * @param uriInfo  URI Info for the request
+     *
+     * @return The absolute URL for the dimension
+     */
+    public static String getDimensionUrl(Dimension dimension, UriInfo uriInfo) {
+        return uriInfo.getBaseUriBuilder()
+                .path(DimensionsServlet.class)
+                .path(DimensionsServlet.class, "getDimension")
+                .build(dimension.getApiName())
+                .toASCIIString();
+    }
+
+    /**
+     * Get the URL of the dimension values collection.
+     *
+     * @param dimension  Dimension to get the URL of
+     * @param uriInfo  URI Info for the request
+     *
+     * @return The absolute URL for the dimension
+     */
+    public static String getDimensionValuesUrl(Dimension dimension, final UriInfo uriInfo) {
+        return uriInfo.getBaseUriBuilder()
+                .path(DimensionsServlet.class)
+                .path(DimensionsServlet.class, "getDimensionRows")
+                .build(dimension.getApiName())
+                .toASCIIString();
+    }
+
+    /**
      * Get all the dimensions as a summary list.
      *
      * @param perPage  number of values to return per page
@@ -113,7 +143,7 @@ public class DimensionsServlet extends EndpointServlet {
      *     "dimensions": {@literal <List of Dimension Summaries>}
      * }
      * </code></pre>
-     * @see DimensionsServlet#getDimensionListSummaryView(Iterable, UriInfo)
+     * @see DimensionMetadataFormatter#formatDimensionSummaryList(Iterable, UriInfo)
      */
     @GET
     @Timed
@@ -147,7 +177,7 @@ public class DimensionsServlet extends EndpointServlet {
             Response response = paginateAndFormatResponse(
                     apiRequest,
                     containerRequestContext,
-                    getDimensionListSummaryView(apiRequest.getDimensions(), uriInfo),
+                    dimensionMetadataFormatter.formatDimensionSummaryList(apiRequest.getDimensions(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "dimensions" : "rows",
                     null
             );
@@ -172,7 +202,7 @@ public class DimensionsServlet extends EndpointServlet {
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return Full view of the dimension
-     * @see DimensionsServlet#getDimensionFullView(Dimension, LogicalTableDictionary, UriInfo)
+     * @see DimensionMetadataFormatter#formatDimensionWithJoins(Dimension, LogicalTableDictionary, UriInfo)
      */
     @GET
     @Timed
@@ -203,7 +233,7 @@ public class DimensionsServlet extends EndpointServlet {
                 apiRequest = (DimensionsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
-            Map<String, Object> result = getDimensionFullView(
+            Map<String, Object> result = dimensionMetadataFormatter.formatDimensionWithJoins(
                     apiRequest.getDimension(),
                     logicalTableDictionary,
                     uriInfo
@@ -363,111 +393,10 @@ public class DimensionsServlet extends EndpointServlet {
     }
 
     /**
-     * Get the summary list view of the dimensions.
-     *
-     * @param dimensions  Collection of dimensions to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the dimensions
-     */
-    public static LinkedHashSet<Map<String, Object>> getDimensionListSummaryView(
-            Iterable<Dimension> dimensions,
-            final UriInfo uriInfo
-    ) {
-        return Streams.stream(dimensions)
-                .map(dimension -> getDimensionSummaryView(dimension, uriInfo))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the dimension.
-     *
-     * @param dimension  Dimension to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary view of the dimension
-     */
-    public static Map<String, Object> getDimensionSummaryView(Dimension dimension, final UriInfo uriInfo) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("uri", getDimensionUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
-        return resultRow;
-    }
-
-    /**
-     * Get the full view of the dimension.
-     *
-     * @param dimension  Dimension to get the view of
-     * @param logicalTableDictionary  Logical Table Dictionary to look up the logical tables this dimension is on
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Full view of the dimension
-     */
-    public static Map<String, Object> getDimensionFullView(
-            Dimension dimension,
-            LogicalTableDictionary logicalTableDictionary,
-            final UriInfo uriInfo
-    ) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", dimension.getCategory());
-        resultRow.put("name", dimension.getApiName());
-        resultRow.put("longName", dimension.getLongName());
-        resultRow.put("description", dimension.getDescription());
-        resultRow.put("fields", dimension.getDimensionFields());
-        resultRow.put("values", getDimensionValuesUrl(dimension, uriInfo));
-        resultRow.put("cardinality", dimension.getCardinality());
-        resultRow.put("storageStrategy", dimension.getStorageStrategy());
-        resultRow.put(
-                "tables",
-                TablesServlet.getLogicalTableListSummaryView(
-                        logicalTableDictionary.findByDimension(dimension),
-                        uriInfo
-                )
-        );
-        return resultRow;
-    }
-
-    /**
-     * Get the URL of the dimension.
-     *
-     * @param dimension  Dimension to get the URL of
-     * @param uriInfo  URI Info for the request
-     *
-     * @return The absolute URL for the dimension
-     */
-    public static String getDimensionUrl(Dimension dimension, final UriInfo uriInfo) {
-        return uriInfo.getBaseUriBuilder()
-                .path(DimensionsServlet.class)
-                .path(DimensionsServlet.class, "getDimension")
-                .build(dimension.getApiName())
-                .toASCIIString();
-    }
-
-    /**
-     * Get the URL of the dimension values collection.
-     *
-     * @param dimension  Dimension to get the URL of
-     * @param uriInfo  URI Info for the request
-     *
-     * @return The absolute URL for the dimension
-     */
-    public static String getDimensionValuesUrl(Dimension dimension, final UriInfo uriInfo) {
-        return uriInfo.getBaseUriBuilder()
-                .path(DimensionsServlet.class)
-                .path(DimensionsServlet.class, "getDimensionRows")
-                .build(dimension.getApiName())
-                .toASCIIString();
-    }
-
-    /**
      * If a description dimension fields has a name of "desc", transforms it to "description", otherwise returns the
      * original without modification.
      * <p>
-     * TODO: This rewrite need to be removed once description is normalized in legacy implementations, see
+     * ØTODO: This rewrite need to be removed once description is normalized in legacy implementations, see
      * {@link com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension#parseDimensionRow(Map)}.
      *
      * @param fieldName  The name of the description field name

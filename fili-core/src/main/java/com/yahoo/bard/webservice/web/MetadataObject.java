@@ -2,18 +2,28 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Interface for transforming logical tables into views.
  */
-public class TableView extends HashMap<String, Object> {
+public class MetadataObject extends LinkedHashMap<String, Object> {
 
     /**
      * Constructor.
      */
-    public TableView () {
+    public MetadataObject() {
         super();
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param copy  A collection of metadata to duplicate.
+     */
+    public MetadataObject(Map<String, Object> copy) {
+        super(copy);
     }
 
     /**
@@ -22,7 +32,7 @@ public class TableView extends HashMap<String, Object> {
      * @param key  Initial key with which to populate the map
      * @param value  Initial value with which to populate the map
      */
-    public TableView (String key, Object value) {
+    public MetadataObject(String key, Object value) {
         this.put(key, value);
     }
 }
