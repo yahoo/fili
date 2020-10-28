@@ -80,7 +80,9 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         final long queryRowLimit = queryWeightUtil.getQueryWeightThreshold(granularity);
 
         try {
-            LOG.debug("Weight query {}", writer.writeValueAsString(weightEvaluationQuery));
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Weight query {}", writer.writeValueAsString(weightEvaluationQuery));
+            }
         } catch (JsonProcessingException e) {
             // Why log an error writing a log?  That's silly.
         }
