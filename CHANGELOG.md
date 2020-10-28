@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
+    * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
 
 - [Fix: Add null check for cache response to CacheV2RequestHandler](https://github.com/yahoo/fili/pull/1099)
     * Added null check to response from cache read that delegates to next handler.
