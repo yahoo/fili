@@ -145,6 +145,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Logging of AllGranularity to use friendlier serialization](https://github.com/yahoo/fili/issues/1103)
+   * Switched to using getName
+
 - [Better supporrt for different protocols on a single parameter name](https://github.com/yahoo/fili/issues/1097)
     * Added 'acceptsParameter' contract to `ProtocolSupport` and 'withReplaceProtocols' to support replacement of
     contract names.

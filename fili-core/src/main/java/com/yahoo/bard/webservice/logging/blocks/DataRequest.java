@@ -62,7 +62,7 @@ public class DataRequest implements LogInfo {
             String format
     ) {
         this.table = table.getName();
-        this.timeGrain = table.getGranularity().toString();
+        this.timeGrain = table.getGranularity().getName();
         this.numBuckets = 0;
 
         this.intervals = intervals;
