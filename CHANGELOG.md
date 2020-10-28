@@ -11,6 +11,9 @@ Current
 - [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
     * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
 
+- [Fix: Add null check for cache response to CacheV2RequestHandler](https://github.com/yahoo/fili/pull/1099)
+    * Added null check to response from cache read that delegates to next handler.
+
 - [Fix: Bad serialization of AllGranularity](https://github.com/yahoo/fili/issues/1093)
     * Change to rollup formatter broke serialization of all timegrain.
 
@@ -65,6 +68,17 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/1100)
+    * Added `ChainingResultSetMapper` to provide ablity to delegate to all ResultSetMappers in its list.
+        - It provides functionality to retain the existing calculations and also add the new `ResultSetMapper` at query time.
+        - It implements `RenameableResultSetMapper` in order to rename mappers with the provided new name.
+        - Added `@NotNull` constraint on nestedQuery parameter for one of the TDQ constructor
+        
+- [Add ability to cahce weight checks](https://github.com/yahoo/fili/pull/1094)
+   * Add `CacheWeightCheckRequestHandler` to support caching weight checks. 
+       - `CacheWeightCheckRequestHandler` delegates to `WeightCheckRequestHandler` to determine whether a request should be processed based on estimated query cost.
+       - It also checks the cache for a matching request, else writes it to the cache using `CacheService` utility.
+       
 - [Add logic to rename aggregation to avoid name collision](https://github.com/yahoo/fili/issues/1095)
     * Add renameIfConflicting logic for aggregations in BaseProtocolMetricMaker.
         - Subclasses of `BaseProtocolMetricMaker` can implement `getRenamedMetricNameWithPrefix` method to have unique rename prefix for corresponding maker. 

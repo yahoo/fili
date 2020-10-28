@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService
 import spock.lang.Specification
 
 import javax.ws.rs.container.ContainerRequestContext
@@ -47,6 +47,7 @@ class CacheV2RequestHandlerSpec extends Specification {
     ContainerRequestContext containerRequestContext
     RequestContext requestContext
     QuerySigningService<Long> querySigningService
+    QuerySignedCacheService querySignedCacheService
 
     ObjectMapper mapper = new ObjectMappersSuite().getMapper()
 
@@ -55,7 +56,8 @@ class CacheV2RequestHandlerSpec extends Specification {
     def setup() {
         querySigningService = Mock(SegmentIntervalsHashIdGenerator)
         querySigningService.getSegmentSetId(_) >> Optional.of(1234L)
-        handler = new CacheV2RequestHandler(next, dataCache, querySigningService, mapper)
+        querySignedCacheService = new QuerySignedCacheService(dataCache, querySigningService, mapper)
+        handler = new CacheV2RequestHandler(next, dataCache, querySigningService, querySignedCacheService, mapper)
         containerRequestContext = Mock(ContainerRequestContext)
         containerRequestContext.getHeaders() >> (["Bard-Testing": "###BYPASS###", "ClientId": "UI"] as
                 MultivaluedHashMap<String, String>)
@@ -71,6 +73,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         expect:
         handler.dataCache == dataCache
         handler.next == next
+        handler.querySignedCacheService == querySignedCacheService
     }
 
     def "Test handle request on cache hit responds to the group by request"() {
@@ -230,7 +233,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         mapper = Mock(ObjectMapper)
         ObjectWriter writer = Mock(ObjectWriter)
         mapper.writer() >> writer
-        handler = Spy(CacheV2RequestHandler, constructorArgs: [next, dataCache, querySigningService, mapper])
+        handler = Spy(CacheV2RequestHandler, constructorArgs: [next, dataCache, querySigningService, querySignedCacheService, mapper])
 
         expect: "The count of fact query cache hit is 0"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
@@ -249,5 +252,22 @@ class CacheV2RequestHandlerSpec extends Specification {
 
         and: "The count of fact query cache hit is not incremented"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
+    }
+
+    def "Request with null cache response delegates to next handler with cache response processor"() {
+        setup:
+        querySignedCacheService.readCache(requestContext, groupByQuery) >> null
+
+        when: "Query that retrieves null cache response"
+        boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
+
+        then: "Continue the request to the next handler with a CacheV2ResponseProcessor"
+        1 * next.handleRequest(requestContext, apiRequest, groupByQuery, _ as CacheV2ResponseProcessor) >> true
+
+        and: "We don't immediately process the response"
+        0 * response.processResponse(json, groupByQuery, _)
+
+        then: "The request is marked as processed"
+        requestProcessed
     }
 }

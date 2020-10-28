@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.handlers.workflow
 
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService
+
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.DRUID_CACHE_V2
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.QUERY_SPLIT
@@ -53,6 +55,7 @@ class DruidWorkflowSpec extends Specification {
     PartialDataHandler partialDataHandler = Mock(PartialDataHandler)
     QuerySigningService<Long> querySigningService = Mock(SegmentIntervalsHashIdGenerator)
     VolatileIntervalsService volatileIntervalsService = Mock(VolatileIntervalsService)
+    QuerySignedCacheService querySignedCacheService = Mock(QuerySignedCacheService)
 
     String queryResponseCachingStrategy
 
@@ -91,6 +94,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()
@@ -137,6 +141,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()
@@ -176,6 +181,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()
@@ -204,6 +210,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()
@@ -247,6 +254,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()
@@ -275,6 +283,7 @@ class DruidWorkflowSpec extends Specification {
                 partialDataHandler,
                 querySigningService,
                 volatileIntervalsService,
+                querySignedCacheService,
                 MAPPER
         )
         DataRequestHandler workflow = dw.buildWorkflow()

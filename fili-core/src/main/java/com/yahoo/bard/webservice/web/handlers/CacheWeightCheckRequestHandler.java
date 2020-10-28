@@ -13,12 +13,13 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,8 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.NotNull;
 
 /**
- * Weight check request handler determines whether a request should be processed based on estimated query cost.
+ * Cache Weight check request handler determines whether a request should be processed based on estimated query cost.
+ * It also checks the cache for a matching request, else writes it to the cache.
  * <ul>
  *     <li>If the dimensions of the query are sufficiently low cardinality, the request is allowed.
  *     <li>Otherwise, send a simplified version of the query to druid asynchronously to measure the cardinality of the
@@ -34,31 +36,30 @@ import javax.validation.constraints.NotNull;
  *     <li>If the cost is too high, return an error, otherwise subsequently submit the data request.
  * </ul>
  */
-public class WeightCheckRequestHandler extends BaseDataRequestHandler {
+public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     private static final Logger LOG = LoggerFactory.getLogger(WeightCheckRequestHandler.class);
 
-    protected final @NotNull DataRequestHandler next;
-    protected final @NotNull DruidWebService webService;
-    protected final @NotNull QueryWeightUtil queryWeightUtil;
+    protected final @NotNull
+    QuerySignedCacheService querySignedCacheService;
 
     /**
-     * Build a weight checking request handler.
+     * Build a cache weight checking request handler.
      *
      * @param next  The request handler to delegate the request to.
      * @param webService  The web service to use for weight checking
      * @param queryWeightUtil  A provider which measures estimated weight against allowed weights.
      * @param mapper  A JSON object mapper, used to parse the JSON response from the weight check.
+     * @param querySignedCacheService The service for cache support
      */
-    public WeightCheckRequestHandler(
+    public CacheWeightCheckRequestHandler(
             DataRequestHandler next,
             DruidWebService webService,
             QueryWeightUtil queryWeightUtil,
-            ObjectMapper mapper
+            ObjectMapper mapper,
+            QuerySignedCacheService querySignedCacheService
     ) {
-        super(mapper);
-        this.next = next;
-        this.webService = webService;
-        this.queryWeightUtil = queryWeightUtil;
+        super(next, webService, queryWeightUtil, mapper);
+        this.querySignedCacheService = querySignedCacheService;
     }
 
     @Override
@@ -74,7 +75,8 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
         }
 
         BardQueryInfo.getBardQueryInfo().incrementCountWeightCheck();
-        final WeightCheckResponseProcessor weightCheckResponse = new WeightCheckResponseProcessor(response);
+        final WeightCheckResponseProcessor weightCheckResponse =
+                new WeightCheckResponseProcessor(response);
         final DruidAggregationQuery<?> weightEvaluationQuery = queryWeightUtil.makeWeightEvaluationQuery(druidQuery);
         Granularity granularity = druidQuery.getInnermostQuery().getGranularity();
         final long queryRowLimit = queryWeightUtil.getQueryWeightThreshold(granularity);
@@ -85,7 +87,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
             LOG.warn("Weight Query json exception:", e);
         }
 
-        final SuccessCallback weightQuerySuccess = buildSuccessCallback(
+        SuccessCallback classicCallback = super.buildSuccessCallback(
                 context,
                 request,
                 druidQuery,
@@ -94,83 +96,70 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
         );
         HttpErrorCallback error = response.getErrorCallback(druidQuery);
         FailureCallback failure = response.getFailureCallback(druidQuery);
-        webService.postDruidQuery(context, weightQuerySuccess, error, failure, weightEvaluationQuery);
+
+        SuccessCallback cahingSuccessCallback = buildCacheSuccessCallback(
+                classicCallback,
+                querySignedCacheService,
+                druidQuery,
+                weightCheckResponse
+        );
+        // No possible cache hit, so just run the query and save to cache
+        if (!context.isReadCache()) {
+            webService.postDruidQuery(context, cahingSuccessCallback, error, failure, weightEvaluationQuery);
+            return true;
+        }
+
+
+        try {
+            String cacheResponse = querySignedCacheService.readCache(context, druidQuery);
+            // There is a cache hit, so no more cache interactions are necessary.
+
+            if (cacheResponse != null) {
+                JsonNode rootNode = mapper.readTree(cacheResponse);
+                classicCallback.invoke(rootNode);
+                return true;
+            }
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        webService.postDruidQuery(context, cahingSuccessCallback, error, failure, weightEvaluationQuery);
         return true;
     }
 
     /**
-     * Build a callback which continues the original request or refuses it with an HTTP INSUFFICIENT_STORAGE (507)
-     * status based on the cardinality of the requester 's query as measured by the weight check query.
+     * Build a callback that writes to the cache if request wasn't already cached. It then delegates to the
+     * WeightCheckRequestHandler callback which continues the original request or refuses it with an
+     * HTTP INSUFFICIENT_STORAGE (507)status based on the cardinality of the requester 's query as
+     * measured by the weight check query.
      *
-     * @param context  The context data from the request processing chain
-     * @param request  The API request itself
+     * @param successCallback  The weight check success callback
+     * @param querySignedCacheService The service for cache support
      * @param druidQuery  The query being processed
      * @param response  The response handler
-     * @param queryRowLimit  The number of aggregating lines allowed
      *
      * @return The callback handler for the weight request
      */
-    protected SuccessCallback buildSuccessCallback(
-            final RequestContext context,
-            final DataApiRequest request,
-            final DruidAggregationQuery<?> druidQuery,
-            final ResponseProcessor response,
-            final long queryRowLimit
+    protected SuccessCallback buildCacheSuccessCallback(
+            SuccessCallback successCallback,
+            QuerySignedCacheService querySignedCacheService,
+            DruidAggregationQuery druidQuery,
+            ResponseProcessor response
     ) {
         return new SuccessCallback() {
             @Override
             public void invoke(JsonNode jsonResult) {
+                // send the response to the user before waiting to cache
+                successCallback.invoke(jsonResult);
                 try {
-                    // The result will contain either one result reflecting the row count or
-                    // none if the request matches no rows.
-                    LOG.debug("{}", writer.writeValueAsString(jsonResult));
-
-                    JsonNode row = jsonResult.get(0);
-                    // If the weight limit query is empty or reports acceptable rows, run the full query
-                    if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
-
-                        if (rowCount > queryRowLimit) {
-                            dispatchInsufficientStorage(response, druidQuery, rowCount, queryRowLimit);
-                            return;
-                        }
-                    }
-                    next.handleRequest(context, request, druidQuery, response);
-                } catch (Throwable e) {
-                    LOG.info("Exception processing druid call in success", e);
-                    response.getFailureCallback(druidQuery).dispatch(e);
+                    querySignedCacheService.writeCache(response, jsonResult, druidQuery);
+                } catch (JsonProcessingException e) {
+                    // Warn on cache write exception only
+                    LOG.warn("Cache write json exception:", e);
                 }
             }
         };
-    }
-
-    /**
-     * Dispatch an HTTP INSUFFICIENT_STORAGE (507) status based on the cardinality of the requester 's query
-     * as measured by the weight check query.
-     *
-     * @param response The response handler
-     * @param druidQuery The query being processed
-     * @param rowCount Row count from the json result
-     * @param queryRowLimit The number of aggregating lines allowed
-     */
-    protected static void dispatchInsufficientStorage(
-            ResponseProcessor response,
-            DruidAggregationQuery<?> druidQuery,
-            int rowCount,
-            long queryRowLimit
-    ) {
-        String reason = String.format(
-                ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
-                rowCount,
-                queryRowLimit
-        );
-        String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
-
-        LOG.debug(reason);
-        response.getErrorCallback(druidQuery).dispatch(
-                507, //  Insufficient Storage
-                reason,
-                description
-        );
     }
 }
