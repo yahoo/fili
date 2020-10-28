@@ -231,6 +231,8 @@ Current
    * Redis `KeyValueStore` implementation and support removed. 
 
 ### Fixed:
+- [Fix vulnerability in printing stack trace instead of using logger](https://github.com/yahoo/fili/issues/1101)
+   * Printing stack trace directly to standard.err is not safe.  Using logger instead.
 
 - [Fixing missing Jackson injectable](https://github.com/yahoo/fili/issues/985)
    * Bumping the druid-api exposed a missing requirement now on the DataSegment contract.
