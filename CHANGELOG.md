@@ -171,6 +171,10 @@ Current
    * Added static map for response formats to `DefaultResponseFormatGenerator`
    * Added unit test for `DefaultResponseFormatGenerator`
 
+- [Missing resource elements on Endpoints  return 404, not 400](https://github.com/yahoo/fili/issues/1076)
+   * Empty dictionaries will not longer return 400 errors on metadata.  (Potentially this is more property a 5** error, but regardless 400 is wrong)
+   * Missing resources will return as 404 errors on metadata endpoints.
+
 - [Updated dependency code](https://github.com/yahoo/fili/issues/1066)
    * Removed expired suppressions
    * Suppressed transitive hibernate validator dependency with OWASP issue 

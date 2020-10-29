@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.MessageFormatter;
  */
 public enum ErrorMessageFormat implements MessageFormatter {
 
-    TABLE_UNDEFINED("Table name '%s' does not exist."),
+    TABLE_UNDEFINED("Table with name '%s' does not exist."),
     TABLE_ALIGNMENT_UNDEFINED("Table '%s' cannot be aligned to a request with intervals: %s."),
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",
@@ -24,7 +24,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DIMENSION_FIELDS_UNDEFINED("Dimension field(s) '%s' do not exist for dimension '%s'"),
     DIMENSION_TYPE_INVALID("The dimension type '%s' for dimension '%s' is invalid"),
 
-    SLICE_UNDEFINED("Slice name '%s' does not exist."),
+    SLICE_UNDEFINED("Slice with name '%s' does not exist."),
 
     UNKNOWN_GRANULARITY("'%s' is not a valid granularity. Try 'day', 'week', 'month', 'year' or 'all'"),
     GRANULARITY_MERGE("'%s' time zone cannot be applied to time grain '%s'"),

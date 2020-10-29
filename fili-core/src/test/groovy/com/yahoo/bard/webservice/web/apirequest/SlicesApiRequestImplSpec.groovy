@@ -175,7 +175,7 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
         where:
         name         | dictionary      | exception              | reason
-        "all_pets"   | emptyDictionary | BadApiRequestException | ".*Physical Table Dictionary is empty.*"
-        "all_beasts" | fullDictionary  | BadApiRequestException | ".*Slice name.*does not exist.*"
+        "all_pets"   | emptyDictionary | BadApiRequestException | ".*Slice with name.*does not exist.*"
+        "all_beasts" | fullDictionary  | BadApiRequestException | ".*Slice with name.*does not exist.*"
     }
 }

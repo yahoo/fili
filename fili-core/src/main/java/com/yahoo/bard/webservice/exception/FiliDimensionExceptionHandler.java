@@ -3,13 +3,13 @@
 package com.yahoo.bard.webservice.exception;
 
 import static com.yahoo.bard.webservice.web.ResponseCode.INSUFFICIENT_STORAGE;
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -52,9 +52,15 @@ public class FiliDimensionExceptionHandler implements MetadataExceptionHandler {
             LOG.error(msg, e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).entity(msg).build();
         } else {
+            Response.Status status;
+            if (e instanceof MissingResourceApiRequestException) {
+                status = Response.Status.NOT_FOUND;
+            } else {
+                status = Response.Status.BAD_REQUEST;
+            }
             String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
             LOG.debug(msg, e);
-            return Response.status(BAD_REQUEST).entity(msg).build();
+            return Response.status(status).entity(msg).build();
         }
     }
 }

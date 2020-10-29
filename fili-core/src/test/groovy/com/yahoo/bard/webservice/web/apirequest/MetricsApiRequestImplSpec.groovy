@@ -78,7 +78,7 @@ class MetricsApiRequestImplSpec extends Specification {
 
         where:
         name     | dictionary      | exception              | reason
-        "height" | emptyDictionary | BadApiRequestException | ".*Metric Dictionary is empty.*"
+        "height" | emptyDictionary | BadApiRequestException | ".*Metric.*do not exist.*"
         "weight" | fullDictionary  | BadApiRequestException | ".*Metric.*do not exist.*"
     }
 }
