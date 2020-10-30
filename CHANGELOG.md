@@ -68,6 +68,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add withLogicalMetricInfo to MetricInstance class](https://github.com/yahoo/fili/pull/1105)
+   * Supporting method added to `MetricInstance` to replace `LogicalMetricInfo`.
+
 - [Add ablity to chain ResultSetMappers ](https://github.com/yahoo/fili/issues/1100)
     * Added `ChainingResultSetMapper` to provide ablity to delegate to all ResultSetMappers in its list.
         - It provides functionality to retain the existing calculations and also add the new `ResultSetMapper` at query time.
