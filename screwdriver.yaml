@@ -5,7 +5,7 @@ shared:
   annotations:
     screwdriver.cd/cpu: TURBO
     screwdriver.cd/ram: TURBO
-  image: richxsl/rhel7:latest
+  template: images-test/images-test@2.0.0
 
 jobs:
   master-commit:
