@@ -5,14 +5,14 @@ shared:
   annotations:
     screwdriver.cd/cpu: TURBO
     screwdriver.cd/ram: TURBO
-  template: images-test/images-test@2.0.0
+  template: maven:3.6.3-jdk-8
 
 jobs:
   master-commit:
     requires: [~pr:sd-master, ~commit:sd-master]
     steps:
       - header: echo "Starting the pipeline"
-      - lua-install: sudo yum install lua
+      - lua-install: apt-get install -y lua5.2
       - build: ./screwdriver/regular_deploy.bash
       - release: ./screwdriver/ci-tag.bash
 
