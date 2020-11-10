@@ -1,0 +1,25 @@
+cache:
+  event: ["~/.m2"]
+
+shared:
+  annotations:
+    screwdriver.cd/cpu: TURBO
+    screwdriver.cd/ram: TURBO
+  image: maven:3.6.3-jdk-8
+
+jobs:
+  master-commit:
+    requires: [~pr:sd-master, ~commit:sd-master]
+    steps:
+      - lua-install: sudo apt-get install -y lua5.2
+      - build: ./screwdriver/regular_deploy.bash
+      - release: ./screwdriver/ci-tag.bash
+
+  release:
+    secrets:
+      - BINTRAY_USER
+      - BINTRAY_API_KEY
+    requires: [~tag, ~release]
+    steps:
+      - lua-install: sudo apt-get install -y lua5.2
+      - release: ./screwdriver/tag_deploy.bash
