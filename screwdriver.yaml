@@ -16,12 +16,12 @@ jobs:
       - build: ./screwdriver/mvn-build.bash
 
   master-commit:
-    requires: [~commit:sd-master]
+    requires: [~commit:sd-master, ~tag]
     steps:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - build: ./screwdriver/mvn-build.bash
-      - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git /tmp/ci
+#      - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git /tmp/ci
       - release: ./screwdriver/ci-tag.bash
 
   release:
