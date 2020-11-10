@@ -5,7 +5,7 @@ shared:
   annotations:
     screwdriver.cd/cpu: TURBO
     screwdriver.cd/ram: TURBO
-  template: maven:3.6.3-jdk-8
+  image: maven:3.6.3-jdk-8
 
 jobs:
   master-commit:
