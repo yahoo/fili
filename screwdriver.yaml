@@ -21,5 +21,5 @@ jobs:
       - BINTRAY_API_KEY
     requires: [~tag, ~release]
     steps:
-      - lua-install: sudo apt-get install -y lua5.2
+      - lua-install: apt-get install -y lua5.2
       - release: ./screwdriver/tag_deploy.bash
