@@ -12,7 +12,7 @@ jobs:
     requires: [~pr:sd-master, ~commit:sd-master]
     steps:
       - header: echo "Starting the pipeline"
-      - lua-install: apt-get install -y lua5.2
+      - lua-install: apt-get install -y lua
       - build: ./screwdriver/regular_deploy.bash
       - release: ./screwdriver/ci-tag.bash
 
