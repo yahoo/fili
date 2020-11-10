@@ -6,6 +6,10 @@ export MAVEN_OPTS="-Xmx3000m"
 
 # This is a tag event with a version style tag
 echo "INFO Publishing, this is a github release event"
+#get the last tag on this branch
+LAST_TAG=$(git describe)
+echo "INFO Last tag: $LAST_TAG"
+
 
 echo "INFO Maven versions set : "
 mvn versions:set -DnewVersion=$(git describe) -DgenerateBackupPoms=false
@@ -28,6 +32,3 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     echo "ERROR Publication failed."
     exit ${MAVEN_RETURN_CODE}
 fi
-
-# Publication succeeded. We're done here
-exit 0

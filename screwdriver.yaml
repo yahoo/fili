@@ -8,20 +8,28 @@ shared:
   image: maven:3.6.3-jdk-8
 
 jobs:
-  master-commit:
-    requires: [~pr:sd-master, ~commit:sd-master]
+  pr-commit:
+    requires: [~pr:sd-master]
     steps:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
-      - build: ./screwdriver/regular_deploy.bash
+      - build: ./screwdriver/mvn-build.bash
+
+  master-commit:
+    requires: [~commit:sd-master]
+    steps:
+      - header: echo "Starting the pipeline"
+      - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - build: ./screwdriver/mvn-build.bash
+      - setup-ci: git clone https://github.com/screwdriver-cd/toolbox.git /tmp/ci
       - release: ./screwdriver/ci-tag.bash
 
   release:
     secrets:
       - BINTRAY_USER
       - BINTRAY_API_KEY
-    requires: [~tag, ~release]
+    requires: [master-commit]
     steps:
       - header: echo "Starting the pipeline"
-      - lua-install: apt-get update -qy && apt-get install -y lua5.2
-      - release: ./screwdriver/tag_deploy.bash
+      - lua-install: apt-get update -qy && apt-get install -y lua5.2 idea
+      - release: ./screwdriver/mvn_deploy.bash
