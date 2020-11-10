@@ -8,8 +8,8 @@ shared:
   image: maven:3.6.3-jdk-8
 
 jobs:
-  pr-commit:
-    requires: [~pr:sd-master]
+  pull-commit:
+    requires: [~pr]
     steps:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
