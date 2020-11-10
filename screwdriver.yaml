@@ -5,14 +5,14 @@ shared:
   annotations:
     screwdriver.cd/cpu: TURBO
     screwdriver.cd/ram: TURBO
-  image: maven:3.6.3-jdk-8
+  image: richxsl/rhel7:latest
 
 jobs:
   master-commit:
     requires: [~pr:sd-master, ~commit:sd-master]
     steps:
       - header: echo "Starting the pipeline"
-      - lua-install: apt-get install -y lua
+      - lua-install: sudo yum install lua
       - build: ./screwdriver/regular_deploy.bash
       - release: ./screwdriver/ci-tag.bash
 
