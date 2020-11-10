@@ -6,25 +6,37 @@ import spock.lang.Specification
 
 class DefaultSystemMetricProtocolsSpec extends Specification {
 
-    ProtocolDictionary protocolDictionary = DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY;
+    static final ProtocolDictionary BACKUP_DICTIONARY = new ProtocolDictionary(DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY);
+    static final Set<String> BACKUP_STANDARD_PROTOCOLS = new LinkedHashSet<>(DefaultSystemMetricProtocols.STANDARD_PROTOCOLS)
 
-    ProtocolDictionary backupDictionary;
-    Set<String> backupStandardProtocols
+    ProtocolDictionary protocolDictionary
 
     String testProtocol = "Foo"
     Protocol p = Mock(Protocol)
 
     def setup() {
         p.getContractName() >> testProtocol
-        backupDictionary = new ProtocolDictionary(protocolDictionary)
-        backupStandardProtocols = DefaultSystemMetricProtocols.STANDARD_PROTOCOLS
+        protocolDictionary = DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY
     }
 
     def cleanup() {
-        protocolDictionary.clear()
-        protocolDictionary.putAll(backupDictionary)
-        backupStandardProtocols.clear()
-        backupStandardProtocols.addAll(backupStandardProtocols)
+        DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.clear()
+        DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.putAll(BACKUP_DICTIONARY)
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.clear()
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.addAll(BACKUP_STANDARD_PROTOCOLS)
+        System.out.println("foo!")
+    }
+
+    def setupSpec() {
+    }
+
+    def cleanupSpec() {
+        DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.clear()
+        DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.putAll(BACKUP_DICTIONARY)
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.clear()
+        DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.addAll(BACKUP_STANDARD_PROTOCOLS)
+        System.out.println("foo!")
+        System.out.println("foo!")
     }
 
     def "Add a Standard Protocol modifies default contracts"() {
