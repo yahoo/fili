@@ -8,6 +8,7 @@ for a in ${PUBLISH_WHITELIST}; do
     if [[ ${GIT_BRANCH} = "origin/${a}" ]];
     then
       WHITELISTED="true";
+      break;
     fi;
 done;
 echo Whitelisted: $WHITELISTED

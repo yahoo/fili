@@ -16,7 +16,7 @@ jobs:
       - build: ./screwdriver/mvn-build.bash
 
   master-commit:
-    requires: [~commit:master]
+    requires: [~commit]
     steps:
       - header: echo "Starting the commit pipeline"
       - debug: |
