@@ -8,6 +8,9 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+
+- [Fix: Test failed due to static side effects revealed during Screwdriver migration](https://github.com/yahoo/fili/issues/1109)
+
 - [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
     * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
 
