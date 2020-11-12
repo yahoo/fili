@@ -32,6 +32,7 @@ public class TestTupleDataCache implements TupleDataCache<String, Long, String> 
         return result != null ? result.getValue() : null;
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, Long meta, String value) throws IllegalStateException {
         return set(key, new MemTupleDataCache.DataEntry<>(key, meta, value));

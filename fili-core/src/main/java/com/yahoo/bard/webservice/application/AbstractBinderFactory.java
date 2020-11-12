@@ -41,6 +41,7 @@ import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.PreResponseDeserializer;
 import com.yahoo.bard.webservice.data.cache.DataCache;
+import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
@@ -54,6 +55,7 @@ import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader;
 import com.yahoo.bard.webservice.data.config.metric.MetricLoader;
 import com.yahoo.bard.webservice.data.config.table.TableLoader;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityDictionary;
@@ -71,6 +73,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.query.LookbackQuery;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.druid.util.FieldConverters;
@@ -117,16 +120,23 @@ import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.SlicesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.binders.DefaultHavingApiGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.PerRequestDictionaryHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.ApiFilterParser;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.RegexApiFilterParser;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.PerRequestDictionaryHavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
+import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
-import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.util.ResponseUtils;
+import com.yahoo.bard.webservice.web.util.*;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -157,6 +167,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -192,6 +203,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     private static final String JVM_UPTIME = "jvm.uptime";
 
     private static final String DRUID_HEADER_SUPPLIER_CLASS = "druid_header_supplier_class";
+
+    public static final String NAME_ACTIVE_PROTOCOLS = "active_protocols_name";
+    public static final String NAME_METRIC_GENERATOR = "metric_generator_name";
 
     // Two minutes in milliseconds
     public static final int HC_LAST_RUN_PERIOD_MILLIS_DEFAULT = 120 * 1000;
@@ -285,6 +299,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 // Build the datasource metadata service containing the data segments
                 bind(getDataSourceMetadataService()).to(DataSourceMetadataService.class);
 
+                // Protocol Stuff
+                bindMetricGenerator(this);
+
                 // Build the configuration loader and load configuration
                 loader = getConfigurationLoader();
                 loader.load();
@@ -334,6 +351,12 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(querySigningService).to(QuerySigningService.class);
 
+                bind(buildQuerySignedCacheService(
+                        buildLocalSignatureCache(),
+                        querySigningService,
+                        getMapper()
+                )).to(CacheService.class);
+
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
 
                 bind(buildPreResponseStore(loader.getDictionaries())).to(PreResponseStore.class);
@@ -366,6 +389,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(buildDateTimeFormatter()).to(DateTimeFormatter.class);
 
+                bind(buildApiFilterParser()).to(ApiFilterParser.class);
+
                 if (DRUID_DIMENSIONS_LOADER.isOn()) {
                     DimensionValueLoadTask dimensionLoader = buildDruidDimensionsLoader(
                             druidWebService,
@@ -385,6 +410,48 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             }
 
         };
+    }
+
+    /**
+     * Bind the components necessary to support protocol metrics.
+     *
+     * This method binds both the total ProtocolLogicalMetricGenerator and the arguments needed to create one
+     * in case users want to do their own implementation.  The ProtocolLogicalMetricGenerator is on the
+     * BardConfigResources interface to support constructor level injection, but the DataApiRequestFactory takes its
+     * own injection and therefore can use the component fields as well.
+     *
+     * @param binder The binder to bind the generator to.
+     */
+    protected void bindMetricGenerator(AbstractBinder binder) {
+        List<String> protocols = Collections.emptyList();
+        TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() { };
+
+        // If you want to configure your system metrics, change the list of metrics
+        binder.bind(protocols).named(NAME_ACTIVE_PROTOCOLS).to(stringListLiteral);
+
+        // If you want to make your own business logic, you can change the Annotater implementation
+        binder.bind(ApiMetricAnnotater.NO_OP_ANNOTATER).to(ApiMetricAnnotater.class);
+
+        // This is the default binder used in ProtocolDataApiRequestImp
+        ProtocolLogicalMetricGenerator protocolLogicalMetricGenerator = new ProtocolLogicalMetricGenerator(
+                ApiMetricAnnotater.NO_OP_ANNOTATER,
+                protocols
+        );
+
+        // The binder used for factories
+        TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>> metricGeneratorType =
+                new TypeLiteral<Generator<LinkedHashSet<LogicalMetric>>>() { };
+        binder.bind(protocolLogicalMetricGenerator).named(NAME_METRIC_GENERATOR).to(metricGeneratorType);
+
+        // The binding used for construction based ApiRequest objects
+        binder.bind(protocolLogicalMetricGenerator).to(ApiRequestLogicalMetricBinder.class);
+
+        TypeLiteral<LegacyGenerator<List<OrderByColumn>>> orderByGeneratorType =
+                new TypeLiteral<LegacyGenerator<List<OrderByColumn>>>() { };
+
+        binder.bind(DefaultOrderByGenerator.class)
+                .named(DataApiRequest.ORDER_BY_GENERATOR_NAMESPACE)
+                .to(orderByGeneratorType);
     }
 
     /**
@@ -803,6 +870,28 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             DataSourceMetadataService dataSourceMetadataService
     ) {
         return new SegmentIntervalsHashIdGenerator(dataSourceMetadataService, buildSigningFunctions());
+    }
+
+    /**
+     * Build a QuerySignedCacheService.
+     *
+     * @param dataCache  The cache instance
+     * @param querySigningService  The service to generate query signatures
+     * @param objectMapper A JSON object mapper, used to parse JSON response
+     *
+     * @return A QuerySignedCacheService
+     */
+    @SuppressWarnings("unchecked")
+    protected QuerySignedCacheService buildQuerySignedCacheService(
+            DataCache<?> dataCache,
+            QuerySigningService<?> querySigningService,
+            ObjectMapper objectMapper
+    ) throws ClassCastException {
+        return new QuerySignedCacheService(
+                (TupleDataCache<String, Long, String>) dataCache,
+                (QuerySigningService<Long>) querySigningService,
+                objectMapper
+        );
     }
 
     /**
@@ -1348,6 +1437,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                                 DateTimeFormat.forPattern("yyyy").getParser()
                         }
                 ).toFormatter().withZone(DateTimeZone.forID("UTC"));
+    }
+
+    protected ApiFilterParser buildApiFilterParser() {
+        return new RegexApiFilterParser();
     }
 
     @Override

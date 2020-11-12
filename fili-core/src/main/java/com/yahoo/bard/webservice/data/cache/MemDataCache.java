@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.cache;
 
+import static net.spy.memcached.DefaultConnectionFactory.DEFAULT_OPERATION_TIMEOUT;
+
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -11,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
@@ -31,6 +32,11 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final @NotNull String SERVER_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("memcached_servers");
+
+    private static final @NotNull String OPERATION_TIMEOUT_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "memcached_operation_timeout"
+    );
+
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
 
     /**
@@ -42,8 +48,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final int EXPIRATION_MAX_VALUE = 60 * 60 * 24 * 30;
     private static final @NotNull String EXPIRATION_KEY =
             SYSTEM_CONFIG.getPackageVariableName("memcached_expiration_seconds");
+
     private static final int EXPIRATION_DEFAULT_VALUE = 3600;
-    private static final int EXPIRATION = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
 
     final private MemcachedClient client;
 
@@ -54,7 +60,12 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      */
     @Inject
     public MemDataCache() throws IOException {
-        this(new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(SERVER_CONFIG)));
+        this(
+                new MemcachedClient(new TimeoutConfigurerBinaryConnectionFactory(
+                        SYSTEM_CONFIG.getLongProperty(OPERATION_TIMEOUT_CONFIG_KEY, DEFAULT_OPERATION_TIMEOUT)),
+                        AddrUtil.getAddresses(SERVER_CONFIG)
+                )
+        );
     }
 
     /**
@@ -64,7 +75,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      */
     public MemDataCache(MemcachedClient client) {
         // validate expiration value
-        if (EXPIRATION > EXPIRATION_MAX_VALUE) {
+        int expiration = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
+        if (expiration > EXPIRATION_MAX_VALUE) {
             throw new SystemConfigException("memcached_expiration_seconds exceeds " + EXPIRATION_MAX_VALUE);
         }
         this.client = client;
@@ -82,11 +94,14 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         }
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T value) throws IllegalStateException {
-        return setInSeconds(key, value, EXPIRATION);
+        int expiration = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
+        return setInSeconds(key, value, expiration);
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T value, DateTime expiration) throws IllegalStateException {
         return setInSeconds(key, value, (int) (expiration.getMillis() / 1000L));
@@ -106,6 +121,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      * consider it to be real Unix time value rather than an offset from
      * current time.
      *
+     * (Deprecate this return type to be void)
      * @return a boolean representing success of this operation
      * @throws IllegalStateException if we fail to add the key-value to the cache because of an error
      */
@@ -113,7 +129,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         try {
             // Omitting null checking for key since it should be rare.
             // An exception will be thrown by the memcached client.
-            return client.set(key, expirationInSeconds, value).get();
+            return client.set(key, expirationInSeconds, value) != null;
         } catch (Exception e) {
             LOG.warn("set failed {} {}", key, e.toString());
             throw new IllegalStateException(e);

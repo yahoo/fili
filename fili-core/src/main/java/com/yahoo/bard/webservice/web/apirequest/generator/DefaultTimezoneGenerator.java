@@ -6,7 +6,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_TIME_ZONE
 
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;

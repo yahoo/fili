@@ -2,13 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
+
+import static com.yahoo.bard.webservice.data.metric.protocol.protocols.ReaggregationProtocol.REAGGREGATION_CONTRACT_NAME
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
-import com.yahoo.bard.webservice.data.time.TimeGrain
+import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.DoubleSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
@@ -26,18 +34,23 @@ import spock.lang.Specification
 class AggregationAverageMakerSpec extends Specification{
 
     static final String NAME = "users"
+    static final String NAME_RENAMED = "__averager_renamed_users"
     static final String DESCRIPTION  = NAME
     static final String ESTIMATE_NAME = "users_estimate"
-    static final String ESTIMATE_SUM_NAME = "users_estimate_sum"
+    static final String ESTIMATE_NAME_RENAMED = "__averager_renamed_users_estimate"
+    static final String ESTIMATE_SUM_NAME_RENAMED = "__averager_renamed_users_estimate_sum"
     static final int SKETCH_SIZE = 16000
-    static final TimeGrain INNER_GRAIN = DAY
+    static final ZonelessTimeGrain INNER_GRAIN = DAY
+    AggregationAverageMaker averageMaker
 
     @Shared
     FieldConverters converter = FieldConverterSupplier.sketchConverter
     Aggregation sketchMerge
+    Aggregation sketchMergeRenamed
 
     def setup(){
         sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
+        sketchMergeRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, SKETCH_SIZE)
         //Initializing the Sketch field converter
         FieldConverterSupplier.sketchConverter = new ThetaSketchFieldConverter();
     }
@@ -49,6 +62,7 @@ class AggregationAverageMakerSpec extends Specification{
     def "Build a correct LogicalMetric when passed a sketch count aggregation."(){
         given: "a logical metric for counting the number of users each day"
         Aggregation userSketchCount = new ThetaSketchAggregation(NAME, NAME, 16000)
+        Aggregation userSketchCountRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, 16000)
         TemplateDruidQuery sketchQuery = new TemplateDruidQuery(
                 [userSketchCount] as Set,
                 [] as Set
@@ -63,21 +77,26 @@ class AggregationAverageMakerSpec extends Specification{
         and: """a test-specific inner post aggregation and the expected metric. The test-specific inner post aggregation
                 estimates the size of userSketchCount."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
-                new FieldAccessorPostAggregation(userSketchCount)
+                ESTIMATE_NAME_RENAMED,
+                new FieldAccessorPostAggregation(userSketchCountRenamed)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric actual = maker.make(NAME, NAME)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        actual.equals(expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed a sketch merge and sketch estimate"(){
         given: """A logical metric for counting the number of users each day, using a sketch merge and sketch
             estimate rather than a sketch count."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
+                ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(sketchMerge)
+        )
+        PostAggregation sketchEstimateRenamed = new ThetaSketchEstimatePostAggregation(
+                ESTIMATE_NAME_RENAMED,
+                new FieldAccessorPostAggregation(sketchMergeRenamed)
         )
         TemplateDruidQuery sketchMergeAndEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
@@ -91,7 +110,7 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """The expected metric. Identical to the expected metric from the previous test, except that the
             sketchEstimate post aggregation is accessing a sketch merge, rather than a sketch count aggregation."""
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimateRenamed)
 
         expect:
         maker.make(NAME, NAME).equals(expectedMetric)
@@ -100,6 +119,7 @@ class AggregationAverageMakerSpec extends Specification{
     def "Build a correct LogicalMetric when passed only a sketch merge."(){
         given: "A Logical Metric containing only a sketch estimate"
         Aggregation sketchMerge = new ThetaSketchAggregation(NAME, NAME, SKETCH_SIZE)
+        Aggregation sketchMergeRenamed = new ThetaSketchAggregation(NAME_RENAMED, NAME, SKETCH_SIZE)
         TemplateDruidQuery sketchEstimateQuery = new TemplateDruidQuery(
                 [sketchMerge] as Set,
                 [] as Set
@@ -113,8 +133,8 @@ class AggregationAverageMakerSpec extends Specification{
         and: """the expected metric. Note that a sketch estimate is expected to be added automatically by the
                 AggregationAverageMaker."""
         PostAggregation sketchEstimate = new ThetaSketchEstimatePostAggregation(
-                ESTIMATE_NAME,
-                new FieldAccessorPostAggregation(sketchMerge)
+                ESTIMATE_NAME_RENAMED,
+                new FieldAccessorPostAggregation(sketchMergeRenamed)
         )
         LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
 
@@ -122,8 +142,37 @@ class AggregationAverageMakerSpec extends Specification{
         maker.make(NAME, NAME).equals(expectedMetric)
     }
 
+    def "When output name collides with dependent metric name, dependent metric must be renamed"() {
+        setup:
+        String metricName = "inputMetric"
+        String finalMetricName = "inputMetric"
+        LogicalMetric inputMetric = new LogicalMetricImpl(
+                info,
+                new TemplateDruidQuery([new LongSumAggregation("inputMetric", "unused")], []),
+                new NoOpResultSetMapper()
+        )
+        MetricMaker maker = new AggregationAverageMaker(new MetricDictionary(), INNER_GRAIN)
+        maker.metrics.add(inputMetric)
+
+        when:
+        LogicalMetric result = maker.renameIfConflicting(finalMetricName, inputMetric)
+
+        then:
+        result.getName() == AggregationAverageMaker.RENAMED_AVERAGER_PREFIX + metricName
+
+        where:
+        info                                             | infotype
+        new LogicalMetricInfo("inputMetric")                | "Logical Metric Info"
+        new GeneratedMetricInfo("inputMetric", "baseName")  | "Generated Metric Info"
+    }
+
     LogicalMetric buildDependentMetric(TemplateDruidQuery dependentQuery){
-        return new LogicalMetric(dependentQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new ProtocolMetricImpl(
+                new LogicalMetricInfo(NAME, DESCRIPTION),
+                dependentQuery,
+                new NoOpResultSetMapper(),
+                DefaultSystemMetricProtocols.getStandardProtocolSupport()
+        )
     }
     /**
      * Builds the LogicalMetric expected by the tests.
@@ -152,7 +201,7 @@ class AggregationAverageMakerSpec extends Specification{
      * @return The LogicalMetric expected by the tests
      */
     LogicalMetric buildExpectedMetric(PostAggregation innerPostAggregation){
-        Set<Aggregation> innerAggregations = [sketchMerge] as LinkedHashSet
+        Set<Aggregation> innerAggregations = [sketchMergeRenamed] as LinkedHashSet
         Set<PostAggregation> innerPostAggregations = [innerPostAggregation, AggregationAverageMaker.COUNT_INNER]
         TemplateDruidQuery innerQueryTemplate = new TemplateDruidQuery(
                 innerAggregations,
@@ -160,7 +209,7 @@ class AggregationAverageMakerSpec extends Specification{
                 DAY
         )
 
-        Aggregation outerSum = new DoubleSumAggregation(ESTIMATE_SUM_NAME, ESTIMATE_NAME)
+        Aggregation outerSum = new DoubleSumAggregation(ESTIMATE_SUM_NAME_RENAMED, ESTIMATE_NAME_RENAMED)
         FieldAccessorPostAggregation outerSumLookup = new FieldAccessorPostAggregation(outerSum)
         PostAggregation average = new ArithmeticPostAggregation(
                 NAME,
@@ -173,6 +222,11 @@ class AggregationAverageMakerSpec extends Specification{
                 innerQueryTemplate
         )
 
-        return new LogicalMetric(outerQuery, new NoOpResultSetMapper(), NAME, DESCRIPTION)
+        return new ProtocolMetricImpl(
+                new LogicalMetricInfo(NAME, DESCRIPTION),
+                outerQuery,
+                new NoOpResultSetMapper(),
+                DefaultSystemMetricProtocols.getStandardProtocolSupport().blacklistProtocol(REAGGREGATION_CONTRACT_NAME)
+        )
     }
 }

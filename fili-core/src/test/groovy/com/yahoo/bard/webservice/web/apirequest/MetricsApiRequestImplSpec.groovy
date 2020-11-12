@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
-import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
 
 import spock.lang.Shared
@@ -78,7 +78,7 @@ class MetricsApiRequestImplSpec extends Specification {
 
         where:
         name     | dictionary      | exception              | reason
-        "height" | emptyDictionary | BadApiRequestException | ".*Metric Dictionary is empty.*"
+        "height" | emptyDictionary | BadApiRequestException | ".*Metric.*do not exist.*"
         "weight" | fullDictionary  | BadApiRequestException | ".*Metric.*do not exist.*"
     }
 }

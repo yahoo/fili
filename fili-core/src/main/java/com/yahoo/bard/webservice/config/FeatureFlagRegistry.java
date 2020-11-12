@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.config;
 
 import com.yahoo.bard.webservice.util.Utils;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 
 import org.glassfish.hk2.api.IterableProvider;
 

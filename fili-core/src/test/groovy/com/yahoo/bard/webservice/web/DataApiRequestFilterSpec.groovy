@@ -11,13 +11,14 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.FilterTokenizer
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -54,7 +55,7 @@ class DataApiRequestFilterSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)
@@ -122,7 +123,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_FIELD_NOT_IN_DIMENSIONS.format('unknown', 'locale')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|unknown-in[US,India],locale.id-eq[5]",
+                "locale|unknown-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -142,7 +143,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_NOT_IN_TABLE.format('locale', 'name')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|id-in[US,India],locale.id-eq[5]",
+                "locale|id-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -157,7 +158,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_DIMENSION_UNDEFINED.format('undefined')
         when:
         FilterBinders.instance.generateFilters(
-                "undefined|id-in[US,India],locale.id-eq[5]",
+                "undefined|id-in[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )
@@ -204,7 +205,7 @@ class DataApiRequestFilterSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.FILTER_OPERATOR_INVALID.format('in:')
         when:
         FilterBinders.instance.generateFilters(
-                "locale|id-in:[US,India],locale.id-eq[5]",
+                "locale|id-in:[US,India],locale|id-eq[5]",
                 table,
                 dimensionDict
         )

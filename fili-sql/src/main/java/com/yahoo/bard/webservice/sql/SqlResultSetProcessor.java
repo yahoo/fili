@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.sql;
 
 import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
@@ -216,6 +217,20 @@ public class SqlResultSetProcessor {
         }
     }
 
+    private static Function<String, Number> getNumParseFunctionByAggType(Aggregation agg) {
+        String aggType = agg.getType().toLowerCase(Locale.ENGLISH);
+        if (aggType.contains("long")) {
+            return Long::parseLong;
+        } else if (aggType.contains("double")) {
+            return Double::parseDouble;
+        } else if (aggType.contains("count")) {
+            return Long::parseLong;
+        } else if (aggType.contains("filtered") && agg instanceof FilteredAggregation) {
+            return getNumParseFunctionByAggType(((FilteredAggregation) agg).getAggregation());
+        }
+        return null;
+    }
+
     /**
      * Creates a map from each aggregation name, i.e. ("longSum", "doubleSum"),
      * to a function which will parse to the correct type, i.e. (long, double).
@@ -235,17 +250,7 @@ public class SqlResultSetProcessor {
                 .collect(
                         Collectors.toMap(
                                 Aggregation::getName,
-                                aggregation -> {
-                                    String aggType = aggregation.getType().toLowerCase(Locale.ENGLISH);
-                                    if (aggType.contains("long")) {
-                                        return Long::parseLong;
-                                    } else if (aggType.contains("double")) {
-                                        return Double::parseDouble;
-                                    } else if (aggType.contains("count")) {
-                                        return Long::parseLong;
-                                    }
-                                    return null;
-                                }
+                                aggregation -> getNumParseFunctionByAggType(aggregation)
                         )
                 );
     }

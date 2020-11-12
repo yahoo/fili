@@ -54,6 +54,6 @@ class FiliSlicesExceptionHandlerSpec extends Specification {
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode
-        response.entity == "Throw"
+        response.entity == "Exception processing request: Throw"
     }
 }

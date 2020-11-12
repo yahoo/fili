@@ -4,15 +4,22 @@ package com.yahoo.bard.webservice.web.util;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
+
+import java.util.List;
 
 /**
  * Configuration used in the java servlet interface.
@@ -89,5 +96,23 @@ public interface BardConfigResources {
      */
     default LogicalTableDictionary getLogicalTableDictionary() {
         return getResourceDictionaries().getLogicalDictionary();
+    }
+
+    /**
+     * The default transforms to apply to ApiMetrics after parsing before binding.
+     *
+     * @return a function to conform apiMetrics according to business requirements.
+     */
+    default ApiRequestLogicalMetricBinder getMetricBinder() {
+        return new DefaultLogicalMetricGenerator();
+    }
+
+    /**
+     * The factory to parse and bind order by expressions.
+     *
+     * @return a function to conform apiMetrics according to business requirements.
+     */
+    default LegacyGenerator<List<OrderByColumn>> getOrderByGenerator() {
+        return new DefaultOrderByGenerator();
     }
 }

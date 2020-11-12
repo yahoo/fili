@@ -27,6 +27,26 @@ public class ResourceDictionaries {
         dimension = new DimensionDictionary();
     }
 
+    /**
+     * Constructor.
+     *
+     * @param physical  Physical table dictionary
+     * @param logical  Logical table dictionary
+     * @param metric  Metric dictionary
+     * @param dimension  Dimension dictionary
+     */
+    public ResourceDictionaries(
+            final PhysicalTableDictionary physical,
+            final LogicalTableDictionary logical,
+            final MetricDictionary metric,
+            final DimensionDictionary dimension
+    ) {
+        this.physical = physical;
+        this.logical = logical;
+        this.metric = metric;
+        this.dimension = dimension;
+    }
+
     public PhysicalTableDictionary getPhysicalDictionary() {
         return physical;
     }

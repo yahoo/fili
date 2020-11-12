@@ -9,7 +9,7 @@ import com.yahoo.bard.webservice.MessageFormatter;
  */
 public enum ErrorMessageFormat implements MessageFormatter {
 
-    TABLE_UNDEFINED("Table name '%s' does not exist."),
+    TABLE_UNDEFINED("Table with name '%s' does not exist."),
     TABLE_ALIGNMENT_UNDEFINED("Table '%s' cannot be aligned to a request with intervals: %s."),
     TABLE_SCHEMA_UNDEFINED(
             "Table '%s' is incompatible with the dimensions '%s', metrics '%s' and granularity '%s' requested.",
@@ -24,7 +24,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DIMENSION_FIELDS_UNDEFINED("Dimension field(s) '%s' do not exist for dimension '%s'"),
     DIMENSION_TYPE_INVALID("The dimension type '%s' for dimension '%s' is invalid"),
 
-    SLICE_UNDEFINED("Slice name '%s' does not exist."),
+    SLICE_UNDEFINED("Slice with name '%s' does not exist."),
 
     UNKNOWN_GRANULARITY("'%s' is not a valid granularity. Try 'day', 'week', 'month', 'year' or 'all'"),
     GRANULARITY_MERGE("'%s' time zone cannot be applied to time grain '%s'"),
@@ -52,7 +52,7 @@ public enum ErrorMessageFormat implements MessageFormatter {
             "Required parameter metrics is missing or empty. Use 'metrics=METRICNAME1,METRICNAME2' in the query string."
     ),
     METRICS_UNDEFINED("Metric(s) '%s' do not exist."),
-    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s'."),
+    METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s' with grain '%s'."),
     DUPLICATE_METRICS_IN_API_REQUEST(
             "Duplicate metric(s) are not allowed in the API request even if one is filtered and the other is " +
                     "unfiltered. Duplicate metric(s) are '%s'."
@@ -69,7 +69,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     INVALID_NUMBER_OF_FIELDS("fields length shouldn't be more then one for Sketch Estimate operation %s"),
 
     SORT_DIRECTION_INVALID("Sort direction '%s' is invalid."),
-    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression."),
+    SORT_METRICS_NOT_IN_QUERY_FORMAT("Requested sort metric(s) '%s' were not selected in the metrics expression." +
+            "Possible matches: '%s'"),
     SORT_METRICS_NOT_SORTABLE_FORMAT("Sorting not possible on metric(s) '%s'."),
     SORT_METRICS_UNDEFINED("Metric(s) in sort expression '%s' do not exist."),
 
@@ -113,8 +114,12 @@ public enum ErrorMessageFormat implements MessageFormatter {
     HAVING_ERROR("Having expression '%s' resulted in the following error: %s."),
     HAVING_METRIC_UNDEFINED("Having metric '%s' does not exist."),
     HAVING_METRIC_NOT_IN_TABLE("Having metric '%s' is not supported by the table '%s'."),
-    HAVING_METRICS_NOT_IN_QUERY_FORMAT("Requested having metric(s) '%s' were not selected in the metrics expression."),
+    HAVING_METRICS_NOT_IN_QUERY_FORMAT(
+            "Requested having metric(s) '%s' were not selected in the metrics expression. Perhaps you meant: %s"
+    ),
     HAVING_OPERATOR_INVALID("Having operator '%s' is invalid."),
+
+    HAVING_INVALID_WITH_DETAIL("Having expression '%s' is invalid. (%s)"),
 
     LOGINFO_CLASS_INVALID("Invalid LogInfo class: %s. Cannot define its order. Ignoring."),
 
@@ -140,6 +145,11 @@ public enum ErrorMessageFormat implements MessageFormatter {
     DIMENSION_ROWS_NOT_FOUND("Dimension rows not found for %s with filter %s"),
 
     UNABLE_TO_FIND_DIMENSION_FROM_DICTIONARY("Unable to find dimension from Dimension dictionary for the name: %s"),
+
+    METRIC_INVALID_WITH_DETAIL("Metric expression '%s' is invalid. (%s)"),
+
+    SORT_INVALID_WITH_DETAIL("Sort expression '%s' is invalid. (%s)"),
+
     METRIC_VALUE_PARSING_ERROR("Unable to %s metric value and its type"),
     GRANULARITY_PARSING_ERROR("No granularity can be parsed from this name: %s"),
     UNKNOWN_TIMEZONE_ID("Unable to recognize the timeZoneId: %s"),

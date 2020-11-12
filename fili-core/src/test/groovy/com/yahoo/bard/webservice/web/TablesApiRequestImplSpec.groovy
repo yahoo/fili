@@ -15,7 +15,9 @@ import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.PaginationParameters
@@ -158,11 +160,11 @@ class TablesApiRequestImplSpec extends Specification {
         e.getMessage().matches(reason)
 
         where:
-        name     | grain     | dictionary      | exception              | reason
-        "pets"   | "day"     | emptyDictionary | BadApiRequestException | ".*Logical Table Dictionary is empty.*"
-        "beasts" | "day"     | fullDictionary  | BadApiRequestException | ".*Table name.*does not exist.*"
-        "pets"   | "century" | fullDictionary  | BadApiRequestException | ".*not a valid granularity.*"
-        "pets"   | "hour"    | fullDictionary  | BadApiRequestException | "Invalid pair of granularity .* and table.*"
+        name     | grain     | dictionary      | exception                          | reason
+        "pets"   | "day"     | emptyDictionary | MissingResourceApiRequestException | ".*Table with name.*does not exist.*"
+        "beasts" | "day"     | fullDictionary  | MissingResourceApiRequestException | ".*Table with name.*does not exist.*"
+        "pets"   | "century" | fullDictionary  | BadApiRequestException             | ".*not a valid granularity.*"
+        "pets"   | "hour"    | fullDictionary  | BadApiRequestException             | "Invalid pair of granularity .* and table.*"
     }
 
     def "test request api filters and logical tables filters are properly merged"() {

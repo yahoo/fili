@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.endpoints;
 
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
+import static com.yahoo.bard.webservice.web.endpoints.views.DefaultMetadataViewFormatters.tableMetadataFormatter;
 import static javax.ws.rs.core.Response.Status.OK;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
@@ -15,13 +16,17 @@ import com.yahoo.bard.webservice.logging.blocks.TableRequest;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.util.TableUtils;
+import com.yahoo.bard.webservice.web.MetadataObject;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
-import com.yahoo.bard.webservice.web.TableFullViewProcessor;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.endpoints.views.DefaultMetadataViewFormatters;
+import com.yahoo.bard.webservice.web.endpoints.views.TableFullViewFormatter;
+import com.yahoo.bard.webservice.web.endpoints.views.TableMetadataFormatter;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import com.codahale.metrics.annotation.Timed;
@@ -31,18 +36,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,6 +66,7 @@ import javax.ws.rs.core.UriInfo;
 @Path("/tables")
 @Singleton
 public class TablesServlet extends EndpointServlet implements BardConfigResources {
+
     private static final Logger LOG = LoggerFactory.getLogger(TablesServlet.class);
 
     private final ResourceDictionaries resourceDictionaries;
@@ -107,6 +107,22 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     }
 
     /**
+     * Get the URL of the logical table.
+     *
+     * @param logicalTable  Logical table to get the URL of
+     * @param uriInfo  URI Info for the request
+     *
+     * @return The absolute URL for the logical table
+     */
+    public static String getLogicalTableUrl(LogicalTable logicalTable, UriInfo uriInfo) {
+        return uriInfo.getBaseUriBuilder()
+                .path(TablesServlet.class)
+                .path(TablesServlet.class, "getTableByGrain")
+                .build(logicalTable.getName(), logicalTable.getGranularity().getName())
+                .toASCIIString();
+    }
+
+    /**
      * Get all the logical tables as a summary list.
      *
      * @param perPage  number of values to return per page
@@ -124,7 +140,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *     "tables": <List of Table Summaries>
      * }
      * }
-     * @see TablesServlet#getLogicalTableListSummaryView(Collection, UriInfo)
+     * @see TableMetadataFormatter#formatTables(Collection, UriInfo)
      */
     @GET
     @Timed
@@ -137,7 +153,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context final ContainerRequestContext containerRequestContext
     ) {
         if (format != null && format.toLowerCase(Locale.ENGLISH).equals("fullview")) {
-            return getTablesFullView(perPage, page, uriInfo, containerRequestContext);
+            return getTablesRollupView(perPage, page, uriInfo, containerRequestContext);
         } else {
             return getTable(null, perPage, page, format, downloadFilename, containerRequestContext);
         }
@@ -162,7 +178,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      *     "tables": <List of Table Summaries>
      * }
      * }
-     * @see TablesServlet#getLogicalTableListSummaryView(Collection, UriInfo)
+     * @see TableMetadataFormatter#formatTables(Collection, UriInfo)
      */
     @GET
     @Timed
@@ -201,7 +217,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             Response response = paginateAndFormatResponse(
                     tablesApiRequestImpl,
                     containerRequestContext,
-                    getLogicalTableListSummaryView(tablesApiRequestImpl.getTables(), uriInfo),
+                    tableMetadataFormatter.formatTables(tablesApiRequestImpl.getTables(), uriInfo),
                     UPDATED_METADATA_COLLECTION_NAMES.isOn() ? "tables" : "rows",
                     null
             );
@@ -221,16 +237,14 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     /**
      * Get <b>unconstrained</b> logical table details for a grain-specific logical table.
      * <p>
-     * See {@link
-     * #getTableByGrainAndConstraint(String, String, List, String, String, String, ContainerRequestContext)}
      * for getting <b>constrained</b> logical table details
      *
-     * @param tableName  Logical table name (part of the logical table ID)
+     * @param tableName  The name of the logical table being queried
      * @param grain  Logical table grain (part of the logical table ID)
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The grain-specific logical table
-     * @see TablesServlet#getLogicalTableFullView(LogicalTable, UriInfo)
+     * @see TableMetadataFormatter#formatTable(LogicalTable, UriInfo)
      *
      * TODO: Need to delegate to constrained endpoint
      */
@@ -265,7 +279,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(tablesApiRequestImpl.getTable(), uriInfo);
+            MetadataObject result = getConstrainedLogicalTableDetailView(tablesApiRequestImpl, uriInfo);
             String output = objectMappers.getMapper().writeValueAsString(result);
             LOG.trace("Tables Endpoint Response: {}", output);
             return Response.status(Response.Status.OK).entity(output).build();
@@ -305,11 +319,12 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @param metrics  Requested list of metrics (e.g. myMetric)
      * @param intervals  Requested list of intervals. This is a required
      * @param filters  Requested list of filters (e.g. dim3|id-in[foo,bar])
+     * @param downloadFilename  Output filename for response
      * @param containerRequestContext  The context of data provided by the Jersey container for this request
      *
      * @return The grain-specific logical table
      *
-     * See {@link #getLogicalTableFullView(TablesApiRequestImpl, UriInfo)}
+     * See {@link #getConstrainedLogicalTableDetailView(TablesApiRequestImpl, UriInfo)}
      */
     @GET
     @Timed
@@ -322,6 +337,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @QueryParam("metrics") String metrics,
             @QueryParam("dateTime") String intervals,
             @QueryParam("filters") String filters,
+            @QueryParam("filename") String downloadFilename,
             @Context final ContainerRequestContext containerRequestContext
     ) {
         TablesApiRequestImpl tablesApiRequest = null;
@@ -333,6 +349,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     tableName,
                     granularity,
                     null,
+                    downloadFilename,
                     "",
                     "",
                     this,
@@ -350,7 +367,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                 );
             }
 
-            Map<String, Object> result = getLogicalTableFullView(
+            Map<String, Object> result = getConstrainedLogicalTableDetailView(
                     tablesApiRequest,
                     containerRequestContext.getUriInfo()
             );
@@ -369,7 +386,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     }
 
     /**
-     * Get all the tables full view.
+     * Get all the tables with the full view format.
      *
      * @param perPage  number of values to return per page
      * @param page  the page to start from
@@ -379,7 +396,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
      * @return full view of the tables
      */
     @Timed
-    public Response getTablesFullView(
+    public Response getTablesRollupView(
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
             @Context UriInfo uriInfo,
@@ -405,13 +422,12 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                         containerRequestContext
                 );
             }
-
-            TableFullViewProcessor fullViewProcessor = new TableFullViewProcessor();
+            TableFullViewFormatter fullViewFormatter = DefaultMetadataViewFormatters.rollupMetadataFormatter;
 
             Response response = paginateAndFormatResponse(
                     tablesApiRequestImpl,
                     containerRequestContext,
-                    fullViewProcessor.formatTables(tablesApiRequestImpl.getTables(), uriInfo),
+                    fullViewFormatter.formatTables(tablesApiRequestImpl.getTables(), uriInfo),
                     "tables",
                     null
             );
@@ -427,171 +443,6 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         } finally {
             RequestLog.stopTiming(this);
         }
-    }
-
-    /**
-     * Get the summary list view of the logical tables.
-     *
-     * @param logicalTables  Collection of logical tables to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the logical tables
-     */
-    public static Set<Map<String, String>> getLogicalTableListSummaryView(
-            Collection<LogicalTable> logicalTables,
-            UriInfo uriInfo
-    ) {
-        return logicalTables.stream()
-                .map(logicalTable -> getLogicalTableSummaryView(logicalTable, uriInfo))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary list view of the logical tables.
-     *
-     * @param logicalTables  Collection of logical tables to get the summary view for
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary list view of the logical tables
-     */
-    public static Set<Map<String, Object>> getLogicalAll(
-            Collection<LogicalTable> logicalTables,
-            UriInfo uriInfo
-    ) {
-        return logicalTables.stream()
-                .map(logicalTable -> getLogicalTableFullView(logicalTable, uriInfo))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Get the summary view of the logical table.
-     *
-     * @param logicalTable  Logical table to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Summary view of the logical table
-     */
-    public static Map<String, String> getLogicalTableSummaryView(LogicalTable logicalTable, UriInfo uriInfo) {
-        Map<String, String> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalTable.getCategory());
-        resultRow.put("name", logicalTable.getName());
-        resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("granularity", logicalTable.getGranularity().getName());
-        resultRow.put("uri", getLogicalTableUrl(logicalTable, uriInfo));
-        return resultRow;
-    }
-
-    /**
-     * Get the full view of the logical table.
-     *
-     * @param logicalTable  Logical table to get the view of
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Full view of the logical table
-     *
-     * @deprecated In order to display constrained data availability in table resource, this method needs to accept a
-     * {@link TablesApiRequest} as a parameter. Use
-     * {@link #getLogicalTableFullView(TablesApiRequestImpl, UriInfo)} instead.
-     */
-    @Deprecated
-    protected static Map<String, Object> getLogicalTableFullView(LogicalTable logicalTable, UriInfo uriInfo) {
-        Map<String, Object> resultRow = new LinkedHashMap<>();
-        resultRow.put("category", logicalTable.getCategory());
-        resultRow.put("name", logicalTable.getName());
-        resultRow.put("longName", logicalTable.getLongName());
-        resultRow.put("retention", logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : "");
-        resultRow.put("granularity", logicalTable.getGranularity().getName());
-        resultRow.put("description", logicalTable.getDescription());
-        resultRow.put(
-                "dimensions",
-                DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), uriInfo)
-        );
-        resultRow.put(
-                "metrics",
-                MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
-        );
-        resultRow.put(
-                "availableIntervals",
-                TableUtils.logicalTableAvailability(logicalTable)
-        );
-        return resultRow;
-    }
-
-    /**
-     * Get the full view of the logical table.
-     *
-     * @param tablesApiRequest  Table API request that contains information about requested logical table and provides
-     * components for constructing a {@link com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint}, which
-     * will be used to filter and constrain table availabilities
-     * @param uriInfo  UriInfo of the request
-     *
-     * @return Full view of the logical table
-     */
-    protected static Map<String, Object> getLogicalTableFullView(
-            TablesApiRequestImpl tablesApiRequest,
-            UriInfo uriInfo
-    ) {
-        LogicalTable logicalTable = tablesApiRequest.getTable();
-        return Stream.of(
-                new SimpleImmutableEntry<>("category", logicalTable.getCategory()),
-                new SimpleImmutableEntry<>("name", logicalTable.getName()),
-                new SimpleImmutableEntry<>("longName", logicalTable.getLongName()),
-                new SimpleImmutableEntry<>(
-                        "retention",
-                        logicalTable.getRetention() != null ? logicalTable.getRetention().toString() : ""
-                ),
-                new SimpleImmutableEntry<>("granularity", logicalTable.getGranularity().getName()),
-                new SimpleImmutableEntry<>("description", logicalTable.getDescription()),
-                new SimpleImmutableEntry<>(
-                        "dimensions",
-                        DimensionsServlet.getDimensionListSummaryView(logicalTable.getDimensions(), uriInfo)
-                ),
-                new SimpleImmutableEntry<>(
-                        "metrics",
-                        MetricsServlet.getLogicalMetricListSummaryView(logicalTable.getLogicalMetrics(), uriInfo)
-                ),
-                new SimpleImmutableEntry<>(
-                        "availableIntervals",
-                        TableUtils.getConstrainedLogicalTableAvailability(
-                                logicalTable,
-                                new QueryPlanningConstraint(
-                                        tablesApiRequest.getDimensions(),
-                                        tablesApiRequest.getFilterDimensions(),
-                                        Collections.emptySet(),
-                                        Collections.emptySet(),
-                                        tablesApiRequest.getApiFilters(),
-                                        tablesApiRequest.getTable(),
-                                        Collections.unmodifiableList(tablesApiRequest.getIntervals()),
-                                        Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
-                                        tablesApiRequest.getGranularity(),
-                                        tablesApiRequest.getGranularity()
-                                )
-                        )
-                )
-        ).collect(
-                Collectors.toMap(
-                        SimpleImmutableEntry::getKey,
-                        SimpleImmutableEntry::getValue,
-                        (value1OfSameKey, value2OfSameKey) -> value1OfSameKey,
-                        LinkedHashMap::new
-                )
-        );
-    }
-
-    /**
-     * Get the URL of the logical table.
-     *
-     * @param logicalTable  Logical table to get the URL of
-     * @param uriInfo  URI Info for the request
-     *
-     * @return The absolute URL for the logical table
-     */
-    public static String getLogicalTableUrl(LogicalTable logicalTable, UriInfo uriInfo) {
-        return uriInfo.getBaseUriBuilder()
-                .path(TablesServlet.class)
-                .path(TablesServlet.class, "getTableByGrain")
-                .build(logicalTable.getName(), logicalTable.getGranularity().getName())
-                .toASCIIString();
     }
 
     @Override
@@ -638,7 +489,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
         return null;
     }
 
-    public RequestMapper getRequestMapper() {
+    public RequestMapper<TablesApiRequest> getRequestMapper() {
         return requestMapper;
     }
 
@@ -650,5 +501,43 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
     @Override
     public DateTimeFormatter getDateTimeFormatter() {
         return dateTimeFormatter;
+    }
+
+
+    /**
+     * Get the full view of the logical table and remap the availability based on the tablesApiRequest constraints.
+     *
+     * @param tablesApiRequest  Table API request that contains information about requested logical table and provides
+     * components for constructing a {@link com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint}, which
+     * will be used to filter and constrain table availabilities
+     * @param uriInfo  UriInfo of the request
+     *
+     * @return Full view of the logical table
+     */
+    public MetadataObject getConstrainedLogicalTableDetailView(
+            TablesApiRequestImpl tablesApiRequest,
+            UriInfo uriInfo
+    ) {
+        LogicalTable logicalTable = tablesApiRequest.getTable();
+        MetadataObject details = tableMetadataFormatter.formatTable(logicalTable, uriInfo);
+
+        // replace availability with filtered availability
+        SimplifiedIntervalList available = TableUtils.getConstrainedLogicalTableAvailability(
+                logicalTable,
+                new QueryPlanningConstraint(
+                        tablesApiRequest.getDimensions(),
+                        tablesApiRequest.getFilterDimensions(),
+                        Collections.emptySet(),
+                        Collections.emptySet(),
+                        tablesApiRequest.getApiFilters(),
+                        tablesApiRequest.getTable(),
+                        Collections.unmodifiableList(tablesApiRequest.getIntervals()),
+                        Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
+                        tablesApiRequest.getGranularity(),
+                        tablesApiRequest.getGranularity()
+                )
+        );
+        details.put("availableIntervals", available);
+        return details;
     }
 }

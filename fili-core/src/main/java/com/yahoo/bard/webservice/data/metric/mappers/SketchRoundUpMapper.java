@@ -15,7 +15,7 @@ import java.util.Objects;
  * Mapper to round floating point values to their ceiling. If a metric is null, the original result is passed along
  * unmodified.
  */
-public class SketchRoundUpMapper extends ResultSetMapper {
+public class SketchRoundUpMapper extends ResultSetMapper implements RenamableResultSetMapper {
 
     String columnName;
 
@@ -53,6 +53,11 @@ public class SketchRoundUpMapper extends ResultSetMapper {
         }
         BigDecimal newValue = value.setScale(0, RoundingMode.CEILING);
         return result.withMetricValue(metricColumn, newValue);
+    }
+
+    @Override
+    public ResultSetMapper withColumnName(String newColumnName) {
+        return new SketchRoundUpMapper(newColumnName);
     }
 
     @Override

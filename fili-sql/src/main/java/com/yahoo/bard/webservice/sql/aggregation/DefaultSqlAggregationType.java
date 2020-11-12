@@ -9,6 +9,10 @@ import com.yahoo.bard.webservice.util.Utils;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,6 +27,18 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
 
     private final Set<String> validDruidAggregations;
     private final SqlAggFunction sqlAggFunction;
+    public static Map<String, SqlAggregationType> defaultDruidToSqlAggregation;
+    static {
+        Map<String, SqlAggregationType> druidToSqlAggregation = new HashMap<>();
+        Arrays.stream(DefaultSqlAggregationType.values())
+                .forEach(defaultSqlAggregationType -> {
+                    defaultSqlAggregationType.getSupportedDruidAggregations()
+                            .forEach(druidAggregation -> {
+                                druidToSqlAggregation.put(druidAggregation, defaultSqlAggregationType);
+                            });
+                });
+        defaultDruidToSqlAggregation = Collections.unmodifiableMap(druidToSqlAggregation);
+    }
 
     /**
      * Construct an DefaultSqlAggregationType with a keyword to look for in a

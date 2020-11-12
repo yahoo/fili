@@ -1,12 +1,7 @@
 // Copyright 2019 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.sql
-
-import com.yahoo.bard.webservice.sql.presto.PrestoDataSource
 import com.yahoo.bard.webservice.sql.presto.PrestoSqlBackedClient
-import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException
 
-import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
 
@@ -24,7 +19,7 @@ ORDER BY SUBSTRING(datestamp,1,4) NULLS FIRST, DAY_OF_YEAR(date_parse(SUBSTRING 
         where:
         sqlQuery << ["""SELECT "source", YEAR("datestamp") AS "\$f23", DAYOFYEAR("datestamp") AS "\$f24", HOUR("datestamp") AS "\$f25", SUM("revenue") AS "revenue"
 FROM "catalog"."schema"."table"
-WHERE "datestamp" > '2019-09-01 14:00:00.0' AND "datestamp" < '2019-09-02 14:00:00.0' AND "comment" <> '1=2====3' AND ("advertiser_id" = '456' OR "advertiser_id" = '123')
+WHERE "datestamp" > '201909011400000' AND "datestamp" < '201909021400000' AND CAST("comment" AS varchar) <> '1=2====3' AND (CAST("advertiser_id" AS varchar) = '456' OR CAST("advertiser_id" AS varchar) = '123')
 GROUP BY "source", YEAR("datestamp"), DAYOFYEAR("datestamp"), HOUR("datestamp")
 ORDER BY YEAR("datestamp") NULLS FIRST, DAYOFYEAR("datestamp") NULLS FIRST, HOUR("datestamp") NULLS FIRST, "source" NULLS FIRST"""]
     }

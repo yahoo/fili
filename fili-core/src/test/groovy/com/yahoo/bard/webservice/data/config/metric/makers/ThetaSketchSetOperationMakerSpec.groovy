@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -36,13 +37,13 @@ class ThetaSketchSetOperationMakerSpec extends Specification {
                 new ThetaSketchSetOperationPostAggregation(METRIC_NAME, SET_FUNCTION, [accessYahoos, accessNonYahoos])
         )
 
-        LogicalMetric firstMetric = new LogicalMetric(
+        LogicalMetric firstMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery([allYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_yahoos",
                 "All users from Yahoo"
         )
-        LogicalMetric secondMetric = new LogicalMetric(
+        LogicalMetric secondMetric = new LogicalMetricImpl(
                 new TemplateDruidQuery([allNonYahoos] as Set, [] as Set),
                 new NoOpResultSetMapper(),
                 "all_nonyahoos",
@@ -52,7 +53,7 @@ class ThetaSketchSetOperationMakerSpec extends Specification {
 
         and: "the expected LogicalMetric"
         TemplateDruidQuery expectedQuery = new TemplateDruidQuery([allYahoos, allNonYahoos] as Set, [userNumber] as Set)
-        LogicalMetric metric = new LogicalMetric(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME)
+        LogicalMetric metric = new LogicalMetricImpl(expectedQuery, new SketchRoundUpMapper(METRIC_NAME), METRIC_NAME)
 
         and: "the maker with populated metrics."
         MetricMaker maker = new ThetaSketchSetOperationMaker(new MetricDictionary(), SET_FUNCTION)

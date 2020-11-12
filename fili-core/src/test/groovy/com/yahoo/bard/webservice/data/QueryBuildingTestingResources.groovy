@@ -35,6 +35,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -100,7 +101,7 @@ class QueryBuildingTestingResources {
     public TableGroup tg1h, tg1d, tg1Short, tg2h, tg3d, tg4h, tg5h, tg6h, tg1All, tgna
 
     // Logical tables for table groups, na for 'non-aggregatable'
-    public LogicalTable lt12, lt13, lt14, lt1All, ltna
+    public LogicalTable lt12, lt13, lt13All, lt14, lt1All, ltna
 
     public LogicalTableDictionary logicalDictionary
 
@@ -256,12 +257,12 @@ class QueryBuildingTestingResources {
         )
         dimensionDictionary.add(d16)
 
-        m1 = new LogicalMetric(null, null, "metric1")
-        m2 = new LogicalMetric(null, null, "metric2")
-        m3 = new LogicalMetric(null, null, "metric3")
-        m4 = new LogicalMetric(null, null, "metric4")
-        m5 = new LogicalMetric(null, null, "metric5")
-        m6 = new LogicalMetric(null, null, "metric6")
+        m1 = new LogicalMetricImpl(null, null, "metric1")
+        m2 = new LogicalMetricImpl(null, null, "metric2")
+        m3 = new LogicalMetricImpl(null, null, "metric3")
+        m4 = new LogicalMetricImpl(null, null, "metric4")
+        m5 = new LogicalMetricImpl(null, null, "metric5")
+        m6 = new LogicalMetricImpl(null, null, "metric6")
 
         metricDictionary = new MetricDictionary()
         [m1, m2, m3, m4, m5, m6].each {
@@ -333,7 +334,10 @@ class QueryBuildingTestingResources {
         tgna = new TableGroup([tna1236d, tna1237d, tna167d, tna267d] as LinkedHashSet, [m1, m2, m3].collect {buildMockName(it.name)} as Set, [] as Set)
 
         lt12 = new LogicalTable("base12", HOUR, tg1h, metricDictionary)
+
         lt13 = new LogicalTable("base13", DAY, tg1d, metricDictionary)
+        lt13All = new LogicalTable("base13", AllGranularity.INSTANCE, tg1d, metricDictionary)
+
         lt14 = new LogicalTable("base14", HOUR, tg6h, metricDictionary)
         lt1All = new LogicalTable("baseAll", AllGranularity.INSTANCE, tg1All, metricDictionary)
         ltna = new LogicalTable("baseNA", AllGranularity.INSTANCE, tgna, metricDictionary)
@@ -447,7 +451,7 @@ class QueryBuildingTestingResources {
         if (item instanceof Dimension)
             return new DimensionColumn(item)
 
-        if (item instanceof LogicalMetric)
+        if (item instanceof LogicalMetricImpl)
             return new MetricColumn(item.getName())
     }
 }

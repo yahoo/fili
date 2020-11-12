@@ -4,9 +4,7 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory
 import com.yahoo.bard.webservice.config.BardFeatureFlag
-import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -15,6 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.GranularityParser
@@ -24,7 +23,7 @@ import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
@@ -76,7 +75,7 @@ class DataApiRequestImplSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)
@@ -112,9 +111,9 @@ class DataApiRequestImplSpec extends Specification {
         given:
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,met3",
+                table,
                 metricDict,
-                dimensionDict,
-                table
+                dimensionDict
         )
 
         HashSet<Dimension> expected =
@@ -132,9 +131,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
+                table,
                 metricDict,
-                dimensionDict,
-                table
+                dimensionDict
         )
 
         then: "BadApiRequestException is thrown"
@@ -177,9 +176,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "",
+                table,
                 metricDict,
-                dimensionDict,
-                table
+                dimensionDict
         )
 
         then:
@@ -204,9 +203,9 @@ class DataApiRequestImplSpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "",
+                table,
                 metricDict,
-                dimensionDict,
-                table
+                dimensionDict
         )
 
         then:

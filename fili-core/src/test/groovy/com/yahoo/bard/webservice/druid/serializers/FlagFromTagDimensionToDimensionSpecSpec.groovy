@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
@@ -48,7 +49,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
                 resources.druidHavingBuilder
         )
         apiRequest = Mock(DataApiRequest)
-        LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        LogicalMetric lm1 = new LogicalMetricImpl(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 
         apiRequest.getTable() >> resources.lt14
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
@@ -67,6 +68,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
     def "Flag from tag dimension based on lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
         given:
         apiRequest.getDimensions() >> ([resources.d14])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d14])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         when:
@@ -79,6 +81,7 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
     def "Flag from tag dimension based on *registered* lookup dimension serializes to cascade extraction function with tag extraction and transformation in grouping context"() {
         given:
         apiRequest.getDimensions() >> ([resources.d15])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d15])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         when:
@@ -90,13 +93,14 @@ class FlagFromTagDimensionToDimensionSpecSpec extends Specification {
 
     def "Flag from tag dimension pushes extraction and transformation to innermost query when nesting"() {
         setup:
-        LogicalMetric nestedLogicalMetric = new LogicalMetric(resources.simpleNestedTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        LogicalMetric nestedLogicalMetric = new LogicalMetricImpl(resources.simpleNestedTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
         JsonNode expectedInnerFlagFromTagSerialization = registeredLookupSerialization
         JsonNode expectedOuterFlagFromTagSerialization = objectMapper.readValue('"flagFromTagRegisteredLookup"', JsonNode.class)
 
         when:
         // generate queries
         apiRequest.getDimensions() >> ([resources.d15])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d15])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         DruidAggregationQuery<?> innerQuery = druidQuery.getInnerQuery().orElseThrow({return new IllegalStateException("Query is not nested")})
         DruidAggregationQuery<?> outerQuery = druidQuery

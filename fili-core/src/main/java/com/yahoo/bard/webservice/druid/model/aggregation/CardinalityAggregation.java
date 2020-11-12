@@ -67,6 +67,11 @@ public class CardinalityAggregation extends Aggregation {
         return "cardinality";
     }
 
+    @Override
+    public boolean isFloatingPoint() {
+        return false;
+    }
+
     public Set<Dimension> getDependentDimensions() {
         return dimensions;
     }

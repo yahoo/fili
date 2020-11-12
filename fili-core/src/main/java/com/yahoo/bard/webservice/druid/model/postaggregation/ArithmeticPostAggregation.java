@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.serializers.HasDruidNameSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -17,13 +18,11 @@ import java.util.Objects;
 /**
  * Model representing arithmetic post aggregations.
  */
-public class ArithmeticPostAggregation extends PostAggregation implements WithFields<ArithmeticPostAggregation> {
+public class ArithmeticPostAggregation extends PostAggregation implements WithPostAggregations {
 
     private final ArithmeticPostAggregationFunction fn;
 
     private final List<PostAggregation> fields;
-
-    private final boolean floatingPoint;
 
     /**
      * Constructor.
@@ -36,8 +35,6 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         super(ARITHMETIC, name);
         this.fn = fn;
         this.fields = Collections.unmodifiableList(fields);
-        this.floatingPoint = fn.equals(ArithmeticPostAggregationFunction.DIVIDE) ||
-                fields.stream().anyMatch(PostAggregation::isFloatingPoint);
     }
 
     @JsonSerialize(using = HasDruidNameSerializer.class)
@@ -45,20 +42,26 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         return fn;
     }
 
-    @Override
-    public List<PostAggregation> getFields() {
-        return fields;
-    }
+    // CHECKSTYLE:OFF
 
+    /**
+     * Druid ALWAYS coerces result of arithmetic post aggregations to Double. See:
+     * https://github.com/apache/druid/blob/master/processing/src/main/java/org/apache/druid/query/aggregation/post
+     * /ArithmeticPostAggregator.java#L106-L126
+     * Relevant Druid class: {@code org.apache.druid.query.aggregation.post.ArithmeticPostAggregator}
+     *
+     * @inheritDoc
+     */
     @Override
     @JsonIgnore
     public boolean isFloatingPoint() {
-        return floatingPoint;
+        return true;
     }
+    // CHECKSTYLE:ON
 
     @Override
     public ArithmeticPostAggregation withName(String name) {
-        return new ArithmeticPostAggregation(name, getFn(), getFields());
+        return new ArithmeticPostAggregation(name, getFn(), getPostAggregations());
     }
 
     /**
@@ -69,17 +72,26 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
      * @return a new instance of this with the given function
      */
     public ArithmeticPostAggregation withFn(ArithmeticPostAggregationFunction fn) {
-        return new ArithmeticPostAggregation(getName(), fn, getFields());
+        return new ArithmeticPostAggregation(getName(), fn, getPostAggregations());
     }
 
     @Override
-    public ArithmeticPostAggregation withFields(List<PostAggregation> fields) {
-        return new ArithmeticPostAggregation(getName(), getFn(), fields);
+    public ArithmeticPostAggregation withPostAggregations(List<? extends PostAggregation> fields) {
+        return new ArithmeticPostAggregation(getName(), getFn(), new ArrayList<>(fields));
+    }
+
+    @Override
+    public List<PostAggregation> getPostAggregations() {
+        return new ArrayList<>(fields);
     }
 
     @Override
     public String toString() {
-        return "ArithmeticPostAggregation{name=" + getName() + ", fn=" + getFn() + ", fields=" + getFields() + '}';
+        return "ArithmeticPostAggregation{" +
+                "name=" + getName() +
+                ", fn=" + getFn() +
+                ", fields=" + getPostAggregations() +
+                '}';
     }
 
     @Override
@@ -94,8 +106,8 @@ public class ArithmeticPostAggregation extends PostAggregation implements WithFi
         ArithmeticPostAggregation that = (ArithmeticPostAggregation) o;
         return
                 super.equals(o) &&
-                Objects.equals(fields, that.fields) &&
-                fn == that.fn;
+                        Objects.equals(fields, that.fields) &&
+                        fn == that.fn;
     }
 
     /**

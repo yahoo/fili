@@ -23,6 +23,14 @@ public interface MetricField {
     String getName();
 
     /**
+     * Makes a copy of this MetricField with the current name replaced by the provided name.
+     *
+     * @param name The new output name for this MetricField
+     * @return the updated copy
+     */
+    MetricField withName(String name);
+
+    /**
      * Indicate if the MetricField is based on a sketch.
      *
      * @return true if the metric field is sketch-based, false otherwise

@@ -15,6 +15,8 @@ import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 import com.yahoo.bard.webservice.sql.DruidQueryToSqlConverter;
 import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.aggregation.SqlAggregation;
+import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
+import com.yahoo.bard.webservice.sql.evaluator.PrestoFilterEvaluator;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
 
@@ -58,7 +60,16 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
      * @return a new time converter.
      */
     protected SqlTimeConverter buildSqlTimeConverter() {
-        return new SqlTimeConverter();
+        return new SqlTimeConverter("yyyyMMddHHmmss");
+    }
+
+    /**
+     * Builds a filterEvaluator.
+     *
+     * @return a filter evaluator
+     */
+    protected FilterEvaluator buildFilterEvaluator() {
+        return new PrestoFilterEvaluator();
     }
 
     /**

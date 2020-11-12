@@ -108,6 +108,7 @@ public class HashDataCache<T extends Serializable> implements DataCache<T> {
     }
 
     @Override
+    //(Deprecate this return type to be void)
     final public boolean set(String key, T value) {
         return cache.set(hash(key), new Pair<>(key, value));
     }

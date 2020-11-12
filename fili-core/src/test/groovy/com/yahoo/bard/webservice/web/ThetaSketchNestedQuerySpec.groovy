@@ -16,6 +16,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
@@ -66,15 +67,15 @@ class ThetaSketchNestedQuerySpec extends Specification {
         ArithmeticPostAggregation pa = FieldConverterSupplier.metricsFilterSetBuilder.replacePostAggWithPostAggFromMap(resources.dayAvgFoosTdq.getPostAggregations().first(), aggNameToAggMap)
 
         expect:
-        pa.getFields().first().equals(new FieldAccessorPostAggregation(aggNameToAggMap.get("foos_sum")))
+        pa.getPostAggregations().first().equals(new FieldAccessorPostAggregation(aggNameToAggMap.get("foos_sum")))
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
         LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
         TemplateDruidQuery nestedQuery = logicalMetrics.first().templateDruidQuery.innerQuery.get()
 
@@ -102,21 +103,21 @@ class ThetaSketchNestedQuerySpec extends Specification {
     def "metric filter on viz metric and expect children of unRegFoos have right sketch operation function"() {
         LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "viz(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
         ArithmeticPostAggregation postAggregation = logicalMetrics.first().templateDruidQuery.postAggregations.first()
 
         FuzzySetPostAggregation unRegFoo1;
-        for (PostAggregation pa : postAggregation.fields) {
+        for (PostAggregation pa : postAggregation.postAggregations) {
             if (pa instanceof FuzzySetPostAggregation) {
                 unRegFoo1 = pa
                 break
             }
         }
         List<ThetaSketchSetOperationPostAggregation> unRegFooChildren =
-                ((ThetaSketchSetOperationPostAggregation) unRegFoo1.field).fields
+                ((ThetaSketchSetOperationPostAggregation) unRegFoo1.field).postAggregations
 
         expect:
         unRegFooChildren[0].func.equals(SketchSetOperationPostAggFunction.INTERSECT)
@@ -127,9 +128,9 @@ class ThetaSketchNestedQuerySpec extends Specification {
         when:
         new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "ratioMetric(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -140,9 +141,9 @@ class ThetaSketchNestedQuerySpec extends Specification {
     def "The dimensions returned from the filtered nested logical metric are correct"() {
         LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         expect:

@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 
@@ -16,10 +15,11 @@ import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -425,14 +425,9 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
 
         // Check if logical tables exist with the requested logical table name
         if (generated.isEmpty()) {
-            String msg;
-            if (tableDictionary.isEmpty()) {
-                msg = EMPTY_DICTIONARY.logFormat("Logical Table");
-            } else {
-                msg = TABLE_UNDEFINED.logFormat(tableName);
-            }
+            String msg = TABLE_UNDEFINED.logFormat(tableName);
             LOG.error(msg);
-            throw new BadApiRequestException(msg);
+            throw new MissingResourceApiRequestException(msg);
         }
 
         LOG.trace("Generated set of logical tables: {}", generated);

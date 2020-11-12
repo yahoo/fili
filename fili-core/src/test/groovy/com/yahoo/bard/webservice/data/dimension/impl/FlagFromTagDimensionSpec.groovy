@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.config.dimension.FlagFromTagDimensionConfi
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import spock.lang.Specification

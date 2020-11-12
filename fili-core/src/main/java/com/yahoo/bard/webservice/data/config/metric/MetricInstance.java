@@ -192,6 +192,20 @@ public class MetricInstance {
     }
 
     /**
+     * Makes a copy of the metric instance with new logicalMetricInfo.
+     *
+     * @param info The LogicalMetricInfo that this Logical Metric depends on
+     * @return copy of the logical Metric
+     */
+    public MetricInstance withLogicalMetricInfo(LogicalMetricInfo info) {
+        return new MetricInstance(
+                info,
+                maker,
+                dependencyMetricNames.toArray(new String[dependencyMetricNames.size()])
+        );
+    }
+
+    /**
      * Make the Logical Metric from the information in this MetricInstance.
      *
      * @return The LogicalMetric with the provided name, using the given maker, that depends on the given metrics.

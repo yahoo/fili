@@ -6,14 +6,14 @@ import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregat
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Model representing a post aggregation of sketch set operations.
  */
-public class ThetaSketchSetOperationPostAggregation extends PostAggregation
-        implements WithFields<ThetaSketchSetOperationPostAggregation> {
+public class ThetaSketchSetOperationPostAggregation extends PostAggregation implements WithPostAggregations {
 
     private final SketchSetOperationPostAggFunction func;
     private final List<PostAggregation> fields;
@@ -65,19 +65,19 @@ public class ThetaSketchSetOperationPostAggregation extends PostAggregation
     }
 
     @Override
-    public List<PostAggregation> getFields() {
+    public List<PostAggregation> getPostAggregations() {
         return fields;
     }
 
     @Override
     public String toString() {
         return "Aggregation{type=" + getType() + ", name=" + getName() + ", func=" + getFunc() + ", fields=" +
-                getFields() + ", size=" + getSize() + "}";
+                getPostAggregations() + ", size=" + getSize() + "}";
     }
 
     @Override
     public ThetaSketchSetOperationPostAggregation withName(String name) {
-        return new ThetaSketchSetOperationPostAggregation(name, getFunc(), getFields(), getSize());
+        return new ThetaSketchSetOperationPostAggregation(name, getFunc(), getPostAggregations(), getSize());
     }
 
     /**
@@ -88,7 +88,7 @@ public class ThetaSketchSetOperationPostAggregation extends PostAggregation
      * @return a new instance of this with the given function
      */
     public ThetaSketchSetOperationPostAggregation withFunc(SketchSetOperationPostAggFunction func) {
-        return new ThetaSketchSetOperationPostAggregation(getName(), func, getFields(), getSize());
+        return new ThetaSketchSetOperationPostAggregation(getName(), func, getPostAggregations(), getSize());
     }
 
     /**
@@ -99,7 +99,7 @@ public class ThetaSketchSetOperationPostAggregation extends PostAggregation
      * @return a new instance of this with the given size
      */
     public ThetaSketchSetOperationPostAggregation withSize(int size) {
-        return new ThetaSketchSetOperationPostAggregation(getName(), getFunc(), getFields(), size);
+        return new ThetaSketchSetOperationPostAggregation(getName(), getFunc(), getPostAggregations(), size);
     }
 
     /**
@@ -110,8 +110,8 @@ public class ThetaSketchSetOperationPostAggregation extends PostAggregation
      * @return a new instance of this with the given fields
      */
     @Override
-    public ThetaSketchSetOperationPostAggregation withFields(List<PostAggregation> fields) {
-        return new ThetaSketchSetOperationPostAggregation(getName(), getFunc(), fields, getSize());
+    public ThetaSketchSetOperationPostAggregation withPostAggregations(List<? extends PostAggregation> fields) {
+        return new ThetaSketchSetOperationPostAggregation(getName(), getFunc(), new ArrayList<>(fields), getSize());
     }
 
     @Override

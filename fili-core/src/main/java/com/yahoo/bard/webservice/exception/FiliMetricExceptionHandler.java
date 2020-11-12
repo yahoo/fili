@@ -7,6 +7,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +39,15 @@ public class FiliMetricExceptionHandler implements MetadataExceptionHandler {
             LOG.error(msg, e);
             return Response.status(INTERNAL_SERVER_ERROR).entity(msg).build();
         } else {
+            Response.Status status;
+            if (e instanceof MissingResourceApiRequestException) {
+                status = Response.Status.NOT_FOUND;
+            } else {
+                status = Response.Status.BAD_REQUEST;
+            }
             String msg = ErrorMessageFormat.REQUEST_PROCESSING_EXCEPTION.format(e.getMessage());
-            LOG.info(msg, e);
-            return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
+            LOG.debug(msg, e);
+            return Response.status(status).entity(msg).build();
         }
     }
 }

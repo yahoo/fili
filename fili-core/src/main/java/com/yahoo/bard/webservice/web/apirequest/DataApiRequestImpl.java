@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSION_FIELDS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INCORRECT_METRIC_FILTER_FORMAT;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTEGER_INVALID;
@@ -10,14 +9,12 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_METRIC_FI
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.NON_AGGREGATABLE_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNSUPPORTED_FILTERED_METRIC_CATEGORY;
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -32,6 +29,7 @@ import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumnType;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -44,16 +42,19 @@ import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.util.TableUtils;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.DefaultFilterOperation;
 import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders;
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
-import com.yahoo.bard.webservice.web.apirequest.binders.IntervalBinders;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.generator.IntervalBinders;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -107,12 +108,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final int count;
     private final int topN;
     private final DateTimeZone timeZone;
+    private final boolean optimizable;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
 
     @Deprecated
     private final DruidFilterBuilder filterBuilder;
-
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -191,6 +192,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 count,
                 topN,
                 format,
+                null,
                 timeZoneId,
                 asyncAfter,
                 perPage,
@@ -201,7 +203,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getSystemTimeZone(),
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
-                bardConfigResources.getHavingApiGenerator()
+                bardConfigResources.getHavingApiGenerator(),
+                bardConfigResources.getMetricBinder(),
+                bardConfigResources.getOrderByGenerator()
         );
     }
 
@@ -294,7 +298,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 bardConfigResources.getSystemTimeZone(),
                 bardConfigResources.getGranularityParser(),
                 bardConfigResources.getFilterBuilder(),
-                bardConfigResources.getHavingApiGenerator()
+                bardConfigResources.getHavingApiGenerator(),
+                bardConfigResources.getMetricBinder(),
+                bardConfigResources.getOrderByGenerator()
         );
     }
 
@@ -398,7 +404,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 systemTimeZone,
                 granularityParser,
                 druidFilterBuilder,
-                havingGenerator
+                havingGenerator,
+                ApiRequestImpl.DEFAULT_METRIC_BINDER,
+                new DefaultOrderByGenerator()
         );
     }
 
@@ -440,6 +448,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param granularityParser A tool to process granularities
      * @param druidFilterBuilder A function to build druid filters from Api Filters
      * @param havingGenerator A function to create havings
+     * @param metricBinder  Class that parses the input metric query string and binds the requested metric names to the
+     *                      materialized LogicalMetrics.
+     * @param orderByGenerator A function to create and validate sort clauses
      *
      * @throws BadApiRequestException in the following scenarios:
      * <ol>
@@ -478,7 +489,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DateTimeZone systemTimeZone,
             GranularityParser granularityParser,
             DruidFilterBuilder druidFilterBuilder,
-            HavingGenerator havingGenerator
+            HavingGenerator havingGenerator,
+            ApiRequestLogicalMetricBinder metricBinder,
+            LegacyGenerator<List<OrderByColumn>> orderByGenerator
     ) throws BadApiRequestException {
         super(formatRequest, downloadFilename, asyncAfterRequest, perPage, page);
 
@@ -501,6 +514,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // At least one logical metric is required
         this.filterBuilder = druidFilterBuilder;  // required for intersection metrics to work
 
+        this.metricBinder = metricBinder;
         this.logicalMetrics = bindLogicalMetrics(logicalMetricsRequest, table, metricDictionary, dimensionDictionary);
         validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary);
 
@@ -517,20 +531,23 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.havings = bindApiHavings(havingsRequest, havingGenerator, logicalMetrics);
         validateApiHavings(havingsRequest, havings);
 
-        //Using the LinkedHashMap to preserve the sort order
-        LinkedHashMap<String, SortDirection> sortColumnDirection = bindToColumnDirectionMap(sortsRequest);
-
-        //Requested sort on dateTime column
-        this.dateTimeSort = bindDateTimeSortColumn(sortColumnDirection).orElse(null);
-
-        // Requested sort on metrics - optional, can be empty Set
-        this.sorts = bindToColumnDirectionMap(
-                removeDateTimeSortColumn(sortColumnDirection),
-                logicalMetrics,
-                metricDictionary
+        ResourceDictionaries resourceDictionaries = new ResourceDictionaries(
+                null,
+                logicalTableDictionary,
+                metricDictionary,
+                dimensionDictionary
         );
-        validateSortColumns(sorts, dateTimeSort, sortsRequest, logicalMetrics, metricDictionary);
+        List<OrderByColumn> columns = orderByGenerator.bind(this, sortsRequest, resourceDictionaries);
 
+        orderByGenerator.validate(columns, this, sortsRequest, resourceDictionaries);
+
+        this.dateTimeSort = columns.stream()
+                .filter(column -> column.getType().equals(OrderByColumnType.TIME))
+                .findFirst().orElse(null);
+
+        this.sorts = columns.stream()
+                .filter(column -> ! column.getType().equals(OrderByColumnType.TIME))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
@@ -539,6 +556,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Requested number of rows per time bucket in the response
         this.topN = bindTopN(topNRequest);
         validateTopN(topNRequest, topN, sorts);
+
+        this.optimizable = true;
 
         LOG.debug(
                 "Api request: TimeGrain: {}," +
@@ -656,7 +675,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request
      * @param dateTimeSort  A dateTime sort column with its direction
+     *
+     * @deprecated Optimizable should be set
      */
+    @Deprecated
     protected DataApiRequestImpl(
             ResponseFormatType format,
             String downloadFilename,
@@ -694,7 +716,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 paginationParameters.orElse(null),
                 format,
                 downloadFilename,
-                asyncAfter
+                asyncAfter,
+                true
         );
     }
 
@@ -760,7 +783,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 paginationParameters.orElse(null),
                 format,
                 (String) null,
-                asyncAfter
+                asyncAfter,
+                true
         );
     }
 
@@ -791,7 +815,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      *
      * @deprecated Removing filterBuilder. Use {@link #DataApiRequestImpl(LogicalTable, Granularity, LinkedHashSet,
      *      LinkedHashMap, LinkedHashSet, List, ApiFilters, Map, LinkedHashSet, OrderByColumn, DateTimeZone, Integer,
-     *      Integer, PaginationParameters, ResponseFormatType, String, Long)}
+     *      Integer, PaginationParameters, ResponseFormatType, String, Long, boolean)}
      */
     @Deprecated
     protected DataApiRequestImpl(
@@ -831,12 +855,14 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 paginationParameters,
                 format,
                 downloadFilename,
-                asyncAfter
+                asyncAfter,
+                true
         );
     }
 
+
     /**
-     * All argument constructor, meant to be used for rewriting apiRequest.
+     * Constructor with all bindables bound, meant to be used for rewriting apiRequest.
      *
      * Filter builder in constructor should be removed when some deprecations come out.
      *
@@ -858,7 +884,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param topN  Count of per-bucket limit (TopN) for the request
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      * @param timeZone  TimeZone for the request
-     *
+     * @param optimizable  Whether or not this request can be safely optimized into a topN or timeseries Druid query,
+     * if this is false a groupBy should always be built, even if the request would otherwise be eligible for one of
+     * the other query types
      */
     protected DataApiRequestImpl(
             LogicalTable table,
@@ -877,7 +905,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             PaginationParameters paginationParameters,
             ResponseFormatType format,
             String downloadFilename,
-            Long asyncAfter
+            Long asyncAfter,
+            boolean optimizable
     ) {
         super(format, downloadFilename, asyncAfter, paginationParameters);
         this.table = table;
@@ -894,6 +923,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.topN = topN;
         this.timeZone = timeZone;
         this.filterBuilder = null;
+        this.optimizable = optimizable;
     }
 
     // Start of binders and validators
@@ -1041,7 +1071,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             MetricDictionary metricDictionary,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return generateLogicalMetrics(apiMetricExpression, metricDictionary, dimensionDictionary, logicalTable);
+        return generateLogicalMetrics(apiMetricExpression, logicalTable, metricDictionary, dimensionDictionary);
     }
 
     /**
@@ -1185,109 +1215,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             Map<LogicalMetric, Set<ApiHaving>> apiHavings
     ) throws BadApiRequestException {
         // No default post bind validations yet
-    }
-
-
-    /**
-     * Method to convert sort list to column and direction map.
-     *
-     * @param sorts  String of sort columns
-     *
-     * @return LinkedHashMap of columns and their direction. Using LinkedHashMap to preserve the order
-     */
-    protected LinkedHashMap<String, SortDirection> bindToColumnDirectionMap(String sorts) {
-        LinkedHashMap<String, SortDirection> sortDirectionMap = new LinkedHashMap<>();
-
-        if (sorts != null && !sorts.isEmpty()) {
-            Arrays.stream(sorts.split(","))
-                    .map(e -> Arrays.asList(e.split("\\|")))
-                    .forEach(e -> sortDirectionMap.put(e.get(0), getSortDirection(e)));
-            return sortDirectionMap;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Generates a Set of OrderByColumn.
-     *
-     * @param sortDirectionMap  Map of columns and their direction
-     * @param logicalMetrics  Set of LogicalMetrics in the query
-     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
-     *
-     * @return a Set of OrderByColumn
-     * @throws BadApiRequestException if the sort clause is invalid.
-     */
-    protected LinkedHashSet<OrderByColumn> bindToColumnDirectionMap(
-            Map<String, SortDirection> sortDirectionMap,
-            Set<LogicalMetric> logicalMetrics,
-            MetricDictionary metricDictionary
-    ) throws BadApiRequestException {
-        try (TimedPhase timer = RequestLog.startTiming("GeneratingSortColumns")) {
-            String sortMetricName;
-            LinkedHashSet<OrderByColumn> metricSortColumns = new LinkedHashSet<>();
-
-            if (sortDirectionMap == null) {
-                return metricSortColumns;
-            }
-            List<String> unknownMetrics = new ArrayList<>();
-            List<String> unmatchedMetrics = new ArrayList<>();
-            List<String> unsortableMetrics = new ArrayList<>();
-
-            for (Map.Entry<String, SortDirection> entry : sortDirectionMap.entrySet())  {
-                sortMetricName = entry.getKey();
-
-                LogicalMetric logicalMetric = metricDictionary.get(sortMetricName);
-
-                // If metric dictionary returns a null, it means the requested sort metric is not found.
-                if (logicalMetric == null) {
-                    unknownMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (!logicalMetrics.contains(logicalMetric)) {
-                    unmatchedMetrics.add(sortMetricName);
-                    continue;
-                }
-                if (logicalMetric.getTemplateDruidQuery() == null) {
-                    unsortableMetrics.add(sortMetricName);
-                    continue;
-                }
-                metricSortColumns.add(new OrderByColumn(logicalMetric, entry.getValue()));
-            }
-            if (!unknownMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_UNDEFINED.logFormat(unknownMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_UNDEFINED.format(unknownMetrics.toString()));
-            }
-            if (!unmatchedMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_IN_QUERY_FORMAT.logFormat(unmatchedMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_IN_QUERY_FORMAT.format(unmatchedMetrics.toString()));
-            }
-            if (!unsortableMetrics.isEmpty()) {
-                LOG.debug(SORT_METRICS_NOT_SORTABLE_FORMAT.logFormat(unsortableMetrics.toString()));
-                throw new BadApiRequestException(SORT_METRICS_NOT_SORTABLE_FORMAT.format(unsortableMetrics.toString()));
-            }
-
-            return metricSortColumns;
-        }
-    }
-
-    /**
-     * Method to generate DateTime sort column from the map of columns and its direction.
-     *
-     * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
-     *
-     * @return Instance of OrderByColumn for dateTime
-     */
-    protected Optional<OrderByColumn> bindDateTimeSortColumn(LinkedHashMap<String, SortDirection> sortColumns) {
-
-        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
-            if (!isDateTimeFirstSortField(sortColumns)) {
-                LOG.debug(DATE_TIME_SORT_VALUE_INVALID.logFormat());
-                throw new BadApiRequestException(DATE_TIME_SORT_VALUE_INVALID.format());
-            }
-            return Optional.of(new OrderByColumn(DATE_TIME_STRING, sortColumns.get(DATE_TIME_STRING)));
-        }
-        return Optional.empty();
     }
 
     /**
@@ -1505,38 +1432,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     /**
-     * To check whether dateTime column request is first one in the sort list or not.
-     *
-     * @param sortColumns  LinkedHashMap of columns and its direction. Using LinkedHashMap to preserve the order
-     *
-     * @return True if dateTime column is first one in the sort list. False otherwise
-     */
-    protected Boolean isDateTimeFirstSortField(LinkedHashMap<String, SortDirection> sortColumns) {
-        if (sortColumns != null) {
-            List<String> columns = new ArrayList<>(sortColumns.keySet());
-            return columns.get(0).equals(DATE_TIME_STRING);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Method to remove the dateTime column from map of columns and its direction.
-     *
-     * @param sortColumns  map of columns and its direction
-     *
-     * @return  Map of columns and its direction without dateTime sort column
-     */
-    protected Map<String, SortDirection> removeDateTimeSortColumn(Map<String, SortDirection> sortColumns) {
-        if (sortColumns != null && sortColumns.containsKey(DATE_TIME_STRING)) {
-            sortColumns.remove(DATE_TIME_STRING);
-            return sortColumns;
-        } else {
-            return sortColumns;
-        }
-    }
-
-    /**
      * Validity rules for non-aggregatable dimensions that are only referenced in filters.
      * A query that references a non-aggregatable dimension in a filter without grouping by this dimension, is valid
      * only if the requested dimension field is a key for this dimension and only a single value is requested
@@ -1559,18 +1454,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','.
+     * @param table  The logical table for the data request
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
-     * @param table  The logical table for the data request
      *
      * @return set of metric objects
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
+            LogicalTable table,
             MetricDictionary metricDictionary,
-            DimensionDictionary dimensionDictionary,
-            LogicalTable table
+            DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingLogicalMetrics")) {
             LOG.trace("Metric dictionary: {}", metricDictionary);
@@ -1746,17 +1641,17 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     // CHECKSTYLE:OFF
     @Override
     public DataApiRequestImpl withFormat(ResponseFormatType format) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequest withDownloadFilename(String downloadFilename) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withPaginationParameters(PaginationParameters paginationParameters) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
@@ -1766,32 +1661,32 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Override
     public DataApiRequestImpl withTable(LogicalTable table) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withGranularity(Granularity granularity) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withIntervals(List<Interval> intervals) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
@@ -1802,50 +1697,55 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Override
     public DataApiRequestImpl withFilters(ApiFilters apiFilters) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     // TODO
     @Override
     public DataApiRequestImpl withTimeSort(OrderByColumn timeSort) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, timeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, timeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withTimeZone(DateTimeZone timeZone) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withTopN(Integer topN) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withCount(Integer count) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
 
     @Override
     public DataApiRequestImpl withAsyncAfter(long asyncAfter) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
 
     @Override
     public DataApiRequestImpl withFilterBuilder(DruidFilterBuilder filterBuilder) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, filterBuilder);
+        // The constructors that take in a filterBuilder just throw away the filterBuilder. So `withFilterBuilder` doesn't actually do anything!
+        return this;
+    }
+
+    public DataApiRequest withDruidOptimizations(boolean optimizable) {
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     // CHECKSTYLE:ON
@@ -1944,5 +1844,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     @Override
     public DateTimeZone getTimeZone() {
         return timeZone;
+    }
+
+    @Override
+    public boolean optimizeBackendQuery() {
+        return optimizable;
     }
 }

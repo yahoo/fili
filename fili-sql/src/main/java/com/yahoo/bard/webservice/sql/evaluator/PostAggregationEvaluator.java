@@ -2,13 +2,17 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.evaluator;
 
+import com.google.common.collect.ImmutableList;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 
+import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlBinaryOperator;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ReflectUtil;
@@ -26,6 +30,8 @@ import java.util.stream.Collectors;
 public class PostAggregationEvaluator implements ReflectiveVisitor {
     private final ReflectUtil.MethodDispatcher<RexNode> dispatcher;
 
+    private final static String MULTI_OP_CALL_ERROR_MSG =
+            "It takes two or more fields to do a add operation, but only got %d";
     /**
      * Constructor.
      * */
@@ -120,6 +126,28 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
     }
 
     /**
+     * Build the add call RexNode.
+     * @param addFields all the fields to be added together
+     * @param builder The RelBuilder for building sql query.
+     * @param operator The operator of the call
+     * @return The RexNode represents the add operation
+     */
+    private RexNode buildMultiOpCall(List<RexNode> addFields, RelBuilder builder, SqlBinaryOperator operator) {
+        if (addFields.size() < 2) {
+            throw new IllegalStateException(String.format(MULTI_OP_CALL_ERROR_MSG, addFields.size()));
+        }
+        RexNode previousAdd = builder.call(
+                operator,
+                ImmutableList.of(addFields.get(0),  addFields.get(1))
+        );
+        int i = 2;
+        while (i < addFields.size()) {
+            previousAdd = builder.call(operator, ImmutableList.of(previousAdd,  addFields.get(i)));
+            i++;
+        }
+        return previousAdd;
+    }
+    /**
      * Evaluates an arithmeticPostAggregation by translating it's operation over other postAggregations
      * to sql arithmetic.
      *
@@ -130,36 +158,45 @@ public class PostAggregationEvaluator implements ReflectiveVisitor {
      * @return the RexNode of sql arithmetic
      *
      * @throws UnsupportedOperationException for PostAggregations which couldn't be processed.
+     * @throws IllegalStateException for when buildMultiOpCall doesn't receive correct number of ops
      */
     public RexNode evaluate(
             ArithmeticPostAggregation arithmeticPostAggregation,
             RelBuilder builder,
             ApiToFieldMapper apiToFieldMapper) {
-        List<RexNode> innerFields = arithmeticPostAggregation.getFields().stream()
+        List<RexNode> innerFields = arithmeticPostAggregation.getPostAggregations().stream()
                 .map(field -> dispatcher.invoke(field, builder, apiToFieldMapper))
                 .collect(Collectors.toList());
 
         switch (arithmeticPostAggregation.getFn()) {
             case PLUS:
                 return builder.alias(
-                        builder.call(SqlStdOperatorTable.PLUS, innerFields),
+                        buildMultiOpCall(innerFields, builder, SqlStdOperatorTable.PLUS),
                         arithmeticPostAggregation.getName()
                 );
             case MULTIPLY:
                 return builder.alias(
-                        builder.call(SqlStdOperatorTable.MULTIPLY, innerFields),
+                        buildMultiOpCall(innerFields, builder, SqlStdOperatorTable.MULTIPLY),
                         arithmeticPostAggregation.getName()
                 );
             case MINUS:
+                assert innerFields.size() == 2;
                 return builder.alias(
                         builder.call(SqlStdOperatorTable.MINUS, innerFields),
                         arithmeticPostAggregation.getName()
                 );
             case DIVIDE:
+                assert innerFields.size() == 2;
                 List<RexNode> temp = new ArrayList<>();
                 //cast Integer to Double to avoid truncation
-                temp.add(builder.call(SqlStdOperatorTable.MULTIPLY, builder.literal(1.0), innerFields.get(0)));
-                temp.addAll(innerFields.subList(1, innerFields.size()));
+                RexNode numerator =
+                        builder.call(SqlStdOperatorTable.MULTIPLY, builder.literal(1.0), innerFields.get(0));
+                RexNode denominator = innerFields.get(1);
+                if (denominator.getKind() == SqlKind.AS) {
+                    denominator = ((RexCall) denominator).operands.get(0);
+                }
+                temp.add(numerator);
+                temp.add(denominator);
                 return builder.alias(
                         builder.call(SqlStdOperatorTable.DIVIDE, temp),
                         arithmeticPostAggregation.getName()

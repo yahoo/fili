@@ -12,6 +12,7 @@ import static com.yahoo.bard.webservice.data.config.names.TestApiMetricName.A_ST
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
@@ -39,7 +40,7 @@ public class NonNumericMetrics {
      */
     public static List<LogicalMetric> getLogicalMetrics() {
         return Arrays.asList(
-            new LogicalMetric(
+                new LogicalMetricImpl(
                     new TemplateDruidQuery(
                             /*
                              * Placeholder so that missing intervals behaves nicely. Also, giving the aggregation
@@ -59,7 +60,7 @@ public class NonNumericMetrics {
                             "ImAStringISwear"
                     )
             ),
-            new LogicalMetric(
+            new LogicalMetricImpl(
                     new TemplateDruidQuery(
                             Collections.singleton(new LongMinAggregation(
                                     A_BOOLEAN_METRIC.asName(),
@@ -73,7 +74,7 @@ public class NonNumericMetrics {
                             A_BOOLEAN_METRIC.getApiName(),
                             "ImBooleanISwear")
             ),
-            new LogicalMetric(
+            new LogicalMetricImpl(
                     new TemplateDruidQuery(
                             Collections.singleton(
                                     new LongMinAggregation(A_JSON_NODE_METRIC.asName(), A_HEIGHT.getApiName())
@@ -87,7 +88,7 @@ public class NonNumericMetrics {
                             "ImAJsonNodeISwear"
                     )
             ),
-            new LogicalMetric(
+            new LogicalMetricImpl(
                     new TemplateDruidQuery(
                             Collections.singleton(new LongMinAggregation(
                                     A_NULL_METRIC.asName(),

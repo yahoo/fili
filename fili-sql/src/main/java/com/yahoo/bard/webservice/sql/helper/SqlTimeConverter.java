@@ -25,7 +25,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.MutableDateTime;
 
-import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,13 +38,24 @@ import java.util.stream.Collectors;
 public class SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
     private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
+    private final String timeStringFormat;
 
     /**
      * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
-     * {@link #buildDefaultGranularityToDateFunctionsMap()} map.
+     * {@link #buildDefaultGranularityToDateFunctionsMap()} map. Use the default "yyyy-MM-dd HH:mm:ss.S" as time string
+     * format
      */
     public SqlTimeConverter() {
-        this(buildDefaultGranularityToDateFunctionsMap());
+        this(buildDefaultGranularityToDateFunctionsMap(), "yyyy-MM-dd HH:mm:ss.S");
+    }
+
+    /**
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
+     * {@link #buildDefaultGranularityToDateFunctionsMap()} map and set the timestamp format.
+     * @param timeStringFormat The time string format
+     */
+    public SqlTimeConverter(String timeStringFormat) {
+        this(buildDefaultGranularityToDateFunctionsMap(), timeStringFormat);
     }
 
     /**
@@ -53,9 +63,14 @@ public class SqlTimeConverter {
      *
      * @param granularityToDateFunctionMap  The mapping defining what granularity needs to be kept in order to properly
      * group by and reparse a dateTime.
+     * @param timeStringFormat The time string format for the timestamp column
      */
-    public SqlTimeConverter(Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap) {
+    public SqlTimeConverter(
+            Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap,
+            String timeStringFormat
+    ) {
         this.granularityToDateFunctionMap = granularityToDateFunctionMap;
+        this.timeStringFormat = timeStringFormat;
     }
 
     /**
@@ -113,20 +128,25 @@ public class SqlTimeConverter {
                 .map(interval -> {
 
                     DateTimeZone timeZone = getTimeZone(druidQuery);
-
-                    Timestamp start = TimestampUtils.timestampFromDateTime(interval.getStart().toDateTime(timeZone));
-                    Timestamp end = TimestampUtils.timestampFromDateTime(interval.getEnd().toDateTime(timeZone));
+                    String start = TimestampUtils.dateTimeToString(
+                            interval.getStart().toDateTime(timeZone),
+                            timeStringFormat
+                    );
+                    String end = TimestampUtils.dateTimeToString(
+                            interval.getEnd().toDateTime(timeZone),
+                            timeStringFormat
+                    );
 
                     return builder.and(
                             builder.call(
                                     SqlStdOperatorTable.GREATER_THAN,
                                     builder.field(timestampColumn),
-                                    builder.literal(start.toString())
+                                    builder.literal(start)
                             ),
                             builder.call(
                                     SqlStdOperatorTable.LESS_THAN,
                                     builder.field(timestampColumn),
-                                    builder.literal(end.toString())
+                                    builder.literal(end)
                             )
                     );
                 })
@@ -152,7 +172,13 @@ public class SqlTimeConverter {
 
         return sqlDatePartFunctions
                 .stream()
-                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)))
+                .map(sqlDatePartFunction ->
+                        builder.alias(builder.call(
+                                sqlDatePartFunction,
+                                builder.field(timeColumn)),
+                                sqlDatePartFunction.getName()
+                        )
+                )
                 .collect(Collectors.toList());
     }
 

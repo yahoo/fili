@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.metadata.SegmentInfo
 import com.yahoo.bard.webservice.table.PhysicalTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
-import com.yahoo.bard.webservice.web.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.endpoints.SlicesServlet
 
 import org.joda.time.DateTime
@@ -175,7 +175,7 @@ class SlicesApiRequestImplSpec extends BaseDataSourceMetadataSpec {
 
         where:
         name         | dictionary      | exception              | reason
-        "all_pets"   | emptyDictionary | BadApiRequestException | ".*Physical Table Dictionary is empty.*"
-        "all_beasts" | fullDictionary  | BadApiRequestException | ".*Slice name.*does not exist.*"
+        "all_pets"   | emptyDictionary | BadApiRequestException | ".*Slice with name.*does not exist.*"
+        "all_beasts" | fullDictionary  | BadApiRequestException | ".*Slice with name.*does not exist.*"
     }
 }

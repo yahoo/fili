@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
@@ -46,7 +47,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
                 resources.druidHavingBuilder
         )
         apiRequest = Mock(DataApiRequest)
-        LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        LogicalMetric lm1 = new LogicalMetricImpl(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 
         apiRequest.getTable() >> resources.lt12
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
@@ -65,6 +66,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize to apiName when apiName and physicalName of a dimension is the same"() {
         given:
         apiRequest.getDimensions() >> ([resources.d1])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d1])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -74,6 +76,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize to dimension spec when the apiName and physicalName of a dimension is different"() {
         given:
         apiRequest.getDimensions() >> ([resources.d3])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d3])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -83,6 +86,7 @@ class DimensionToDefaultDimensionSpecSpec extends Specification {
     def "Serialize dimension of a nested query should only serialize the innermost query's dimension to a dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d3])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d3])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         String serializedQuery = objectMapper.writeValueAsString(druidQuery)
 

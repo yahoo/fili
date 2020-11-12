@@ -2,12 +2,12 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,14 +117,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (generated.isEmpty()) {
-            String msg;
-            if (metricDictionary.isEmpty()) {
-                msg = EMPTY_DICTIONARY.logFormat("Metric");
-            } else {
-                msg = METRICS_UNDEFINED.logFormat(metricName);
-            }
+            String msg = METRICS_UNDEFINED.logFormat(metricName);
             LOG.error(msg);
-            throw new BadApiRequestException(msg);
+            throw new MissingResourceApiRequestException(msg);
         }
 
         LOG.trace("Generated set of metrics: {}", generated);
