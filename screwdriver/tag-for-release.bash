@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#screwdriver/git_credentials.bash
-
 #pick up the tags from the adjusted remote
 git fetch --unshallow
 git fetch --tags

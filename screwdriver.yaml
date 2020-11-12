@@ -18,7 +18,7 @@ jobs:
   master-commit:
     requires: [~commit:master]
     steps:
-      - header: echo "Starting the pipeline"
+      - header: echo "Starting the commit pipeline"
       - debug: |
           echo "Master Commit : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
@@ -31,7 +31,7 @@ jobs:
       - BINTRAY_API_KEY
     requires: [~tag:/\d+\.\d+\.\d+/]
     steps:
-      - header: echo "Starting the pipeline"
+      - header: echo "Starting the release pipeline"
       - debug: |
          echo "Releasing : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
