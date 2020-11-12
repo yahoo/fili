@@ -148,6 +148,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Moving to open source screwdriver for builds](https://github.com/yahoo/fili/issues/1109)
+  * Travis-ci.com was no longer funded, migrated builds onto screwdriver.
+
 - [Logging of AllGranularity to use friendlier serialization](https://github.com/yahoo/fili/issues/1103)
    * Switched to using getName
 
