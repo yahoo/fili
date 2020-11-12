@@ -24,7 +24,6 @@ class DefaultSystemMetricProtocolsSpec extends Specification {
         DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.putAll(BACKUP_DICTIONARY)
         DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.clear()
         DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.addAll(BACKUP_STANDARD_PROTOCOLS)
-        System.out.println("foo!")
     }
 
     def setupSpec() {
@@ -35,8 +34,6 @@ class DefaultSystemMetricProtocolsSpec extends Specification {
         DefaultSystemMetricProtocols.DEFAULT_PROTOCOL_DICTIONARY.putAll(BACKUP_DICTIONARY)
         DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.clear()
         DefaultSystemMetricProtocols.STANDARD_PROTOCOLS.addAll(BACKUP_STANDARD_PROTOCOLS)
-        System.out.println("foo!")
-        System.out.println("foo!")
     }
 
     def "Add a Standard Protocol modifies default contracts"() {
