@@ -14,11 +14,9 @@ jobs:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - install: >
-        mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install
-        -Pcoverage.build
+          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn package -Pcoverage.build
       - site: >
-          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site
-            -Pcoverage.report,sonar
+          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
       - sonar: >
           mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn sonar:sonar
               -Dsonar.projectKey=yahoo_fili -Dsonar.organization=yahoo -Dsonar.login=${SONAR_TOKEN}
@@ -31,16 +29,15 @@ jobs:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - install: >
-        mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install
-            -Pcoverage.build
+        mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build
       - site: >
-          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site
-            -Pcoverage.report,sonar
+          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
       - sonar: >
           mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn sonar:sonar
               -Dsonar.projectKey=yahoo_fili -Dsonar.organization=yahoo -Dsonar.login=${SONAR_TOKEN}
               -Pcoverage.report,sonar
           || true
+
       - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/tag-for-release.bash
 
   tag-release:
