@@ -1,0 +1,38 @@
+cache:
+  event: ["~/.m2"]
+
+shared:
+  annotations:
+    screwdriver.cd/cpu: TURBO
+    screwdriver.cd/ram: TURBO
+  image: maven:3.6.3-jdk-8
+
+jobs:
+  pull-commit:
+    requires: [~pr]
+    steps:
+      - header: echo "Starting the pipeline"
+      - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - build: ./screwdriver/mvn-build.bash
+
+  master-commit:
+    requires: [~commit]
+    steps:
+      - header: echo "Starting the commit pipeline"
+      - debug: |
+          echo "Master Commit : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
+      - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - build: ./screwdriver/mvn-build.bash
+      - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/tag-for-release.bash
+
+  tag-release:
+    secrets:
+      - BINTRAY_USER
+      - BINTRAY_API_KEY
+    requires: [~tag:/\d+\.\d+\.\d+/]
+    steps:
+      - header: echo "Starting the release pipeline"
+      - debug: |
+         echo "Releasing : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
+      - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/bintray-publish.bash

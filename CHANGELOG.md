@@ -8,6 +8,9 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+
+- [Fix: Test failed due to static side effects revealed during Screwdriver migration](https://github.com/yahoo/fili/issues/1109)
+
 - [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
     * Fixed maven build failure when JAVA_TOOL_OPTIONS was set by reconfiguring ant output
 
@@ -148,6 +151,9 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Moving to open source screwdriver for builds](https://github.com/yahoo/fili/issues/1109)
+  * Travis-ci.com was no longer funded, migrated builds onto screwdriver.
+
 - [Logging of AllGranularity to use friendlier serialization](https://github.com/yahoo/fili/issues/1103)
    * Switched to using getName
 
