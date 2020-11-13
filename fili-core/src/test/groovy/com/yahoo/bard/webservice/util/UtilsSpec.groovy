@@ -4,6 +4,9 @@ package com.yahoo.bard.webservice.util
 
 import spock.lang.Specification
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.JsonNode
+
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.stream.Stream
@@ -82,5 +85,50 @@ class UtilsSpec extends Specification {
     def "Reduce operation returns the minimum of a stream in values"() {
         expect:
         Stream.of(1, 2, 3).reduce() { a, b -> Utils.getMinValue(a, b) }.get() == 1
+    }
+
+    def "Canonicalization of object with context preserved without recursion"() {
+        setup:
+        String jsonString = '{"k1":"v1","context":"v2"}'
+        String result = '{"context":"v2","k1":"v1"}'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, true)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+    def "Canonicalization of object with context preserved with recursion"() {
+        setup:
+        String jsonString = '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'
+        String result = '{"a":"v1","obj":{"b":"v2","context":"val","d":"v3"}}'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, true)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+    def "Canonicalization of object without recursion and context not preserved"() {
+        setup:
+        String jsonString = '{"k1":"v1","context":"v2"}'
+        String result = '{"context":{},"k1":"v1"}'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+    def "Canonicalization of object with recursion and context not preserved"() {
+        setup:
+        String jsonString = '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'
+        String result = '{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
     }
 }
