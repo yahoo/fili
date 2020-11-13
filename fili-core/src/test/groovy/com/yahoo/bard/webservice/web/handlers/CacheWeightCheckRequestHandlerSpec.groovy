@@ -121,7 +121,6 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
                     final DruidAggregationQuery<?> groupByQuery,
                     final ResponseProcessor response
             ) {
-                groupByQuery.clone()
                 return success
             }
         }
@@ -132,10 +131,7 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         then:
         1 * queryWeightUtil.skipWeightCheckQuery(groupByQuery) >> false
         1 * queryWeightUtil.getQueryWeightThreshold(DAY) >> 5
-        1 * groupByQuery.clone() >> groupByQuery
         1 * webService.postDruidQuery(context, success, null, null, weightQuery)
-        1 * response.getErrorCallback(groupByQuery)
-        1 * response.getFailureCallback(groupByQuery)
         0 * next.handleRequest(_)
 
         and:
@@ -160,7 +156,6 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
                     final DruidAggregationQuery<?> groupByQuery,
                     final ResponseProcessor response
             ) {
-                groupByQuery.clone()
                 return success
             }
         }
@@ -171,10 +166,7 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         then:
         1 * queryWeightUtil.skipWeightCheckQuery(groupByQuery) >> false
         1 * queryWeightUtil.getQueryWeightThreshold(DAY) >> 5
-        1 * groupByQuery.clone() >> groupByQuery
         1 * webService.postDruidQuery(context, success, null, null, weightQuery)
-        1 * response.getErrorCallback(groupByQuery)
-        1 * response.getFailureCallback(groupByQuery)
         0 * next.handleRequest(_)
 
         and:
