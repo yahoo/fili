@@ -90,17 +90,17 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
         SuccessCallback classicCallback = super.buildSuccessCallback(
                 context,
                 request,
-                druidQuery,
+                weightEvaluationQuery,
                 weightCheckResponse,
                 queryRowLimit
         );
-        HttpErrorCallback error = response.getErrorCallback(druidQuery);
-        FailureCallback failure = response.getFailureCallback(druidQuery);
+        HttpErrorCallback error = response.getErrorCallback(weightEvaluationQuery);
+        FailureCallback failure = response.getFailureCallback(weightEvaluationQuery);
 
         SuccessCallback cachingSuccessCallback = buildCacheSuccessCallback(
                 classicCallback,
                 querySignedCacheService,
-                druidQuery,
+                weightEvaluationQuery,
                 weightCheckResponse
         );
         // No possible cache hit, so just run the query and save to cache
@@ -111,7 +111,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
 
 
         try {
-            String cacheResponse = querySignedCacheService.readCache(context, druidQuery);
+            String cacheResponse = querySignedCacheService.readCache(context, weightEvaluationQuery);
             // There is a cache hit, so no more cache interactions are necessary.
 
             if (cacheResponse != null) {
@@ -135,7 +135,7 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
      *
      * @param successCallback  The weight check success callback
      * @param querySignedCacheService The service for cache support
-     * @param druidQuery  The query being processed
+     * @param weightCheckQuery  The weight check query being processed
      * @param response  The response handler
      *
      * @return The callback handler for the weight request
@@ -143,14 +143,14 @@ public class CacheWeightCheckRequestHandler extends WeightCheckRequestHandler {
     protected SuccessCallback buildCacheSuccessCallback(
             SuccessCallback successCallback,
             QuerySignedCacheService querySignedCacheService,
-            DruidAggregationQuery druidQuery,
+            DruidAggregationQuery weightCheckQuery,
             ResponseProcessor response
     ) {
         return jsonResult -> {
             // send the response to the user before waiting to cache
             successCallback.invoke(jsonResult);
             try {
-                querySignedCacheService.writeCache(response, jsonResult, druidQuery);
+                querySignedCacheService.writeCache(response, jsonResult, weightCheckQuery);
             } catch (JsonProcessingException e) {
                 // Warn on cache write exception only
                 LOG.warn(String.format("Caching writing exception. %s", e.getMessage()), e);
