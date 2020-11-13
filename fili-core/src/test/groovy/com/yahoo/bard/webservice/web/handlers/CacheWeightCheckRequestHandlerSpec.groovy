@@ -132,6 +132,8 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         1 * queryWeightUtil.skipWeightCheckQuery(groupByQuery) >> false
         1 * queryWeightUtil.getQueryWeightThreshold(DAY) >> 5
         1 * webService.postDruidQuery(context, success, null, null, weightQuery)
+        1 * response.getErrorCallback(weightQuery)
+        1 * response.getFailureCallback(weightQuery)
         0 * next.handleRequest(_)
 
         and:
@@ -167,6 +169,8 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         1 * queryWeightUtil.skipWeightCheckQuery(groupByQuery) >> false
         1 * queryWeightUtil.getQueryWeightThreshold(DAY) >> 5
         1 * webService.postDruidQuery(context, success, null, null, weightQuery)
+        1 * response.getErrorCallback(weightQuery)
+        1 * response.getFailureCallback(weightQuery)
         0 * next.handleRequest(_)
 
         and:
@@ -203,7 +207,7 @@ class CacheWeightCheckRequestHandlerSpec extends Specification {
         then: "The request is marked as processed"
         requestProcessed
 
-        and: "The count of fact query cache hit is incremented by 1"
+        and: "The count of fact query cache hit is not incremented by 1"
         bardQueryInfo.queryCounter.get(BardQueryInfo.FACT_QUERY_CACHE_HIT).get() == 0
     }
 }
