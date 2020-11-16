@@ -98,6 +98,7 @@ class UtilsSpec extends Specification {
         then:
         mapper.writeValueAsString(actualObj) == result
     }
+
     def "Canonicalization of object with context preserved with recursion"() {
         setup:
         String jsonString = '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'
@@ -109,6 +110,7 @@ class UtilsSpec extends Specification {
         then:
         mapper.writeValueAsString(actualObj) == result
     }
+
     def "Canonicalization of object without recursion and context not preserved"() {
         setup:
         String jsonString = '{"k1":"v1","context":"v2"}'
@@ -120,6 +122,7 @@ class UtilsSpec extends Specification {
         then:
         mapper.writeValueAsString(actualObj) == result
     }
+
     def "Canonicalization of object with recursion and context not preserved"() {
         setup:
         String jsonString = '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'
@@ -128,6 +131,54 @@ class UtilsSpec extends Specification {
         JsonNode actualObj = mapper.readTree(jsonString)
         when:
         Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+
+    def "Canonicalization of array node"() {
+        setup:
+        String jsonString = '[{"d":"z"},{"b":"y"},{"a":"x"},{"c":"s"}]'
+        String result = '[{"d":"z"},{"b":"y"},{"a":"x"},{"c":"s"}]'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+
+    def "Canonicalization of array nodes with nested object nodes"() {
+        setup:
+        String jsonString = '[{"p":"y"},{"q":"x"},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'
+        String result = '[{"p":"y"},{"q":"x"},{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}]'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+
+    def "Canonicalization of array node with nested object nodes and array nodes"() {
+        setup:
+        String jsonString = '[{"p":"y"},{"q":[{"d":"v3","b":"v2","context":"val"}]},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'
+        String result = '[{"p":"y"},{"q":[{"b":"v2","context":{},"d":"v3"}]},{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}]'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, false)
+        then:
+        mapper.writeValueAsString(actualObj) == result
+    }
+
+    def "Canonicalization of array node with nested object nodes and array nodes with context preserved"() {
+        setup:
+        String jsonString = '[{"p":"y"},{"q":[{"d":"v3","b":"v2","context":"val"}]},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'
+        String result = '[{"p":"y"},{"q":[{"b":"v2","context":"val","d":"v3"}]},{"a":"v1","obj":{"b":"v2","context":"val","d":"v3"}}]'
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+        when:
+        Utils.canonicalize(actualObj, mapper, true)
         then:
         mapper.writeValueAsString(actualObj) == result
     }

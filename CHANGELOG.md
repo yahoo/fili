@@ -71,6 +71,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add canonicalization of ArrayNode in cache key](https://github.com/yahoo/fili/pull/1112)
+   * Added parsing and canonicalization of ArrayNodes in cache key generation.
+   
 - [Add withLogicalMetricInfo to MetricInstance class](https://github.com/yahoo/fili/pull/1105)
    * Supporting method added to `MetricInstance` to replace `LogicalMetricInfo`.
 
