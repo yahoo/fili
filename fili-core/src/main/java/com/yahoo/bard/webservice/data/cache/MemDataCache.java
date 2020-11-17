@@ -140,7 +140,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             // An exception will be thrown by the memcached client.
             return client.set(key, expirationInSeconds, value) != null;
         } catch (Exception e) {
-            //mark the cache put failure
+            //mark and log the cache put failure
             CACHE_SET_FAILURES.mark(1);
             RequestLog.record(new BardCacheInfo(
                     key,

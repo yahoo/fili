@@ -151,7 +151,7 @@ public class QuerySignedCacheService implements CacheService {
                     );
                 }
             } catch (Exception e) {
-                //mark the cache put failure
+                //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 assert valueString != null;
                 RequestLog.record(new BardCacheInfo(
