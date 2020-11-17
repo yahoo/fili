@@ -6,15 +6,20 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DAT
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -22,7 +27,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.MessageDigest;
+import java.util.Locale;
+
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * A response processor which caches the results if appropriate after completing a query.
@@ -31,6 +40,8 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheV2ResponseProcessor.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     private final long maxDruidResponseLengthToCache = SYSTEM_CONFIG.getLongProperty(
             SYSTEM_CONFIG.getPackageVariableName(
@@ -105,6 +116,13 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                     );
                 }
             } catch (Exception e) {
+                //mark the cache put failure
+                CACHE_SET_FAILURES.mark(1);
+                assert valueString != null;
+                RequestLog.record(new BardCacheInfo(
+                        cacheKey,
+                        getMD5Cksum(cacheKey),
+                        valueString.length()));
                 LOG.warn(
                         "Unable to cache {}value of size: {}",
                         valueString == null ? "null " : "",
@@ -127,5 +145,29 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
         SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(getResponseContext());
 
         return missingIntervals.isEmpty() && volatileIntervals.isEmpty();
+    }
+
+    /**
+     * Generate the Checksum of cacheKey using MD5 algorithm.
+     * @param cacheKey cache key
+     *
+     * @return String representation of the Cksum
+     */
+    public static String getMD5Cksum(String cacheKey) {
+        String result = null;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hash = digest.digest(cacheKey.getBytes("UTF-8"));
+            return bytesToHex(hash); // make it readable
+        } catch (Exception ex) {
+            LOG.warn("failed to generate cksum");
+            ex.printStackTrace();
+        }
+        return result;
+    }
+
+    public static String  bytesToHex(byte[] hash) {
+        return DatatypeConverter.printHexBinary(hash)
+                .toLowerCase(Locale.ENGLISH);
     }
 }

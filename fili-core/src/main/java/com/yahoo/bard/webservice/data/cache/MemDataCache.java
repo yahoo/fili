@@ -4,9 +4,16 @@ package com.yahoo.bard.webservice.data.cache;
 
 import static net.spy.memcached.DefaultConnectionFactory.DEFAULT_OPERATION_TIMEOUT;
 
+import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -38,6 +45,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     );
 
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
@@ -131,6 +140,13 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             // An exception will be thrown by the memcached client.
             return client.set(key, expirationInSeconds, value) != null;
         } catch (Exception e) {
+            //mark the cache put failure
+            CACHE_SET_FAILURES.mark(1);
+            RequestLog.record(new BardCacheInfo(
+                    key,
+                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    value.toString().length()
+            ));
             LOG.warn("set failed {} {}", key, e.toString());
             throw new IllegalStateException(e);
         }

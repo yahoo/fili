@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
@@ -22,6 +23,7 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
+import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,6 +55,7 @@ public class QuerySignedCacheService implements CacheService {
     public static final Meter CACHE_POTENTIAL_HITS = REGISTRY.meter("queries.meter.cache.potential_hits");
     public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
     public static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
+    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     TupleDataCache<String, Long, String> dataCache;
     QuerySigningService<Long> querySigningService;
@@ -148,6 +151,13 @@ public class QuerySignedCacheService implements CacheService {
                     );
                 }
             } catch (Exception e) {
+                //mark the cache put failure
+                CACHE_SET_FAILURES.mark(1);
+                assert valueString != null;
+                RequestLog.record(new BardCacheInfo(
+                        cacheKey,
+                        CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                        valueString.length()));
                 LOG.warn(
                         "Unable to cache {}value of size: {}",
                         valueString == null ? "null " : "",

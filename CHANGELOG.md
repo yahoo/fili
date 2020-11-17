@@ -74,6 +74,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add logging for cache put failures](https://github.com/yahoo/fili/pull/??)
+   * Added `BardCacheInfo` logging for cache put failures.
+   
 - [Add withLogicalMetricInfo to MetricInstance class](https://github.com/yahoo/fili/pull/1105)
    * Supporting method added to `MetricInstance` to replace `LogicalMetricInfo`.
 
