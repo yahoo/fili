@@ -279,8 +279,14 @@ public class Utils {
      * @param node  The root of the tree of json nodes.
      * @param mapper  The object mapper that creates and empty node.
      * @param preserveContext  Boolean indicating whether context should be omitted.
+     * @param arrayWithNameObjects Boolean indicating whether all objects within the ArrayNode have a name field.
      */
-    public static void canonicalizeArray(JsonNode node, ObjectMapper mapper, boolean preserveContext, boolean arrayWithNameObjects) {
+    public static void canonicalizeArray(
+            JsonNode node,
+            ObjectMapper mapper,
+            boolean preserveContext,
+            boolean arrayWithNameObjects
+    ) {
         ArrayNode arrayNode = ((ArrayNode) node);
 
         Iterator<JsonNode> iterator = arrayNode.elements();
@@ -310,9 +316,8 @@ public class Utils {
                     try {
                         valA = mapper.writeValueAsString(a.get(KEY_NAME));
                         valB = mapper.writeValueAsString(b.get(KEY_NAME));
-                    }
-                    catch (JsonProcessingException e) {
-                        LOG.warn(String.format("Error while processing json array node for canonicalizing cache key. %s", e.getMessage()), e);
+                    } catch (JsonProcessingException e) {
+                        LOG.warn(String.format("Error processing json for cache key. %s", e.getMessage()), e);
                     }
                     return valA.compareTo(valB);
                 }
