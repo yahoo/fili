@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -31,6 +32,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -189,10 +193,11 @@ public class Utils {
      * @param preserveContext  Boolean indicating whether context should be omitted.
      */
     public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+        boolean arrayWithNameObjects = true;
         if (node.isObject()) {
             canonicalizeObject(node, mapper, preserveContext);
         } else if (node.isArray()) {
-            canonicalizeArray(node, mapper, preserveContext);
+            canonicalizeArray(node, mapper, preserveContext, arrayWithNameObjects);
         }
     }
 
@@ -275,7 +280,7 @@ public class Utils {
      * @param mapper  The object mapper that creates and empty node.
      * @param preserveContext  Boolean indicating whether context should be omitted.
      */
-    public static void canonicalizeArray(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+    public static void canonicalizeArray(JsonNode node, ObjectMapper mapper, boolean preserveContext, boolean arrayWithNameObjects) {
         ArrayNode arrayNode = ((ArrayNode) node);
 
         Iterator<JsonNode> iterator = arrayNode.elements();
@@ -284,13 +289,43 @@ public class Utils {
         while (iterator.hasNext()) {
             JsonNode entry = iterator.next();
             fieldSet.add(entry);
+            if (entry.isObject() && entry.get("name") == null) {
+                arrayWithNameObjects = false;
+            }
             // canonicalize all child nodes
             canonicalize(entry, mapper, preserveContext);
         }
-        // remove the existing entries
-        arrayNode.removeAll();
-
-        // replace the entries in order
-        arrayNode.addAll(fieldSet);
+        // if all objects in the array contain name field, then order on its value
+        if (arrayWithNameObjects) {
+            List<JsonNode> arrayValues = new ArrayList<>();
+            for (int i = 0; i < arrayNode.size(); i++) {
+                arrayValues.add(arrayNode.get(i));
+            }
+            Collections.sort(arrayValues, new Comparator<JsonNode>() {
+                private static final String KEY_NAME = "name";
+                @Override
+                public int compare(JsonNode a, JsonNode b) {
+                    String valA = new String();
+                    String valB = new String();
+                    try {
+                        valA = mapper.writeValueAsString(a.get(KEY_NAME));
+                        valB = mapper.writeValueAsString(b.get(KEY_NAME));
+                    }
+                    catch (JsonProcessingException e) {
+                        LOG.warn(String.format("Error while processing json array node for canonicalizing cache key. %s", e.getMessage()), e);
+                    }
+                    return valA.compareTo(valB);
+                }
+            });
+            // remove the existing entries
+            arrayNode.removeAll();
+            // replace the entries in order
+            arrayValues.stream().forEach(val -> arrayNode.add(val));
+        } else {
+            // remove the existing entries
+            arrayNode.removeAll();
+            // replace the entries in order
+            arrayNode.addAll(fieldSet);
+        }
     }
 }
