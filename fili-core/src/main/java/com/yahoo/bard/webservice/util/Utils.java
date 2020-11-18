@@ -69,7 +69,7 @@ public class Utils {
      *
      * @param set  Input set
      * @param <T>  Input set type
-     * @param type sub class
+     * @param type  sub class
      * @param <K>  sub class type
      * @return ordered subset of objects that share a common sub class
      */
@@ -87,8 +87,8 @@ public class Utils {
      * LinkedHashSet&lt;String&gt; stooges = Utils.asLinkedHashSet("Larry", "Moe", "Curly");
      * </pre>
      *
-     * @param <E> The element type for the linked hash set
-     * @param e   The array from which the LinkedHashSet will be built
+     * @param <E>  The element type for the linked hash set
+     * @param e  The array from which the LinkedHashSet will be built
      * @return a LinkedHashSet view of the specified array
      */
     @SafeVarargs
@@ -99,7 +99,7 @@ public class Utils {
     /**
      * Create parent directories if they don't exist in a given file path.
      *
-     * @param path The pathname
+     * @param path  The pathname
      */
     public static void createParentDirectories(String path) {
         File targetFile = new File(path);
@@ -112,7 +112,7 @@ public class Utils {
     /**
      * Delete files or directories in the specified path.
      *
-     * @param path The pathname
+     * @param path  The pathname
      */
     public static void deleteFiles(String path) {
         Path file = Paths.get(path);
@@ -133,8 +133,8 @@ public class Utils {
     /**
      * Helper method to throw an exception when a result is expected as a return value (e.g. in a ternary operator)
      *
-     * @param <T>       The type of exception being returned
-     * @param exception The exception to be thrown
+     * @param <T>  The type of exception being returned
+     * @param exception  The exception to be thrown
      * @return is only used for type inference. No object is actually ever returned. An exception is always being thrown
      * instead
      */
@@ -145,7 +145,7 @@ public class Utils {
     /**
      * Helper method to return request headers as a map of the same type with its keys lower cased.
      *
-     * @param headers The request headers.
+     * @param headers  The request headers.
      * @return The headers with their names lower cased.
      */
     public static MultivaluedMap<String, String> headersToLowerCase(MultivaluedMap<String, String> headers) {
@@ -163,10 +163,10 @@ public class Utils {
      * Given a field name and a tree of json nodes, empty the contents of all the json nodes matching the field name.
      * This method is recursive.
      *
-     * @param node      The root of the tree of json nodes.
-     * @param fieldName The name of the node to be omitted.
-     * @param mapper    The object mapper that creates and empty node.
-     * @deprecated Should avoid this method and instead use {@link #canonicalize(JsonNode, ObjectMapper, boolean)}
+     * @param node  The root of the tree of json nodes.
+     * @param fieldName  The name of the node to be omitted.
+     * @param mapper  The object mapper that creates and empty node.
+     * @deprecated  Should avoid this method and instead use {@link #canonicalize(JsonNode, ObjectMapper, boolean)}
      * which preserves JSON object ordering that guarantees consistent hash values.
      */
     @Deprecated
@@ -184,9 +184,9 @@ public class Utils {
      * Given a JsonNode, order the ObjectNodes and ArrayNodes recursively and replace context blocks with empty nodes.
      * <p>
      *
-     * @param node            The root of the tree of json nodes.
-     * @param mapper          The object mapper that creates and empty node.
-     * @param preserveContext Boolean indicating whether context should be omitted.
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
      */
     public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
         if (node.isObject()) {
@@ -199,9 +199,9 @@ public class Utils {
     /**
      * Find the minimum value between two comparable objects.
      *
-     * @param one Item 1
-     * @param two Item 2
-     * @param <T> Type of object to compare
+     * @param one  Item 1
+     * @param two  Item 2
+     * @param <T>  Type of object to compare
      * @return the minimum of the two objects
      */
     @SuppressWarnings("unchecked")
@@ -214,10 +214,10 @@ public class Utils {
      * and the specified right value.
      *
      * @param pair  Immutable Pair instance
-     * @param right The right value, may be null
-     * @param <T>   Left type of the pair
-     * @param <U>   Right type of the pair
-     * @param <V>   The right value to have new Immutable Pair
+     * @param right  The right value, may be null
+     * @param <T>  Left type of the pair
+     * @param <U>  Right type of the pair
+     * @param <V>  The right value to have new Immutable Pair
      * @return New instance of Immutable Pair
      */
     public static <T, U, V> ImmutablePair<T, V> withRight(ImmutablePair<T, U> pair, V right) {
@@ -227,8 +227,8 @@ public class Utils {
     /**
      * Create metrics from instance descriptors and store in the metric dictionary.
      *
-     * @param metricDictionary The dictionary to store metrics in
-     * @param metrics          The list of metric descriptors
+     * @param metricDictionary  The dictionary to store metrics in
+     * @param metrics  The list of metric descriptors
      */
     public static void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
         metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
@@ -240,9 +240,9 @@ public class Utils {
      * <p>
      * This method is recursive.
      *
-     * @param node            The root of the tree of json nodes.
-     * @param mapper          The object mapper that creates and empty node.
-     * @param preserveContext Boolean indicating whether context should be omitted.
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
      */
     public static void canonicalizeObject(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
         ObjectNode objectNode = ((ObjectNode) node);
@@ -271,9 +271,9 @@ public class Utils {
      * <p>
      * This method is recursive.
      *
-     * @param node            The root of the tree of json nodes.
-     * @param mapper          The object mapper that creates and empty node.
-     * @param preserveContext Boolean indicating whether context should be omitted.
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
      */
     public static void canonicalizeArray(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
         ArrayNode arrayNode = ((ArrayNode) node);
