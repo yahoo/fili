@@ -165,7 +165,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
     }
 
     /**
-     * Converts bytes array to the hex String
+     * Converts bytes array to the hex String.
      * @param hash array of bytes to be converted in Hex
      *
      * @return String representation of the checksum
