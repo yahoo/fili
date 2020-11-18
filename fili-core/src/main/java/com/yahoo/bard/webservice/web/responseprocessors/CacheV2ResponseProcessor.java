@@ -154,18 +154,22 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
      * @return String representation of the Cksum
      */
     public static String getMD5Cksum(String cacheKey) {
-        String result = null;
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");
             byte[] hash = digest.digest(cacheKey.getBytes("UTF-8"));
             return bytesToHex(hash); // make it readable
-        } catch (Exception ex) {
-            LOG.warn("failed to generate cksum");
-            ex.printStackTrace();
+        } catch (Exception e) {
+            LOG.warn("Failed to generate checksum for cache key");
+            throw new RuntimeException(e);
         }
-        return result;
     }
 
+    /**
+     * Converts bytes array to the hex String
+     * @param hash array of bytes to be converted in Hex
+     *
+     * @return String representation of the checksum
+     */
     public static String  bytesToHex(byte[] hash) {
         return DatatypeConverter.printHexBinary(hash)
                 .toLowerCase(Locale.ENGLISH);
