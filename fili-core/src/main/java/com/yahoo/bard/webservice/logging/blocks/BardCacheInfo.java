@@ -15,17 +15,20 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 public class BardCacheInfo implements LogInfo {
     String cacheKey;
     String cacheKeyCksum;
+    int cacheKeyLength;
     int cacheValLength;
 
     /**
      * Constructor.
      *
      * @param cacheKey  The cache Key
-     * @param cacheKeyCksum  The cache Key MD5 checksum
+     * @param cacheKeyLength The Length of the cache key
+     * @param cacheKeyCksum  The cache Key MD5 checksum value
      * @param cacheValLength  The cache value length
      */
-    public BardCacheInfo(String cacheKey, String cacheKeyCksum, int cacheValLength) {
+    public BardCacheInfo(String cacheKey, int cacheKeyLength, String cacheKeyCksum, int cacheValLength) {
         this.cacheKey = cacheKey;
+        this.cacheKeyLength = cacheKeyLength;
         this.cacheKeyCksum = cacheKeyCksum;
         this.cacheValLength = cacheValLength;
     }

@@ -153,11 +153,12 @@ public class QuerySignedCacheService implements CacheService {
             } catch (Exception e) {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
-                assert valueString != null;
                 RequestLog.record(new BardCacheInfo(
                         cacheKey,
+                        cacheKey.length(),
                         CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
-                        valueString.length()));
+                        valueString != null ? valueString.length() : 0
+                ));
                 LOG.warn(
                         "Unable to cache {}value of size: {}",
                         valueString == null ? "null " : "",

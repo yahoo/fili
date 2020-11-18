@@ -24,6 +24,7 @@ import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -61,6 +62,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final int EXPIRATION_DEFAULT_VALUE = 3600;
 
     final private MemcachedClient client;
+    private static final @NotNull String WAIT_FOR_FUTURE =
+            SYSTEM_CONFIG.getPackageVariableName("wait_for_future_from_memcached");
 
     /**
      * Constructor using a default Memcached Client.
@@ -138,15 +141,23 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         try {
             // Omitting null checking for key since it should be rare.
             // An exception will be thrown by the memcached client.
-            return client.set(key, expirationInSeconds, value) != null;
+            if (SYSTEM_CONFIG.getBooleanProperty(WAIT_FOR_FUTURE, false)) {
+                return client.set(key, expirationInSeconds, value).get();
+            } else {
+                return client.set(key, expirationInSeconds, value) != null;
+            }
         } catch (Exception e) {
-            //mark and log the cache put failure
-            CACHE_SET_FAILURES.mark(1);
-            RequestLog.record(new BardCacheInfo(
-                    key,
-                    CacheV2ResponseProcessor.getMD5Cksum(key),
-                    value.toString().length()
-            ));
+            Throwable exception = e.getClass() == RuntimeException.class ? e.getCause() : e;
+            if (exception instanceof TimeoutException) {
+                //mark and log the timeout errors on cache set
+                CACHE_SET_FAILURES.mark(1);
+                RequestLog.record(new BardCacheInfo(
+                        key,
+                        key.length(),
+                        CacheV2ResponseProcessor.getMD5Cksum(key),
+                        value.toString().length()
+                ));
+            }
             LOG.warn("set failed {} {}", key, e.toString());
             throw new IllegalStateException(e);
         }
