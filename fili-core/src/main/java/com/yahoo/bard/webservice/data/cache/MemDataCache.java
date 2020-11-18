@@ -152,7 +152,6 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                 //mark and log the timeout errors on cache set
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
-                        key,
                         key.length(),
                         CacheV2ResponseProcessor.getMD5Cksum(key),
                         value.toString().length()

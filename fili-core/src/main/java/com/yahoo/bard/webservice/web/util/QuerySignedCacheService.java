@@ -154,7 +154,6 @@ public class QuerySignedCacheService implements CacheService {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
-                        cacheKey,
                         cacheKey.length(),
                         CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
                         valueString != null ? valueString.length() : 0

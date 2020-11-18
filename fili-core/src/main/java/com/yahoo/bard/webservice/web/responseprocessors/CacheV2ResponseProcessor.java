@@ -119,7 +119,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
-                        cacheKey,
                         cacheKey.length(),
                         getMD5Cksum(cacheKey),
                         valueString != null ? valueString.length() : 0
