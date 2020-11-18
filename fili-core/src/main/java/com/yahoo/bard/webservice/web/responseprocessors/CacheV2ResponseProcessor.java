@@ -27,7 +27,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import javax.validation.constraints.NotNull;
@@ -158,9 +160,18 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
             MessageDigest digest = MessageDigest.getInstance("MD5");
             byte[] hash = digest.digest(cacheKey.getBytes("UTF-8"));
             return bytesToHex(hash); // make it readable
-        } catch (Exception e) {
-            LOG.warn("Failed to generate checksum for cache key");
-            throw new RuntimeException(e);
+        } catch (NoSuchAlgorithmException ex) {
+            String msg = "Unable to initialize hash generator with default MD5 algorithm ";
+            LOG.warn(msg, ex);
+            throw new RuntimeException(msg, ex);
+        } catch (UnsupportedEncodingException x) {
+            String msg = "Unable to initialize checksum byte array ";
+            LOG.warn(msg, x);
+            throw new RuntimeException(msg, x);
+        } catch (Exception exception) {
+            String msg = "Failed to generate checksum for cache key";
+            LOG.warn(msg, exception);
+            throw new RuntimeException(msg, exception);
         }
     }
 
