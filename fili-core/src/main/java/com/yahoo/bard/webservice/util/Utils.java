@@ -75,6 +75,7 @@ public class Utils {
      * @param <T>  Input set type
      * @param type  sub class
      * @param <K>  sub class type
+     *
      * @return ordered subset of objects that share a common sub class
      */
     public static <T, K extends T> LinkedHashSet<K> getSubsetByType(Collection<T> set, Class<K> type) {
@@ -93,6 +94,7 @@ public class Utils {
      *
      * @param <E>  The element type for the linked hash set
      * @param e  The array from which the LinkedHashSet will be built
+     *
      * @return a LinkedHashSet view of the specified array
      */
     @SafeVarargs
@@ -139,6 +141,7 @@ public class Utils {
      *
      * @param <T>  The type of exception being returned
      * @param exception  The exception to be thrown
+     *
      * @return is only used for type inference. No object is actually ever returned. An exception is always being thrown
      * instead
      */
@@ -207,6 +210,7 @@ public class Utils {
      * @param one  Item 1
      * @param two  Item 2
      * @param <T>  Type of object to compare
+     *
      * @return the minimum of the two objects
      */
     @SuppressWarnings("unchecked")
@@ -223,6 +227,7 @@ public class Utils {
      * @param <T>  Left type of the pair
      * @param <U>  Right type of the pair
      * @param <V>  The right value to have new Immutable Pair
+     *
      * @return New instance of Immutable Pair
      */
     public static <T, U, V> ImmutablePair<T, V> withRight(ImmutablePair<T, U> pair, V right) {
