@@ -77,6 +77,9 @@ Current
 - [Add canonicalization of ArrayNode in cache key](https://github.com/yahoo/fili/pull/1112)
    * Added parsing and canonicalization of ArrayNodes in cache key generation.
    
+- [Add logging for cache put failures](https://github.com/yahoo/fili/pull/1114)
+   * Added `BardCacheInfo` logging for cache put failures.
+   
 - [Add withLogicalMetricInfo to MetricInstance class](https://github.com/yahoo/fili/pull/1105)
    * Supporting method added to `MetricInstance` to replace `LogicalMetricInfo`.
 
