@@ -25,6 +25,7 @@ class MemDataCacheSpec extends Specification {
     void cleanup() {
         SYSTEM_CONFIG.clearProperty(MemDataCache.OPERATION_TIMEOUT_CONFIG_KEY)
         SYSTEM_CONFIG.clearProperty(MemDataCache.EXPIRATION_KEY)
+        SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE)
     }
 
     def "Constructor has correct expiration and timeout"() {

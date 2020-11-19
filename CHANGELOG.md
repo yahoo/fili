@@ -77,7 +77,6 @@ Current
 - [Add logging for cache miss ,hit and potential hits](https://github.com/yahoo/fili/pull/1115)
    * Utilize `BardCacheInfo` to add logging for cache hit and miss.
    * Re-sequence in `CacheV2ResponseProcessor' to send response back to the user first and then set cache.
-   * Fixed logging of `DataRequest` groupbyDimensions and combinedDimensions to also include all dimensions from TDQ.
    
 - [Add canonicalization of ArrayNode in cache key](https://github.com/yahoo/fili/pull/1112)
    * Added parsing and canonicalization of ArrayNodes in cache key generation.
