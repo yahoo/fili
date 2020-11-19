@@ -224,4 +224,16 @@ class CacheV2ResponseProcessorSpec extends Specification {
         1 * next.getErrorCallback(groupByQuery) >> hec
         1 * next.getFailureCallback(groupByQuery) >> fc
     }
+
+    def "Cache key cksum is generated as expected"() {
+        expect:
+        CacheV2ResponseProcessor.getMD5Cksum(cacheKey) == "8c3c726f9f4cc3dd99d48a717addb033"
+    }
+    def "RuntimeException is thrown when null key is passed"() {
+        when:
+        CacheV2ResponseProcessor.getMD5Cksum(null)
+
+        then:
+        thrown RuntimeException
+    }
 }

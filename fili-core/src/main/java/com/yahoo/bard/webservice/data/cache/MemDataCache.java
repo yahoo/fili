@@ -4,9 +4,16 @@ package com.yahoo.bard.webservice.data.cache;
 
 import static net.spy.memcached.DefaultConnectionFactory.DEFAULT_OPERATION_TIMEOUT;
 
+import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -17,6 +24,7 @@ import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +46,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     );
 
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
@@ -52,6 +62,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final int EXPIRATION_DEFAULT_VALUE = 3600;
 
     final private MemcachedClient client;
+    private static final @NotNull String WAIT_FOR_FUTURE =
+            SYSTEM_CONFIG.getPackageVariableName("wait_for_future_from_memcached");
 
     /**
      * Constructor using a default Memcached Client.
@@ -129,8 +141,22 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         try {
             // Omitting null checking for key since it should be rare.
             // An exception will be thrown by the memcached client.
-            return client.set(key, expirationInSeconds, value) != null;
+            if (SYSTEM_CONFIG.getBooleanProperty(WAIT_FOR_FUTURE, false)) {
+                return client.set(key, expirationInSeconds, value).get();
+            } else {
+                return client.set(key, expirationInSeconds, value) != null;
+            }
         } catch (Exception e) {
+            Throwable exception = e.getClass() == RuntimeException.class ? e.getCause() : e;
+            if (exception instanceof TimeoutException) {
+                //mark and log the timeout errors on cache set
+                CACHE_SET_FAILURES.mark(1);
+                RequestLog.record(new BardCacheInfo(
+                        key.length(),
+                        CacheV2ResponseProcessor.getMD5Cksum(key),
+                        value.toString().length()
+                ));
+            }
             LOG.warn("set failed {} {}", key, e.toString());
             throw new IllegalStateException(e);
         }
