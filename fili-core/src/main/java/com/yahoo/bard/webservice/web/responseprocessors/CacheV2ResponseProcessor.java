@@ -58,6 +58,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
     private final @NotNull QuerySigningService<Long> querySigningService;
 
     protected final ObjectWriter writer;
+    public static final String LOG_CACHE_SET_FAILURES = "cacheSetFailure";
 
     /**
      * Constructor.
@@ -99,6 +100,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
+        next.processResponse(json, druidQuery, metadata);
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
             try {
@@ -121,6 +123,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
+                        LOG_CACHE_SET_FAILURES,
                         cacheKey.length(),
                         getMD5Cksum(cacheKey),
                         valueString != null ? valueString.length() : 0
@@ -133,8 +136,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 );
             }
         }
-
-        next.processResponse(json, druidQuery, metadata);
     }
 
     /**
