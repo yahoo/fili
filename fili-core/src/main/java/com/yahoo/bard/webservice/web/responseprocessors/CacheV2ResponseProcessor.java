@@ -100,6 +100,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
+        next.processResponse(json, druidQuery, metadata);
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
             try {
@@ -135,8 +136,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 );
             }
         }
-        
-        next.processResponse(json, druidQuery, metadata);
     }
 
     /**
