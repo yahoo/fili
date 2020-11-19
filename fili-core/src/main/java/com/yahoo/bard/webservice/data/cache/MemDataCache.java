@@ -48,6 +48,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
+    public static final String LOG_CACHE_SET_TIMEOUT = "cacheSetTimedOut";
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
@@ -152,6 +153,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                 //mark and log the timeout errors on cache set
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
+                        LOG_CACHE_SET_TIMEOUT,
                         key.length(),
                         CacheV2ResponseProcessor.getMD5Cksum(key),
                         value.toString().length()

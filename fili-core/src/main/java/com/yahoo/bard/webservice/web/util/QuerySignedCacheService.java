@@ -56,6 +56,10 @@ public class QuerySignedCacheService implements CacheService {
     public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
     public static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
     public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
+    public static final String LOG_CACHE_HIT = "cacheHit";
+    public static final String LOG_CACHE_MISS = "cacheMiss";
+    public static final String LOG_CACHE_POTENTIAL_HIT = "cachePotentialHit";
+    public static final String LOG_CACHE_SET_FAILURE = "cacheSetFailure";
 
     TupleDataCache<String, Long, String> dataCache;
     QuerySigningService<Long> querySigningService;
@@ -104,6 +108,12 @@ public class QuerySignedCacheService implements CacheService {
                         RequestLog.startTiming(RESPONSE_WORKFLOW_TIMER);
                     }
                     CACHE_HITS.mark(1);
+                    RequestLog.record(new BardCacheInfo(
+                            LOG_CACHE_HIT,
+                            cacheEntry.getKey().length(),
+                            CacheV2ResponseProcessor.getMD5Cksum(cacheEntry.getKey()),
+                            cacheEntry.getValue().length()
+                    ));
                     BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                     return cacheEntry.getValue();
 
@@ -114,9 +124,21 @@ public class QuerySignedCacheService implements CacheService {
                 LOG.debug("Cache entry present but invalid for query with id: {}", RequestLog.getId());
                 CACHE_POTENTIAL_HITS.mark(1);
                 CACHE_MISSES.mark(1);
+                RequestLog.record(new BardCacheInfo(
+                        LOG_CACHE_POTENTIAL_HIT,
+                        cacheEntry.getKey().length(),
+                        CacheV2ResponseProcessor.getMD5Cksum(cacheEntry.getKey()),
+                        0
+                ));
             }
         } else {
             CACHE_MISSES.mark(1);
+            RequestLog.record(new BardCacheInfo(
+                    LOG_CACHE_MISS,
+                    getKey(druidQuery).length(),
+                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                    0
+            ));
         }
         return null;
     }
@@ -154,6 +176,7 @@ public class QuerySignedCacheService implements CacheService {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 RequestLog.record(new BardCacheInfo(
+                        LOG_CACHE_SET_FAILURE,
                         cacheKey.length(),
                         CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
                         valueString != null ? valueString.length() : 0
