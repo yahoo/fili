@@ -5,9 +5,13 @@ package com.yahoo.bard.webservice.data.cache
 
 import static com.yahoo.bard.webservice.data.cache.MemDataCache.SYSTEM_CONFIG
 
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo
+
 import net.spy.memcached.MemcachedClient
 import net.spy.memcached.internal.OperationFuture
 import spock.lang.Specification
+
+import java.util.concurrent.TimeoutException
 
 class MemDataCacheSpec extends Specification {
     MemDataCache memDataCache;
@@ -44,5 +48,43 @@ class MemDataCacheSpec extends Specification {
         1 * client.set("key", 1234, "value") >> future
         0 * future.get()
         result
+    }
+
+    def "when #waitForFuture is set to false , It doesn't wait for future anymore"() {
+
+        SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, waitForFuture as String)
+        OperationFuture future = Mock(OperationFuture)
+        MemcachedClient client = Mock(MemcachedClient)
+        memDataCache = new MemDataCache(client);
+        when:
+        boolean result = memDataCache.setInSeconds("key", "value",1000)
+
+        then: "doesn't block anymore"
+        1 * client.set("key", 1234, "value") >> future
+        0 * future.get()
+        result
+
+        where:
+        waitForFuture << false
+
+    }
+
+    def "when #waitForFuture is set to true , It waits for timeout from future object"() {
+
+        SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, waitForFuture as String)
+        OperationFuture future = Mock(OperationFuture)
+        MemcachedClient client = Mock(MemcachedClient)
+        memDataCache = new MemDataCache(client);
+        when:
+        boolean result = memDataCache.setInSeconds("key", "value",1000)
+
+        then:
+        1 * client.set("key", 1000, "value") >> {throw new TimeoutException()} >> future
+        thrown(IllegalStateException)
+        !result
+
+        where:
+        waitForFuture << true
+
     }
 }
