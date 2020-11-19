@@ -262,7 +262,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         request.getIntervals(),
                         request.getApiFilters().values(),
                         metrics,
-                        dimensions,
+                        request.getAllGroupingDimensions(),
                         druidQuery.getDataSource().getNames(),
                         readCache,
                         request.getFormat().toString()
