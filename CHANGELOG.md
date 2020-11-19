@@ -9,6 +9,9 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Weight Check Query Caching](https://github.com/yahoo/fili/issues/1113)
+    * Caching the weight check query instead of the druid query in `CacheWeightCheckRequestHandler`.
+
 - [Fix: Test failed due to static side effects revealed during Screwdriver migration](https://github.com/yahoo/fili/issues/1109)
 
 - [Fix: Make build work with JAVA_TOOL_OPTIONS](https://github.com/yahoo/fili/pull/1091)
