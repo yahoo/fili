@@ -74,6 +74,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add canonicalization of ArrayNode in cache key](https://github.com/yahoo/fili/pull/1112)
+   * Added parsing and canonicalization of ArrayNodes in cache key generation.
+   
 - [Add logging for cache put failures](https://github.com/yahoo/fili/pull/1114)
    * Added `BardCacheInfo` logging for cache put failures.
    

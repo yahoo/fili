@@ -4,6 +4,9 @@ package com.yahoo.bard.webservice.util
 
 import spock.lang.Specification
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.JsonNode
+
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.stream.Stream
@@ -82,5 +85,32 @@ class UtilsSpec extends Specification {
     def "Reduce operation returns the minimum of a stream in values"() {
         expect:
         Stream.of(1, 2, 3).reduce() { a, b -> Utils.getMinValue(a, b) }.get() == 1
+    }
+
+    def "Canonicalization of #jsonString of #type with #preserveContext returns #result"() {
+        setup:
+        ObjectMapper mapper = new ObjectMapper()
+        JsonNode actualObj = mapper.readTree(jsonString)
+
+        when:
+        Utils.canonicalize(actualObj, mapper, preserveContext)
+
+        then:
+        mapper.writeValueAsString(actualObj) == result
+
+        where:
+        jsonString                                                                                                      | type                                                                                | preserveContext    | result
+        '[{"name":"z"},{"name":"y"},{"name":"x"},{"description":"val","context":"contextVal"}]'                         | "Array node with not all objects having name field and context not preserved"       | false              | '[{"name":"z"},{"name":"y"},{"name":"x"},{"context":{},"description":"val"}]'
+        '[{"name":"z"},{"name":"y"},{"name":"x"},{"name":"s","description":"val","context":"contextVal"}]'              | "Array node with all objects having name field and context not preserved"           | false              | '[{"context":{},"description":"val","name":"s"},{"name":"x"},{"name":"y"},{"name":"z"}]'
+        '[{"name":"z"},{"name":"y"},{"name":"x"},{"description":"val","context":"contextVal"}]'                         | "Array node with not all objects having name field and context preserved"           | true               | '[{"name":"z"},{"name":"y"},{"name":"x"},{"context":"contextVal","description":"val"}]'
+        '[{"name":"z"},{"name":"y"},{"name":"x"},{"name":"s","description":"val","context":"contextVal"}]'              | "Array node with all objects having name field and context preserved"               | true               | '[{"context":"contextVal","description":"val","name":"s"},{"name":"x"},{"name":"y"},{"name":"z"}]'
+        '[{"p":"y"},{"q":[{"d":"v3","b":"v2","context":"val"}]},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'  | "Array node with nested object nodes and array nodes with context preserved"        | true               | '[{"p":"y"},{"q":[{"b":"v2","context":"val","d":"v3"}]},{"a":"v1","obj":{"b":"v2","context":"val","d":"v3"}}]'
+        '[{"p":"y"},{"q":[{"d":"v3","b":"v2","context":"val"}]},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'  | "Array node with nested object nodes and array nodes with context not preserved"    | false              | '[{"p":"y"},{"q":[{"b":"v2","context":{},"d":"v3"}]},{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}]'
+        '[{"p":"y"},{"q":"x"},{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}]'                                    | "Array nodes with nested object nodes without context preserved"                    | false              | '[{"p":"y"},{"q":"x"},{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}]'
+        '[{"d":"z"},{"b":"y"},{"a":"x"},{"c":"s"}]'                                                                     | "Array node without context preserved"                                              | false              | '[{"d":"z"},{"b":"y"},{"a":"x"},{"c":"s"}]'
+        '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'                                                          | "Object node with recursion and context not preserved"                              | false              | '{"a":"v1","obj":{"b":"v2","context":{},"d":"v3"}}'
+        '{"k1":"v1","context":"v2"}'                                                                                    | "Object node without recursion and context not preserved"                           | false              | '{"context":{},"k1":"v1"}'
+        '{"a":"v1","obj":{"d":"v3","b":"v2","context":"val"}}'                                                          | "Object node with context preserved with recursion"                                 | true               | '{"a":"v1","obj":{"b":"v2","context":"val","d":"v3"}}'
+        '{"k1":"v1","context":"v2"}'                                                                                    | "Object with context preserved without recursion"                                   | true               | '{"context":"v2","k1":"v1"}'
     }
 }

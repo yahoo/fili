@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -30,6 +32,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -67,9 +72,9 @@ public class Utils {
      * sub class.
      *
      * @param set  Input set
-     * @param <T> Input set type
+     * @param <T>  Input set type
      * @param type  sub class
-     * @param <K> sub class type
+     * @param <K>  sub class type
      *
      * @return ordered subset of objects that share a common sub class
      */
@@ -148,7 +153,6 @@ public class Utils {
      * Helper method to return request headers as a map of the same type with its keys lower cased.
      *
      * @param headers  The request headers.
-     *
      * @return The headers with their names lower cased.
      */
     public static MultivaluedMap<String, String> headersToLowerCase(MultivaluedMap<String, String> headers) {
@@ -166,10 +170,9 @@ public class Utils {
      * Given a field name and a tree of json nodes, empty the contents of all the json nodes matching the field name.
      * This method is recursive.
      *
-     * @param node The root of the tree of json nodes.
-     * @param fieldName The name of the node to be omitted.
+     * @param node  The root of the tree of json nodes.
+     * @param fieldName  The name of the node to be omitted.
      * @param mapper  The object mapper that creates and empty node.
-     *
      * @deprecated  Should avoid this method and instead use {@link #canonicalize(JsonNode, ObjectMapper, boolean)}
      * which preserves JSON object ordering that guarantees consistent hash values.
      */
@@ -185,36 +188,19 @@ public class Utils {
     }
 
     /**
-     * Given a JsonObjectNode, order the fields and recursively and replace context blocks with empty nodes.
-     *
-     * This method is recursive.
+     * Given a JsonNode, order the ObjectNodes and ArrayNodes recursively and replace context blocks with empty nodes.
+     * <p>
      *
      * @param node  The root of the tree of json nodes.
      * @param mapper  The object mapper that creates and empty node.
      * @param preserveContext  Boolean indicating whether context should be omitted.
      */
     public static void canonicalize(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+        boolean arrayWithNameObjects = true;
         if (node.isObject()) {
-            ObjectNode objectNode = ((ObjectNode) node);
-
-            if (objectNode.has("context") && !preserveContext) {
-                objectNode.replace("context", mapper.createObjectNode());
-            }
-
-            Iterator<Map.Entry<String, JsonNode>> iterator = objectNode.fields();
-            // collect and sort the entries
-            TreeMap<String, JsonNode> fieldMap = new TreeMap<>();
-            while (iterator.hasNext()) {
-                Map.Entry<String, JsonNode> entry = iterator.next();
-                fieldMap.put(entry.getKey(), entry.getValue());
-                // canonicalize all child nodes
-                canonicalize(entry.getValue(), mapper, preserveContext);
-            }
-            // remove the existing entries
-            objectNode.removeAll();
-
-            // replace the entries in sorted order
-            objectNode.setAll(fieldMap);
+            canonicalizeObject(node, mapper, preserveContext);
+        } else if (node.isArray()) {
+            canonicalizeArray(node, mapper, preserveContext, arrayWithNameObjects);
         }
     }
 
@@ -256,5 +242,100 @@ public class Utils {
      */
     public static void addToMetricDictionary(MetricDictionary metricDictionary, List<MetricInstance> metrics) {
         metrics.stream().map(MetricInstance::make).forEach(metricDictionary::add);
+    }
+
+    /**
+     * Given a JsonObjectNode, order the ObjectNode entries on the key recursively and
+     * replace context blocks with empty nodes.
+     * <p>
+     * This method is recursive.
+     *
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
+     */
+    public static void canonicalizeObject(JsonNode node, ObjectMapper mapper, boolean preserveContext) {
+        ObjectNode objectNode = ((ObjectNode) node);
+        if (objectNode.has("context") && !preserveContext) {
+            objectNode.replace("context", mapper.createObjectNode());
+        }
+
+        Iterator<Map.Entry<String, JsonNode>> iterator = objectNode.fields();
+        // collect and sort the entries
+        TreeMap<String, JsonNode> fieldMap = new TreeMap<>();
+        while (iterator.hasNext()) {
+            Map.Entry<String, JsonNode> entry = iterator.next();
+            fieldMap.put(entry.getKey(), entry.getValue());
+            // canonicalize all child nodes
+            canonicalize(entry.getValue(), mapper, preserveContext);
+        }
+        // remove the existing entries
+        objectNode.removeAll();
+
+        // replace the entries in sorted order
+        objectNode.setAll(fieldMap);
+    }
+
+    /**
+     * Given a JsonArrayNode, store the ArrayNode entries in order and recursively canonicalize JsonNodes.
+     * <p>
+     * This method is recursive.
+     *
+     * @param node  The root of the tree of json nodes.
+     * @param mapper  The object mapper that creates and empty node.
+     * @param preserveContext  Boolean indicating whether context should be omitted.
+     * @param arrayWithNameObjects Boolean indicating whether all objects within the ArrayNode have a name field.
+     */
+    public static void canonicalizeArray(
+            JsonNode node,
+            ObjectMapper mapper,
+            boolean preserveContext,
+            boolean arrayWithNameObjects
+    ) {
+        ArrayNode arrayNode = ((ArrayNode) node);
+
+        Iterator<JsonNode> iterator = arrayNode.elements();
+        // collect and store the entries in order
+        LinkedHashSet<JsonNode> fieldSet = new LinkedHashSet<>();
+        while (iterator.hasNext()) {
+            JsonNode entry = iterator.next();
+            fieldSet.add(entry);
+            if (entry.isObject() && entry.get("name") == null) {
+                arrayWithNameObjects = false;
+            }
+            // canonicalize all child nodes
+            canonicalize(entry, mapper, preserveContext);
+        }
+        // if all objects in the array contain name field, then order on its value
+        if (arrayWithNameObjects) {
+            List<JsonNode> arrayValues = new ArrayList<>();
+            for (int i = 0; i < arrayNode.size(); i++) {
+                arrayValues.add(arrayNode.get(i));
+            }
+            Collections.sort(arrayValues, new Comparator<JsonNode>() {
+                private static final String KEY_NAME = "name";
+                @Override
+                public int compare(JsonNode a, JsonNode b) {
+                    String valA = new String();
+                    String valB = new String();
+                    try {
+                        valA = mapper.writeValueAsString(a.get(KEY_NAME));
+                        valB = mapper.writeValueAsString(b.get(KEY_NAME));
+                    } catch (JsonProcessingException e) {
+                        LOG.warn(String.format("Error processing json for cache key. %s", e.getMessage()), e);
+                    }
+                    return valA.compareTo(valB);
+                }
+            });
+            // remove the existing entries
+            arrayNode.removeAll();
+            // replace the entries in order
+            arrayValues.stream().forEach(val -> arrayNode.add(val));
+        } else {
+            // remove the existing entries
+            arrayNode.removeAll();
+            // replace the entries in order
+            arrayNode.addAll(fieldSet);
+        }
     }
 }
