@@ -50,7 +50,7 @@ class MemDataCacheSpec extends Specification {
         result
     }
 
-    def "when #waitForFuture is set to false , It doesn't wait for future anymore"() {
+    def "check #waitForFuture feature flag behaves correctly and doesn't wait for future when set to true"() {
 
         SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, "false")
         OperationFuture future = Mock(OperationFuture)
