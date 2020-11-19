@@ -60,7 +60,7 @@ class MemDataCacheSpec extends Specification {
         boolean result = memDataCache.setInSeconds("key", "value",1000)
 
         then: "doesn't block anymore"
-        1 * client.set("key", 1234, "value") >> future
+        1 * client.set("key", 1000, "value") >> future
         0 * future.get()
         result
 
