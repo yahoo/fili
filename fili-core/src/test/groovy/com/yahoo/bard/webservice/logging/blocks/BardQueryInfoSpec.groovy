@@ -26,6 +26,17 @@ class BardQueryInfoSpec extends Specification {
     }
 
     @Unroll
+    def "Validate cachePutFailures LogInfo is serialized correctly"() {
+        when:
+        bardQueryInfo.addPutFailureInfo("test", new BardCacheInfo("setFailure", 10, "test",100))
+
+        then:
+        new ObjectMappersSuite().jsonMapper.writeValueAsString(
+                bardQueryInfo
+        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cachePutFailures":[{"opType":"setFailure","cacheKeyCksum":"test","cacheKeyLen":10,"cacheValLen":100}],"cacheReadFailures":[]}"""
+    }
+
+    @Unroll
     def "increment Count For #queryType increments counter by 1"() {
         setup:
         AtomicInteger counter = BardQueryInfo.bardQueryInfo.queryCounter.get(queryType);
@@ -44,12 +55,14 @@ class BardQueryInfoSpec extends Specification {
         BardQueryInfo.WEIGHT_CHECK         | BardQueryInfo.&incrementCountWeightCheck
         BardQueryInfo.FACT_QUERIES         | BardQueryInfo.&incrementCountFactHits
         BardQueryInfo.FACT_QUERY_CACHE_HIT | BardQueryInfo.&incrementCountCacheHits
+        BardQueryInfo.FACT_PUT_ERRORS      | BardQueryInfo.&incrementCountCacheSetFailures
+        BardQueryInfo.FACT_PUT_TIMEOUTS    | BardQueryInfo.&incrementCountCacheSetTimeoutFailures
     }
 
     def "Object serializes with type and map"() {
         expect:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(
                 bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCacheHits":0}}""";
+        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cachePutFailures":[],"cacheReadFailures":[]}"""
     }
 }

@@ -13,10 +13,11 @@ import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -58,7 +59,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
     private final @NotNull QuerySigningService<Long> querySigningService;
 
     protected final ObjectWriter writer;
-    public static final String LOG_CACHE_SET_FAILURES = "cacheSetFailure";
 
     /**
      * Constructor.
@@ -122,16 +122,20 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
             } catch (Exception e) {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
-                RequestLog.record(new BardCacheInfo(
-                        LOG_CACHE_SET_FAILURES,
-                        cacheKey.length(),
-                        getMD5Cksum(cacheKey),
-                        valueString != null ? valueString.length() : 0
-                ));
+                BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
+                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(getMD5Cksum(cacheKey),
+                        new BardCacheInfo(
+                                QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
+                                cacheKey.length(),
+                                getMD5Cksum(cacheKey),
+                                valueString != null ? valueString.length() : 0
+                        )
+                );
                 LOG.warn(
-                        "Unable to cache {}value of size: {}",
+                        "Unable to cache {}value of size: {} and cksum: {}",
                         valueString == null ? "null " : "",
                         valueString == null ? "N/A" : valueString.length(),
+                        getMD5Cksum(cacheKey),
                         e
                 );
             }

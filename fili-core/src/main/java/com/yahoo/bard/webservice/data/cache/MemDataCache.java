@@ -8,9 +8,10 @@ import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -47,7 +48,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
 
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
-    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
+    public static final Meter CACHE_SET_TIMEOUT_FAILURES = REGISTRY.meter("queries.meter.cache.put.timeout.failures");
     public static final String LOG_CACHE_SET_TIMEOUT = "cacheSetTimedOut";
 
     /**
@@ -102,7 +103,20 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             T value = (T) client.get(key);
             return value;
         } catch (RuntimeException warnThenIgnore) {
-            LOG.warn(warnThenIgnore.getMessage(), warnThenIgnore);
+            LOG.warn("get failed for key {} with cksum {} , {}",
+                    key,
+                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    warnThenIgnore.getMessage(),
+                    warnThenIgnore);
+            BardQueryInfo.getBardQueryInfo().addReadFailureInfo(
+                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    new BardCacheInfo(
+                            QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
+                            key.length(),
+                            CacheV2ResponseProcessor.getMD5Cksum(key),
+                            0
+                    )
+            );
             return null;
         }
     }
@@ -151,15 +165,19 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             Throwable exception = e.getClass() == RuntimeException.class ? e.getCause() : e;
             if (exception instanceof TimeoutException) {
                 //mark and log the timeout errors on cache set
-                CACHE_SET_FAILURES.mark(1);
-                RequestLog.record(new BardCacheInfo(
-                        LOG_CACHE_SET_TIMEOUT,
-                        key.length(),
-                        CacheV2ResponseProcessor.getMD5Cksum(key),
-                        value.toString().length()
-                ));
+                CACHE_SET_TIMEOUT_FAILURES.mark(1);
+                BardQueryInfo.getBardQueryInfo().incrementCountCacheSetTimeoutFailures();
+                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(CacheV2ResponseProcessor.getMD5Cksum(key),
+                        new BardCacheInfo(
+                                LOG_CACHE_SET_TIMEOUT,
+                                key.length(),
+                                CacheV2ResponseProcessor.getMD5Cksum(key),
+                                value.toString().length()
+                        )
+                );
             }
-            LOG.warn("set failed {} {}", key, e.toString());
+            LOG.warn("set failed for key: {} ,cksum: {} {}",
+                    key, CacheV2ResponseProcessor.getMD5Cksum(key), e.toString());
             throw new IllegalStateException(e);
         }
     }

@@ -11,25 +11,25 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 /**
  * Log that keep tracks for cache set failures.
  */
-@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class BardCacheInfo implements LogInfo {
-    String cacheOperation;
-    String cacheKeyCksum;
-    int cacheKeyLength;
-    int cacheValLength;
+    protected final String opType;
+    protected final String cacheKeyCksum;
+    protected final int cacheKeyLen;
+    protected final int cacheValLen;
 
     /**
      * Constructor.
      *
-     * @param cacheOperation Type of activity like cache hit , miss or potential hit
-     * @param cacheKeyLength The Length of the cache key
+     * @param opType Type of activity like cache hit , miss or potential hit
+     * @param cacheKeyLen The Length of the cache key
      * @param cacheKeyCksum  The cache Key MD5 checksum value
-     * @param cacheValLength  The cache value length
+     * @param cacheValLen  The cache value length
      */
-    public BardCacheInfo(String cacheOperation, int cacheKeyLength, String cacheKeyCksum, int cacheValLength) {
-        this.cacheOperation = cacheOperation;
-        this.cacheKeyLength = cacheKeyLength;
+    public BardCacheInfo(String opType, int cacheKeyLen, String cacheKeyCksum, int cacheValLen) {
+        this.opType = opType;
+        this.cacheKeyLen = cacheKeyLen;
         this.cacheKeyCksum = cacheKeyCksum;
-        this.cacheValLength = cacheValLength;
+        this.cacheValLen = cacheValLen;
     }
 }
