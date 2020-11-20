@@ -74,6 +74,10 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Added more logging in BardQueryInfo for cache set and get failures](https://github.com/yahoo/fili/pull/1116)
+   * Add more cache logging in `BardQueryInfo` which will hold map of `BardCacheInfo` cache set and get failures.
+   * Added more counters in `BardQueryInfo` for factCacheSetFailures and factCacheSetTimeoutFailures.
+
 - [Add logging for cache miss ,hit and potential hits](https://github.com/yahoo/fili/pull/1115)
    * Utilize `BardCacheInfo` to add logging for cache hit and miss.
    * Re-sequence in `CacheV2ResponseProcessor' to send response back to the user first and then set cache.
