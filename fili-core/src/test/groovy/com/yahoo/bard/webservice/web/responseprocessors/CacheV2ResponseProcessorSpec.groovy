@@ -15,6 +15,8 @@ import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfoUtils
 import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
@@ -26,6 +28,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 
 import org.joda.time.Interval
 
+import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -63,10 +66,12 @@ class CacheV2ResponseProcessorSpec extends Specification {
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
         cache_partial_data = CACHE_PARTIAL_DATA.isOn()
+        BardQueryInfo bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo()
     }
 
     def cleanup() {
         CACHE_PARTIAL_DATA.setOn(cache_partial_data)
+        BardQueryInfoUtils.resetBardQueryInfo()
     }
 
     def "Test Constructor"() {

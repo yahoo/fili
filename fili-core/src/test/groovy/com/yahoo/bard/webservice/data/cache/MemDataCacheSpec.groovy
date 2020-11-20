@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.data.cache
 
 import static com.yahoo.bard.webservice.data.cache.MemDataCache.SYSTEM_CONFIG
 
-import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo
 
 import net.spy.memcached.MemcachedClient
 import net.spy.memcached.internal.OperationFuture

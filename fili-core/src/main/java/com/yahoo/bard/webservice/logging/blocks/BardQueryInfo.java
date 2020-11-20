@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -21,11 +23,17 @@ public class BardQueryInfo implements LogInfo {
     public static final String WEIGHT_CHECK = "weightCheckQueries";
     public static final String FACT_QUERIES = "factQueryCount";
     public static final String FACT_QUERY_CACHE_HIT = "factCacheHits";
+    public static final String FACT_PUT_ERRORS = "factCachePutErrors";
+    public static final String FACT_PUT_TIMEOUTS = "factCachePutTimeouts";
 
     private final String type;
     private final AtomicInteger weightCheckCount = new AtomicInteger();
     private final AtomicInteger factQueryCount = new AtomicInteger();
     private final AtomicInteger factCacheHitCount = new AtomicInteger();
+    private final AtomicInteger factPutErrorsCount = new AtomicInteger();
+    private final AtomicInteger factPutTimeoutsCount = new AtomicInteger();
+    private Map<String, BardCacheInfo> putFailuresMap = new HashMap<>();
+    private Map<String, BardCacheInfo> readFailuresMap = new HashMap<>();
 
     /**
      * Constructor.
@@ -44,7 +52,9 @@ public class BardQueryInfo implements LogInfo {
         return Stream.of(
                 new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, weightCheckCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, factQueryCount),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount)
+                new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_ERRORS, factPutErrorsCount),
+                new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_TIMEOUTS, factPutTimeoutsCount)
         ).collect(Collectors.toMap(
                 AbstractMap.SimpleImmutableEntry::getKey,
                 AbstractMap.SimpleImmutableEntry::getValue
@@ -81,5 +91,55 @@ public class BardQueryInfo implements LogInfo {
      */
     public static void incrementCountWeightCheck() {
         getBardQueryInfo().weightCheckCount.incrementAndGet();
+    }
+
+    /**
+     * Increments the number of cache set failure count.
+     */
+    public static void incrementCountCacheSetFailures() {
+        getBardQueryInfo().factPutErrorsCount.incrementAndGet();
+    }
+
+    /**
+     * Increments the number of cache set timeout failure count.
+     */
+    public static void incrementCountCacheSetTimeoutFailures() {
+        getBardQueryInfo().factPutTimeoutsCount.incrementAndGet();
+    }
+
+    /**
+     * Adds Query key cksum to BardCacheInfo object in the cache put failure map.
+     * @param cksum Cksum of Cache key.
+     * @param infoLog Info log object that holds other details like cache key and value length etc.
+     */
+    public static void addPutFailureInfo(String cksum, BardCacheInfo infoLog) {
+        getBardQueryInfo().putFailuresMap.put(cksum, infoLog);
+    }
+
+    /**
+     * Adds Query key cksum to BardCacheInfo object in the cache read failure map.
+     * @param cksum Cksum of Cache key.
+     * @param infoLog Info log object that holds other details like cache key and value length etc.
+     */
+    public static void addReadFailureInfo(String cksum, BardCacheInfo infoLog) {
+        getBardQueryInfo().readFailuresMap.put(cksum, infoLog);
+    }
+
+    /**
+     * Serialize cache put failures log blocks.
+     *
+     * @return List of all BardCacheInfo.
+     */
+    public Collection<BardCacheInfo> getCachePutFailures() {
+        return putFailuresMap.values();
+    }
+
+    /**
+     * Serialize cache get failures log blocks.
+     *
+     * @return List of all BardCacheInfo.
+     */
+    public Collection<BardCacheInfo> getCacheReadFailures() {
+        return readFailuresMap.values();
     }
 }
