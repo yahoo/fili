@@ -18,35 +18,43 @@ import spock.lang.Specification
 class DataRequestSpec extends Specification{
     DataRequest dataRequest
     DruidAggregationQuery query
-    Dimension dim1 = Mock(Dimension)
-    Dimension dim2 = Mock(Dimension)
-    LogicalMetric metric1 = Mock(LogicalMetric)
-    LogicalTable table1 = new LogicalTable(
-            "table",
-            DefaultTimeGrain.DAY,
-            new TableGroup([] as LinkedHashSet, [] as Set, [] as Set), Stub(MetricDictionary)
-    )
-    List<Interval> intervals = []
-    Set set1 = [] as Set
-    Set set2 = [] as Set
-    Collection<Set<ApiFilter>> filterSuperSet = [set1, set2] as Set
-    Set<LogicalMetric> metricsSet = [metric1] as Set
+    Dimension dim1
+    Dimension dim2
+    LogicalMetric metric1
+    LogicalTable table1
+    List<Interval> intervals
+    Set set1
+    Set set2
+    Collection<Set<ApiFilter>> filterSuperSet
+    Set<LogicalMetric> metricsSet
     Set<Dimension> groupByDimensionsSet
     Set<Dimension> filteredDimensionsSet
-    Set<String> dataSourceNames = ['val1', 'val2'] as Set
-    String format = "json"
+    Set<String> dataSourceNames
+    String format
 
-
-    def "DataRequest does not log filtered dimensions"() {
-        setup:
+    def setup() {
+        dim1 = Mock(Dimension)
+        dim2 = Mock(Dimension)
         dim1.getApiName() >> "dim1"
         dim2.getApiName() >> "dim2"
+        metric1 = Mock(LogicalMetric)
+        table1 = new LogicalTable(
+                "table",
+                DefaultTimeGrain.DAY,
+                new TableGroup([] as LinkedHashSet, [] as Set, [] as Set), Stub(MetricDictionary)
+        )
+        intervals = []
+        set1 = [] as Set
+        set2 = [] as Set
+        filterSuperSet = [set1, set2] as Set
+        metricsSet = [metric1] as Set
         groupByDimensionsSet = [dim2] as Set
         filteredDimensionsSet = [dim1] as Set
-        query.getDimensions() >> groupByDimensionsSet
-        query.getMetricDimensions() >> filteredDimensionsSet
-        query.getDependentFieldNames() >> ([] as Set)
+        dataSourceNames = ['val1', 'val2'] as Set
+        format = "json"
+    }
 
+    def "DataRequest does logs filtered dimensions"() {
         when:
         dataRequest = new DataRequest(table1, intervals, filterSuperSet, metricsSet, groupByDimensionsSet, filteredDimensionsSet, dataSourceNames,false, format)
 
