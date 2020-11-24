@@ -237,8 +237,14 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param request  the DataApiRequest to extract the logging information from
      * @param readCache  whether cache is bypassed or not
      * @param druidQuery  Druid query for which we're logging metrics
+     * @param templateDruidQuery  Template druid query for which we're logging metrics
      */
-    private void logRequestMetrics(DataApiRequest request, Boolean readCache, DruidQuery<?> druidQuery) {
+    private void logRequestMetrics(
+            DataApiRequest request,
+            Boolean readCache,
+            DruidQuery<?> druidQuery,
+            TemplateDruidQuery templateDruidQuery
+    ) {
         // Log dimension metrics
         Set<Dimension> dimensions = request.getDimensions();
         for (Dimension dim : dimensions) {
@@ -263,6 +269,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         request.getApiFilters().values(),
                         metrics,
                         dimensions,
+                        templateDruidQuery.getMetricDimensions(),
                         druidQuery.getDataSource().getNames(),
                         readCache,
                         request.getFormat().toString()
@@ -465,7 +472,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             );
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
-                logRequestMetrics(apiRequest, readCache, druidQuery);
+                logRequestMetrics(apiRequest, readCache, druidQuery, templateQuery);
                 RequestLog.record(new DruidFilterInfo(druidQuery.getFilter()));
             }
 

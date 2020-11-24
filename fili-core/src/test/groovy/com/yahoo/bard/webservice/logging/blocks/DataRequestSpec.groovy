@@ -32,6 +32,7 @@ class DataRequestSpec extends Specification{
     Collection<Set<ApiFilter>> filterSuperSet = [set1, set2] as Set
     Set<LogicalMetric> metricsSet = [metric1] as Set
     Set<Dimension> groupByDimensionsSet
+    Set<Dimension> filteredDimensionsSet
     Set<String> dataSourceNames = ['val1', 'val2'] as Set
     String format = "json"
 
@@ -41,15 +42,16 @@ class DataRequestSpec extends Specification{
         dim1.getApiName() >> "dim1"
         dim2.getApiName() >> "dim2"
         groupByDimensionsSet = [dim2] as Set
+        filteredDimensionsSet = [dim1] as Set
         query.getDimensions() >> groupByDimensionsSet
-        query.getMetricDimensions() >> ([dim1] as Set)
+        query.getMetricDimensions() >> filteredDimensionsSet
         query.getDependentFieldNames() >> ([] as Set)
 
         when:
-        dataRequest = new DataRequest(table1, intervals, filterSuperSet, metricsSet, groupByDimensionsSet, dataSourceNames,false, format)
+        dataRequest = new DataRequest(table1, intervals, filterSuperSet, metricsSet, groupByDimensionsSet, filteredDimensionsSet, dataSourceNames,false, format)
 
         then:
-        !dataRequest.combinedDimensions.contains("dim1")
+        dataRequest.combinedDimensions.contains("dim1")
         dataRequest.combinedDimensions.contains("dim2")
     }
 }
