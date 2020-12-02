@@ -74,6 +74,10 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Added more logging for cache set and get](https://github.com/yahoo/fili/pull/1118)
+   * Added additional cache set and get logging info on both success/failures.
+   * It will help us tracking query logs and get more insights about any cache issues.
+  
 - [Add filtered dimensions to combined dimensions](https://github.com/yahoo/fili/pull/1117)
    * Included filtered dimensions in combined dimensions for `DataRequest`.
 

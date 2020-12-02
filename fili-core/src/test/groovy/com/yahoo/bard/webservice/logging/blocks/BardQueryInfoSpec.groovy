@@ -28,7 +28,7 @@ class BardQueryInfoSpec extends Specification {
     @Unroll
     def "Validate cachePutFailures LogInfo is serialized correctly"() {
         when:
-        bardQueryInfo.addPutFailureInfo("test", new BardCacheInfo("setFailure", 10, "test",100))
+        bardQueryInfo.addCachePutInfo("test", new BardCacheInfo("setFailure", 10, "test",100))
 
         then:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(

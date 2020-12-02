@@ -32,8 +32,8 @@ public class BardQueryInfo implements LogInfo {
     private final AtomicInteger factCacheHitCount = new AtomicInteger();
     private final AtomicInteger factPutErrorsCount = new AtomicInteger();
     private final AtomicInteger factPutTimeoutsCount = new AtomicInteger();
-    private Map<String, BardCacheInfo> putFailuresMap = new HashMap<>();
-    private Map<String, BardCacheInfo> readFailuresMap = new HashMap<>();
+    private Map<String, BardCacheInfo> putCacheStatsMap = new HashMap<>();
+    private Map<String, BardCacheInfo> readCacheStatsMap = new HashMap<>();
 
     /**
      * Constructor.
@@ -112,8 +112,8 @@ public class BardQueryInfo implements LogInfo {
      * @param cksum Cksum of Cache key.
      * @param infoLog Info log object that holds other details like cache key and value length etc.
      */
-    public static void addPutFailureInfo(String cksum, BardCacheInfo infoLog) {
-        getBardQueryInfo().putFailuresMap.put(cksum, infoLog);
+    public static void addCachePutInfo(String cksum, BardCacheInfo infoLog) {
+        getBardQueryInfo().putCacheStatsMap.put(cksum, infoLog);
     }
 
     /**
@@ -121,8 +121,8 @@ public class BardQueryInfo implements LogInfo {
      * @param cksum Cksum of Cache key.
      * @param infoLog Info log object that holds other details like cache key and value length etc.
      */
-    public static void addReadFailureInfo(String cksum, BardCacheInfo infoLog) {
-        getBardQueryInfo().readFailuresMap.put(cksum, infoLog);
+    public static void addCacheReadInfo(String cksum, BardCacheInfo infoLog) {
+        getBardQueryInfo().readCacheStatsMap.put(cksum, infoLog);
     }
 
     /**
@@ -131,7 +131,7 @@ public class BardQueryInfo implements LogInfo {
      * @return List of all BardCacheInfo.
      */
     public Collection<BardCacheInfo> getCachePutFailures() {
-        return putFailuresMap.values();
+        return putCacheStatsMap.values();
     }
 
     /**
@@ -140,6 +140,6 @@ public class BardQueryInfo implements LogInfo {
      * @return List of all BardCacheInfo.
      */
     public Collection<BardCacheInfo> getCacheReadFailures() {
-        return readFailuresMap.values();
+        return readCacheStatsMap.values();
     }
 }

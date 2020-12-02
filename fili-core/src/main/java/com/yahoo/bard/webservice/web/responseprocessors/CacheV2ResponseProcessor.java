@@ -112,6 +112,15 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                             querySigningService.getSegmentSetId(druidQuery).orElse(null),
                             valueString
                     );
+                    BardQueryInfo.getBardQueryInfo().addCachePutInfo(
+                            CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                            new BardCacheInfo(
+                                    QuerySignedCacheService.LOG_CACHE_SET_SUCCESS,
+                                    cacheKey.length(),
+                                    CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                    valueLength
+                            )
+                    );
                 } else {
                     LOG.debug(
                             "Response not cached. Length of {} exceeds max value length of {}",
@@ -123,7 +132,8 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
-                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(getMD5Cksum(cacheKey),
+                BardQueryInfo.getBardQueryInfo().addCachePutInfo(
+                        getMD5Cksum(cacheKey),
                         new BardCacheInfo(
                                 QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
