@@ -9,13 +9,16 @@ import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonRequestContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.DruidJsonResponseContentKeys;
 import com.yahoo.bard.webservice.web.responseprocessors.EtagCacheResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
@@ -99,6 +102,16 @@ public class EtagCacheRequestHandler extends BaseDataRequestHandler {
 
                     CACHE_HITS.mark(1);
                     BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
+                    BardQueryInfo.getBardQueryInfo().addCacheReadInfo(
+                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            new BardCacheInfo(
+                                    QuerySignedCacheService.LOG_CACHE_GET_HIT,
+                                    getKey(druidQuery).length(),
+                                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    null,
+                                    cacheEntry.getValue().length()
+                            )
+                    );
                 } else { // Current query is not in data cache
                     // Insert "If-None-Match" header into RequestContext; the value a random pre-defined string
                     context.getHeaders().putSingle(

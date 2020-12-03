@@ -114,6 +114,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                             QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
                             key.length(),
                             CacheV2ResponseProcessor.getMD5Cksum(key),
+                            null,
                             0
                     )
             );
@@ -173,6 +174,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                                 LOG_CACHE_SET_TIMEOUT,
                                 key.length(),
                                 CacheV2ResponseProcessor.getMD5Cksum(key),
+                                null,
                                 value.toString().length()
                         )
                 );

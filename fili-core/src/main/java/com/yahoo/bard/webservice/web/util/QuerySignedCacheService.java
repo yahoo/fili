@@ -62,7 +62,7 @@ public class QuerySignedCacheService implements CacheService {
     public static final String LOG_CACHE_SET_SUCCESS = "cacheSetSuccess";
     public static final String LOG_CACHE_GET_HIT = "cacheHit";
     public static final String LOG_CACHE_GET_MISS = "cacheMiss";
-    public static final String LOG_CACHE_POTENTIAL_HIT = "cachePotentialHit";
+    public static final String LOG_CACHE_SIGNATURE_MISMATCH = "cacheSignatureMismatch";
 
     TupleDataCache<String, Long, String> dataCache;
     QuerySigningService<Long> querySigningService;
@@ -93,6 +93,7 @@ public class QuerySignedCacheService implements CacheService {
             RequestContext context,
             DruidAggregationQuery<?> druidQuery
     ) throws JsonProcessingException {
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         final TupleDataCache.DataEntry<String, Long, String> cacheEntry = dataCache.get(getKey(druidQuery));
         CACHE_REQUESTS.mark(1);
 
@@ -118,6 +119,9 @@ public class QuerySignedCacheService implements CacheService {
                                     LOG_CACHE_GET_HIT,
                                     getKey(druidQuery).length(),
                                     CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
                                     cacheEntry.getValue().length()
                             )
                     );
@@ -134,6 +138,9 @@ public class QuerySignedCacheService implements CacheService {
                                     LOG_CACHE_READ_FAILURES,
                                     getKey(druidQuery).length(),
                                     CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
                                     0
                             )
                     );
@@ -145,9 +152,12 @@ public class QuerySignedCacheService implements CacheService {
                 BardQueryInfo.getBardQueryInfo().addCacheReadInfo(
                         CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
                         new BardCacheInfo(
-                                LOG_CACHE_POTENTIAL_HIT,
+                                LOG_CACHE_SIGNATURE_MISMATCH,
                                 getKey(druidQuery).length(),
                                 CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
                                 0
                         )
                 );
@@ -160,6 +170,9 @@ public class QuerySignedCacheService implements CacheService {
                             LOG_CACHE_GET_MISS,
                             getKey(druidQuery).length(),
                             CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            querySignatureHash != null
+                                    ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                    : null,
                             0
                     )
             );
@@ -173,6 +186,7 @@ public class QuerySignedCacheService implements CacheService {
             JsonNode json,
             DruidAggregationQuery<?> druidQuery
             ) throws JsonProcessingException {
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable(response)) {
             String cacheKey = getKey(druidQuery);
             String valueString = null;
@@ -195,6 +209,9 @@ public class QuerySignedCacheService implements CacheService {
                                     QuerySignedCacheService.LOG_CACHE_SET_SUCCESS,
                                     cacheKey.length(),
                                     CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
                                     valueLength
                             )
                     );
@@ -215,6 +232,9 @@ public class QuerySignedCacheService implements CacheService {
                                 LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
                                 CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
                                 valueString != null ? valueString.length() : 0
                         )
                 );

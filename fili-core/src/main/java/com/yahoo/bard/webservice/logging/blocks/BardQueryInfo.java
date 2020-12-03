@@ -126,20 +126,20 @@ public class BardQueryInfo implements LogInfo {
     }
 
     /**
-     * Serialize cache put failures log blocks.
+     * Serialize cache put stats log blocks.
      *
      * @return List of all BardCacheInfo.
      */
-    public Collection<BardCacheInfo> getCachePutFailures() {
+    public Collection<BardCacheInfo> getCachePutStats() {
         return putCacheStatsMap.values();
     }
 
     /**
-     * Serialize cache get failures log blocks.
+     * Serialize cache get stats log blocks.
      *
      * @return List of all BardCacheInfo.
      */
-    public Collection<BardCacheInfo> getCacheReadFailures() {
+    public Collection<BardCacheInfo> getCacheGetStats() {
         return readCacheStatsMap.values();
     }
 }

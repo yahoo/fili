@@ -101,6 +101,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         next.processResponse(json, druidQuery, metadata);
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
             try {
@@ -118,6 +119,9 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                                     QuerySignedCacheService.LOG_CACHE_SET_SUCCESS,
                                     cacheKey.length(),
                                     CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
                                     valueLength
                             )
                     );
@@ -138,6 +142,9 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                                 QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
                                 getMD5Cksum(cacheKey),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
                                 valueString != null ? valueString.length() : 0
                         )
                 );
