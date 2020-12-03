@@ -240,6 +240,18 @@ public class RequestLog {
     }
 
     /**
+     * Retrieve a stopwatch from the session.
+     *
+     * @param timePhaseName  the name of this stopwatch
+     *
+     * @return The stopwatch or null if it doesn't exist
+     */
+    public static TimedPhase fetchTiming(String timePhaseName) {
+        RequestLog current = RLOG.get();
+        return current.times.get(timePhaseName);
+    }
+
+    /**
      * Stop the most recent stopwatch and start this one.
      * Time is accumulated if the stopwatch is already registered.
      *
