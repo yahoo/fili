@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
+import com.yahoo.bard.webservice.logging.TimeRemainingFunction;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.web.handlers.AsyncWebServiceRequestHandler;
@@ -147,7 +148,8 @@ public class DruidWorkflow implements RequestWorkflowProvider {
         handler = new WebServiceSelectorRequestHandler(
                 webService,
                 handler,
-                mapper
+                mapper,
+                TimeRemainingFunction.INSTANCE
          );
 
         //The PaginationRequestHandler adds a mapper to the mapper chain that strips the result set down to just the

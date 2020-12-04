@@ -175,6 +175,11 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)
+   * Modify RequestLog to support fetching without modification on Timers.
+   * Build TimeRemainingFunction to pull a time delta using the RequestLog start of request.
+   * Add injection constructors for WebServiceSelectorRequestHandler to inject TimeRemainingFunction and support counting down druid timeouts.
+
 - [Moving to open source screwdriver for builds](https://github.com/yahoo/fili/issues/1109)
   * Travis-ci.com was no longer funded, migrated builds onto screwdriver.
 
