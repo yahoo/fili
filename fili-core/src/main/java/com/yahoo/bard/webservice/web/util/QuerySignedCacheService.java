@@ -59,7 +59,6 @@ public class QuerySignedCacheService implements CacheService {
     public static final String LOG_CACHE_READ_FAILURES = "cacheReadFailure";
     public static final String LOG_CACHE_SET_FAILURES = "cacheSetFailure";
 
-    public static final String LOG_CACHE_SET_SUCCESS = "cacheSetSuccess";
     public static final String LOG_CACHE_GET_HIT = "cacheHit";
     public static final String LOG_CACHE_GET_MISS = "cacheMiss";
     public static final String LOG_CACHE_SIGNATURE_MISMATCH = "cacheSignatureMismatch";
@@ -202,18 +201,6 @@ public class QuerySignedCacheService implements CacheService {
                                     )
                             ),
                             valueString
-                    );
-                    BardQueryInfo.getBardQueryInfo().addCachePutInfo(
-                            CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
-                            new BardCacheInfo(
-                                    QuerySignedCacheService.LOG_CACHE_SET_SUCCESS,
-                                    cacheKey.length(),
-                                    CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
-                                    querySignatureHash != null
-                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
-                                            : null,
-                                    valueLength
-                            )
                     );
                 } else {
                     LOG.debug(
