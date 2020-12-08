@@ -38,12 +38,12 @@ class BardQueryInfoSpec extends Specification {
     @Unroll
     def "Validate cachePutFailures LogInfo is serialized correctly"() {
         when:
-        bardQueryInfo.addCachePutInfo("test", new BardCacheInfo("setFailure", 10, "test", "testSignature",100))
+        bardQueryInfo.addCacheInfo("test", new BardCacheInfo("setFailure", 10, "test", "testSignature",100))
 
         then:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(
                 bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cachePutStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}],"cacheGetStats":[]}"""
+        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cacheStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}]}"""
     }
 
     @Unroll
@@ -73,6 +73,6 @@ class BardQueryInfoSpec extends Specification {
         expect:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(
                 bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cachePutStats":[],"cacheGetStats":[]}"""
+        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cacheStats":[]}"""
     }
 }

@@ -6,21 +6,15 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DAT
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
-import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
-import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
-import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -43,8 +37,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheV2ResponseProcessor.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
-    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     private final long maxDruidResponseLengthToCache = SYSTEM_CONFIG.getLongProperty(
             SYSTEM_CONFIG.getPackageVariableName(
@@ -101,7 +93,6 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
         next.processResponse(json, druidQuery, metadata);
-        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
             try {
@@ -115,29 +106,16 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                     );
                 } else {
                     LOG.debug(
-                            "Response not cached. Length of {} exceeds max value length of {}",
+                            "Response not cached for query with key cksum {}." +
+                                    "Length of {} exceeds max value length of {}",
+                            getMD5Cksum(cacheKey),
                             valueLength,
                             maxDruidResponseLengthToCache
                     );
                 }
             } catch (Exception e) {
-                //mark and log the cache put failure
-                CACHE_SET_FAILURES.mark(1);
-                BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
-                BardQueryInfo.getBardQueryInfo().addCachePutInfo(
-                        getMD5Cksum(cacheKey),
-                        new BardCacheInfo(
-                                QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
-                                cacheKey.length(),
-                                getMD5Cksum(cacheKey),
-                                querySignatureHash != null
-                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
-                                        : null,
-                                valueString != null ? valueString.length() : 0
-                        )
-                );
                 LOG.warn(
-                        "Unable to cache {}value of size: {} and cksum: {}",
+                        "Unable to cache {} value of size: {} and key cksum: {} ",
                         valueString == null ? "null " : "",
                         valueString == null ? "N/A" : valueString.length(),
                         getMD5Cksum(cacheKey),
