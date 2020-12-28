@@ -47,7 +47,7 @@ import spock.lang.Unroll
 class DruidQueryToSqlConverterSpec extends Specification {
     static CalciteHelper calciteHelper = new CalciteHelper(Database.getDataSource())
     static DruidQueryToSqlConverter druidQueryToSqlConverter =
-            new DruidQueryToSqlConverter(calciteHelper, "yyyyMMddHHmmss")
+            new DruidQueryToSqlConverter(calciteHelper, "yyyyMMddHH", "yyyyMMdd")
     static ApiToFieldMapper apiToFieldMapper = SimpleDruidQueryBuilder.getApiToFieldMapper(API_PREPEND, "")
     static public final String API_PREPEND = "api_"
 
@@ -167,12 +167,12 @@ class DruidQueryToSqlConverterSpec extends Specification {
 
         where:
         grain    | dims                   | metrics          | metricDirections | expectedOutput
-        DAY      | [METRO_CODE]           | [ADDED]          | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM("${ADDED}") DESC NULLS FIRST, "${METRO_CODE}" """
-        DAY      | [METRO_CODE, IS_ROBOT] | [ADDED]          | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM("${ADDED}") DESC NULLS FIRST, "${METRO_CODE}", "${IS_ROBOT}" """
-        DAY      | []                     | [ADDED, DELETED] | [DESC, ASC]      | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM("${ADDED}") DESC NULLS FIRST, SUM("${DELETED}") """
+        DAY      | [METRO_CODE]           | [ADDED]          | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM(CAST("${ADDED}" AS DOUBLE)) DESC NULLS FIRST, "${METRO_CODE}" """
+        DAY      | [METRO_CODE, IS_ROBOT] | [ADDED]          | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM(CAST("${ADDED}" AS DOUBLE)) DESC NULLS FIRST, "${METRO_CODE}", "${IS_ROBOT}" """
+        DAY      | []                     | [ADDED, DELETED] | [DESC, ASC]      | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM(CAST("${ADDED}" AS DOUBLE)) DESC NULLS FIRST, SUM(CAST("${DELETED}" AS DOUBLE)) """
         YEAR     | [METRO_CODE]           | []               | []               | """ ORDER BY YEAR("${TIME}"), "${METRO_CODE}" """
         MONTH    | []                     | []               | []               | """ ORDER BY YEAR("${TIME}"), MONTH("${TIME}") """
-        INSTANCE | []                     | []               | []               | """ ORDER BY "${TIME}" """
+        INSTANCE | []                     | []               | []               | """ WHERE "${TIME}" >= '20150912' AND "${TIME}" < '20150913' """
     }
 
     def "test COUNT(*) in SELECT"() {
@@ -185,7 +185,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
 
         where:
         grain | dims         | expectedOutput
-        DAY   | [METRO_CODE] | """ SELECT "${METRO_CODE}", YEAR("${TIME}") AS "YEAR", DAYOFYEAR("${TIME}") AS "DAYOFYEAR", SUM("${ADDED}") AS "${API_PREPEND}${ADDED}", SUM("${DELETED}") AS "${API_PREPEND}${DELETED}", COUNT(*) AS "count" """
+        DAY   | [METRO_CODE] | """ SELECT "${METRO_CODE}", YEAR("${TIME}") AS "YEAR", DAYOFYEAR("${TIME}") AS "DAYOFYEAR", SUM(CAST("${ADDED}" AS DOUBLE)) AS "${API_PREPEND}${ADDED}", SUM(CAST("${DELETED}" AS DOUBLE)) AS "${API_PREPEND}${DELETED}", COUNT(*) AS "count" """
     }
 
     def "test COUNT(*) in ORDER BY"() {
@@ -199,7 +199,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
         where:
         grain | dims         | metrics        | metricDirections | expectedOutput
         DAY   | [METRO_CODE] | [COUNT]        | [DESC]           | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), COUNT(*) DESC NULLS FIRST, "${METRO_CODE}" """
-        DAY   | [METRO_CODE] | [ADDED, COUNT] | [DESC, DESC]     | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM("${ADDED}") DESC NULLS FIRST, COUNT(*) DESC NULLS FIRST, "${METRO_CODE}" """
+        DAY   | [METRO_CODE] | [ADDED, COUNT] | [DESC, DESC]     | """ ORDER BY YEAR("${TIME}"), DAYOFYEAR("${TIME}"), SUM(CAST("${ADDED}" AS DOUBLE)) DESC NULLS FIRST, COUNT(*) DESC NULLS FIRST, "${METRO_CODE}" """
     }
 
     @Unroll
@@ -222,12 +222,12 @@ class DruidQueryToSqlConverterSpec extends Specification {
 SELECT "metroCode", "YEAR", "DAYOFYEAR", SUM("api_added") AS "api_added", SUM("api_deleted") AS "api_deleted", SUM("api_addedFiltered") AS "api_addedFiltered", 1.0 * SUM("api_addedFiltered") / (SUM("api_added") + SUM("api_deleted")) AS "addedRatio"
 FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM("added") AS "api_added", SUM("deleted") AS "api_deleted", SUM(0) AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND "TIME" < '20150913000000'
+            WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
             UNION ALL
             SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(0) AS "api_added", SUM(0) AS "api_deleted", SUM("added") AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND ("TIME" < '20150913000000' AND "metroCode" LIKE '%search%')
+            WHERE "TIME" >= '20150912' AND ("TIME" < '20150913' AND "metroCode" LIKE '%search%')
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")) AS "t6"
 GROUP BY "metroCode", "YEAR", "DAYOFYEAR"
 ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_deleted") DESC NULLS FIRST, "metroCode"
@@ -236,12 +236,12 @@ ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_delete
 SELECT "metroCode", "YEAR", "DAYOFYEAR", SUM("api_added") AS "api_added", SUM("api_deleted") AS "api_deleted", SUM("api_addedFiltered") AS "api_addedFiltered", 1.0 * SUM("api_addedFiltered") / (SUM("api_added") + SUM("api_deleted")) AS "addedRatio"
 FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM("added") AS "api_added", SUM("deleted") AS "api_deleted", SUM(0) AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND "TIME" < '20150913000000'
+            WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
             UNION ALL
             SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(0) AS "api_added", SUM(0) AS "api_deleted", SUM("added") AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND ("TIME" < '20150913000000' AND "metroCode" = 'selector')
+            WHERE "TIME" >= '20150912' AND ("TIME" < '20150913' AND "metroCode" = 'selector')
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")) AS "t6"
 GROUP BY "metroCode", "YEAR", "DAYOFYEAR"
 ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_deleted") DESC NULLS FIRST, "metroCode"
@@ -250,12 +250,12 @@ ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_delete
 SELECT "metroCode", "YEAR", "DAYOFYEAR", SUM("api_added") AS "api_added", SUM("api_deleted") AS "api_deleted", SUM("api_addedFiltered") AS "api_addedFiltered", 1.0 * SUM("api_addedFiltered") / (SUM("api_added") + SUM("api_deleted")) AS "addedRatio"
 FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM("added") AS "api_added", SUM("deleted") AS "api_deleted", SUM(0) AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND "TIME" < '20150913000000'
+            WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
             UNION ALL
             SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(0) AS "api_added", SUM(0) AS "api_deleted", SUM("added") AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND ("TIME" < '20150913000000' AND "metroCode" <> 'not')
+            WHERE "TIME" >= '20150912' AND ("TIME" < '20150913' AND "metroCode" <> 'not')
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")) AS "t6"
 GROUP BY "metroCode", "YEAR", "DAYOFYEAR"
 ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_deleted") DESC NULLS FIRST, "metroCode"
@@ -280,17 +280,17 @@ ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_delete
 SELECT "metroCode", "YEAR", "DAYOFYEAR", SUM("api_added") AS "api_added", SUM("api_deleted") AS "api_deleted", SUM("api_delta") AS "api_delta", SUM("api_addedFiltered") AS "api_addedFiltered", SUM("api_deltaFiltered") AS "api_deltaFiltered", 1.0 * SUM("api_addedFiltered") / (SUM("api_added") + SUM("api_deleted")) AS "addedRatio", 1.0 * SUM("api_deltaFiltered") / (SUM("api_added") + SUM("api_deleted") + SUM("api_delta")) AS "deltaRatio"
 FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM("added") AS "api_added", SUM("deleted") AS "api_deleted", SUM("delta") AS "api_delta", SUM(0) AS "api_addedFiltered", SUM(0) AS "api_deltaFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND "TIME" < '20150913000000'
+            WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
             UNION ALL
             SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(0) AS "api_added", SUM(0) AS "api_deleted", SUM(0) AS "api_delta", SUM("added") AS "api_addedFiltered", SUM(0) AS "api_deltaFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND ("TIME" < '20150913000000' AND "metroCode" LIKE '%search%')
+            WHERE "TIME" >= '20150912' AND ("TIME" < '20150913' AND "metroCode" LIKE '%search%')
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
             UNION ALL
             SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(0) AS "api_added", SUM(0) AS "api_deleted", SUM(0) AS "api_delta", SUM(0) AS "api_addedFiltered", SUM("delta") AS "api_deltaFiltered"
             FROM "PUBLIC"."wikiticker"
-            WHERE "TIME" > '20150912000000' AND ("TIME" < '20150913000000' AND "metroCode" NOT LIKE '%search%')
+            WHERE "TIME" >= '20150912' AND ("TIME" < '20150913' AND "metroCode" NOT LIKE '%search%')
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")) AS "t11"
 GROUP BY "metroCode", "YEAR", "DAYOFYEAR"
 ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_deleted") DESC NULLS FIRST, "metroCode"

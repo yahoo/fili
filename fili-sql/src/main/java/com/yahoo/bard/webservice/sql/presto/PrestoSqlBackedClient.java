@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlResultSetProcessor;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,6 +39,8 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
     private final ObjectMapper jsonWriter;
     private final DruidQueryToPrestoConverter druidQueryToPrestoConverter;
     private final CalciteHelper calciteHelper;
+    private final static String TIMESTAMP_FORMAT_HOUR = "%Y%m%d%H";
+    private final static String TIMESTAMP_FORMAT_DAY = "%Y%m%d";
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -102,7 +105,14 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         String sqlQuery = druidQueryToPrestoConverter.buildSqlQuery(druidQuery, aliasMaker);
 
         LOG.info("Input raw sql query: {}", sqlQuery);
-        sqlQuery = sqlQueryToPrestoQuery(sqlQuery);
+        String timestampFormat;
+        if (druidQuery.getDataSource().getPhysicalTable()
+                .getSchema().getTimeGrain().getBaseTimeGrain().equals(HOUR)) {
+            timestampFormat = TIMESTAMP_FORMAT_HOUR;
+        } else {
+            timestampFormat = TIMESTAMP_FORMAT_DAY;
+        }
+        sqlQuery = sqlQueryToPrestoQuery(sqlQuery, timestampFormat);
         LOG.info("Processed to presto query: {}", sqlQuery);
 
         SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
@@ -138,9 +148,11 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * </ul>
      *
      * @param sqlQuery The sql query converted from druid query.
+     * @param timestampFormat The format used to parse the timestamp
      * @return a presto compatible sql dialect.
      */
-    protected static String sqlQueryToPrestoQuery(String sqlQuery) {
+    protected static String sqlQueryToPrestoQuery(String sqlQuery, String timestampFormat) {
+        LOG.info("using fili version of PrestoSqlBackedClient");
         if (sqlQuery == null || sqlQuery.isEmpty()) {
             throw new IllegalStateException("Input sqlQuery is null or empty");
         }
@@ -149,42 +161,55 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         String pat = ".*YEAR\\(\"(.*?)\"\\).*";
         Pattern pattern = Pattern.compile(pat, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(sqlQuery);
-        matcher.matches();
-        String timestampColumn = matcher.group(1);
 
-        String fixVarcharCastQuery = sqlQuery.replace("CHARACTER SET \"ISO-8859-1\"", "");
-        String fixTimePrestoQuery = fixVarcharCastQuery
-                .replace(
-                        String.format("DAYOFYEAR(\"%s\")", timestampColumn),
-                        String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn)
-                )
-                .replace(
-                        String.format(" YEAR(\"%s\")", timestampColumn),
-                        String.format(" SUBSTRING(%s,1,4)", timestampColumn)
-                )
-                .replace(
-                        String.format("MONTH(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,5,2)", timestampColumn)
-                )
-                .replace(
-                        String.format("HOUR(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,9,2)", timestampColumn)
-                );
+        String fixTimePrestoQuery = sqlQuery.replace("CHARACTER SET \"ISO-8859-1\"", "");
 
+        if (matcher.matches()) {
+            String timestampColumn = matcher.group(1);
+
+            fixTimePrestoQuery = fixTimePrestoQuery
+                    .replace(
+                            String.format("DAYOFYEAR(\"%s\")", timestampColumn),
+                            String.format("DAY_OF_YEAR(date_parse(\"%s\",'%s'))",
+                                    timestampColumn, timestampFormat)
+                    )
+                    .replace(
+                            String.format(" YEAR(\"%s\")", timestampColumn),
+                            String.format(" SUBSTRING(\"%s\",1,4)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("MONTH(\"%s\")", timestampColumn),
+                            String.format("SUBSTRING(\"%s\",5,2)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("HOUR(\"%s\")", timestampColumn),
+                            String.format("SUBSTRING(\"%s\",9,2)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("WEEK(\"%s\")", timestampColumn),
+                            String.format("WEEK_OF_YEAR(date_parse(\"%s\",'%s'))",
+                                    timestampColumn, timestampFormat)
+                    );
+        } else {
+            throw new IllegalStateException("no timestamp information in the sql query " + sqlQuery);
+        }
         String fixCatalogPrestoQuery = fixTimePrestoQuery;
 
-        int orderbyIndex = fixCatalogPrestoQuery.indexOf("ORDER BY");
+        int orderbyIndex = fixCatalogPrestoQuery.lastIndexOf("ORDER BY");
         final int orderByClauseLength = 9;
+        int orderbyEndIndex = fixCatalogPrestoQuery.indexOf("\n", orderbyIndex);
+        if (orderbyEndIndex == -1) { orderbyEndIndex = fixCatalogPrestoQuery.length(); }
         String fixQuotePrestoQuery = fixCatalogPrestoQuery;
         if (orderbyIndex != -1) {
             orderbyIndex = orderbyIndex + orderByClauseLength;
             //this way other part won't break abnormally.
-            String orderByClause = fixCatalogPrestoQuery.substring(orderbyIndex);
+            String orderByClause = fixCatalogPrestoQuery.substring(orderbyIndex, orderbyEndIndex);
             orderByClause = orderByClause
                     .replace("'", "\"")   //replace double quotes into single quotes
-                    .replace("\"%", "'%") //time stamp needs single quotes
-                    .replace("H\"", "H'");
-            fixQuotePrestoQuery = fixCatalogPrestoQuery.substring(0, orderbyIndex) + orderByClause;
+                    .replace(String.format("\"%s\"", timestampFormat),
+                            String.format("'%s'", timestampFormat)); //time stamp needs single quotes
+            fixQuotePrestoQuery = fixCatalogPrestoQuery.substring(0, orderbyIndex) + orderByClause +
+                    fixCatalogPrestoQuery.substring(orderbyEndIndex);
         }
 
         String fixFilterPrestoQuery = fixQuotePrestoQuery;
