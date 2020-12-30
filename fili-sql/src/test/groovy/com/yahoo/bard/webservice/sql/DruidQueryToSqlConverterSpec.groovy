@@ -6,8 +6,11 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter
 import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
+import com.yahoo.bard.webservice.druid.model.orderby.SortDirection
+import com.yahoo.bard.webservice.druid.model.query.TopNQuery
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.YEAR
 import static com.yahoo.bard.webservice.database.Database.ADDED
@@ -31,6 +34,7 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.END
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.START
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimension
+import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getTopNMetric
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getWikitickerDatasource
 
 import com.yahoo.bard.webservice.database.Database
@@ -67,6 +71,27 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 [interval(START, END)],
                 limitSpec
         )
+    }
+
+
+    private static TopNQuery getTopNQuery(
+            Granularity timeGrain,
+            String dimension,
+            long threshold,
+            String topNMetric,
+            SortDirection direction
+    ){
+        return new TopNQuery(
+                getWikitickerDatasource(API_PREPEND, ""),
+                timeGrain,
+                getDimension(API_PREPEND + dimension),
+                null,
+                [sum(ADDED), sum(DELETED)],
+                [],
+                [interval(START, END)],
+                threshold,
+                getTopNMetric(API_PREPEND + topNMetric, direction)
+        );
     }
 
     private static GroupByQuery getGroupByQueryWithCount(
@@ -294,6 +319,46 @@ FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEA
             GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")) AS "t11"
 GROUP BY "metroCode", "YEAR", "DAYOFYEAR"
 ORDER BY "YEAR", "DAYOFYEAR", SUM("api_added") DESC NULLS FIRST, SUM("api_deleted") DESC NULLS FIRST, "metroCode"
+"""
+    }
+
+    def "test topN"() {
+        setup:
+        DruidQuery query = getTopNQuery(
+                grain,
+                dim,
+                threshold,
+                topNMetric,
+                direction
+        )
+        def sql = druidQueryToSqlConverter.buildSqlQuery(query, apiToFieldMapper)
+
+        expect:
+        sql.equals(expectedOutput.trim())
+
+        where:
+        grain | dim         | threshold | topNMetric   | direction  | expectedOutput
+        HOUR  | METRO_CODE  | 3l        | ADDED        | DESC       | """
+SELECT *
+FROM (SELECT "metroCode", "YEAR", "DAYOFYEAR", "HOUR", "api_added", "api_deleted", ROW_NUMBER() OVER (PARTITION BY "YEAR", "DAYOFYEAR", "HOUR" ORDER BY "api_added" DESC) AS "RNUM"
+        FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", HOUR("TIME") AS "HOUR", SUM(CAST("added" AS DOUBLE)) AS "api_added", SUM(CAST("deleted" AS DOUBLE)) AS "api_deleted"
+                FROM "PUBLIC"."wikiticker"
+                WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
+                GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME"), HOUR("TIME")
+                ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), HOUR("TIME"), "metroCode") AS "t2") AS "t3"
+WHERE "RNUM" <= 3
+ORDER BY "YEAR" NULLS LAST, "DAYOFYEAR" NULLS LAST, "HOUR" NULLS LAST, "RNUM" NULLS LAST
+"""
+        DAY   | METRO_CODE  | 4l        | DELETED      | ASC        | """
+SELECT *
+FROM (SELECT "metroCode", "YEAR", "DAYOFYEAR", "api_added", "api_deleted", ROW_NUMBER() OVER (PARTITION BY "YEAR", "DAYOFYEAR" ORDER BY "api_deleted") AS "RNUM"
+        FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM(CAST("added" AS DOUBLE)) AS "api_added", SUM(CAST("deleted" AS DOUBLE)) AS "api_deleted"
+                FROM "PUBLIC"."wikiticker"
+                WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
+                GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
+                ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode") AS "t2") AS "t3"
+WHERE "RNUM" <= 4
+ORDER BY "YEAR" NULLS LAST, "DAYOFYEAR" NULLS LAST, "RNUM" NULLS LAST
 """
     }
 }
