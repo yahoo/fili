@@ -472,8 +472,8 @@ public class DruidQueryToSqlConverter {
             }
             String metricName = (String) metric;
             int timePartFunctions = sqlTimeConverter.timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
-            int groupBys = druidQuery.getDimensions().size() + timePartFunctions;
-            List<RexNode> timePartitions = builder.fields().subList(druidQuery.getDimensions().size(), groupBys);
+            int dimensions = druidQuery.getDimensions().size();
+            List<RexNode> timePartitions = builder.fields().subList(dimensions, dimensions + timePartFunctions);
 
             List<RexFieldCollation> orderKeys = Collections.singletonList(
                     new RexFieldCollation(builder.field(metricName), directions));

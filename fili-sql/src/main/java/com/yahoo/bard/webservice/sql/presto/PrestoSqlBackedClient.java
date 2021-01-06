@@ -152,7 +152,6 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * @return a presto compatible sql dialect.
      */
     protected static String sqlQueryToPrestoQuery(String sqlQuery, String timestampFormat) {
-        LOG.info("using fili version of PrestoSqlBackedClient");
         if (sqlQuery == null || sqlQuery.isEmpty()) {
             throw new IllegalStateException("Input sqlQuery is null or empty");
         }
