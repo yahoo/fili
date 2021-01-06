@@ -9,6 +9,9 @@ Current
 -------
 ### Fixed:
 
+- [Fix: fili-presto inFilter RexNode construction](https://github.com/yahoo/fili/issues/1122)
+    * Fix inFilter RexNode construction
+
 - [Fix: fili-presto INSTANCE time grain](https://github.com/yahoo/fili/issues/1121)
     * When time grain is chosen to be INSTANCE for the presto query, the timestamp column won't be a group key as we want the total aggregation across all time ranges
 
