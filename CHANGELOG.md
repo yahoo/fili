@@ -9,6 +9,9 @@ Current
 -------
 ### Fixed:
 
+- [Fix: fili-presto INSTANCE time grain](https://github.com/yahoo/fili/issues/1121)
+    * When time grain is chosen to be INSTANCE for the presto query, the timestamp column won't be a group key as we want the total aggregation across all time ranges
+
 - [Fix: Weight Check Query Caching](https://github.com/yahoo/fili/issues/1113)
     * Caching the weight check query instead of the druid query in `CacheWeightCheckRequestHandler`.
 
@@ -74,6 +77,12 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Added sql-presto daily table support](https://github.com/yahoo/fili/pull/1121)
+   * Added support for specifying hourly and daily timestamp format and choosing upon physical table time grain
+
+- [Added sql-presto topN support](https://github.com/yahoo/fili/pull/1121)
+   * Add topN support for presto queries
+
 - [Added more logging for cache set and get](https://github.com/yahoo/fili/pull/1118)
    * Added additional cache set and get logging info on both success/failures.
    * It will help us tracking query logs and get more insights about any cache issues.
