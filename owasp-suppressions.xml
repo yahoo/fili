@@ -4,4 +4,8 @@
     <suppress until="2021-03-01Z">
         <vulnerabilityName>CVE-2008-0660</vulnerabilityName>
     </suppress>
+
+    <suppress until="2022-03-01Z">
+        <vulnerabilityName>CVE-2020-8908</vulnerabilityName>
+    </suppress>
 </suppressions>
