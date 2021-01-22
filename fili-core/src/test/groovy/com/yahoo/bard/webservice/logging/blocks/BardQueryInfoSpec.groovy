@@ -4,11 +4,13 @@ package com.yahoo.bard.webservice.logging.blocks
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
+import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.atomic.AtomicInteger
 
+@Retry
 class BardQueryInfoSpec extends Specification {
     BardQueryInfo bardQueryInfo
 
