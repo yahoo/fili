@@ -9,6 +9,8 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Another batch of security alerts](https://github.com/yahoo/fili/issues/1123)
+
 - [Fix: fili-presto inFilter RexNode construction](https://github.com/yahoo/fili/issues/1122)
     * Fix inFilter RexNode construction
 

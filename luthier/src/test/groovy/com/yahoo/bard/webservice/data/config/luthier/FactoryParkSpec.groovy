@@ -5,6 +5,6 @@ package com.yahoo.bard.webservice.data.config.luthier
 import spock.lang.Specification
 
 class FactoryParkSpec extends Specification {
-    def "A FactoryPark<Dimension> correctly builds a Dimension from JSON."() {
+    def "A FactoryPark[Dimension] correctly builds a Dimension from JSON."() {
     }
 }
