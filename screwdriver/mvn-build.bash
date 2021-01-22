@@ -14,7 +14,7 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     exit ${MAVEN_RETURN_CODE}
 fi
 
-echo "dependency check"
+echo "INFO dependency check"
 mvn -B org.owasp:dependency-check-maven:check
 
 echo "INFO mvn Site"
