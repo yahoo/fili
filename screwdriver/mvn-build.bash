@@ -14,6 +14,9 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     exit ${MAVEN_RETURN_CODE}
 fi
 
+echo "dependency check"
+mvn -B org.owasp:dependency-check-maven:check
+
 echo "INFO mvn Site"
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
 
