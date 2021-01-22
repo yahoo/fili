@@ -16,6 +16,12 @@ fi
 
 echo "INFO dependency check"
 mvn -B org.owasp:dependency-check-maven:check
+#capture the maven return code
+MAVEN_RETURN_CODE=$?
+if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
+    echo "ERROR dependency check did not succeed."
+    exit ${MAVEN_RETURN_CODE}
+fi
 
 echo "INFO mvn Site"
 mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
