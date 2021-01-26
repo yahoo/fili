@@ -4,6 +4,8 @@ package com.yahoo.bard.webservice.logging.blocks
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
+import org.junit.Ignore
+
 import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -37,6 +39,7 @@ class BardQueryInfoSpec extends Specification {
         ) == """{"opType":"testsetFailureSerialization","cacheKeyCksum":"test","signatureCksum":null,"cacheKeyLen":10,"cacheValLen":100}"""
     }
 
+    @Ignore
     @Unroll
     def "Validate cachePutFailures LogInfo is serialized correctly"() {
         when:
@@ -71,6 +74,7 @@ class BardQueryInfoSpec extends Specification {
         BardQueryInfo.FACT_PUT_TIMEOUTS    | BardQueryInfo.&incrementCountCacheSetTimeoutFailures
     }
 
+    @Ignore
     def "Object serializes with type and map"() {
         expect:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(

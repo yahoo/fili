@@ -9,6 +9,8 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Bug: dataSourceMetadataService in TestBinderFactory hides instance in AbstractBinderFactory](https://github.com/yahoo/fili/issues/1126)
+
 - [Fix: Another batch of security alerts](https://github.com/yahoo/fili/issues/1123)
 
 - [Fix: fili-presto inFilter RexNode construction](https://github.com/yahoo/fili/issues/1122)
