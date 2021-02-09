@@ -85,8 +85,6 @@ public class PrestoSqlBackedClientTest {
 
     @Test
     public void testFetchToLimitHelper() {
-        System.out.println(PrestoSqlBackedClient.fetchToLimitHelper(rawSqlQuery));
-        System.out.println(expectedPrestoQuery);
         assertEquals(expectedPrestoQuery, PrestoSqlBackedClient.fetchToLimitHelper(rawSqlQuery));
     }
 }
