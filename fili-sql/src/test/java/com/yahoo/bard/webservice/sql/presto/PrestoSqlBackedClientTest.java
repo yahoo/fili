@@ -67,7 +67,10 @@ public class PrestoSqlBackedClientTest {
                         "FROM \"colo\".\"db\".\"table\"\n" +
                         "WHERE \"datestamp\" >= '2021020723' AND \"datestamp\" < '2021020823'\n" +
                         "GROUP BY \"source\", YEAR(\"datestamp\"), DAYOFYEAR(\"datestamp\"), HOUR(\"datestamp\")\n" +
-                        "ORDER BY YEAR(\"datestamp\") NULLS FIRST, DAYOFYEAR(\"datestamp\") NULLS FIRST, HOUR(\"datestamp\") NULLS FIRST, \"source\" NULLS FIRST\n" +
+                        "ORDER BY YEAR(\"datestamp\") NULLS FIRST,\n" +
+                        "    DAYOFYEAR(\"datestamp\") NULLS FIRST,\n" +
+                        "    HOUR(\"datestamp\") NULLS FIRST,\n" +
+                        "    \"source\" NULLS FIRST\n" +
                         "FETCH NEXT 2 ROWS ONLY",
                 "SELECT \"source\",\n" +
                         "    YEAR(\"datestamp\") AS \"YEAR\",\n" +
@@ -77,7 +80,10 @@ public class PrestoSqlBackedClientTest {
                         "FROM \"colo\".\"db\".\"table\"\n" +
                         "WHERE \"datestamp\" >= '2021020723' AND \"datestamp\" < '2021020823'\n" +
                         "GROUP BY \"source\", YEAR(\"datestamp\"), DAYOFYEAR(\"datestamp\"), HOUR(\"datestamp\")\n" +
-                        "ORDER BY YEAR(\"datestamp\") NULLS FIRST, DAYOFYEAR(\"datestamp\") NULLS FIRST, HOUR(\"datestamp\") NULLS FIRST, \"source\" NULLS FIRST\n" +
+                        "ORDER BY YEAR(\"datestamp\") NULLS FIRST,\n" +
+                        "    DAYOFYEAR(\"datestamp\") NULLS FIRST,\n" +
+                        "    HOUR(\"datestamp\") NULLS FIRST,\n" +
+                        "    \"source\" NULLS FIRST\n" +
                         "LIMIT 2"}
         });
     }
