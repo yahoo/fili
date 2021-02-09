@@ -12,7 +12,7 @@ import spock.lang.Unroll
 
 import java.util.concurrent.atomic.AtomicInteger
 
-@Retry
+@Ignore
 class BardQueryInfoSpec extends Specification {
     BardQueryInfo bardQueryInfo
 
