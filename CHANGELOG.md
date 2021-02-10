@@ -9,6 +9,8 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Change Log Level of Presto Response] (https://github.com/yahoo/fili/issues/1130)
+
 - [Fix: Presto Limit and the SD build](https://github.com/yahoo/fili/issues/1129)
 
 - [Fix: Bug: dataSourceMetadataService in TestBinderFactory hides instance in AbstractBinderFactory](https://github.com/yahoo/fili/issues/1126)

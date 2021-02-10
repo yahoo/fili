@@ -127,7 +127,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             resultSetProcessor.process(resultSet);
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
-            LOG.info("Created response: {}", jsonNode);
+            LOG.trace("Created response: {}", jsonNode);
             return jsonNode;
         } catch (SQLException e) {
             LOG.warn("Failed while processing {}", druidQuery);
