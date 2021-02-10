@@ -667,6 +667,7 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
+                            <include>**/*Test.java</include>
                         </includes>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>

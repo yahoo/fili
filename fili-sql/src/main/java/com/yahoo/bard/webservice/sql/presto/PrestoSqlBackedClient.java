@@ -223,7 +223,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * @param fixQuotePrestoQuery The intermediate sqlToPrestoQuery.
      * @return a presto query with LIMIT fix.
      */
-    private static String fetchToLimitHelper(String fixQuotePrestoQuery) {
+    protected static String fetchToLimitHelper(String fixQuotePrestoQuery) {
         String limitPrestoQuery = fixQuotePrestoQuery;
         int index = limitPrestoQuery.indexOf("FETCH NEXT");
         if (index != -1) {
@@ -246,13 +246,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                     rows += (nextPart.charAt(i) - '0');
                 }
             }
-            int idxOfLineReturn = nextPart.indexOf('\n');
-            if (idxOfLineReturn != -1) {
-                nextPart = "LIMIT " + rows + nextPart.substring(idxOfLineReturn);
-
-            } else {
-                nextPart = "LIMIT " + rows;
-            }
+            nextPart = nextPart.replace("FETCH NEXT " + rows + " ROWS ONLY", "LIMIT " + rows);
             limitPrestoQuery = prevPart + nextPart;
         }
         return limitPrestoQuery;
