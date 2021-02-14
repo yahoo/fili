@@ -66,6 +66,7 @@ public class DruidQueryToSqlConverter {
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
     public static final String ZERO_PLACEHOLDER = "zero";
+    private final static String SKETCH_STRING = "'round(thetasketch_estimate(thetasketch_union(";
 
     /**
      * Constructs the default converter.
@@ -214,7 +215,7 @@ public class DruidQueryToSqlConverter {
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
 
-        return writeSql(sqlWriter, relToSql, query);
+        return formatSketchQuery(writeSql(sqlWriter, relToSql, query));
     }
 
     /**
@@ -421,6 +422,13 @@ public class DruidQueryToSqlConverter {
             queryRelNode = convertDruidQueryWithFilteredAgg(builder, druidQuery, apiToFieldMapper, sqlTable);
         } else {
             builder = builder.scan(sqlTable.getName());
+            RelBuilder finalBuilder = builder;
+            List<RexNode> sketchMetrics = druidQuery.getAggregations().stream()
+                    .filter(aggregation -> aggregation.getType().equals("thetaSketch"))
+                    .map(aggregation -> finalBuilder.alias(finalBuilder.literal(
+                            String.format("round(thetasketch_estimate(thetasketch_union(%s)))",
+                                    aggregation.getFieldName())), aggregation.getName()))
+                    .collect(Collectors.toList());
             queryRelNode = builder
                     .filter(
                             getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
@@ -437,6 +445,7 @@ public class DruidQueryToSqlConverter {
                     .project(
                             (Iterable) ImmutableList.builder()
                                     .addAll(builder.fields())
+                                    .addAll(sketchMetrics)
                                     .addAll(getPostAggregations(builder, druidQuery, apiToFieldMapper))
                                     .build()
                     )
@@ -839,6 +848,7 @@ public class DruidQueryToSqlConverter {
         aggToSqlType.put("longMin", SqlTypeName.BIGINT);
         return druidQuery.getAggregations()
                 .stream()
+                .filter(aggregation -> !aggregation.getType().equals("thetaSketch"))
                 .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
@@ -927,6 +937,55 @@ public class DruidQueryToSqlConverter {
         allGroupBys.addAll(timeFilters);
         allGroupBys.addAll(dimensionFields);
         return allGroupBys;
+    }
+
+    /**
+     * Find all word positions in string
+     * @param textString
+     * @param word
+     * @return
+     */
+    private List<Integer> findWord(String textString, String word) {
+        List<Integer> indexes = new ArrayList<>();
+        String lowerCaseTextString = textString.toLowerCase(Locale.ENGLISH);
+        String lowerCaseWord = word.toLowerCase(Locale.ENGLISH);
+        int wordLength = 0;
+
+        int index = 0;
+        while (index != -1) {
+            index = lowerCaseTextString.indexOf(lowerCaseWord, index + wordLength);
+            if (index != -1) {
+                indexes.add(index);
+            }
+            wordLength = word.length();
+        }
+        return indexes;
+    }
+
+    /**
+     * Removes the quotes around the Sketch metric literal
+     * @param sqlQuery
+     * @return
+     */
+    private String formatSketchQuery(String sqlQuery) {
+        if (sqlQuery.contains(SKETCH_STRING)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            int beginningPos = 0;
+            for (Integer pos : findWord(sqlQuery, SKETCH_STRING)) {
+                // Append string up to opening quote
+                stringBuilder.append(sqlQuery, beginningPos, pos);
+                beginningPos = pos + 1;
+                // Find closing quote location
+                int nextPos = beginningPos + sqlQuery.substring(beginningPos).indexOf("'");
+                // Append string up to closing quote
+                stringBuilder.append(sqlQuery, beginningPos, nextPos);
+                beginningPos = nextPos + 1;
+            }
+            stringBuilder.append(sqlQuery, beginningPos, sqlQuery.length());
+            return stringBuilder.toString();
+        } else {
+            return sqlQuery;
+        }
     }
 
     /**
