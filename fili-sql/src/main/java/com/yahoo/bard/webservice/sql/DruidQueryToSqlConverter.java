@@ -940,10 +940,10 @@ public class DruidQueryToSqlConverter {
     }
 
     /**
-     * Find all word positions in string
-     * @param textString
-     * @param word
-     * @return
+     * Find all word positions in string.
+     * @param textString a string to search into.
+     * @param word a target word.
+     * @return an array of indexes of all positions word was found in the textString.
      */
     private List<Integer> findWord(String textString, String word) {
         List<Integer> indexes = new ArrayList<>();
@@ -963,9 +963,9 @@ public class DruidQueryToSqlConverter {
     }
 
     /**
-     * Removes the quotes around the Sketch metric literal
-     * @param sqlQuery
-     * @return
+     * Removes the quotes around the Sketch metric literal.
+     * @param sqlQuery the sql string built by the RelBuilder.
+     * @return the sql string without quote around the sketch metric expression.
      */
     private String formatSketchQuery(String sqlQuery) {
         if (sqlQuery.contains(SKETCH_STRING)) {
