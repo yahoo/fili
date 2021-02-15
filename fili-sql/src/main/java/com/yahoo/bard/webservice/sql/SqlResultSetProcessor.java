@@ -227,6 +227,8 @@ public class SqlResultSetProcessor {
             return Long::parseLong;
         } else if (aggType.contains("filtered") && agg instanceof FilteredAggregation) {
             return getNumParseFunctionByAggType(((FilteredAggregation) agg).getAggregation());
+        } else if (aggType.contains("thetasketch")) {
+            return Double::parseDouble;
         }
         return null;
     }
