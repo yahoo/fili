@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql
 
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.filter.Filter
 import com.yahoo.bard.webservice.druid.model.filter.NotFilter
 import com.yahoo.bard.webservice.druid.model.filter.SearchFilter
@@ -176,6 +177,24 @@ class DruidQueryToSqlConverterSpec extends Specification {
                                 ])
                         ])
                 ],
+                [interval(START, END)],
+                limitSpec
+        )
+    }
+
+    private static GroupByQuery getGroupByQueryWithSketchMetric(
+            Granularity timeGrain,
+            List<String> dimensions,
+            LimitSpec limitSpec
+    ) {
+        return new GroupByQuery(
+                getWikitickerDatasource(API_PREPEND, ""),
+                timeGrain,
+                getDimensions(dimensions.collect {API_PREPEND + it }),
+                null,
+                null,
+                [new ThetaSketchAggregation("foo", "bar", 128)],
+                [],
                 [interval(START, END)],
                 limitSpec
         )
@@ -359,6 +378,29 @@ FROM (SELECT "metroCode", "YEAR", "DAYOFYEAR", "api_added", "api_deleted", ROW_N
                 ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode") AS "t2") AS "t3"
 WHERE "RNUM" <= 4
 ORDER BY "YEAR" NULLS LAST, "DAYOFYEAR" NULLS LAST, "RNUM" NULLS LAST
+"""
+    }
+
+    def "test sketch metrics"() {
+        setup:
+        DruidQuery query = getGroupByQueryWithSketchMetric(
+                grain,
+                dims,
+                null
+        )
+        def sql = druidQueryToSqlConverter.buildSqlQuery(query, apiToFieldMapper)
+
+        expect:
+        sql.equals(expectedOutput.trim())
+
+        where:
+        grain | dims         | metrics        | metricDirections | expectedOutput
+        DAY   | [METRO_CODE] | [COUNT]        | [DESC]           | """
+SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", round(thetasketch_estimate(thetasketch_union(bar))) AS "foo"
+FROM "PUBLIC"."wikiticker"
+WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
+GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
+ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode"
 """
     }
 }
