@@ -9,6 +9,8 @@ Current
 -------
 ### Fixed:
 
+- [Fix: Install python to support build tagging on new screwdriver image](https://github.com/yahoo/fili/issues/1132)
+
 - [Fix: Change Log Level of Presto Response] (https://github.com/yahoo/fili/issues/1130)
 
 - [Fix: Presto Limit and the SD build](https://github.com/yahoo/fili/issues/1129)
