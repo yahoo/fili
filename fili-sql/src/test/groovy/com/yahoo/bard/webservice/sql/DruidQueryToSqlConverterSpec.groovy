@@ -395,12 +395,7 @@ ORDER BY "YEAR" NULLS LAST, "DAYOFYEAR" NULLS LAST, "RNUM" NULLS LAST
 
         where:
         grain | dims         | metrics        | metricDirections | expectedOutput
-        DAY   | [METRO_CODE] | [COUNT]        | [DESC]           | """
-SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", round(thetasketch_estimate(thetasketch_union(bar))) AS "foo"
-FROM "PUBLIC"."wikiticker"
-WHERE "TIME" >= '20150912' AND "TIME" < '20150913'
-GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME")
-ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode"
+        DAY   | [METRO_CODE] | [COUNT]        | [DESC]           | """SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", round(thetasketch_estimate(thetasketch_union(bar))) AS "foo" FROM "PUBLIC"."wikiticker" WHERE "TIME" >= '20150912' AND "TIME" < '20150913' GROUP BY "metroCode", YEAR("TIME"), DAYOFYEAR("TIME") ORDER BY YEAR("TIME"), DAYOFYEAR("TIME"), "metroCode"
 """
     }
 }

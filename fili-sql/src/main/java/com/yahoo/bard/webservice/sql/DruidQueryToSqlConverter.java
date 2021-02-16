@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
@@ -31,6 +32,8 @@ import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexFieldCollation;
@@ -66,7 +69,7 @@ public class DruidQueryToSqlConverter {
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
     public static final String ZERO_PLACEHOLDER = "zero";
-    private final static String SKETCH_STRING = "'round(thetasketch_estimate(thetasketch_union(";
+    private static final String SKETCH_LITERAL = "round(thetasketch_estimate(thetasketch_union(%s)))";
 
     /**
      * Constructs the default converter.
@@ -424,10 +427,9 @@ public class DruidQueryToSqlConverter {
             builder = builder.scan(sqlTable.getName());
             RelBuilder finalBuilder = builder;
             List<RexNode> sketchMetrics = druidQuery.getAggregations().stream()
-                    .filter(aggregation -> aggregation.getType().equals("thetaSketch"))
+                    .filter(aggregation -> aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
                     .map(aggregation -> finalBuilder.alias(finalBuilder.literal(
-                            String.format("round(thetasketch_estimate(thetasketch_union(%s)))",
-                                    aggregation.getFieldName())), aggregation.getName()))
+                            String.format(SKETCH_LITERAL, aggregation.getFieldName())), aggregation.getName()))
                     .collect(Collectors.toList());
             queryRelNode = builder
                     .filter(
@@ -848,7 +850,7 @@ public class DruidQueryToSqlConverter {
         aggToSqlType.put("longMin", SqlTypeName.BIGINT);
         return druidQuery.getAggregations()
                 .stream()
-                .filter(aggregation -> !aggregation.getType().equals("thetaSketch"))
+                .filter(aggregation -> !aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
                 .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
@@ -940,49 +942,26 @@ public class DruidQueryToSqlConverter {
     }
 
     /**
-     * Find all word positions in string.
-     * @param textString a string to search into.
-     * @param word a target word.
-     * @return an array of indexes of all positions word was found in the textString.
-     */
-    private List<Integer> findWord(String textString, String word) {
-        List<Integer> indexes = new ArrayList<>();
-        String lowerCaseTextString = textString.toLowerCase(Locale.ENGLISH);
-        String lowerCaseWord = word.toLowerCase(Locale.ENGLISH);
-        int wordLength = 0;
-
-        int index = 0;
-        while (index != -1) {
-            index = lowerCaseTextString.indexOf(lowerCaseWord, index + wordLength);
-            if (index != -1) {
-                indexes.add(index);
-            }
-            wordLength = word.length();
-        }
-        return indexes;
-    }
-
-    /**
      * Removes the quotes around the Sketch metric literal.
-     * @param sqlQuery the sql string built by the RelBuilder.
+     *
+     * @param sqlQuery  the sql string built by the RelBuilder.
+     *
      * @return the sql string without quote around the sketch metric expression.
      */
     private String formatSketchQuery(String sqlQuery) {
-        if (sqlQuery.contains(SKETCH_STRING)) {
-            StringBuilder stringBuilder = new StringBuilder();
-            int beginningPos = 0;
-            for (Integer pos : findWord(sqlQuery, SKETCH_STRING)) {
-                // Append string up to opening quote
-                stringBuilder.append(sqlQuery, beginningPos, pos);
-                beginningPos = pos + 1;
-                // Find closing quote location
-                int nextPos = beginningPos + sqlQuery.substring(beginningPos).indexOf("'");
-                // Append string up to closing quote
-                stringBuilder.append(sqlQuery, beginningPos, nextPos);
-                beginningPos = nextPos + 1;
-            }
-            stringBuilder.append(sqlQuery, beginningPos, sqlQuery.length());
-            return stringBuilder.toString();
+        final String patternString = ".*round\\(thetasketch_estimate\\(thetasketch_union\\([a-zA-Z]*\\)\\)\\).*";
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(sqlQuery);
+
+        if (matcher.find()) {
+            return String.join(" ", Arrays.stream(sqlQuery.split("\\s+")).map(segment -> {
+                Matcher localMatcher = pattern.matcher(segment);
+                if (localMatcher.matches()) {
+                    return segment.replaceAll("'", "");
+                } else {
+                    return segment;
+                }
+            }).collect(Collectors.toList()));
         } else {
             return sqlQuery;
         }
