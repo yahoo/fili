@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
@@ -31,6 +32,8 @@ import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rex.RexFieldCollation;
@@ -66,6 +69,7 @@ public class DruidQueryToSqlConverter {
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
     public static final String ZERO_PLACEHOLDER = "zero";
+    private static final String SKETCH_LITERAL = "round(thetasketch_estimate(thetasketch_union(%s)))";
 
     /**
      * Constructs the default converter.
@@ -214,7 +218,7 @@ public class DruidQueryToSqlConverter {
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
 
-        return writeSql(sqlWriter, relToSql, query);
+        return formatSketchQuery(writeSql(sqlWriter, relToSql, query));
     }
 
     /**
@@ -421,6 +425,12 @@ public class DruidQueryToSqlConverter {
             queryRelNode = convertDruidQueryWithFilteredAgg(builder, druidQuery, apiToFieldMapper, sqlTable);
         } else {
             builder = builder.scan(sqlTable.getName());
+            RelBuilder finalBuilder = builder;
+            List<RexNode> sketchMetrics = druidQuery.getAggregations().stream()
+                    .filter(aggregation -> aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
+                    .map(aggregation -> finalBuilder.alias(finalBuilder.literal(
+                            String.format(SKETCH_LITERAL, aggregation.getFieldName())), aggregation.getName()))
+                    .collect(Collectors.toList());
             queryRelNode = builder
                     .filter(
                             getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
@@ -437,6 +447,7 @@ public class DruidQueryToSqlConverter {
                     .project(
                             (Iterable) ImmutableList.builder()
                                     .addAll(builder.fields())
+                                    .addAll(sketchMetrics)
                                     .addAll(getPostAggregations(builder, druidQuery, apiToFieldMapper))
                                     .build()
                     )
@@ -839,6 +850,7 @@ public class DruidQueryToSqlConverter {
         aggToSqlType.put("longMin", SqlTypeName.BIGINT);
         return druidQuery.getAggregations()
                 .stream()
+                .filter(aggregation -> !aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
                 .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
@@ -927,6 +939,32 @@ public class DruidQueryToSqlConverter {
         allGroupBys.addAll(timeFilters);
         allGroupBys.addAll(dimensionFields);
         return allGroupBys;
+    }
+
+    /**
+     * Removes the quotes around the Sketch metric literal.
+     *
+     * @param sqlQuery  the sql string built by the RelBuilder.
+     *
+     * @return the sql string without quote around the sketch metric expression.
+     */
+    private String formatSketchQuery(String sqlQuery) {
+        final String patternString = ".*round\\(thetasketch_estimate\\(thetasketch_union\\([a-zA-Z]*\\)\\)\\).*";
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(sqlQuery);
+
+        if (matcher.find()) {
+            return String.join(" ", Arrays.stream(sqlQuery.split("\\s+")).map(segment -> {
+                Matcher localMatcher = pattern.matcher(segment);
+                if (localMatcher.matches()) {
+                    return segment.replaceAll("'", "");
+                } else {
+                    return segment;
+                }
+            }).collect(Collectors.toList()));
+        } else {
+            return sqlQuery;
+        }
     }
 
     /**
