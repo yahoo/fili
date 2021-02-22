@@ -50,7 +50,9 @@ public class PaginationMapper extends ResultSetMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
         Pagination<Result> pages = new AllPagesPagination<>(resultSet, paginationParameters);
-        AbstractResponse.addLinks(pages, uriBuilder, responseProcessor);
+        if (uriBuilder != null) {
+            AbstractResponse.addLinks(pages, uriBuilder, responseProcessor);
+        }
         //uses map for additional flexibility and robustness, even though it is currently a no-op.
         return new ResultSet(map(resultSet.getSchema()), pages.getPageOfData());
     }

@@ -76,6 +76,8 @@ public class RequestContext {
     }
 
     public UriBuilder getUriBuilder() {
-        return containerRequestContext.getUriInfo().getRequestUriBuilder();
+        return containerRequestContext == null
+                ? null
+                : containerRequestContext.getUriInfo().getRequestUriBuilder();
     }
 }
