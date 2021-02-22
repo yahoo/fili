@@ -450,6 +450,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             // Accumulate data needed for request processing workflow
             RequestContext context;
             try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
+                // In embedded contexts, containerRequestContext may be null
                 context = new RequestContext(containerRequestContext, readCache);
             }
 
