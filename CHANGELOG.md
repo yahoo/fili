@@ -197,6 +197,8 @@ Current
    * Generators based on `DataApiRequestImpl` are not yet implemented.
 
 ### Changed:
+- [Support for embedded java client usage: made uri builder an optional contract](https://github.com/yahoo/fili/issues/1137)
+
 - [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)
    * Modify RequestLog to support fetching without modification on Timers.
    * Build TimeRemainingFunction to pull a time delta using the RequestLog start of request.

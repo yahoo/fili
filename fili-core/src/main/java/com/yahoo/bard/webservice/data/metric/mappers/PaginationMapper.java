@@ -11,6 +11,7 @@ import com.yahoo.bard.webservice.web.AbstractResponse;
 import com.yahoo.bard.webservice.web.responseprocessors.MappingResponseProcessor;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
 /**
@@ -28,11 +29,11 @@ public class PaginationMapper extends ResultSetMapper {
      *
      * @param paginationParameters  The parameters needed for pagination
      * @param responseProcessor  The API response to which we can add the header links.
-     * @param uriBuilder  The builder for creating the pagination links.
+     * @param uriBuilder  The builder for creating the pagination links. (Optional)
      */
     public PaginationMapper(
-            PaginationParameters paginationParameters,
-            MappingResponseProcessor responseProcessor,
+            @NotNull PaginationParameters paginationParameters,
+            @NotNull MappingResponseProcessor responseProcessor,
             UriBuilder uriBuilder
     ) {
         this.paginationParameters = paginationParameters;
