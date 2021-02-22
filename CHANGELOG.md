@@ -195,6 +195,9 @@ Current
    WRITE NEW CODE REFERENCING THOSE METHODS unless you have a good reason to do so. Prefer
    creating instances of the generator.
    * Generators based on `DataApiRequestImpl` are not yet implemented.
+   
+- [Add Sketch Metrics support for Preso](https://github.com/yahoo/fili/issues/1138)
+   * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
 ### Changed:
 - [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)
