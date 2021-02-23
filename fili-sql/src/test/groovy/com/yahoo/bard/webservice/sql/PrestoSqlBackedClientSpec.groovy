@@ -8,13 +8,13 @@ import spock.lang.Specification
 class PrestoSqlBackedClientSpec extends Specification {
     def "Test valid sqlQueryToPrestoQuery call"() {
         setup:
-        String toPrestoQuery = PrestoSqlBackedClient.sqlQueryToPrestoQuery(sqlQuery)
+        String toPrestoQuery = PrestoSqlBackedClient.sqlQueryToPrestoQuery(sqlQuery, "%Y%m%d%H")
         expect:
-        toPrestoQuery == """SELECT "source", SUBSTRING(datestamp,1,4) AS "\$f23", DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')) AS "\$f24", SUBSTRING(datestamp,9,2) AS "\$f25", SUM("revenue") AS "revenue"
+        toPrestoQuery == """SELECT "source", SUBSTRING("datestamp",1,4) AS "\$f23", DAY_OF_YEAR(date_parse("datestamp",'%Y%m%d%H')) AS "\$f24", SUBSTRING("datestamp",9,2) AS "\$f25", SUM("revenue") AS "revenue"
 FROM "catalog"."schema"."table"
 WHERE "datestamp" > '201909011400000' AND "datestamp" < '201909021400000' AND CAST("comment" AS varchar) <> '1=2====3' AND (CAST("advertiser_id" AS varchar) = '456' OR CAST("advertiser_id" AS varchar) = '123')
-GROUP BY "source", SUBSTRING(datestamp,1,4), DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')), SUBSTRING(datestamp,9,2)
-ORDER BY SUBSTRING(datestamp,1,4) NULLS FIRST, DAY_OF_YEAR(date_parse(SUBSTRING (datestamp,1,10),'%Y%m%d%H')) NULLS FIRST, SUBSTRING(datestamp,9,2) NULLS FIRST, "source" NULLS FIRST"""
+GROUP BY "source", SUBSTRING("datestamp",1,4), DAY_OF_YEAR(date_parse("datestamp",'%Y%m%d%H')), SUBSTRING("datestamp",9,2)
+ORDER BY SUBSTRING("datestamp",1,4) NULLS FIRST, DAY_OF_YEAR(date_parse("datestamp",'%Y%m%d%H')) NULLS FIRST, SUBSTRING("datestamp",9,2) NULLS FIRST, "source" NULLS FIRST"""
 
         where:
         sqlQuery << ["""SELECT "source", YEAR("datestamp") AS "\$f23", DAYOFYEAR("datestamp") AS "\$f24", HOUR("datestamp") AS "\$f25", SUM("revenue") AS "revenue"
@@ -26,21 +26,21 @@ ORDER BY YEAR("datestamp") NULLS FIRST, DAYOFYEAR("datestamp") NULLS FIRST, HOUR
 
     def "Test invalid sqlQueryToPrestoQuery call, null input sql query"() {
         when:
-        PrestoSqlBackedClient.sqlQueryToPrestoQuery(null)
+        PrestoSqlBackedClient.sqlQueryToPrestoQuery(null, "%Y%m%d%H")
         then:
         thrown IllegalStateException
     }
 
     def "Test invalid sqlQueryToPrestoQuery call, empty input sql query"() {
         when:
-        PrestoSqlBackedClient.sqlQueryToPrestoQuery("")
+        PrestoSqlBackedClient.sqlQueryToPrestoQuery("", "%Y%m%d%H")
         then:
         thrown IllegalStateException
     }
 
     def "Test invalid sqlQueryToPrestoQuery call, missing timestamp info"() {
         when:
-        PrestoSqlBackedClient.sqlQueryToPrestoQuery("SELECT \"source\"")
+        PrestoSqlBackedClient.sqlQueryToPrestoQuery("SELECT \"source\"", "%Y%m%d%H")
         then:
         thrown IllegalStateException
     }

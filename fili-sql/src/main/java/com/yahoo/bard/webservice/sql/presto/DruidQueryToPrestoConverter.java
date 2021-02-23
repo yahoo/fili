@@ -60,7 +60,7 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
      * @return a new time converter.
      */
     protected SqlTimeConverter buildSqlTimeConverter() {
-        return new SqlTimeConverter("yyyyMMddHHmmss");
+        return new SqlTimeConverter("yyyyMMddHH", "yyyyMMdd");
     }
 
     /**
@@ -100,8 +100,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
     ) {
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
-        int timePartFunctions = getTimeConverter().timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
-        int groupBys = druidQuery.getDimensions().size() + timePartFunctions;
+        int datePartFunctionSize = getTimeConverter().timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
+        int groupBySize = druidQuery.getDimensions().size() + datePartFunctionSize;
 
         List<RexNode> limitSpecSorts = new ArrayList<>();
         Set<String> limitSpecColumns = new HashSet<>();
@@ -112,10 +112,9 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                 limitSpec.getColumns()
                         .stream()
                         .map(orderByColumn -> {
-                            // TODO: investigate the field name mapping discrepency
-                            String orderByField = apiToFieldMapper.unApply(orderByColumn.getDimension());
-                            limitSpecColumns.add(orderByField);
-                            RexNode sort = builder.literal(orderByField);
+                            String orderByField = apiToFieldMapper.apply(orderByColumn.getDimension());
+                            limitSpecColumns.add(apiToFieldMapper.unApply(orderByField));
+                            RexNode sort = builder.literal(apiToFieldMapper.unApply(orderByField));
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
                             }
@@ -124,11 +123,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                         .forEach(limitSpecSorts::add);
             }
         }
-        // add time group by
-        if (timePartFunctions == 0) {
-            sorts.add(builder.field(timestampColumn));
-        }
-        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
+
+        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBySize));
 
         // add limit spec group by
         sorts.addAll(limitSpecSorts);
@@ -146,6 +142,7 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
                 .collect(Collectors.toList());
     }
+
 
     /**
      * Determines whether or not a query is able to be processed using
