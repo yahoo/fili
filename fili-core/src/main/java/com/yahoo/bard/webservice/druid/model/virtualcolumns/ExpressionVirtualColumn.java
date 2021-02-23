@@ -19,7 +19,7 @@ public class ExpressionVirtualColumn implements VirtualColumn {
     private final String outputType;
 
     /**
-     * Constructor.
+     * Constructor.A
      *
      * @param name  Name of the expression virtual column
      * @param expression  Expression string for the virtual column
