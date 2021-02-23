@@ -33,6 +33,6 @@ class DoubleFirstAggregationSpec extends Specification {
 
         then:
         newDoubleFirstAggregation.name == newName
-        newDoubleFirstAggregation.name == newName
+        newDoubleFirstAggregation.fieldName == fieldName
     }
 }
