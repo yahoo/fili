@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.NotNull;
 
 /**
- * VirtualColumn that computes the metric value with the any timestamp for doubles.
+ * VirtualColumn to provide queryable column views created from a set of columns during a query.
  */
 public class ExpressionVirtualColumn implements VirtualColumn {
 

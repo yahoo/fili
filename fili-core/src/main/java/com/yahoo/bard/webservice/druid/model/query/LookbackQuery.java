@@ -12,7 +12,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
-import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;

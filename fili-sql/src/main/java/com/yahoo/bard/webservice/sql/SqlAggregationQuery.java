@@ -16,8 +16,8 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidFactQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 
-import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 
 import java.util.Collection;

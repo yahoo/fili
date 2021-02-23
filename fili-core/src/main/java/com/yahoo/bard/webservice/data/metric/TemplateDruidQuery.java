@@ -17,7 +17,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
-import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
 import org.apache.commons.lang3.tuple.Pair;

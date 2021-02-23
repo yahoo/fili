@@ -9,10 +9,10 @@ import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 
 import java.util.Collection;
