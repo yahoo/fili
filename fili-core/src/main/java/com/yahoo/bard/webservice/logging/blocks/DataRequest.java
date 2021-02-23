@@ -34,6 +34,7 @@ public class DataRequest implements LogInfo {
     protected final List<Filter> filters;
     protected final List<String> metrics;
     protected final List<String> groupByDimensions;
+    protected final List<String> filteredDimensions;
     protected final Set<String> combinedDimensions;
     protected final Set<String> dataSources;
     protected final boolean skipCache;
@@ -47,6 +48,7 @@ public class DataRequest implements LogInfo {
      * @param filterSuperSet  Collection of all of the filters in the API request
      * @param metricSet  All of the metrics in the API request
      * @param groupByDimensionsSet  Dimensions grouped on in the API request
+     * @param filteredDimensionsSet  Dimensions in the filtered metrics
      * @param dataSourceNames  Names of the data sources selected for the queries
      * @param readCache  Indicate if the user turned off cached responses
      * @param format  In which format the request asked for a response
@@ -57,6 +59,7 @@ public class DataRequest implements LogInfo {
             Collection<Set<ApiFilter>> filterSuperSet,
             Set<LogicalMetric> metricSet,
             Set<Dimension> groupByDimensionsSet,
+            Set<Dimension> filteredDimensionsSet,
             Set<String> dataSourceNames,
             boolean readCache,
             String format
@@ -87,6 +90,14 @@ public class DataRequest implements LogInfo {
                 .collect(Collectors.toList());
 
         this.combinedDimensions.addAll(this.groupByDimensions);
+
+        this.filteredDimensions = filteredDimensionsSet
+                .stream()
+                .map(Dimension::getApiName)
+                .sorted()
+                .collect(Collectors.toList());
+
+        this.combinedDimensions.addAll(this.filteredDimensions);
 
         this.dataSources = dataSourceNames;
         this.skipCache = !readCache;

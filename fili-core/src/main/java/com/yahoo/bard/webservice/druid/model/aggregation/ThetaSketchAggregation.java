@@ -7,7 +7,7 @@ package com.yahoo.bard.webservice.druid.model.aggregation;
  */
 public class ThetaSketchAggregation extends SketchAggregation {
 
-    private static final String AGGREGATION_TYPE = "thetaSketch";
+    public static final String AGGREGATION_TYPE = "thetaSketch";
 
     /**
      * Constructor.

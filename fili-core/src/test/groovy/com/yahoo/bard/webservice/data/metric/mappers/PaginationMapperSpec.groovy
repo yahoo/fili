@@ -220,6 +220,31 @@ class PaginationMapperSpec extends Specification {
         3    | 3           | 2
     }
 
+    @Unroll
+    def "Pagination links should not be added when URIBuilder is null"() {
+        given: "A pagination mapper without URIBuilder"
+        PaginationMapper paginator = new PaginationMapper(
+                new PaginationParameters(rowsPerPage, page),
+                responseProcessor,
+                null
+        )
+        ResultSet testResults = buildResultSet(numPages * rowsPerPage)
+
+        when: "We attempt to extract the desired page"
+        paginator.map(testResults)
+
+        then: "no links should be present"
+        Map<String, URI> bodyLinks = responseProcessor
+                .getResponseContext()[ResponseContextKeys.PAGINATION_LINKS_CONTEXT_KEY.getName()] as Map<String, URI>
+        bodyLinks == null
+
+        where:
+        page | numPages | rowsPerPage
+        1    | 1        | 1
+        1    | 1        | 2
+
+    }
+
 
     String getExpectedErrorMessage(int page, int rowsPerPage, int numPages) {
         "Requested page '$page' with '$rowsPerPage' rows per page, but there are only '$numPages' pages."
