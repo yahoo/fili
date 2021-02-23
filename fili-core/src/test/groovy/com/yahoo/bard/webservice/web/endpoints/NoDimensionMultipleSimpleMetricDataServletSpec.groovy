@@ -42,7 +42,8 @@ class NoDimensionMultipleSimpleMetricDataServletSpec extends BaseDataServletComp
               "postAggregations" : [],
               "intervals" : [ "2014-06-02T00:00:00.000Z/2014-06-04T00:00:00.000Z" ],
               "granularity": ${getTimeGrainString()},
-              "context": {}
+              "context": {},
+              "virtualColumns": []
             }"""
     }
 

@@ -66,7 +66,8 @@ class DruidLimitSpec extends BaseDataServletComponentSpec {
                     "columns": []
                 },
                 "granularity": ${getTimeGrainString("week")},
-                "context": {}
+                "context": {},
+                "virtualColumns": []
             }"""
     }
 

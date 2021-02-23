@@ -48,7 +48,7 @@ class RequestUtils {
                 aggregations,
                 postAggregations,
                 intervals,
-                (LimitSpec) null,
+                (LimitSpec) null
         )
     }
 
@@ -119,6 +119,7 @@ class RequestUtils {
             "dimensions": [],
             "aggregations": [],
             "postAggregations": [],
+            "virtualColumns": [],
             "intervals": [],
             "granularity": {
               "type": "period",

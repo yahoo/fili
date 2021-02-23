@@ -62,7 +62,8 @@ class DailyAvgWeekWithHavingSpec extends DailyAvgWeekSpec {
                             }
                     ],
                     "queryType": "groupBy",
-                    "context": {}
+                    "context": {},
+                    "virtualColumns": []
                 },
                 "type": "query"
             },
@@ -88,7 +89,8 @@ class DailyAvgWeekWithHavingSpec extends DailyAvgWeekSpec {
                 }
             ],
             "queryType": "groupBy",
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 }

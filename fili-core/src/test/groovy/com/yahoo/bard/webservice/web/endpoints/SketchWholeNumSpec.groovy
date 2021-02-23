@@ -65,7 +65,8 @@ class SketchWholeNumSpec extends BaseDataServletComponentSpec {
         ],
             "postAggregations": [],
             "queryType": "groupBy",
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

@@ -94,6 +94,7 @@ class TimeSeriesQuerySpec extends Specification {
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
+        vars.virtualColumns = vars.virtualColumns ?: "[]"
 
 
         """
@@ -105,7 +106,8 @@ class TimeSeriesQuerySpec extends Specification {
             "context":$vars.context,
             "aggregations":$vars.aggregations,
             "postAggregations":$vars.postAggregations,
-            "intervals":$vars.intervals
+            "intervals":$vars.intervals,
+            "virtualColumns":$vars.virtualColumns
         }
         """
     }

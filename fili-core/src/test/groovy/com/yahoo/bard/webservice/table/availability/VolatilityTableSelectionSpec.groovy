@@ -80,7 +80,8 @@ class VolatilityTableSelectionSpec extends BaseDataServletComponentSpec {
                             "type": "longSum"
                         }
                 ],
-                "postAggregations": []
+                "postAggregations": [],
+                "virtualColumns": []
             }
         """
     }

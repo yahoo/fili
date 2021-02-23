@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import com.yahoo.bard.webservice.metadata.RequestedIntervalsFunction;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -133,6 +134,58 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 having,
                 limitSpec
         );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  DataSource for the query
+     * @param granularity  Granularity for the query
+     * @param filter  Filter for the query
+     * @param aggregations  Aggregations for the query
+     * @param postAggregations  Post-aggregation operation trees for the query
+     * @param context  Query context
+     * @param intervals  Query intervals
+     * @param incrementQueryId  If the query should track it's forks or not
+     * @param lookbackOffsets  Set of period offsets
+     * @param lookbackPrefixes  Set of prefixes for the lookback queries (should match the lookbackOffsets)
+     * @param having  Having clause to apply to the result query
+     * @param limitSpec  Limit spec to apply to the result query
+     * @param virtualColumns Virtual columns for the query
+     */
+    private LookbackQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<Period> lookbackOffsets,
+            Collection<String> lookbackPrefixes,
+            Having having,
+            LimitSpec limitSpec,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        super(
+                DefaultQueryType.LOOKBACK,
+                dataSource,
+                granularity,
+                Collections.<Dimension>emptySet(),
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                virtualColumns
+        );
+
+        this.having = having;
+        this.limitSpec = limitSpec;
+        this.lookbackOffsets = lookbackOffsets != null ? new ArrayList<>(lookbackOffsets) : null;
+        this.lookbackPrefixes = lookbackPrefixes != null ? new ArrayList<>(lookbackPrefixes) : null;
     }
 
     @Override
@@ -322,6 +375,11 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
 
     public LookbackQuery withLookbackOffsets(List<Period> lookbackOffsets) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec);
+    }
+
+    @Override
+    public LookbackQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec, virtualColumns);
     }
 
     // CHECKSTYLE:ON

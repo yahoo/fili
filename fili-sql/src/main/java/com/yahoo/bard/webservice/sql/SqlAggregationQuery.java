@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.druid.model.query.DruidFactQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 
 import java.util.Collection;
@@ -79,6 +80,45 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 intervals,
                 context,
                 false
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
+     * @param virtualColumns The virtual columns
+     */
+    private SqlAggregationQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Collection<Dimension> dimensions,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            QueryContext context,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        super(
+                DefaultQueryType.GROUP_BY,
+                dataSource,
+                granularity,
+                dimensions,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                false,
+                virtualColumns
         );
     }
 
@@ -148,6 +188,11 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
     @Override
     public SqlAggregationQuery withContext(QueryContext context) {
         return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context);
+    }
+
+    @Override
+    public SqlAggregationQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
     // CHECKSTYLE:ON
 }

@@ -7,7 +7,7 @@ package com.yahoo.bard.webservice.druid.model.virtualcolumns;
  * <p>
  * This may become a sub interface of a TBD Column interface to flag all dimensions and metrics.
  */
-public interface VirtualColumns {
+public interface VirtualColumn {
 
     /**
      * Get the name of the virtual column in the response.
@@ -43,5 +43,5 @@ public interface VirtualColumns {
      * @param name The new output name for virtual column
      * @return the updated copy
      */
-    VirtualColumns withName(String name);
+    VirtualColumn withName(String name);
 }

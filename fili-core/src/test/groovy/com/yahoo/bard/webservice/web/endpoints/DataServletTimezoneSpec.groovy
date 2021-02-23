@@ -57,7 +57,8 @@ class DataServletTimezoneSpec extends Specification {
                     "type" : "period",
                     "period" : "PT1H"%s
                 },
-                "context": {}
+                "context": {},
+                "virtualColumns": []
             }"""
 
     def setupSpec() {

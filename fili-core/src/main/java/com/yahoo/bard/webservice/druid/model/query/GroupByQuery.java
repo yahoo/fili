@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,6 +146,81 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
         );
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param having  The having clause
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param limitSpec  The limit specification
+     * @param context  The context
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
+     * @param virtualColumn The virtual columns
+     */
+    protected GroupByQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Collection<Dimension> dimensions,
+            Filter filter,
+            Having having,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            LimitSpec limitSpec,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<VirtualColumn> virtualColumn
+    ) {
+        super(
+                DefaultQueryType.GROUP_BY,
+                dataSource,
+                granularity,
+                dimensions,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                virtualColumn
+        );
+        this.having = having;
+        this.limitSpec = limitSpec;
+
+        LOG.trace(
+                "Query type: {}\n\n" +
+                        "DataSource: {}\n\n" +
+                        "Dimensions: {}\n\n" +
+                        "TimeGrain: {}\n\n" +
+                        "Filter: {}\n\n" +
+                        "Having: {}\n\n" +
+                        "Aggregations: {}\n\n" +
+                        "Post aggregations: {}\n\n" +
+                        "Intervals: {}\n\n" +
+                        "Limit spec: {}\n\n" +
+                        "Context: {}" +
+                        "Virtual columns: {}\n\n",
+                this.queryType,
+                this.dataSource,
+                this.dimensions,
+                this.granularity,
+                this.filter,
+                this.having,
+                this.aggregations,
+                this.postAggregations,
+                this.intervals,
+                this.limitSpec,
+                this.context,
+                this.virtualColumns
+        );
+    }
+
     public Having getHaving() {
         return having;
     }
@@ -219,6 +295,11 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     @Override
     public GroupByQuery withContext(QueryContext context) {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+    }
+
+    @Override
+    public GroupByQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
     // CHECKSTYLE:ON
 }

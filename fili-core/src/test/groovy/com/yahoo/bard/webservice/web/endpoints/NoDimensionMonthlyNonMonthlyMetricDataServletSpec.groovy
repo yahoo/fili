@@ -100,7 +100,8 @@ class NoDimensionMonthlyNonMonthlyMetricDataServletSpec extends BaseDataServletC
                         }
                     ],
                     "queryType": "groupBy",
-                    "context": {}
+                    "context": {},
+                    "virtualColumns": []
                 },
                 "type": "query"
             },
@@ -127,7 +128,8 @@ class NoDimensionMonthlyNonMonthlyMetricDataServletSpec extends BaseDataServletC
                 }
             ],
             "queryType": "groupBy",
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

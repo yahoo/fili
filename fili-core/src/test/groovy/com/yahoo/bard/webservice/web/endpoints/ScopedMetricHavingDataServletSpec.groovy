@@ -71,7 +71,8 @@ class ScopedMetricHavingDataServletSpec extends BaseDataServletComponentSpec {
                 ],
                 "postAggregations": [],
                 "queryType": "groupBy",
-                "context": {}
+                "context": {},
+                "virtualColumns": []
         }"""
     }
 

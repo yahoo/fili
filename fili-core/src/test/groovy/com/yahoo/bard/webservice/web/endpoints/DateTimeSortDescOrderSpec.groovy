@@ -68,7 +68,8 @@ class DateTimeSortDescOrderSpec extends BaseDataServletComponentSpec {
                 "type": "default"
               },
                 "granularity": ${getTimeGrainString("week")},
-                "context": {}
+                "context": {},
+                "virtualColumns": []
             }"""
     }
 

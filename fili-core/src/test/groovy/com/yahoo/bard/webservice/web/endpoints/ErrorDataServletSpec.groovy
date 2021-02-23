@@ -90,7 +90,8 @@ class ErrorDataServletSpec extends Specification {
     "granularity": ${BaseDataServletComponentSpec.getTimeGrainString("week")},
     "context" : {
         "timeout" : 123
-    }
+    },
+    "virtualColumns": []
 }
 """
 

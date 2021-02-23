@@ -268,7 +268,8 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
                 { "name": "limbs", "fieldName": "limbs", "type": "longSum" }
             ],
             "postAggregations": [],
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

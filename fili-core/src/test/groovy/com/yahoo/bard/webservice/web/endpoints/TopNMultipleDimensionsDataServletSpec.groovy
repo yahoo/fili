@@ -125,7 +125,8 @@ class TopNMultipleDimensionsDataServletSpec extends BaseDataServletComponentSpec
                         }
                     ]
                 },
-                "context":{}
+                "context":{},
+                "virtualColumns":[]
         }"""
     }
 

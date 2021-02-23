@@ -91,7 +91,8 @@ class MultipleMetricHavingDataServletSpec extends BaseDataServletComponentSpec {
             ],
             "postAggregations": [],
             "queryType": "groupBy",
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

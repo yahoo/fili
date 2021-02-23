@@ -108,7 +108,8 @@ class NestedDisjunctionHavingDataServletSpec extends BaseDataServletComponentSpe
             ],
             "postAggregations": [],
             "queryType": "groupBy",
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

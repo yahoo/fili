@@ -17,6 +17,7 @@ import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.QueryContext;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,6 +56,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     private final ZonelessTimeGrain timeGrain;
     private final Set<Aggregation> aggregations;
     private final Set<PostAggregation> postAggregations;
+    private Set<VirtualColumn> virtualColumns;
     private final Set<Dimension> dimensions;
     private final int depth;
 
@@ -116,6 +118,27 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         this(aggregations, postAggregations, nestedQuery, timeGrain, Collections.emptySet());
     }
 
+    /**
+     * Template Query constructor for a nested template query with a bound time grain.
+     *
+     * @param aggregations  aggregations for this query template
+     * @param postAggregations  post aggregations for this query template
+     * @param nestedQuery  A query which this query uses as a data source
+     * @param timeGrain  The time grain constraint on the query if any
+     * @param dimensions  The Dimensions on TDQ
+     * @param virtualColumns virtual columns for this query template
+     */
+    public TemplateDruidQuery(
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            TemplateDruidQuery nestedQuery,
+            ZonelessTimeGrain timeGrain,
+            Collection<Dimension> dimensions,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        this(aggregations, postAggregations, nestedQuery, timeGrain, dimensions);
+        this.virtualColumns = Collections.unmodifiableSet(new LinkedHashSet<>(virtualColumns));
+    }
 
     /**
      * Template Query constructor for a nested template query with a bound time grain.
@@ -399,6 +422,11 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     @Override
+    public Set<VirtualColumn> getVirtualColumns() {
+        return virtualColumns;
+    }
+
+    @Override
     public Set<PostAggregation> getPostAggregations() {
         return postAggregations;
     }
@@ -571,6 +599,27 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     public TemplateDruidQuery withPostAggregations(Collection<PostAggregation> newPostAggregations) {
         return new TemplateDruidQuery(aggregations, newPostAggregations, nestedQuery, timeGrain, dimensions);
+    }
+
+    /**
+     * Makes a copy of the template query and any sub query(s), changing virtual columns.
+     * <p>
+     * Everything is a shallow copy.
+     *
+     * @param newVirtualColumns  The VirtualColumns to replace in the copy
+     *
+     * @return copy of the query
+     */
+    @Override
+    public TemplateDruidQuery withVirtualColumns(Collection<VirtualColumn> newVirtualColumns) {
+        return new TemplateDruidQuery(
+                aggregations,
+                postAggregations,
+                nestedQuery,
+                timeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**

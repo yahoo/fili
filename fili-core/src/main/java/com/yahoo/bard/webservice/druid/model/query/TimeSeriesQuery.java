@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 
 import java.util.Collection;
@@ -89,6 +90,46 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
         );
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
+     * @param virtualColumns The virtual columns
+     */
+    public TimeSeriesQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        super(
+                DefaultQueryType.TIMESERIES,
+                dataSource,
+                granularity,
+                Collections.<Dimension>emptySet(),
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                virtualColumns
+        );
+    }
+
     //This method is overridden just to redefine its JSON scope
     @JsonIgnore
     @Override
@@ -130,6 +171,11 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
     @Override
     public TimeSeriesQuery withIntervals(Collection<Interval> intervals) {
         return new TimeSeriesQuery(getDataSource(), granularity, filter, aggregations, postAggregations, intervals, context, true);
+    }
+
+    @Override
+    public TimeSeriesQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new TimeSeriesQuery(getDataSource(), granularity, filter, aggregations, postAggregations, intervals, context, true, virtualColumns);
     }
 
     @Override

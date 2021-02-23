@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.*;
 import org.joda.time.Interval;
 
 import java.util.Collection;
@@ -114,6 +115,55 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
         );
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimension  The dimension
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param threshold  The threshold
+     * @param metric  The TopN metric
+     * @param context  The context
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
+     * @param virtualColumns The virtual columns
+     */
+    protected TopNQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Dimension dimension,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            long threshold,
+            TopNMetric metric,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        super(
+                DefaultQueryType.TOP_N,
+                dataSource,
+                granularity,
+                Collections.singletonList(dimension),
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                virtualColumns
+        );
+
+        this.threshold = threshold;
+        this.metric = metric;
+    }
+
     public Dimension getDimension() {
         return dimensions.isEmpty() ? null : dimensions.iterator().next();
     }
@@ -185,6 +235,11 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
     @Override
     public TopNQuery withContext(QueryContext context) {
         return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+    }
+
+    @Override
+    public TopNQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
     // CHECKSTYLE:ON
 }

@@ -64,7 +64,8 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
                     { "name": "height", "fieldName": "height", "type": "longSum" }
               ],
               "postAggregations": [],
-              "context": {}
+              "context": {},
+               "virtualColumns": []
             }"""
     }
 

@@ -77,7 +77,8 @@ class SingleDimensionSimpleFilterDataServletSpec extends BaseDataServletComponen
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
             "postAggregations": [],
-            "context": {}
+            "context": {},
+            "virtualColumns": []
         }"""
     }
 

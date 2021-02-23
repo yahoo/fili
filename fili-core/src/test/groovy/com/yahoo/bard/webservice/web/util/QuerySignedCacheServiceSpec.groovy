@@ -92,7 +92,7 @@ class QuerySignedCacheServiceSpec extends Specification {
 
     def "Get key from druid query to check match with cache"() {
         setup:
-        String expectedResponse = """{"aggregations":[],"context":{},"dataSource":{"name":"dataSource","type":"table"},"dimensions":[],"granularity":{"period":"P1D","type":"period"},"intervals":[],"postAggregations":[],"queryType":"groupBy"}"""
+        String expectedResponse = """{"aggregations":[],"context":{},"dataSource":{"name":"dataSource","type":"table"},"dimensions":[],"granularity":{"period":"P1D","type":"period"},"intervals":[],"postAggregations":[],"queryType":"groupBy","virtualColumns":[]}"""
 
         expect:
         cacheService.getKey(groupByQuery) == expectedResponse

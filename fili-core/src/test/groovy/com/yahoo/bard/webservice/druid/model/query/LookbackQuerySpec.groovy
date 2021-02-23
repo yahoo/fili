@@ -153,6 +153,7 @@ class LookbackQuerySpec extends Specification {
         vars.lookbackOffsets = vars.lookbackOffsets ?: [""" "P-1D" """]
         String lookback = /"lookbackPrefixes": $vars.lookbackPrefixes,/
         vars.lookbackPrefixes = vars.lookbackPrefixes != null ? lookback : ""
+        vars.virtualColumns = vars.virtualColumns ?: "[]"
 
         """
             {
@@ -161,7 +162,8 @@ class LookbackQuerySpec extends Specification {
                 "context":$vars.context,
                 $vars.lookbackPrefixes
                 "postAggregations":$vars.postAggregations,
-                "lookbackOffsets":$vars.lookbackOffsets
+                "lookbackOffsets":$vars.lookbackOffsets,
+                "virtualColumns":$vars.virtualColumns
             }
         """
     }
@@ -209,11 +211,14 @@ class LookbackQuerySpec extends Specification {
 
         String lookbackPrefixes = '["lookback_days_", "lookback_weeks_"]'
 
+        String virtualColumns = '[]'
+
         String expectedString = stringQuery(
                 dataSource: dataSrc,
                 postAggregations: postAgg,
                 lookbackPrefixes: lookbackPrefixes,
-                lookbackOffsets: lookbackOffsets
+                lookbackOffsets: lookbackOffsets,
+                virtualColumns: virtualColumns
         )
 
         expect:
