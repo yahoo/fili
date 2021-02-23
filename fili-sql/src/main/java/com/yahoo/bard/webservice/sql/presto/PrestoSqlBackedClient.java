@@ -157,7 +157,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         }
 
         // Extract the timestamp column name.
-        String pat = ".*YEAR\\(\"(.*?)\"\\).*";
+        String pat = ".*WHERE\\s\"(.*?)\"\\s>=.*";
         Pattern pattern = Pattern.compile(pat, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(sqlQuery);
 
