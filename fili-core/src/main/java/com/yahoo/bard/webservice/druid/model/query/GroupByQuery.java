@@ -20,8 +20,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Druid groupBy query.
@@ -51,7 +50,10 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
      * @param context  The context
      * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
      * of the context.
+     *
+     * @deprecated The constructor with virtual columns should be the primary constructor
      */
+    @Deprecated
     protected GroupByQuery(
             DataSource dataSource,
             Granularity granularity,
@@ -65,45 +67,19 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
             QueryContext context,
             boolean incrementQueryId
     ) {
-        super(
-                DefaultQueryType.GROUP_BY,
+        this(
                 dataSource,
                 granularity,
                 dimensions,
                 filter,
+                having,
                 aggregations,
                 postAggregations,
                 intervals,
+                limitSpec,
                 context,
-                incrementQueryId
-        );
-
-        this.having = having;
-        this.limitSpec = limitSpec;
-
-        LOG.trace(
-                "Query type: {}\n\n" +
-                        "DataSource: {}\n\n" +
-                        "Dimensions: {}\n\n" +
-                        "TimeGrain: {}\n\n" +
-                        "Filter: {}\n\n" +
-                        "Having: {}\n\n" +
-                        "Aggregations: {}\n\n" +
-                        "Post aggregations: {}\n\n" +
-                        "Intervals: {}\n\n" +
-                        "Limit spec: {}\n\n" +
-                        "Context: {}",
-                this.queryType,
-                this.dataSource,
-                this.dimensions,
-                this.granularity,
-                this.filter,
-                this.having,
-                this.aggregations,
-                this.postAggregations,
-                this.intervals,
-                this.limitSpec,
-                this.context
+                incrementQueryId,
+                Collections.emptySet()
         );
     }
 
@@ -142,7 +118,8 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 intervals,
                 limitSpec,
                 null,
-                false
+                false,
+                Collections.emptySet()
         );
     }
 
@@ -244,40 +221,40 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     }
 
     public GroupByQuery withDimensions(Collection<Dimension> dimensions) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withGranularity(Granularity granularity) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withFilter(Filter filter) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     public GroupByQuery withHaving(Having having) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     public GroupByQuery withLimitSpec(LimitSpec limitSpec) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withAggregations(Collection<Aggregation> aggregations) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withPostAggregations(Collection<PostAggregation> postAggregations) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withIntervals(Collection<Interval> intervals) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, true);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, true, virtualColumns);
     }
 
     @Override
@@ -289,12 +266,12 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     }
 
     public GroupByQuery withOrderBy(LimitSpec limitSpec) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
     public GroupByQuery withContext(QueryContext context) {
-        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override

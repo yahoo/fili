@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.virtualcolumns;
 
+import com.yahoo.bard.webservice.druid.model.VirtualColumnType;
+
 /**
  * This is marker a interface to reference Virtual Columns.
  */
@@ -19,7 +21,7 @@ public interface VirtualColumn {
      *
      * @return the type of the virtual column in the response
      */
-    String getType();
+    VirtualColumnType getType();
 
     /**
      * Get the expression of the virtual column in the response.

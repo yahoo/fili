@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.virtualcolumns;
 
+import com.yahoo.bard.webservice.druid.model.VirtualColumnType;
+import com.yahoo.bard.webservice.druid.model.DefaultVirtualColumnType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +45,8 @@ public class ExpressionVirtualColumn implements VirtualColumn {
     }
 
     @Override
-    public String getType() {
-        return "expression";
+    public VirtualColumnType getType() {
+        return DefaultVirtualColumnType.EXPRESSION;
     }
 
     @Override

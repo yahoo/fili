@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.virtualcolumns
 
+import com.yahoo.bard.webservice.druid.model.VirtualColumnType
+import com.yahoo.bard.webservice.druid.model.DefaultVirtualColumnType
+
 import spock.lang.Specification
 
 class ExpressionVirtualColumnSpec extends Specification {
@@ -9,13 +12,13 @@ class ExpressionVirtualColumnSpec extends Specification {
     String name
     String expression
     String outputType
-    String type
+    VirtualColumnType type
 
     def setup() {
         name = "fooPage"
         expression = "concat('foo' + page)"
         outputType = "STRING"
-        type = "expression"
+        type = DefaultVirtualColumnType.EXPRESSION
     }
 
     def "Constructor creation"() {

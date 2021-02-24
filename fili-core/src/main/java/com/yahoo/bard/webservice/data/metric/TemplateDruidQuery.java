@@ -68,7 +68,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @param postAggregations  post aggregations for this query template
      */
     public TemplateDruidQuery(Collection<Aggregation> aggregations, Collection<PostAggregation> postAggregations) {
-        this(aggregations, postAggregations, null, (ZonelessTimeGrain) null, Collections.emptySet());
+        this(
+                aggregations,
+                postAggregations,
+                null,
+                (ZonelessTimeGrain) null,
+                Collections.emptySet(),
+                Collections.emptySet()
+        );
     }
 
     /**
@@ -83,7 +90,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             ZonelessTimeGrain timeGrain
     ) {
-        this(aggregations, postAggregations, null, timeGrain, Collections.emptySet());
+        this(
+                aggregations,
+                postAggregations,
+                null,
+                timeGrain,
+                Collections.emptySet(),
+                Collections.emptySet()
+        );
     }
 
     /**
@@ -98,7 +112,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<PostAggregation> postAggregations,
             @NotNull TemplateDruidQuery nestedQuery
     ) {
-        this(aggregations, postAggregations, nestedQuery, (ZonelessTimeGrain) null, nestedQuery.getDimensions());
+        this(
+                aggregations,
+                postAggregations,
+                nestedQuery,
+                (ZonelessTimeGrain) null,
+                nestedQuery.getDimensions(),
+                Collections.emptySet()
+        );
     }
 
     /**
@@ -115,7 +136,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             TemplateDruidQuery nestedQuery,
             ZonelessTimeGrain timeGrain
     ) {
-        this(aggregations, postAggregations, nestedQuery, timeGrain, Collections.emptySet());
+        this(
+                aggregations,
+                postAggregations,
+                nestedQuery,
+                timeGrain,
+                Collections.emptySet(),
+                Collections.emptySet()
+        );
     }
 
     /**
@@ -136,32 +164,13 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<Dimension> dimensions,
             Collection<VirtualColumn> virtualColumns
     ) {
-        this(aggregations, postAggregations, nestedQuery, timeGrain, dimensions);
-        this.virtualColumns = Collections.unmodifiableSet(new LinkedHashSet<>(virtualColumns));
-    }
-
-    /**
-     * Template Query constructor for a nested template query with a bound time grain.
-     *
-     * @param aggregations  aggregations for this query template
-     * @param postAggregations  post aggregations for this query template
-     * @param nestedQuery  A query which this query uses as a data source
-     * @param timeGrain  The time grain constraint on the query if any
-     * @param dimensions  The Dimensions on TDQ
-     */
-    public TemplateDruidQuery(
-            Collection<Aggregation> aggregations,
-            Collection<PostAggregation> postAggregations,
-            TemplateDruidQuery nestedQuery,
-            ZonelessTimeGrain timeGrain,
-            Collection<Dimension> dimensions
-    ) {
         // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
         this.aggregations = Collections.unmodifiableSet(new LinkedHashSet<>(aggregations));
         this.postAggregations = Collections.unmodifiableSet(new LinkedHashSet<>(postAggregations));
         this.nestedQuery = nestedQuery;
         this.timeGrain = timeGrain;
         this.dimensions = Collections.unmodifiableSet(new LinkedHashSet<>(dimensions));
+        this.virtualColumns = Collections.unmodifiableSet(new LinkedHashSet<>(virtualColumns));
 
         // Check for duplicate field names
         Set<String> nameCollisions = getNameCollisions(aggregations, postAggregations);
@@ -172,6 +181,28 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         }
 
         depth = calculateDepth(this);
+    }
+
+    /**
+     * Template Query constructor for a nested template query with a bound time grain.
+     *
+     * @param aggregations  aggregations for this query template
+     * @param postAggregations  post aggregations for this query template
+     * @param nestedQuery  A query which this query uses as a data source
+     * @param timeGrain  The time grain constraint on the query if any
+     * @param dimensions  The Dimensions on TDQ
+     *
+     * @deprecated The primary constructor signature should be the one with virtual columns
+     */
+    @Deprecated
+    public TemplateDruidQuery(
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            TemplateDruidQuery nestedQuery,
+            ZonelessTimeGrain timeGrain,
+            Collection<Dimension> dimensions
+    ) {
+        this(aggregations, postAggregations, nestedQuery, timeGrain, dimensions, Collections.emptySet());
     }
 
     /**
@@ -585,7 +616,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      */
     @Override
     public TemplateDruidQuery withAggregations(Collection<Aggregation> newAggregations) {
-        return new TemplateDruidQuery(newAggregations, postAggregations, nestedQuery, timeGrain, dimensions);
+        return new TemplateDruidQuery(
+                newAggregations,
+                postAggregations,
+                nestedQuery,
+                timeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**
@@ -598,7 +636,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withPostAggregations(Collection<PostAggregation> newPostAggregations) {
-        return new TemplateDruidQuery(aggregations, newPostAggregations, nestedQuery, timeGrain, dimensions);
+        return new TemplateDruidQuery(
+                aggregations,
+                newPostAggregations,
+                nestedQuery,
+                timeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**
@@ -632,7 +677,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withInnerQuery(TemplateDruidQuery newNestedQuery) {
-        return new TemplateDruidQuery(aggregations, postAggregations, newNestedQuery, timeGrain, dimensions);
+        return new TemplateDruidQuery(
+                aggregations,
+                postAggregations,
+                newNestedQuery,
+                timeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**
@@ -645,7 +697,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withGranularity(ZonelessTimeGrain newTimeGrain) {
-        return new TemplateDruidQuery(aggregations, postAggregations, nestedQuery, newTimeGrain, dimensions);
+        return new TemplateDruidQuery(
+                aggregations,
+                postAggregations,
+                nestedQuery,
+                newTimeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**
@@ -658,7 +717,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      * @return copy of the query
      */
     public TemplateDruidQuery withDimensions(Collection<Dimension> dimensionList) {
-        return new TemplateDruidQuery(aggregations, postAggregations, nestedQuery, timeGrain, dimensionList);
+        return new TemplateDruidQuery(
+                aggregations,
+                postAggregations,
+                nestedQuery,
+                timeGrain,
+                dimensionList,
+                virtualColumns
+        );
     }
 
     @Override
