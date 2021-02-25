@@ -49,7 +49,6 @@ public class ExpressionVirtualColumn implements VirtualColumn {
         return DefaultVirtualColumnType.EXPRESSION;
     }
 
-    @Override
     public String getExpression() {
         return expression;
     }

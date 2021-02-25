@@ -89,8 +89,7 @@ class AlternateTimezoneDailyAvgWeekSpec extends BaseDataServletComponentSpec {
                             }
                     ],
                     "queryType": "groupBy",
-                    "context": {},
-                    "virtualColumns": []
+                    "context": {}
                 },
                 "type": "query"
             },
@@ -115,8 +114,7 @@ class AlternateTimezoneDailyAvgWeekSpec extends BaseDataServletComponentSpec {
                 }
             ],
             "queryType": "groupBy",
-            "context": {},
-            "virtualColumns": []
+            "context": {}
         }"""
     }
 

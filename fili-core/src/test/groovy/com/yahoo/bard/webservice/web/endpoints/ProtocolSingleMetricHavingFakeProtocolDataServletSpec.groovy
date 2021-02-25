@@ -71,8 +71,7 @@ class ProtocolSingleMetricHavingFakeProtocolDataServletSpec extends BaseDataServ
                 ],
                 "postAggregations": [],
                 "queryType": "groupBy",
-                "context": {},
-                "virtualColumns": []
+                "context": {}
         }"""
     }
 

@@ -92,7 +92,6 @@ class TopNQuerySpec extends Specification {
         vars.aggregations = vars.aggregations ?: "[]"
         vars.postAggregations = vars.postAggregations ?: "[]"
         vars.intervals = vars.intervals ?: "[]"
-        vars.virtualColumns = vars.virtualColumns ?: "[]"
 
         ("""{
                 "queryType":"$vars.queryType",
@@ -104,8 +103,7 @@ class TopNQuerySpec extends Specification {
                 "aggregations":$vars.aggregations,
                 "postAggregations":$vars.postAggregations,
                 "intervals":$vars.intervals,
-                "context":$vars.context,
-                "virtualColumns":$vars.virtualColumns
+                "context":$vars.context
             }""").replaceAll(/\s/, "")
     }
 

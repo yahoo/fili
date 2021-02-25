@@ -73,8 +73,7 @@ class NonNumericMetricSpec extends BaseDataServletComponentSpec {
                     }
                 ],
                 "postAggregations": [],
-                "context": {},
-                "virtualColumns": []
+                "context": {}
             }"""
     }
 

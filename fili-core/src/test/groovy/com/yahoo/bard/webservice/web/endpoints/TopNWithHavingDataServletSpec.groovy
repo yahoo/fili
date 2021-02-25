@@ -143,8 +143,7 @@ class TopNWithHavingDataServletSpec extends BaseDataServletComponentSpec {
                         }
                     ]
                 },
-                "context": {},
-                "virtualColumns": []
+                "context": {}
         }"""
     }
 

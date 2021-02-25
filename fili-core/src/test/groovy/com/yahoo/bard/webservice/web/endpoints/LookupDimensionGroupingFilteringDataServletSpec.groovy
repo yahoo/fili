@@ -233,8 +233,7 @@ class LookupDimensionGroupingFilteringDataServletSpec extends BaseDataServletCom
                 "type": "period" },
                 "intervals": ["2014-05-01T00:00:00.000Z/2014-05-02T00:00:00.000Z"],
                 "postAggregations": [],
-                "queryType": "groupBy",
-                "virtualColumns":[]
+                "queryType": "groupBy"
         }"""
     }
 

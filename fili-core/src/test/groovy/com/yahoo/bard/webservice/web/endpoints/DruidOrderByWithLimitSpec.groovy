@@ -74,8 +74,7 @@ class DruidOrderByWithLimitSpec extends BaseDataServletComponentSpec {
                     ]
                 },
                 "granularity": ${getTimeGrainString("week")},
-                "context": {},
-                "virtualColumns":[]
+                "context": {}
             }"""
     }
 

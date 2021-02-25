@@ -80,8 +80,7 @@ class ProtocolSingleMetricHavingReaggProtocolDataServletSpec extends BaseDataSer
                                      "type": "constant",
                                      "value": 1.0
                                  }],
-            "queryType": "groupBy",
-            "virtualColumns":[]
+            "queryType": "groupBy"
         },
         "type": "query"
     },
@@ -109,8 +108,7 @@ class ProtocolSingleMetricHavingReaggProtocolDataServletSpec extends BaseDataSer
                                  "name": "width(reagg=dayAvg)",
                                  "type": "arithmetic"
                              }],
-        "queryType": "groupBy",
-        "virtualColumns":[]
+        "queryType": "groupBy"
 }"""
     }
 

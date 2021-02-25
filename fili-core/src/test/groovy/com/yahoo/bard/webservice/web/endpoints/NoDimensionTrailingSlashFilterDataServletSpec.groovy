@@ -36,8 +36,7 @@ class NoDimensionTrailingSlashFilterDataServletSpec extends BaseDataServletCompo
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
             "postAggregations": [],
-            "context": {},
-            "virtualColumns": []
+            "context": {}
         }"""
     }
 

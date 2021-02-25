@@ -97,7 +97,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 lookbackPrefixes,
                 having,
                 limitSpec,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -134,7 +134,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 lookbackPrefixes,
                 having,
                 limitSpec,
-                Collections.emptySet()
+                null
         );
     }
 

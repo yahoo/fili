@@ -74,7 +74,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
                 metric,
                 context,
                 incrementQueryId,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -114,7 +114,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
                 metric,
                 null,
                 false,
-                Collections.emptySet()
+                null
         );
     }
 

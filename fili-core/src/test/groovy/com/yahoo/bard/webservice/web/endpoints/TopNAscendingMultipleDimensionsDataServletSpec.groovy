@@ -124,8 +124,7 @@ class TopNAscendingMultipleDimensionsDataServletSpec extends BaseDataServletComp
                         }
                     ]
                 },
-                "context":{},
-                "virtualColumns": []
+                "context":{}
         }"""
     }
 

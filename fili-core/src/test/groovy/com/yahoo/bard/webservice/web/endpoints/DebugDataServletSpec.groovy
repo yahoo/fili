@@ -91,8 +91,7 @@ class DebugDataServletSpec extends Specification {
                 ],
                 "postAggregations": [],
                 "queryType": "groupBy",
-                "context": {},
-                "virtualColumns": []
+                "context": {}
               },
               "reason": "debug",
               "status": 200,

@@ -56,7 +56,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     private final ZonelessTimeGrain timeGrain;
     private final Set<Aggregation> aggregations;
     private final Set<PostAggregation> postAggregations;
-    private Set<VirtualColumn> virtualColumns;
+    private Collection<VirtualColumn> virtualColumns;
     private final Set<Dimension> dimensions;
     private final int depth;
 
@@ -74,7 +74,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 null,
                 (ZonelessTimeGrain) null,
                 Collections.emptySet(),
-                Collections.emptySet()
+                null
         );
     }
 
@@ -96,7 +96,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 null,
                 timeGrain,
                 Collections.emptySet(),
-                Collections.emptySet()
+                null
         );
     }
 
@@ -118,7 +118,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 nestedQuery,
                 (ZonelessTimeGrain) null,
                 nestedQuery.getDimensions(),
-                Collections.emptySet()
+                null
         );
     }
 
@@ -142,7 +142,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 nestedQuery,
                 timeGrain,
                 Collections.emptySet(),
-                Collections.emptySet()
+                null
         );
     }
 
@@ -170,7 +170,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         this.nestedQuery = nestedQuery;
         this.timeGrain = timeGrain;
         this.dimensions = Collections.unmodifiableSet(new LinkedHashSet<>(dimensions));
-        this.virtualColumns = Collections.unmodifiableSet(new LinkedHashSet<>(virtualColumns));
+        this.virtualColumns = virtualColumns;
 
         // Check for duplicate field names
         Set<String> nameCollisions = getNameCollisions(aggregations, postAggregations);
@@ -262,7 +262,14 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         }
 
         // Create the outer query, floating the post aggregations upward
-        return new TemplateDruidQuery(outerAggregations, postAggregations, innerQuery, timeGrain, dimensions);
+        return new TemplateDruidQuery(
+                outerAggregations,
+                postAggregations,
+                innerQuery,
+                timeGrain,
+                dimensions,
+                virtualColumns
+        );
     }
 
     /**
@@ -453,7 +460,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     @Override
-    public Set<VirtualColumn> getVirtualColumns() {
+    public Collection<VirtualColumn> getVirtualColumns() {
         return virtualColumns;
     }
 

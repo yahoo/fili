@@ -24,13 +24,6 @@ public interface VirtualColumn {
     VirtualColumnType getType();
 
     /**
-     * Get the expression of the virtual column in the response.
-     *
-     * @return the expression of the virtual column in the response
-     */
-    String getExpression();
-
-    /**
      * Get the output type of the virtual column in the response.
      *
      * @return the output type of the virtual column in the response

@@ -119,7 +119,6 @@ class RequestUtils {
             "dimensions": [],
             "aggregations": [],
             "postAggregations": [],
-            "virtualColumns": [],
             "intervals": [],
             "granularity": {
               "type": "period",

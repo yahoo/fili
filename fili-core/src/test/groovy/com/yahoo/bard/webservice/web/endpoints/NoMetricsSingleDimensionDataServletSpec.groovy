@@ -106,8 +106,7 @@ class NoMetricsSingleDimensionDataServletSpec extends BaseDataServletComponentSp
             },
             "aggregations": [],
             "postAggregations": [],
-            "context": {},
-            "virtualColumns": []
+            "context": {}
         }"""
     }
 

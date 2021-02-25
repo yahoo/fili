@@ -61,8 +61,7 @@ class CsvEndpointDataServletSpec extends BaseDataServletComponentSpec {
                 { "name": "width", "fieldName": "width", "type": "longSum" }
             ],
             "postAggregations": [],
-            "context": {},
-             "virtualColumns": []
+            "context": {}
         }"""
     }
 

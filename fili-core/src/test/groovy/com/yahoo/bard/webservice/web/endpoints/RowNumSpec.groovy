@@ -59,8 +59,7 @@ class RowNumSpec extends BaseDataServletComponentSpec {
                     "columns": []
                 },
                 "granularity": ${getTimeGrainString("week")},
-                "context": {},
-                "virtualColumns": []
+                "context": {}
             }"""
     }
 

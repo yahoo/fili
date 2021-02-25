@@ -58,7 +58,7 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
                 intervals,
                 context,
                 incrementQueryId,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -89,7 +89,7 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
                 intervals,
                 (QueryContext) null,
                 false,
-                Collections.emptySet()
+                null
         );
     }
 

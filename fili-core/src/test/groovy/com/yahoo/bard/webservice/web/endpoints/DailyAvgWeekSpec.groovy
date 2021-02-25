@@ -83,8 +83,7 @@ class DailyAvgWeekSpec extends BaseDataServletComponentSpec {
                             }
                     ],
                     "queryType": "groupBy",
-                    "context": {},
-                    "virtualColumns": []
+                    "context": {}
                 },
                 "type": "query"
             },
@@ -109,8 +108,7 @@ class DailyAvgWeekSpec extends BaseDataServletComponentSpec {
                 }
             ],
             "queryType": "groupBy",
-            "context": {},
-            "virtualColumns": []
+            "context": {}
         }"""
     }
 

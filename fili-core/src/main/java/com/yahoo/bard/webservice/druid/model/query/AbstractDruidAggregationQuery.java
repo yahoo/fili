@@ -135,6 +135,6 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
 
     @Override
     public Collection<VirtualColumn> getVirtualColumns() {
-        return new LinkedHashSet<>(virtualColumns);
+        return virtualColumns;
     }
 }

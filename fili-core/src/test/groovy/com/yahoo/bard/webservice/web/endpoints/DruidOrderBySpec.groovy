@@ -73,8 +73,7 @@ class DruidOrderBySpec extends BaseDataServletComponentSpec {
                     ]
                 },
                 "granularity": ${getTimeGrainString("week")},
-                "context": {},
-                "virtualColumns":[]
+                "context": {}
             }"""
     }
 

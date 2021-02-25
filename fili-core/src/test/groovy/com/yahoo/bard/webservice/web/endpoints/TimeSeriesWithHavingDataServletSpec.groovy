@@ -99,8 +99,7 @@ class TimeSeriesWithHavingDataServletSpec extends BaseDataServletComponentSpec {
                     ],
                     "type": "and"
                 },
-                "context": {},
-                "virtualColumns": []
+                "context": {}
         }"""
     }
 

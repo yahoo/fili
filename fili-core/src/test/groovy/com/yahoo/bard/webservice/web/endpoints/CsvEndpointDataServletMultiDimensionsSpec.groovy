@@ -73,8 +73,7 @@ class CsvEndpointDataServletMultiDimensionsSpec extends BaseDataServletComponent
                 }
             ],
             "postAggregations": [],
-            "context": {},
-            "virtualColumns": []
+            "context": {}
         }"""
     }
 

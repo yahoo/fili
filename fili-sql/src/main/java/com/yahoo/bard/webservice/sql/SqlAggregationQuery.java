@@ -20,7 +20,8 @@ import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 
 import org.joda.time.Interval;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Wrapper around an {@link DruidAggregationQuery} which always reports
@@ -81,7 +82,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 postAggregations,
                 intervals,
                 context,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -120,7 +121,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 intervals,
                 context,
                 false,
-                virtualColumns
+                null
         );
     }
 

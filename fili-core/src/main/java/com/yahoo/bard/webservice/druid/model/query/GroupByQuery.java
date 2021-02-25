@@ -20,7 +20,8 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Druid groupBy query.
@@ -79,7 +80,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 limitSpec,
                 context,
                 incrementQueryId,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -119,7 +120,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 limitSpec,
                 null,
                 false,
-                Collections.emptySet()
+                null
         );
     }
 
@@ -209,7 +210,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     // CHECKSTYLE:OFF
     @Override
     public GroupByQuery withDataSource(DataSource dataSource) {
-        return new GroupByQuery(dataSource, granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false);
+        return new GroupByQuery(dataSource, granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
     @Override
