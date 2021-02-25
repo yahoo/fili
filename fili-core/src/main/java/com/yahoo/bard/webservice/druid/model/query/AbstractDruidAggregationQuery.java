@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import org.joda.time.Interval;
 
 import java.util.Collection;
@@ -35,6 +36,9 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected final Collection<PostAggregation> postAggregations;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    protected final Collection<VirtualColumn> virtualColumns;
 
     /**
      * Constructor.
@@ -63,10 +67,55 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
             QueryContext context,
             boolean incrementQueryId
     ) {
+        this(
+                queryType,
+                dataSource,
+                granularity,
+                dimensions,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                Collections.emptySet()
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param queryType  The type of this query
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
+     * @param virtualColumns The virtual columns
+     */
+    protected AbstractDruidAggregationQuery(
+            QueryType queryType,
+            DataSource dataSource,
+            Granularity granularity,
+            Collection<Dimension> dimensions,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<VirtualColumn> virtualColumns
+    ) {
         super(queryType, dataSource, granularity, filter, intervals, context, incrementQueryId);
         this.dimensions = dimensions != null ? Collections.unmodifiableCollection(dimensions) : null;
         this.aggregations = aggregations != null ? new LinkedHashSet<>(aggregations) : null;
         this.postAggregations = postAggregations != null ? new LinkedHashSet<>(postAggregations) : null;
+        this.virtualColumns = virtualColumns != null ? new LinkedHashSet<>(virtualColumns) : null;
     }
 
     @Override
@@ -82,5 +131,10 @@ public abstract class AbstractDruidAggregationQuery<Q extends AbstractDruidAggre
     @Override
     public Collection<PostAggregation> getPostAggregations() {
         return new LinkedHashSet<>(postAggregations);
+    }
+
+    @Override
+    public Collection<VirtualColumn> getVirtualColumns() {
+        return virtualColumns;
     }
 }

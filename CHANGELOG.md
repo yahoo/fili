@@ -91,6 +91,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Added virtual columns and first last any aggregation support](https://github.com/yahoo/fili/pull/1141)
+   * Added support for virtual columns and aggregation support for first/last and any aggregations
+   
 - [Added sql-presto daily table support](https://github.com/yahoo/fili/pull/1121)
    * Added support for specifying hourly and daily timestamp format and choosing upon physical table time grain
 
