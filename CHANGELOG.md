@@ -89,6 +89,9 @@ Current
     * Injected dynamic sort building into `BardConfigResources` and `DataApiServlet`
     * Changed `TestBinderFactory` to support protocol metric tests.
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
+    
+- [Update Presto Sketch Regex](https://github.com/yahoo/fili/issues/1142)
+    * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
 - [Added virtual columns and first last any aggregation support](https://github.com/yahoo/fili/pull/1141)

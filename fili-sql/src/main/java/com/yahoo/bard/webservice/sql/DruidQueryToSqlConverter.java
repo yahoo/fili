@@ -949,7 +949,7 @@ public class DruidQueryToSqlConverter {
      * @return the sql string without quote around the sketch metric expression.
      */
     private String formatSketchQuery(String sqlQuery) {
-        final String patternString = ".*round\\(thetasketch_estimate\\(thetasketch_union\\([a-zA-Z]*\\)\\)\\).*";
+        final String patternString = ".*round\\(thetasketch_estimate\\(thetasketch_union\\([a-zA-Z_]*\\)\\)\\).*";
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(sqlQuery);
 
