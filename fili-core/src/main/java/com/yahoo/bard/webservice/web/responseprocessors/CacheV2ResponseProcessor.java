@@ -100,6 +100,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         next.processResponse(json, druidQuery, metadata);
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
             String valueString = null;
@@ -114,7 +115,9 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                     );
                 } else {
                     LOG.debug(
-                            "Response not cached. Length of {} exceeds max value length of {}",
+                            "Response not cached for query with key cksum {}." +
+                                    "Length of {} exceeds max value length of {}",
+                            getMD5Cksum(cacheKey),
                             valueLength,
                             maxDruidResponseLengthToCache
                     );
@@ -123,16 +126,19 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
-                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(getMD5Cksum(cacheKey),
+                BardQueryInfo.getBardQueryInfo().addCacheInfo(getMD5Cksum(cacheKey),
                         new BardCacheInfo(
                                 QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
                                 getMD5Cksum(cacheKey),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
                                 valueString != null ? valueString.length() : 0
                         )
                 );
                 LOG.warn(
-                        "Unable to cache {}value of size: {} and cksum: {}",
+                        "Unable to cache {} value of size: {} and key cksum: {} ",
                         valueString == null ? "null " : "",
                         valueString == null ? "N/A" : valueString.length(),
                         getMD5Cksum(cacheKey),
