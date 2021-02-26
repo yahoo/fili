@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.druid.model.postaggregation;
 
 import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.FIELD_ACCESS;
+import static com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation.DefaultPostAggregationType.FINALIZING_FIELD_ACCESS;
 
 import com.yahoo.bard.webservice.druid.model.MetricField;
 import com.yahoo.bard.webservice.util.EnumUtils;
@@ -34,7 +35,7 @@ public abstract class PostAggregation implements MetricField {
      */
     protected PostAggregation(PostAggregationType type, String name) {
         // Check for `null` name. Only field access doesn't require a name
-        if (name == null && type != FIELD_ACCESS) {
+        if (name == null && type != FIELD_ACCESS && type != FINALIZING_FIELD_ACCESS) {
             String message = "Post Aggregation name cannot be null";
             LOG.error(message);
             throw new IllegalArgumentException(message);
@@ -111,7 +112,8 @@ public abstract class PostAggregation implements MetricField {
         SKETCH_ESTIMATE,
         SKETCH_SET_OPER,
         THETA_SKETCH_ESTIMATE,
-        THETA_SKETCH_SET_OP;
+        THETA_SKETCH_SET_OP,
+        FINALIZING_FIELD_ACCESS;
 
         private final String jsonName;
 
