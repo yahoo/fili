@@ -113,7 +113,6 @@ Current
 - [Add filtered dimensions to combined dimensions](https://github.com/yahoo/fili/pull/1117)
    * Included filtered dimensions in combined dimensions for `DataRequest`.
 
->>>>>>> bee08d1a3c0a094f518b55c4fa0a40138540e14b
 - [Added more logging in BardQueryInfo for cache set and get failures](https://github.com/yahoo/fili/pull/1116)
    * Add more cache logging in `BardQueryInfo` which will hold map of `BardCacheInfo` cache set and get failures.
    * Added more counters in `BardQueryInfo` for factCacheSetFailures and factCacheSetTimeoutFailures.
