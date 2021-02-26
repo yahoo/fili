@@ -38,7 +38,8 @@ import java.util.stream.Collectors;
 public class SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
     private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
-    private final String timeStringFormat;
+    private final String timeStringFormatHour;
+    private final String timeStringFormatDay;
 
     /**
      * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
@@ -46,16 +47,17 @@ public class SqlTimeConverter {
      * format
      */
     public SqlTimeConverter() {
-        this(buildDefaultGranularityToDateFunctionsMap(), "yyyy-MM-dd HH:mm:ss.S");
+        this(buildDefaultGranularityToDateFunctionsMap(), "yyyy-MM-dd HH", "yyyy-MM-dd");
     }
 
     /**
      * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
      * {@link #buildDefaultGranularityToDateFunctionsMap()} map and set the timestamp format.
-     * @param timeStringFormat The time string format
+     * @param timeStringFormatHour The hourly time string format
+     * @param timeStringFormatDay The daily time string format
      */
-    public SqlTimeConverter(String timeStringFormat) {
-        this(buildDefaultGranularityToDateFunctionsMap(), timeStringFormat);
+    public SqlTimeConverter(String timeStringFormatHour, String timeStringFormatDay) {
+        this(buildDefaultGranularityToDateFunctionsMap(), timeStringFormatHour, timeStringFormatDay);
     }
 
     /**
@@ -63,14 +65,17 @@ public class SqlTimeConverter {
      *
      * @param granularityToDateFunctionMap  The mapping defining what granularity needs to be kept in order to properly
      * group by and reparse a dateTime.
-     * @param timeStringFormat The time string format for the timestamp column
+     * @param timeStringFormatHour The time string format for the hourly timestamp column
+     * @param timeStringFormatDay The time string format for the daily timestamp column
      */
     public SqlTimeConverter(
             Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap,
-            String timeStringFormat
+            String timeStringFormatHour,
+            String timeStringFormatDay
     ) {
         this.granularityToDateFunctionMap = granularityToDateFunctionMap;
-        this.timeStringFormat = timeStringFormat;
+        this.timeStringFormatHour = timeStringFormatHour;
+        this.timeStringFormatDay = timeStringFormatDay;
     }
 
     /**
@@ -123,6 +128,13 @@ public class SqlTimeConverter {
             DruidAggregationQuery<?> druidQuery,
             String timestampColumn
     ) {
+        String timeStringFormat;
+        if (druidQuery.getDataSource().getPhysicalTable().getSchema().getTimeGrain().getBaseTimeGrain()
+                .equals(DefaultTimeGrain.HOUR)) {
+            timeStringFormat = timeStringFormatHour;
+        } else {
+            timeStringFormat = timeStringFormatDay;
+        }
         // create filters to only select results within the given intervals
         List<RexNode> timeFilters = druidQuery.getIntervals().stream()
                 .map(interval -> {
@@ -139,7 +151,7 @@ public class SqlTimeConverter {
 
                     return builder.and(
                             builder.call(
-                                    SqlStdOperatorTable.GREATER_THAN,
+                                    SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
                                     builder.field(timestampColumn),
                                     builder.literal(start)
                             ),
@@ -167,7 +179,7 @@ public class SqlTimeConverter {
     public List<RexNode> buildGroupBy(RelBuilder builder, Granularity granularity, String timeColumn) {
         List<SqlDatePartFunction> sqlDatePartFunctions = timeGrainToDatePartFunctions(granularity);
         if (sqlDatePartFunctions.isEmpty()) {
-            return Collections.singletonList(builder.field(timeColumn));
+            return Collections.emptyList();
         }
 
         return sqlDatePartFunctions

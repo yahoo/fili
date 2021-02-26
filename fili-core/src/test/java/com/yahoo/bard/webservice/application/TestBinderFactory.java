@@ -91,8 +91,6 @@ public class TestBinderFactory extends AbstractBinderFactory {
     public boolean afterBindingHookWasCalled = false;
     public boolean afterRegistrationHookWasCalled = false;
 
-    public DataSourceMetadataService dataSourceMetadataService;
-
     /**
      * Constructor.
      */
@@ -193,7 +191,7 @@ public class TestBinderFactory extends AbstractBinderFactory {
     @Override
     protected DataSourceMetadataService getDataSourceMetadataService() {
         if (Objects.isNull(dataSourceMetadataService)) {
-            this.dataSourceMetadataService = new TestDataSourceMetadataService();
+            super.dataSourceMetadataService = new TestDataSourceMetadataService();
         }
         return dataSourceMetadataService;
     }

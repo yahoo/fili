@@ -4,18 +4,23 @@ package com.yahoo.bard.webservice.sql;
 
 import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY;
 import static com.yahoo.bard.webservice.sql.aggregation.DefaultSqlAggregationType.defaultDruidToSqlAggregation;
+import static org.apache.calcite.rex.RexWindowBounds.CURRENT_ROW;
+import static org.apache.calcite.rex.RexWindowBounds.UNBOUNDED_PRECEDING;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.aggregation.FilteredAggregation;
+import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation;
 import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
+import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery;
+import com.yahoo.bard.webservice.druid.model.query.TopNQuery;
 import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.aggregation.SqlAggregation;
 import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
@@ -27,13 +32,20 @@ import com.yahoo.bard.webservice.table.SqlPhysicalTable;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
+import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlRankFunction;
 import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.pretty.SqlPrettyWriter;
+import org.apache.calcite.sql.type.ReturnTypes;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +65,11 @@ public class DruidQueryToSqlConverter {
     private final HavingEvaluator havingEvaluator;
     private final FilterEvaluator filterEvaluator;
     private final PostAggregationEvaluator postAggregationEvaluator;
+    private static final String ROW_NUMBER = "RNUM";
     public static final int NO_OFFSET = -1;
     public static final int NO_LIMIT = -1;
     public static final String ZERO_PLACEHOLDER = "zero";
+    private static final String SKETCH_LITERAL = "round(thetasketch_estimate(thetasketch_union(%s)))";
 
     /**
      * Constructs the default converter.
@@ -83,11 +97,13 @@ public class DruidQueryToSqlConverter {
      * more generic like "{@code DruidQueryConverter<T>}"
      *
      * @param calciteHelper  The calcite helper for this database.
-     * @param timeStringFormat The time string format such as YYYYMMdd
+     * @param timeStringFormatHour The hourly time string format such as YYYYMMddHH
+     * @param timeStringFormatDay The daily time string format such as YYYYMMdd
      */
-    public DruidQueryToSqlConverter(CalciteHelper calciteHelper, String timeStringFormat) {
+    public DruidQueryToSqlConverter(CalciteHelper calciteHelper,
+                                    String timeStringFormatHour, String timeStringFormatDay) {
         this.calciteHelper = calciteHelper;
-        this.sqlTimeConverter = buildSqlTimeConverter(timeStringFormat);
+        this.sqlTimeConverter = buildSqlTimeConverter(timeStringFormatHour, timeStringFormatDay);
         this.druidSqlAggregationConverter = buildDruidSqlTypeConverter();
         this.havingEvaluator = buildHavingEvaluator();
         this.filterEvaluator = buildFilterEvaluator();
@@ -115,12 +131,13 @@ public class DruidQueryToSqlConverter {
     /**
      * Builds a time converter to designating how to translate between druid and sql
      * time information.
-     * @param timeStringFormat The time string format such as YYYYMMdd
+     * @param timeStringFormatHour The hourly time string format such as YYYYMMddHH
+     * @param timeStringFormatDay The daily time string format such as YYYYMMdd
      *
      * @return a new time converter.
      */
-    protected SqlTimeConverter buildSqlTimeConverter(String timeStringFormat) {
-        return new SqlTimeConverter(timeStringFormat);
+    protected SqlTimeConverter buildSqlTimeConverter(String timeStringFormatHour, String timeStringFormatDay) {
+        return new SqlTimeConverter(timeStringFormatHour, timeStringFormatDay);
     }
 
     /**
@@ -168,6 +185,7 @@ public class DruidQueryToSqlConverter {
             switch (defaultQueryType) {
                 case TIMESERIES:
                 case GROUP_BY:
+                case TOP_N:
                     return true;
             }
         }
@@ -200,7 +218,7 @@ public class DruidQueryToSqlConverter {
         RelToSqlConverter relToSql = calciteHelper.getNewRelToSqlConverter();
         SqlPrettyWriter sqlWriter = calciteHelper.getNewSqlWriter();
 
-        return writeSql(sqlWriter, relToSql, query);
+        return formatSketchQuery(writeSql(sqlWriter, relToSql, query));
     }
 
     /**
@@ -284,9 +302,8 @@ public class DruidQueryToSqlConverter {
                 null
         );
         builder = builder.aggregate(groupKey, aggs);
-        ArrayList<RexNode> projections = new ArrayList<>();
-        projections.addAll(builder.fields());
-        builder = builder.project(projections);
+        builder = builder.project(builder.fields());
+
 
         return builder.build();
     }
@@ -346,17 +363,18 @@ public class DruidQueryToSqlConverter {
 
     /**
      * Convert a Druid query with FilteredAggregation to a SQL query.
+     * @param builder SQL RelBuilder
      * @param druidQuery The Druid query
      * @param apiToFieldMapper The mapping between api and physical names for the query.
      * @param sqlTable The sql table metadata
      * @return the RelNode represents the SQL query
      */
     private RelNode convertDruidQueryWithFilteredAgg(
+            RelBuilder builder,
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
-        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
         builder = builder.scan(sqlTable.getName());
         List<RelNode> subQueries = new ArrayList<>();
         RelNode unfiltered = buildUnfilteredSubQuery(builder, druidQuery, apiToFieldMapper, sqlTable);
@@ -379,8 +397,7 @@ public class DruidQueryToSqlConverter {
             builder.push(subQuery);
         }
         builder.union(true, subQueries.size());
-        RelNode res = buildFilteredRatioOuterQuery(builder, druidQuery, apiToFieldMapper, sqlTable);
-        return res;
+        return buildFilteredRatioOuterQuery(builder, druidQuery, apiToFieldMapper, sqlTable);
     }
 
     /**
@@ -402,40 +419,106 @@ public class DruidQueryToSqlConverter {
                 .stream()
                 .anyMatch(agg -> agg instanceof FilteredAggregation);
 
+        RelNode queryRelNode;
+        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
         if (isFilteredAggPresent) {
-            return convertDruidQueryWithFilteredAgg (druidQuery, apiToFieldMapper, sqlTable);
+            queryRelNode = convertDruidQueryWithFilteredAgg(builder, druidQuery, apiToFieldMapper, sqlTable);
+        } else {
+            builder = builder.scan(sqlTable.getName());
+            RelBuilder finalBuilder = builder;
+            List<RexNode> sketchMetrics = druidQuery.getAggregations().stream()
+                    .filter(aggregation -> aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
+                    .map(aggregation -> finalBuilder.alias(finalBuilder.literal(
+                            String.format(SKETCH_LITERAL, aggregation.getFieldName())), aggregation.getName()))
+                    .collect(Collectors.toList());
+            queryRelNode = builder
+                    .filter(
+                            getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
+                    )
+                    .aggregate(
+                            builder.groupKey(getAllGroupByColumns(
+                                    builder,
+                                    druidQuery,
+                                    apiToFieldMapper,
+                                    sqlTable.getTimestampColumn()
+                            )),
+                            getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
+                    )
+                    .project(
+                            (Iterable) ImmutableList.builder()
+                                    .addAll(builder.fields())
+                                    .addAll(sketchMetrics)
+                                    .addAll(getPostAggregations(builder, druidQuery, apiToFieldMapper))
+                                    .build()
+                    )
+                    .filter(
+                            getHavingFilter(builder, druidQuery, apiToFieldMapper)
+                    )
+                    .sortLimit(
+                            NO_OFFSET,
+                            getLimit(druidQuery),
+                            getSort(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
+            )
+                    .build();
         }
 
-        RelBuilder builder = calciteHelper.getNewRelBuilder(sqlTable.getSchemaName(), sqlTable.getCatalog());
-        builder = builder.scan(sqlTable.getName());
-        return builder
-                .filter(
-                        getAllWhereFilters(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
-                )
-                .aggregate(
-                        builder.groupKey(getAllGroupByColumns(
-                                builder,
-                                druidQuery,
-                                apiToFieldMapper,
-                                sqlTable.getTimestampColumn()
-                        )),
-                        getAllQueryAggregations(builder, druidQuery, apiToFieldMapper)
-                )
-                .project(
-                        (Iterable) ImmutableList.builder()
-                                .addAll(builder.fields())
-                                .addAll(getPostAggregations(builder, druidQuery, apiToFieldMapper))
-                                .build()
-                )
-                .filter(
-                        getHavingFilter(builder, druidQuery, apiToFieldMapper)
-                )
-                .sortLimit(
-                        NO_OFFSET,
-                        getLimit(druidQuery),
-                        getSort(builder, druidQuery, apiToFieldMapper, sqlTable.getTimestampColumn())
-                )
-                .build();
+        builder.push(queryRelNode);
+        if (druidQuery instanceof TopNQuery) {
+            long threshold = ((TopNQuery) druidQuery).getThreshold();
+            TopNMetric topNMetric = ((TopNQuery) druidQuery).getMetric();
+            Set<SqlKind> directions = new HashSet<>();
+            if (topNMetric.getType().equals(TopNMetric.TopNMetricType.INVERTED)) {
+                directions.add(SqlKind.NULLS_FIRST);
+            } else {
+                directions.add(SqlKind.DESCENDING);
+                directions.add(SqlKind.NULLS_LAST);
+            }
+
+            Object metric = topNMetric.getMetric();
+            while (metric instanceof TopNMetric) {
+                metric = ((TopNMetric) metric).getMetric();
+            }
+            if (metric == null) {
+                throw new IllegalStateException("null metric found for the topN query");
+            }
+            String metricName = (String) metric;
+            int timePartFunctions = sqlTimeConverter.timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
+            int dimensions = druidQuery.getDimensions().size();
+            List<RexNode> timePartitions = builder.fields().subList(dimensions, dimensions + timePartFunctions);
+
+            List<RexFieldCollation> orderKeys = Collections.singletonList(
+                    new RexFieldCollation(builder.field(metricName), directions));
+
+            SqlRankFunction rankFunc = new SqlRankFunction(SqlKind.ROW_NUMBER, ReturnTypes.RANK, false);
+            RexNode rexOver = builder.getRexBuilder().makeOver(
+                    builder.getRexBuilder().deriveReturnType(rankFunc, new ArrayList<>()),
+                    rankFunc,
+                    new ArrayList<>(),
+                    timePartitions,
+                    ImmutableList.copyOf(orderKeys),
+                    UNBOUNDED_PRECEDING,
+                    CURRENT_ROW,
+                    false,
+                    true,
+                    false,
+                    false,
+                    false);
+            builder.project(
+                            (Iterable) ImmutableList.builder().addAll(builder.fields())
+                                    .add(builder.alias(rexOver, ROW_NUMBER))
+                                    .build()
+                    )
+                    .filter(
+                            builder.call(
+                            SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                            builder.field(ROW_NUMBER),
+                            builder.literal(threshold)
+                    ))
+                    .sort((Iterable) ImmutableList.builder().addAll(timePartitions)
+                                  .add(builder.field(ROW_NUMBER))
+                                  .build());
+        }
+        return builder.build();
     }
 
     /**
@@ -519,10 +602,6 @@ public class DruidQueryToSqlConverter {
             }
         }
 
-        // add time group by
-        if (timePartFunctions == 0) {
-            sorts.add(builder.field(timestampColumn));
-        }
         sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
 
         // add limit spec group by
@@ -756,8 +835,22 @@ public class DruidQueryToSqlConverter {
             DruidAggregationQuery<?> druidQuery,
             ApiToFieldMapper apiToFieldMapper
     ) {
+        Map<String, String> queryAggType = new HashMap<>();
+        Set<Aggregation> aggregations = druidQuery.getAggregations();
+        for (Aggregation aggregation : aggregations) {
+            queryAggType.put(aggregation.getFieldName(), aggregation.getType());
+        }
+        Map<String, SqlTypeName> aggToSqlType = new HashMap<>();
+        // adding different aggregations and their Sql types for comparison
+        aggToSqlType.put("doubleSum", SqlTypeName.DOUBLE);
+        aggToSqlType.put("longSum", SqlTypeName.BIGINT);
+        aggToSqlType.put("doubleMax", SqlTypeName.DOUBLE);
+        aggToSqlType.put("doubleMin", SqlTypeName.DOUBLE);
+        aggToSqlType.put("longMax", SqlTypeName.BIGINT);
+        aggToSqlType.put("longMin", SqlTypeName.BIGINT);
         return druidQuery.getAggregations()
                 .stream()
+                .filter(aggregation -> !aggregation.getType().equals(ThetaSketchAggregation.AGGREGATION_TYPE))
                 .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
                 .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
                     String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
@@ -768,12 +861,23 @@ public class DruidQueryToSqlConverter {
                     if (sqlAggregation.getSqlAggFunction() == SqlStdOperatorTable.COUNT) {
                         return builder.countStar(sqlAggregation.getSqlAggregationAsName());
                     }
+                    String fieldName = sqlAggregation.getSqlAggregationFieldName();
+                    String queryAggregationName = queryAggType.get(fieldName);
+                    RexNode rexNode = builder.field(fieldName);
+                    SqlTypeName sqlType = rexNode.getType().getSqlTypeName();
+                    boolean doubleOrLongAgg = aggToSqlType.containsKey(queryAggregationName);
+                    // checking if the aggregation type is of double or long e.g doubleSum,
+                    // and if the type  matches the column type in presto, if it does not
+                    // match then it will be casted to the correct type
+                    if (doubleOrLongAgg && aggToSqlType.get(queryAggregationName) != sqlType) {
+                        rexNode = builder.cast(rexNode, aggToSqlType.get(queryAggregationName));
+                    }
                     return builder.aggregateCall(
                             sqlAggregation.getSqlAggFunction(),
                             false,
                             null,
                             sqlAggregation.getSqlAggregationAsName(),
-                            builder.field(sqlAggregation.getSqlAggregationFieldName())
+                            rexNode
                     );
                 })
                 .collect(Collectors.toList());
@@ -835,6 +939,32 @@ public class DruidQueryToSqlConverter {
         allGroupBys.addAll(timeFilters);
         allGroupBys.addAll(dimensionFields);
         return allGroupBys;
+    }
+
+    /**
+     * Removes the quotes around the Sketch metric literal.
+     *
+     * @param sqlQuery  the sql string built by the RelBuilder.
+     *
+     * @return the sql string without quote around the sketch metric expression.
+     */
+    private String formatSketchQuery(String sqlQuery) {
+        final String patternString = ".*round\\(thetasketch_estimate\\(thetasketch_union\\([a-zA-Z_]*\\)\\)\\).*";
+        Pattern pattern = Pattern.compile(patternString);
+        Matcher matcher = pattern.matcher(sqlQuery);
+
+        if (matcher.find()) {
+            return String.join(" ", Arrays.stream(sqlQuery.split("\\s+")).map(segment -> {
+                Matcher localMatcher = pattern.matcher(segment);
+                if (localMatcher.matches()) {
+                    return segment.replaceAll("'", "");
+                } else {
+                    return segment;
+                }
+            }).collect(Collectors.toList()));
+        } else {
+            return sqlQuery;
+        }
     }
 
     /**

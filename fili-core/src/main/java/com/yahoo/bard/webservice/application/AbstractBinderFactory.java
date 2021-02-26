@@ -238,7 +238,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
     private ObjectMappersSuite objectMappers;
 
-    private DataSourceMetadataService dataSourceMetadataService;
+    protected DataSourceMetadataService dataSourceMetadataService;
     private ConfigurationLoader loader;
 
     private final TaskScheduler loaderScheduler = new TaskScheduler(LOADER_SCHEDULER_THREAD_POOL_SIZE);

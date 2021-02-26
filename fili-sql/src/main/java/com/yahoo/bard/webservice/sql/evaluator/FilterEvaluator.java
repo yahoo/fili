@@ -187,7 +187,15 @@ public class FilterEvaluator implements ReflectiveVisitor {
                         .map(value -> new SelectorFilter(dimension, value))
                         .collect(Collectors.toList())
         );
-        return dispatcher.invoke(orFilterOfSelectors);
+        List<RexNode> rexNodes = orFilterOfSelectors.getFields()
+                .stream()
+                .map(filter -> dispatcher.invoke(filter, builder, apiToFieldMapper))
+                .collect(Collectors.toList());
+
+        return builder.call(
+                SqlStdOperatorTable.OR,
+                rexNodes
+        );
     }
 
     /**
