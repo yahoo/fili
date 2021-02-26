@@ -94,6 +94,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Add finalizing field access to have no name](https://github.com/yahoo/fili/pull/1144)
+   * Added a condition in `Postaggregation` to allow no name for type Finalizing Field Access.
+   
 - [Added virtual columns and first last any aggregation support](https://github.com/yahoo/fili/pull/1141)
    * Added support for virtual columns and aggregation support for first/last and any aggregations
    
