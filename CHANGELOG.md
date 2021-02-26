@@ -74,6 +74,9 @@ Current
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
 
 ### Added:
+- [Add finalizing field access to have no name](https://github.com/yahoo/fili/pull/1144)
+   * Added a condition in `Postaggregation` to allow no name for type Finalizing Field Access.
+   
 - [Added more logging in BardQueryInfo for cache set and get failures](https://github.com/yahoo/fili/pull/1116)
    * Add more cache logging in `BardQueryInfo` which will hold map of `BardCacheInfo` cache set and get failures.
    * Added more counters in `BardQueryInfo` for factCacheSetFailures and factCacheSetTimeoutFailures.
