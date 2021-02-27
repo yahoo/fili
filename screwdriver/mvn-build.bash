@@ -15,7 +15,6 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
 fi
 
 echo "INFO dependency check"
-mvn -B org.owasp:dependency-check-maven:check
 #capture the maven return code
 MAVEN_RETURN_CODE=$?
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then

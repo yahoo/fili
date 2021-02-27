@@ -7,7 +7,11 @@ pull request if there was one.
 
 Current
 -------
+
+
 ### Fixed:
+- [Fix: Caching wrong object in screwdriver config]
+
 - [Fix: Fili-sql druid all time grain query support](https://github.com/yahoo/fili/issues/1140)
 
 - [Fix: Install python to support build tagging on new screwdriver image](https://github.com/yahoo/fili/issues/1132)
@@ -210,6 +214,11 @@ Current
    * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
 ### Changed:
+- [Break OWASP plugin descent into dependent projects, move to screwdriver step](https://github.com/yahoo/fili/issues/1145)
+   * Remove plugin from main pom
+   * Add pluginmanagement with settings
+   * Add build job step to run owasp security checks.
+   
 - [Support for embedded java client usage: made uri builder an optional contract](https://github.com/yahoo/fili/issues/1137)
 
 - [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)

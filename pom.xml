@@ -149,7 +149,7 @@
         <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
 
-        <!-- empty property used as placeholder for args injected by jacoco coverage plugin -->
+        <version.owasp>6.1.0</version.owasp>
     </properties>
 
     <dependencyManagement>
@@ -762,23 +762,22 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>0.8.3</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${version.owasp}</version>
+                    <configuration>
+                        <failBuildOnCVSS>8</failBuildOnCVSS>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                        <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                        <skipRuntimeScope>true</skipRuntimeScope>
+                        <skipDependencyManagement>false</skipDependencyManagement>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>6.0.5</version>
-                <configuration>
-                    <failBuildOnCVSS>8</failBuildOnCVSS>
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
-                    <skipRuntimeScope>true</skipRuntimeScope>
-                    <skipDependencyManagement>false</skipDependencyManagement>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>

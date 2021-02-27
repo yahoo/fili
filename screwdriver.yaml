@@ -1,5 +1,5 @@
 cache:
-  event: ["~/.m2"]
+  job: ["~/.m2"]
 
 shared:
   annotations:
@@ -22,6 +22,7 @@ jobs:
       - debug: |
           echo "Master Commit : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - owasp-check: mvn -B org.owasp:dependency-check-maven:check
       - build: ./screwdriver/mvn-build.bash
       - prep-release: apt-get update -y && apt-get install -y python
       - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/tag-for-release.bash
