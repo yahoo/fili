@@ -8,7 +8,6 @@ pull request if there was one.
 Current
 -------
 
-
 ### Fixed:
 - [Fix: Caching wrong object in screwdriver config]
 

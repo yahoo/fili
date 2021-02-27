@@ -1,5 +1,7 @@
 cache:
-  job: ["~/.m2"]
+  job:
+    pull-commit: ["~/.m2"]
+    master-commit: ["~/.m2"]
 
 shared:
   annotations:
