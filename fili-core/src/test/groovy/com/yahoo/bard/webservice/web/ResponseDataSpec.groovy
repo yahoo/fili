@@ -31,6 +31,7 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 
+import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
 class ResponseDataSpec extends Specification {
@@ -43,7 +44,7 @@ class ResponseDataSpec extends Specification {
     Set<Column> columns
     Set<LogicalMetric> testLogicalMetrics
     ResponseData response
-    DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
+    DateTime dateTime = new DateTime(TimeUnit.DAYS.toMillis(365 * 45))
     DataApiRequest apiRequest = Mock(DataApiRequest)
     ResultSet resultSet
     ByteArrayOutputStream os = new ByteArrayOutputStream()

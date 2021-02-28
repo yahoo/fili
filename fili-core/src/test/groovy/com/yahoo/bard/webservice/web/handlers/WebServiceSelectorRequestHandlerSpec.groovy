@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.TimeUnit
+
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.MultivaluedMap
@@ -144,7 +146,7 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
         then:
         1 * nextHandler.handleRequest(rc, request, _, response) >> {
             arguments ->
-                timeSoFar = (int) (RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration() / 1000000)
+                timeSoFar = (int) TimeUnit.NANOSECONDS.toMillis(RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration())
                 latestActualContext = ((GroupByQuery) arguments[2]).getContext()
                 return true
         }
@@ -160,7 +162,7 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
         then:
         1 * nextHandler.handleRequest(rc, request, _, response) >> {
             arguments ->
-                timeSoFar = (int) (RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration() / 1000000)
+                timeSoFar = (int) TimeUnit.NANOSECONDS.toMillis(RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration())
                 latestActualContext = ((GroupByQuery) arguments[2]).getContext()
                 return true
         }

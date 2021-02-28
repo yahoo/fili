@@ -17,6 +17,8 @@ import org.joda.time.DateTime
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.TimeUnit
+
 class ResponseWriterSelectorSpec extends Specification {
 
     private static FiliResponseWriterSelector filiResponseWriterSelector = new FiliResponseWriterSelector(
@@ -32,7 +34,7 @@ class ResponseWriterSelectorSpec extends Specification {
 
     Set<Column> columns
     ResponseData response
-    DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
+    DateTime dateTime = new DateTime(TimeUnit.DAYS.toMillis(365 * 45))
     DataApiRequest apiRequest = Mock(DataApiRequest)
     ResultSet resultSet
     ByteArrayOutputStream os = new ByteArrayOutputStream()

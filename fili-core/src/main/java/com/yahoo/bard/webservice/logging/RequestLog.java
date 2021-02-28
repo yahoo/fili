@@ -45,7 +45,7 @@ public class RequestLog {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final String ID_KEY = "logid";
-    private static final long MS_PER_NS = 1000000;
+    private static final float MS_PER_NS = TimeUnit.MILLISECONDS.toNanos(1);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     private static final ThreadLocal<RequestLog> RLOG = ThreadLocal.withInitial(RequestLog::new);
     private static final String LOGINFO_ORDER_STRING = SYSTEM_CONFIG.getStringProperty(
@@ -176,7 +176,7 @@ public class RequestLog {
 
         return durations.entrySet()
                 .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> (float) e.getValue() / MS_PER_NS));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() / MS_PER_NS));
     }
 
     /**

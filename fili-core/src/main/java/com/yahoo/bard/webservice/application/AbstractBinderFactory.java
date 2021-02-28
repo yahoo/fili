@@ -208,7 +208,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     public static final String NAME_METRIC_GENERATOR = "metric_generator_name";
 
     // Two minutes in milliseconds
-    public static final int HC_LAST_RUN_PERIOD_MILLIS_DEFAULT = 120 * 1000;
+    public static final int HC_LAST_RUN_PERIOD_MILLIS_DEFAULT = (int) TimeUnit.MINUTES.toMillis(2);
     public static final int LOADER_SCHEDULER_THREAD_POOL_SIZE_DEFAULT = 4;
 
     public static final int SEG_LOADER_HC_LAST_RUN_PERIOD_MILLIS = SYSTEM_CONFIG.getIntProperty(
