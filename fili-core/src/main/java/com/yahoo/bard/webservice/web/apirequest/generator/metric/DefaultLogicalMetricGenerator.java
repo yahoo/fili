@@ -78,11 +78,8 @@ public class DefaultLogicalMetricGenerator
             );
         }
 
-        if (!builder.getLogicalTableIfInitialized().isPresent()) {
-            throw new BadApiRequestException("A logical table is required for all data queries");
-        }
-
-        validateMetrics(entity, builder.getLogicalTableIfInitialized().get());
+        validateMetrics(entity, builder.getLogicalTableIfInitialized()
+                .orElseThrow(() -> new BadApiRequestException("A logical table is required for all data queries")));
     }
 
 
@@ -122,6 +119,7 @@ public class DefaultLogicalMetricGenerator
      *
      * @return set of metric objects
      */
+    @Override
     public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
@@ -167,6 +165,7 @@ public class DefaultLogicalMetricGenerator
      *
      * @return set of metric objects
      */
+    @Override
     public LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             Granularity requestGranularity,
@@ -186,6 +185,7 @@ public class DefaultLogicalMetricGenerator
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
+    @Override
     public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
         //get metric names from the logical table

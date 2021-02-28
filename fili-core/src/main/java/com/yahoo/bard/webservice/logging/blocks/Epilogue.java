@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.util.CacheLastObserver;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 import java.io.EOFException;
-import java.util.Optional;
 
 import javax.ws.rs.core.Response.StatusType;
 
@@ -58,7 +57,6 @@ public class Epilogue implements LogInfo {
      * client
      */
     public boolean isConnectionClosedPrematurely() {
-        Optional<Throwable> maybeError = responseLengthObserver.getError();
-        return maybeError.isPresent() && maybeError.get() instanceof EOFException;
+        return responseLengthObserver.getError().filter(EOFException.class::isInstance).isPresent();
     }
 }

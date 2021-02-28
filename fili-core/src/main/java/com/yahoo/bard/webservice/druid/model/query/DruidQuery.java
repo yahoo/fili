@@ -64,7 +64,7 @@ public interface DruidQuery<Q extends DruidQuery<? super Q>> {
      */
     @JsonIgnore
     default DruidQuery<?> getInnermostQuery() {
-        return getInnerQuery().isPresent() ? getInnerQuery().get().getInnermostQuery() : this;
+        return getInnerQuery().map(DruidQuery::getInnermostQuery).orElse(this);
     }
 
     /**

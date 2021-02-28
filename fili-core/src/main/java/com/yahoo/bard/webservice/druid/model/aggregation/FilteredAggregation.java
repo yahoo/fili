@@ -70,17 +70,11 @@ public class FilteredAggregation extends Aggregation {
     @Override
     public Pair<Optional<Aggregation>, Optional<Aggregation>> nest() {
         Pair<Optional<Aggregation>, Optional<Aggregation>> wrappedAggNested = this.getAggregation().nest();
-        Aggregation inner = null;
-        Aggregation outer = null;
-        if (wrappedAggNested.getRight().isPresent()) {
-            inner = this.withAggregation(wrappedAggNested.getRight().get());
-        }
-        if (wrappedAggNested.getLeft().isPresent()) {
-            outer = wrappedAggNested.getLeft().get();
-            outer = inner != null ? outer.withFieldName(inner.getName()) : outer;
-        }
+        Optional<Aggregation> optInner = wrappedAggNested.getRight().map(this::withAggregation);
+        Optional<Aggregation> optOuter = wrappedAggNested.getLeft()
+                .map(outer -> optInner.map(inner -> outer.withFieldName(inner.getName())).orElse(outer));
 
-        return new ImmutablePair<>(Optional.ofNullable(outer), Optional.ofNullable(inner));
+        return new ImmutablePair<>(optOuter, optInner);
     }
 
     @JsonIgnore

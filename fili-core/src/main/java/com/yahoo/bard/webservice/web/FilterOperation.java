@@ -45,7 +45,7 @@ public interface FilterOperation {
     default String expectedRangeDescription() {
 
         if (getMinimumArguments().isPresent() && getMaximumArguments().isPresent()) {
-            if (getMinimumArguments().get() == getMaximumArguments().get()) {
+            if (getMinimumArguments().filter(getMaximumArguments().get()::equals).isPresent()) {
                 return String.format("exactly %d arguments", getMaximumArguments().get());
             }
             return String.format(
@@ -53,12 +53,13 @@ public interface FilterOperation {
                     getMinimumArguments().get(),
                     getMinimumArguments().get()
             );
-        } else if (getMinimumArguments().isPresent()) {
-            return String.format("as least %d arguments", getMinimumArguments().get());
-        } else if (getMaximumArguments().isPresent()) {
-            return String.format("no more than %d arguments", getMaximumArguments().get());
-        } else {
-            return "any number of arguments";
         }
+        if (getMinimumArguments().isPresent()) {
+            return String.format("as least %d arguments", getMinimumArguments().get());
+        }
+        if (getMaximumArguments().isPresent()) {
+            return String.format("no more than %d arguments", getMaximumArguments().get());
+        }
+        return "any number of arguments";
     }
 }

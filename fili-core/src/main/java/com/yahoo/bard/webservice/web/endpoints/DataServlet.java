@@ -615,10 +615,12 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         return druidResponseParser;
     }
 
+    @Override
     public DruidFilterBuilder getFilterBuilder() {
         return filterBuilder;
     }
 
+    @Override
     public HavingGenerator getHavingApiGenerator() {
         return havingGenerator;
     }

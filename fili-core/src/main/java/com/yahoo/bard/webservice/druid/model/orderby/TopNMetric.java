@@ -122,7 +122,7 @@ public class TopNMetric {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Object getMetric() {
-        return metricName.isPresent() ? metricName.get() : nested.orElse(null);
+        return metricName.map((Object o) -> o).orElse(nested.orElse(null));
     }
 
     /**
@@ -133,6 +133,6 @@ public class TopNMetric {
     //TODO: use com.fasterxml.jackson.datatype.jdk8 when it becomes more stable for proper Optional serialization
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getPreviousStop() {
-        return previousStop.isPresent() ? previousStop.get() : null;
+        return previousStop.orElse(null);
     }
 }
