@@ -8,7 +8,8 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
 import com.yahoo.bard.webservice.druid.model.dimension.extractionfunction.ExtractionFunction;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
+
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class DefaultRegisteredLookupDimensionConfig extends DefaultKeyValueStore
                 keyValueStore,
                 searchProvider
         );
-        this.registeredLookupExtractionFns = Collections.unmodifiableList(registeredLookupExtractionFns);
+        this.registeredLookupExtractionFns = ImmutableList.copyOf(registeredLookupExtractionFns);
     }
 
     /**

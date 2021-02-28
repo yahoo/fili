@@ -4,9 +4,9 @@ package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
+
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Exception used when constructing an object for a {@link DataApiRequest} but the dependencies for this object have not
@@ -33,7 +33,7 @@ public class UnsatisfiedApiRequestConstraintsException extends RuntimeException 
     public UnsatisfiedApiRequestConstraintsException(String resource, Collection<String> dependencies) {
         super(generateExceptionMessage(resource, dependencies));
         this.resource = resource;
-        this.dependencies = Collections.unmodifiableCollection(new ArrayList<>(dependencies));
+        this.dependencies = ImmutableList.copyOf(dependencies);
     }
 
     /**
@@ -51,7 +51,7 @@ public class UnsatisfiedApiRequestConstraintsException extends RuntimeException 
     ) {
         super(generateExceptionMessage(resource, dependencies), throwable);
         this.resource = resource;
-        this.dependencies = Collections.unmodifiableCollection(new ArrayList<>(dependencies));
+        this.dependencies = ImmutableList.copyOf(dependencies);
     }
 
     /**

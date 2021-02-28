@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -239,13 +241,11 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
      * @return an immutable set of all dimensions contained in a request
      */
     private Set<Dimension> generateAllDimensions() {
-        return Collections.unmodifiableSet(
-                Stream.of(
+        return Stream.of(
                         getRequestDimensions().stream(),
                         getFilterDimensions().stream(),
                         getMetricDimensions().stream()
-                ).flatMap(Function.identity()).collect(Collectors.toSet())
-        );
+                ).flatMap(Function.identity()).collect(ImmutableSet.toImmutableSet());
     }
 
     /**
@@ -256,11 +256,9 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
      * @return an immutable set of all dimension names
      */
     private Set<String> generateAllDimensionNames() {
-        return Collections.unmodifiableSet(
-                allDimensions.stream()
+        return allDimensions.stream()
                         .map(Dimension::getApiName)
-                        .collect(Collectors.toSet())
-        );
+                        .collect(ImmutableSet.toImmutableSet());
     }
 
     /**
@@ -271,10 +269,9 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
      * @return an immutable set of all columns names
      */
     private Set<String> generateAllColumnNames() {
-        return Collections.unmodifiableSet(
-                Stream.concat(
+        return Stream.concat(
                         allDimensionNames.stream(),
                         metricNames.stream()
-                ).collect(Collectors.toSet()));
+                ).collect(ImmutableSet.toImmutableSet());
     }
 }

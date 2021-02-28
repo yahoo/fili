@@ -25,6 +25,8 @@ import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.google.common.collect.ImmutableList;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -851,7 +853,7 @@ public class LuceneSearchProvider implements SearchProvider {
             readUnlock();
         }
         return new SinglePagePagination<>(
-                Collections.unmodifiableList(filteredDimRows.stream().collect(Collectors.toList())),
+                filteredDimRows.stream().collect(ImmutableList.toImmutableList()),
                 paginationParameters,
                 documentCount
         );

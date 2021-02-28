@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -14,7 +15,6 @@ import com.yahoo.bard.webservice.util.Utils;
 import com.yahoo.wiki.webservice.data.config.names.WikiApiDimensionConfigInfo;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -34,7 +34,7 @@ public class WikiDimensions {
      */
     public WikiDimensions() {
 
-        this.dimensionConfigs = Collections.unmodifiableSet(
+        this.dimensionConfigs =
                 Arrays.stream(WikiApiDimensionConfigInfo.values())
                         .map(
                             dimensionName -> new DefaultKeyValueStoreDimensionConfig(
@@ -48,7 +48,7 @@ public class WikiDimensions {
                                 getDefaultSearchProvider(dimensionName)
                             )
                         )
-                        .collect(Collectors.toSet())
+                        .collect(ImmutableSet.toImmutableSet()
         );
 
         wikiApiDimensionNameToConfig = dimensionConfigs.stream().collect(

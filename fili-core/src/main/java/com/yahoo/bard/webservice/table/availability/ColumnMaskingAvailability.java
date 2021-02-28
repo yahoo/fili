@@ -8,10 +8,10 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.joda.time.DateTime;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -36,7 +36,7 @@ public final class ColumnMaskingAvailability extends AbstractAvailabilityDecorat
             Set<String> maskedColumnNames
     ) {
         super(target);
-        Set<String> names = Collections.unmodifiableSet(new HashSet<>(maskedColumnNames));
+        Set<String> names = ImmutableSet.copyOf(maskedColumnNames);
         this.filter = d -> !names.contains(d.getApiName());
     }
 

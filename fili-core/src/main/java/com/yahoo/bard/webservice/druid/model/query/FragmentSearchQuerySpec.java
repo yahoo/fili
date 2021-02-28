@@ -5,10 +5,9 @@ package com.yahoo.bard.webservice.druid.model.query;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.ImmutableList;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -45,7 +44,7 @@ public class FragmentSearchQuerySpec extends SearchQuerySpec {
     public FragmentSearchQuerySpec(final Boolean caseSensitive, Collection<String> values) {
         super(DefaultSearchQueryType.FRAGMENT);
         this.caseSensitive = caseSensitive;
-        this.values = values == null ? null : Collections.unmodifiableList(new ArrayList<>(values));
+        this.values = values == null ? null : ImmutableList.copyOf(values);
     }
 
     /**

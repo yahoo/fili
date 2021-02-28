@@ -19,14 +19,13 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -330,9 +329,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
         return new SinglePagePagination<>(
-                Collections.unmodifiableList(
-                        new ArrayList<>(getAllDimensionRowsPaged(paginationParameters))
-                ),
+                ImmutableList.copyOf(getAllDimensionRowsPaged(paginationParameters)),
                 paginationParameters,
                 getDimRowIndexes().size()
         );

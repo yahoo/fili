@@ -2,13 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.dimension;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Set;
@@ -62,7 +62,7 @@ public class DimensionDictionary {
      * @return a set of dimensions
      */
     public Set<Dimension> findAll() {
-        return Collections.unmodifiableSet(new HashSet<>(apiNameToDimension.values()));
+        return ImmutableSet.copyOf(apiNameToDimension.values());
     }
 
     /**
