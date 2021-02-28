@@ -80,7 +80,7 @@ public class StrictAvailability extends BaseMetadataAvailability {
                         new SimplifiedIntervalList()
                 ))
                 .reduce(SimplifiedIntervalList::intersect)
-                .orElse(getAvailableIntervals());
+                .orElseGet(this::getAvailableIntervals);
     }
 
     @Override

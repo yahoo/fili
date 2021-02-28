@@ -134,7 +134,7 @@ public class DruidQueryBuilder {
         DataApiRequest tableFilteredRequest = request.withFilters(
                 logicalTable.getFilters()
                         .map(f -> ApiFilters.union(f, request.getApiFilters()))
-                        .orElse(request.getApiFilters())
+                        .orElseGet(request::getApiFilters)
         );
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain

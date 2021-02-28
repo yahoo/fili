@@ -34,7 +34,7 @@ public interface PhysicalTable extends Table {
         // By default union all available columns
         return getAllAvailableIntervals().values().stream()
                 .reduce(SimplifiedIntervalList::union)
-                .orElse(new SimplifiedIntervalList());
+                .orElseGet(SimplifiedIntervalList::new);
     }
 
     /**

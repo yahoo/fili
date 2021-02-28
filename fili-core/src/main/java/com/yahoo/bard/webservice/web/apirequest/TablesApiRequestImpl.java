@@ -128,7 +128,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         if (tableName != null && granularity != null) {
             this.granularity = generateGranularity(granularity, bardConfigResources.getGranularityParser());
             this.table = generateTable(tableName, this.granularity, bardConfigResources.getLogicalTableDictionary());
-            this.apiFilters = table.getFilters().map(ApiFilters::new).orElse(new ApiFilters());
+            this.apiFilters = table.getFilters().map(ApiFilters::new).orElseGet(ApiFilters::new);
         } else {
             this.table = null;
             this.granularity = null;
@@ -443,6 +443,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
      * @return Set of metric objects.
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
+    @Override
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
@@ -583,6 +584,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         );
     }
 
+    @Override
     public TablesApiRequest withTable(LogicalTable table) {
         return new TablesApiRequestImpl(
                 format,
@@ -631,6 +633,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
         );
     }
 
+    @Override
     public TablesApiRequest withDimensions(LinkedHashSet<Dimension> dimensions) {
         return new TablesApiRequestImpl(
                 format,

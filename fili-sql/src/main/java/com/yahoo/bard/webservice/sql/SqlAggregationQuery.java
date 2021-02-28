@@ -185,7 +185,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 .map(DruidFactQuery.class::cast)
                 .map(innerQuery -> withDataSource(new QueryDataSource(innerQuery.withAllIntervals(intervals)))
                         .withIntervals(intervals))
-                .orElse(withIntervals(intervals));
+                .orElseGet(() -> withIntervals(intervals));
     }
 
     public SqlAggregationQuery withOrderBy(LimitSpec limitSpec) {

@@ -86,7 +86,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     @Override
     public DateTime getTableAlignment() {
         return getSchema().getTimeGrain().roundFloor(
-                IntervalUtils.firstMoment(getAllAvailableIntervals().values()).orElse(new DateTime())
+                IntervalUtils.firstMoment(getAllAvailableIntervals().values()).orElseGet(DateTime::new)
         );
     }
 

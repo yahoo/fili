@@ -58,7 +58,7 @@ public interface Availability {
     default SimplifiedIntervalList getAvailableIntervals() {
         return getAllAvailableIntervals().values().stream()
                 .reduce(SimplifiedIntervalList::union)
-                .orElse(new SimplifiedIntervalList());
+                .orElseGet(SimplifiedIntervalList::new);
     }
 
     /**
