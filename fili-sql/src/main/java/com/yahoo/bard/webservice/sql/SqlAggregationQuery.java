@@ -31,7 +31,7 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
     /**
      * Wraps a query as a GroupBy Query.
      *
-     * @param query The query to wrap.
+     * @param query  The query to wrap.
      */
     public SqlAggregationQuery(DruidAggregationQuery<?> query) {
         this(
@@ -43,20 +43,21 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 query.getPostAggregations(),
                 query.getIntervals(),
                 query.getContext(),
-                query.getVirtualColumns());
+                query.getVirtualColumns()
+        );
     }
 
     /**
      * Constructor.
      *
-     * @param dataSource The datasource
-     * @param granularity The granularity
-     * @param dimensions The dimensions
-     * @param filter The filter
-     * @param aggregations The aggregations
-     * @param postAggregations The post-aggregations
-     * @param intervals The intervals
-     * @param context The context
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
      *
      * @deprecated The constructor with virtual columns should be the primary constructor
      */
@@ -69,7 +70,8 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
             Collection<Aggregation> aggregations,
             Collection<PostAggregation> postAggregations,
             Collection<Interval> intervals,
-            QueryContext context) {
+            QueryContext context
+    ) {
         this(
                 dataSource,
                 granularity,
@@ -79,20 +81,21 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 postAggregations,
                 intervals,
                 context,
-                null);
+                null
+        );
     }
 
     /**
      * Constructor.
      *
-     * @param dataSource The datasource
-     * @param granularity The granularity
-     * @param dimensions The dimensions
-     * @param filter The filter
-     * @param aggregations The aggregations
-     * @param postAggregations The post-aggregations
-     * @param intervals The intervals
-     * @param context The context
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param context  The context
      * @param virtualColumns The virtual columns
      */
     private SqlAggregationQuery(
@@ -104,7 +107,8 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
             Collection<PostAggregation> postAggregations,
             Collection<Interval> intervals,
             QueryContext context,
-            Collection<VirtualColumn> virtualColumns) {
+            Collection<VirtualColumn> virtualColumns
+    ) {
         super(
                 DefaultQueryType.GROUP_BY,
                 dataSource,
@@ -116,14 +120,14 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
                 intervals,
                 context,
                 false,
-                null);
+                null
+        );
     }
 
     // CHECKSTYLE:OFF
     @Override
     public SqlAggregationQuery withDataSource(DataSource dataSource) {
-        return new SqlAggregationQuery(dataSource, granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(dataSource, granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
@@ -135,48 +139,40 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
     }
 
     public SqlAggregationQuery withDimensions(Collection<Dimension> dimensions) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withGranularity(Granularity granularity) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withFilter(Filter filter) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     public SqlAggregationQuery withHaving(Having having) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     public SqlAggregationQuery withLimitSpec(LimitSpec limitSpec) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withAggregations(Collection<Aggregation> aggregations) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withPostAggregations(Collection<PostAggregation> postAggregations) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withIntervals(Collection<Interval> intervals) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
@@ -189,20 +185,17 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
     }
 
     public SqlAggregationQuery withOrderBy(LimitSpec limitSpec) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withContext(QueryContext context) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
 
     @Override
     public SqlAggregationQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
-        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations,
-                intervals, context, virtualColumns);
+        return new SqlAggregationQuery(getDataSource(), granularity, dimensions, filter, aggregations, postAggregations, intervals, context, virtualColumns);
     }
     // CHECKSTYLE:ON
 }

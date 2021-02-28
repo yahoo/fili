@@ -101,7 +101,7 @@ public class FilteredAggregation extends Aggregation {
 
     @JsonProperty(value = "aggregator")
     public Aggregation getAggregation() {
-       return aggregation;
+        return aggregation;
     }
 
     public Filter getFilter() {
