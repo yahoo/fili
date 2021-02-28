@@ -853,7 +853,7 @@ public class LuceneSearchProvider implements SearchProvider {
             readUnlock();
         }
         return new SinglePagePagination<>(
-                filteredDimRows.stream().collect(ImmutableList.toImmutableList()),
+                ImmutableList.copyOf(filteredDimRows),
                 paginationParameters,
                 documentCount
         );

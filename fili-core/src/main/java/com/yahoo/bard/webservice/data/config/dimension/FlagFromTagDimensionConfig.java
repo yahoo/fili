@@ -139,12 +139,12 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
         public static final String DEFAULT_TRUE_VALUE = "true";
         public static final String DEFAULT_FALSE_VALUE = "false";
 
-        public static final Set<FilterOperation> DEFAULT_POSITIVE_OPS = Stream.of(
+        public static final Set<FilterOperation> DEFAULT_POSITIVE_OPS = ImmutableSet.of(
                 DefaultFilterOperation.in,
                 DefaultFilterOperation.startswith,
                 DefaultFilterOperation.contains,
                 DefaultFilterOperation.eq
-        ).collect(ImmutableSet.toImmutableSet());
+        );
 
         public static final Set<FilterOperation> DEFAULT_NEGATIVE_OPS
                 = Collections.singleton(DefaultFilterOperation.notin);

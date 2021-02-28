@@ -70,8 +70,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     @Override
     public Set<DataSourceName> getDataSourceNames() {
         // TODO: Once the availability setter is removed from this class, move this to the constructor
-        return getAvailability().getDataSourceNames().stream()
-                .collect(ImmutableSet.toImmutableSet());
+        return ImmutableSet.copyOf(getAvailability().getDataSourceNames());
     }
 
     @Override
