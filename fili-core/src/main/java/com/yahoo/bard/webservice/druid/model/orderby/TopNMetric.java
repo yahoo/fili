@@ -122,7 +122,7 @@ public class TopNMetric {
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Object getMetric() {
-        return metricName.isPresent() ? metricName.get() : nested.orElse(null);
+        return metricName.map((Object o) -> o).orElse(nested.orElse(null));
     }
 
     /**
