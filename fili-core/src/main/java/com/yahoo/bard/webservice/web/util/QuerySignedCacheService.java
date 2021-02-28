@@ -99,8 +99,8 @@ public class QuerySignedCacheService implements CacheService {
         if (cacheEntry != null) {
             if (
                     querySigningService.getSegmentSetId(druidQuery)
-                            .map(id -> Objects.equals(cacheEntry.getMeta(), id))
-                            .orElse(false)
+                            .filter(id -> Objects.equals(cacheEntry.getMeta(), id))
+                            .isPresent()
             ) {
                 try {
                     if (context.getNumberOfOutgoing().decrementAndGet() == 0) {
