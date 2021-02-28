@@ -166,7 +166,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<Dimension> dimensions,
             Collection<VirtualColumn> virtualColumns
     ) {
-        // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
+        // ImmutableSet preserves order
         this.aggregations = ImmutableSet.copyOf(aggregations);
         this.postAggregations = ImmutableSet.copyOf(postAggregations);
         this.nestedQuery = nestedQuery;
