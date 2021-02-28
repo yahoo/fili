@@ -25,6 +25,7 @@ import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
@@ -132,7 +133,7 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T value, DateTime expiration) throws IllegalStateException {
-        return setInSeconds(key, value, (int) (expiration.getMillis() / 1000L));
+        return setInSeconds(key, value, (int) TimeUnit.MILLISECONDS.toSeconds(expiration.getMillis()));
     }
 
     /**

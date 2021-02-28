@@ -12,8 +12,10 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.TimeUnit
+
 class DimensionLoadTaskHealthCheckSpec extends Specification {
-    private static final long TWO_MINUTES = 2 * 60 * 1000;
+    private static final long TWO_MINUTES = TimeUnit.MINUTES.toMillis(2)
 
     /**
      * Setup loader health check and lastRunTimestamp on DimensionLoader.

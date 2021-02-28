@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.logging;
 
 import com.yahoo.bard.webservice.web.filters.BardLoggingFilter;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
@@ -20,9 +21,10 @@ public class TimeRemainingFunction implements Function<Integer, Integer> {
      *
      * @return The time remaining or zero.
      */
+    @Override
     public Integer apply(Integer timeout) {
         TimedPhase totalTimer =  RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER);
         long timeSoFarNanos = (totalTimer == null) ? 0 : totalTimer.getActiveDuration();
-        return ((int) Math.max(timeout - (timeSoFarNanos / 1000000), 0));
+        return (int) Math.max(timeout - TimeUnit.NANOSECONDS.toMillis(timeSoFarNanos), 0);
     }
 }

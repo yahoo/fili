@@ -33,6 +33,8 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 
+import java.util.concurrent.TimeUnit
+
 import javax.ws.rs.core.UriBuilder
 
 /**
@@ -109,7 +111,7 @@ abstract class ResponseWriterSpec extends Specification {
     JsonResponseWriter jsonResponseWriter
     JsonApiResponseWriter jsonApiResponseWriter
 
-    DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
+    DateTime dateTime = new DateTime(TimeUnit.DAYS.toMillis(365 * 45))
     String formattedDateTime
     DataApiRequest apiRequest = Mock(DataApiRequest)
     ResultSet resultSet
