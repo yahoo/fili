@@ -52,7 +52,7 @@ public class TestLoggingServlet {
         try {
             Thread.sleep(200);
         } catch (InterruptedException ignore) {
-            // Do nothing
+            Thread.currentThread().interrupt();
         }
         RequestLog.stopTiming(this);
 
@@ -79,7 +79,7 @@ public class TestLoggingServlet {
                     Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Oops! Web App Exception").build()
             );
         } catch (InterruptedException ignore) {
-            // Do nothing
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -100,7 +100,7 @@ public class TestLoggingServlet {
             Thread.sleep(200);
             throw new RuntimeException("Oops! Generic Exception");
         } catch (InterruptedException ignore) {
-            // Do nothing
+            Thread.currentThread().interrupt();
         }
     }
 }

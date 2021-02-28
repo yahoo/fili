@@ -163,6 +163,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new IllegalStateException(msg);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             String msg = String.format(
                     ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
                     getDimension()
@@ -199,6 +200,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new IllegalStateException(msg);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             String msg = String.format(
                     ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
                     getDimension().getApiName()
