@@ -258,6 +258,7 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
     private Set<String> generateAllDimensionNames() {
         return allDimensions.stream()
                         .map(Dimension::getApiName)
+                        .filter(Objects::nonNull)
                         .collect(ImmutableSet.toImmutableSet());
     }
 
