@@ -475,7 +475,7 @@ public class KeyValueStoreDimension implements Dimension {
                 indexRows.put(rowIdKey, new Pair<>(dimensionRow, dimensionRowOld));
 
             } catch (IOException e) {
-                LOG.error("Exception while adding dimension row {}", e);
+                LOG.error("Exception while adding dimension row", e);
                 throw new RuntimeException(e);
             }
         }
@@ -521,7 +521,7 @@ public class KeyValueStoreDimension implements Dimension {
                 drByKey = parseDimensionRow(dimensionRowMap);
             }
         } catch (IOException e) {
-            LOG.error("Cannot map string to DimensionRow object. {}", e);
+            LOG.error("Cannot map string to DimensionRow object.", e);
             throw new RuntimeException(e);
         }
         return drByKey;
@@ -555,7 +555,7 @@ public class KeyValueStoreDimension implements Dimension {
             keyValueStore.put(allValuesKey, "[]");
 
         } catch (IOException e) {
-            LOG.error("Exception while reading dimension rows {}", e);
+            LOG.error("Exception while reading dimension rows", e);
             throw new RuntimeException(e);
         }
     }

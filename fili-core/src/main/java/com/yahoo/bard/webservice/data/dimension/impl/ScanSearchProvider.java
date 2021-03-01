@@ -171,7 +171,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
             String dimRows = objectMapper.writeValueAsString(dimensionRowsSet);
             keyValueStore.put(allValuesKey, dimRows);
         } catch (IOException e) {
-            LOG.error("Exception while adding dimension entry in KeyValueStore : {}", e);
+            LOG.error("Exception while adding dimension entry in KeyValueStore : {}", e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -243,7 +243,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
                 keyValueStore.put(rowValueKey, updatedRowValueSKeys);
             }
         } catch (IOException e) {
-            LOG.error("Exception while adding dimension description entry in key value store : {}", e);
+            LOG.error("Exception while adding dimension description entry in key value store : {}", e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -426,7 +426,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
         try {
             return objectMapper.readValue(value, typeReference);
         } catch (IOException e) {
-            LOG.error("Exception while reading dimension rows {}", e);
+            LOG.error("Exception while reading dimension rows", e);
             throw new RuntimeException(e);
         }
     }
