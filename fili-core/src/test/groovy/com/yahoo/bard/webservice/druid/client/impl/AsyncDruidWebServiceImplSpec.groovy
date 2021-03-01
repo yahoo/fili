@@ -10,6 +10,8 @@ import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
 import com.fasterxml.jackson.databind.ObjectMapper
 
 import io.netty.handler.codec.http.HttpHeaders
+import io.netty.handler.ssl.SslContext
+import org.asynchttpclient.AsyncHttpClient;
 import spock.lang.Specification
 
 import java.util.function.Supplier
@@ -70,5 +72,17 @@ class AsyncDruidWebServiceImplSpec extends Specification {
         for (Map.Entry<String, String> header : expectedHeaders) {
             assert actualHeaders.get(header.getKey()) == header.getValue()
         }
+    }
+
+    def "Check whether given ssl context was set in HttpClient"() {
+        setup:
+        SslContext sslContext = Mock(SslContext);
+
+        when:
+        AsyncHttpClient httpClient = AsyncDruidWebServiceImpl.initializeWebClient(6000, sslContext);
+
+        then:
+        assert httpClient.getConfig().getSslContext() == sslContext;
+
     }
 }

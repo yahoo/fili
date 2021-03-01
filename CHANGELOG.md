@@ -209,6 +209,11 @@ Current
 - [Add Sketch Metrics support for Preso](https://github.com/yahoo/fili/issues/1138)
    * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
+- [Add custom ssl context support to druid AsyncHttp requests](https://github.com/yahoo/fili/pull/943)
+  * Added new Constructors in `AsyncDruidWebServiceImpl` class that accept custom `SslContext` as additional argument. 
+   This custom SslContext if not null, replaces the default ssl context while making the request to druid. 
+  * Added `getSSLContext()` method in `AbstractBinderFactory` class that returns null as default. Custom Ssl Context is passed by overriding this method. 
+    
 ### Changed:
 - [Support for embedded java client usage: made uri builder an optional contract](https://github.com/yahoo/fili/issues/1137)
 
@@ -2640,3 +2645,5 @@ Jobs resource. Here are the highlights of what's in this release:
 
 - [`DruidDimensionsLoader` doesn't set the dimension's lastUpdated date](https://github.com/yahoo/fili/pull/24)
   * `DruidDimensionsLoader` now properly sets the `lastUpdated` field after it finished processing the Druid response
+
+### Added:

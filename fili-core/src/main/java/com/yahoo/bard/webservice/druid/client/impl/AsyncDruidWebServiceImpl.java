@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import io.netty.handler.ssl.SslContext;
 import org.asynchttpclient.AsyncCompletionHandler;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -109,7 +110,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         this(
                 serviceConfig,
-                initializeWebClient(serviceConfig.getTimeout()),
+                initializeWebClient(serviceConfig.getTimeout(), null),
                 mapper,
                 HashMap::new,
                 DEFAULT_JSON_NODE_BUILDER_STRATEGY
@@ -150,7 +151,32 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         this(
                 serviceConfig,
-                initializeWebClient(serviceConfig.getTimeout()),
+                initializeWebClient(serviceConfig.getTimeout(), null),
+                mapper,
+                headersToAppend,
+                DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        );
+    }
+
+    /**
+     * Friendly non-DI constructor useful for manual tests.
+     * <p>
+     * This constructor uses default JSON builder, which only uses response body to build the JSON response.
+     *
+     * @param serviceConfig  Configuration for the Druid Service
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param sslContext Custom Configured SslContext (null if default SSL context has to be used)
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig serviceConfig,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            SslContext sslContext
+    ) {
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout(), sslContext),
                 mapper,
                 headersToAppend,
                 DEFAULT_JSON_NODE_BUILDER_STRATEGY
@@ -173,7 +199,33 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
     ) {
         this(
                 serviceConfig,
-                initializeWebClient(serviceConfig.getTimeout()),
+                initializeWebClient(serviceConfig.getTimeout(), null),
+                mapper,
+                headersToAppend,
+                jsonNodeBuilderStrategy
+        );
+    }
+
+
+    /**
+     * Friendly non-DI constructor useful for manual tests.
+     *
+     * @param serviceConfig  Configuration for the Druid Service
+     * @param mapper  A shared jackson object mapper resource
+     * @param headersToAppend Supplier for map of headers for Druid requests
+     * @param jsonNodeBuilderStrategy A function to build JSON nodes from the response
+     * @param sslContext Custom Configured SslContext (null if default SSL context has to be used)
+     */
+    public AsyncDruidWebServiceImpl(
+            DruidServiceConfig serviceConfig,
+            ObjectMapper mapper,
+            Supplier<Map<String, String>> headersToAppend,
+            SslContext sslContext,
+            Function<Response, JsonNode> jsonNodeBuilderStrategy
+    ) {
+        this(
+                serviceConfig,
+                initializeWebClient(serviceConfig.getTimeout(), sslContext),
                 mapper,
                 headersToAppend,
                 jsonNodeBuilderStrategy
@@ -237,10 +289,11 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      * Initialize the client config.
      *
      * @param requestTimeout  Timeout to use for the client configuration.
+     * @param sslContext Custom Configured SslContext. (null if default ssl context has to be used)
      *
      * @return the set up client
      */
-    private static AsyncHttpClient initializeWebClient(int requestTimeout) {
+    private static AsyncHttpClient initializeWebClient(int requestTimeout, SslContext sslContext) {
 
         LOG.debug("Druid request timeout: {}ms", requestTimeout);
         List<String> cipherSuites = SYSTEM_CONFIG.getListProperty(SSL_ENABLED_CIPHER_KEY, null);
@@ -257,6 +310,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
                 .setPooledConnectionIdleTimeout(requestTimeout)
                 .setEnabledCipherSuites(enabledCipherSuites)
                 .setFollowRedirect(true)
+                .setSslContext(sslContext)
                 .build();
 
         return new DefaultAsyncHttpClient(config);

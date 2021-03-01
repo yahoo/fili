@@ -146,6 +146,7 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.netty.handler.ssl.SslContext;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -1308,6 +1309,14 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     }
 
     /**
+     * Get a custom configured ssl context. If null, the system default SSL Context will be applied
+     * @return SSL context
+     */
+    protected SslContext getSSLContext() {
+        return null;
+    }
+
+    /**
      * Create a DruidWebService.
      * <p>
      * Provided so subclasses can implement alternative druid web service implementations
@@ -1321,14 +1330,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
         return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
                 ? new AsyncDruidWebServiceImpl(
-                    druidServiceConfig,
-                    mapper,
-                    supplier,
-                    new HeaderNestingJsonBuilderStrategy(
-                            AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
-                    )
-            )
-                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
+                        druidServiceConfig,
+                        mapper,
+                        supplier,
+                        getSSLContext(),
+                        new HeaderNestingJsonBuilderStrategy(
+                                AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
+                        )
+                )
+                : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier, getSSLContext());
     }
 
     /**
