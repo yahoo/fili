@@ -8,6 +8,7 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+
 - [Fix: Fili-sql druid all time grain query support](https://github.com/yahoo/fili/issues/1140)
 
 - [Fix: Install python to support build tagging on new screwdriver image](https://github.com/yahoo/fili/issues/1132)
@@ -94,6 +95,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Fix Fili-sql class loading issue in Java 11](https://github.com/yahoo/fili/pull/1153)
+   * Set the thread's context class loader to avoid class loading issues in downstream Janino dynamic class loading logic.
+  
 - [Add finalizing field access to have no name](https://github.com/yahoo/fili/pull/1144)
    * Added a condition in `Postaggregation` to allow no name for type Finalizing Field Access.
    
