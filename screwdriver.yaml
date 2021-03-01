@@ -14,6 +14,8 @@ jobs:
       - header: echo "Starting the pipeline"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - build: ./screwdriver/mvn-build.bash
+    environment:
+      GIT_SHALLOW_CLONE: false
 
   master-commit:
     requires: [~commit]
@@ -25,6 +27,8 @@ jobs:
       - build: ./screwdriver/mvn-build.bash
       - prep-release: apt-get update -y && apt-get install -y python
       - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/tag-for-release.bash
+    environment:
+      GIT_SHALLOW_CLONE: false
 
   tag-release:
     secrets:
