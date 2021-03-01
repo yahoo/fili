@@ -415,6 +415,7 @@ public class DruidQueryToSqlConverter {
             ApiToFieldMapper apiToFieldMapper,
             SqlPhysicalTable sqlTable
     ) {
+        Thread.currentThread().setContextClassLoader(DruidQueryToSqlConverter.class.getClassLoader());
         boolean isFilteredAggPresent = druidQuery.getAggregations()
                 .stream()
                 .anyMatch(agg -> agg instanceof FilteredAggregation);
