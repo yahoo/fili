@@ -253,7 +253,7 @@ public class DruidQueryBuilder {
             mergedFilter = null;
         }
 
-        // Filters must be applied at the lowest level as they exclude data from aggregates
+        // Filters must be applied at the lowest level as they exclude data from aggregate
         return new GroupByQuery(
                 dataSource,
                 mergedGranularity,
