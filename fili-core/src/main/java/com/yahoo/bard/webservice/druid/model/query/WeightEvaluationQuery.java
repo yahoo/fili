@@ -209,7 +209,8 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         aggregations,
                         postAggregations,
                         innerQuery.getIntervals(),
-                        stripColumnsFromLimitSpec(innerQuery)
+                        stripColumnsFromLimitSpec(innerQuery),
+                        innerQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(inner);
             case TOP_N:
@@ -223,7 +224,8 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         aggregations,
                         postAggregations,
                         topNQuery.getIntervals(),
-                        null
+                        null,
+                        topNQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(transformed);
             default:

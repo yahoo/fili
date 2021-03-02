@@ -253,7 +253,7 @@ public class DruidQueryBuilder {
             mergedFilter = null;
         }
 
-        // Filters must be applied at the lowest level as they exclude data from aggregate
+        // Filters must be applied at the lowest level as they exclude data from aggregates
         return new GroupByQuery(
                 dataSource,
                 mergedGranularity,
@@ -263,7 +263,10 @@ public class DruidQueryBuilder {
                 template.getAggregations(),
                 template.getPostAggregations(),
                 intervals,
-                druidOrderBy
+                druidOrderBy,
+                null,
+                false,
+                template.getVirtualColumns()
         );
     }
 
@@ -348,7 +351,8 @@ public class DruidQueryBuilder {
                 template.getPostAggregations(),
                 intervals,
                 topN,
-                metricSpec
+                metricSpec,
+                template.getVirtualColumns()
         );
     }
 
@@ -401,7 +405,8 @@ public class DruidQueryBuilder {
                 filter,
                 template.getAggregations(),
                 template.getPostAggregations(),
-                intervals
+                intervals,
+                template.getVirtualColumns()
         );
     }
 

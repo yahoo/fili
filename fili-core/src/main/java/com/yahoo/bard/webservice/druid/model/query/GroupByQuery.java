@@ -96,7 +96,10 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
      * @param postAggregations  The post-aggregations
      * @param intervals  The intervals
      * @param limitSpec  The limit specification
+     *
+     * @deprecated The constructor with virtual columns should be used instead
      */
+    @Deprecated
     public GroupByQuery(
             DataSource dataSource,
             Granularity granularity,
@@ -136,12 +139,54 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
      * @param postAggregations  The post-aggregations
      * @param intervals  The intervals
      * @param limitSpec  The limit specification
+     * @param virtualColumns The virtual column
+     */
+    public GroupByQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Collection<Dimension> dimensions,
+            Filter filter,
+            Having having,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            LimitSpec limitSpec,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        this(
+                dataSource,
+                granularity,
+                dimensions,
+                filter,
+                having,
+                aggregations,
+                postAggregations,
+                intervals,
+                limitSpec,
+                null,
+                false,
+                virtualColumns
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimensions  The dimensions
+     * @param filter  The filter
+     * @param having  The having clause
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param limitSpec  The limit specification
      * @param context  The context
      * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
      * of the context.
      * @param virtualColumn The virtual columns
      */
-    protected GroupByQuery(
+    public GroupByQuery(
             DataSource dataSource,
             Granularity granularity,
             Collection<Dimension> dimensions,

@@ -202,7 +202,8 @@ class DefaultSqlBackedClientSpec extends Specification {
                 null,
                 [sum(ADDED)],
                 [],
-                [interval(start, end)]
+                [interval(start, end)],
+                null
         )
         JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get()
         ResultSet parse = parse(jsonNode, timeSeriesQuery)

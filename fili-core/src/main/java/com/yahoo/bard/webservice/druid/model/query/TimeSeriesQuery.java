@@ -71,7 +71,10 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
      * @param aggregations  The aggregations
      * @param postAggregations  The post-aggregations
      * @param intervals  The intervals
+     *
+     * @deprecated The constructor with virtual columns should be used instead
      */
+    @Deprecated
     public TimeSeriesQuery(
             DataSource dataSource,
             Granularity granularity,
@@ -90,6 +93,39 @@ public class TimeSeriesQuery extends AbstractDruidAggregationQuery<TimeSeriesQue
                 (QueryContext) null,
                 false,
                 null
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param virtualColumns The virtual columns
+     */
+    public TimeSeriesQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        this(
+                dataSource,
+                granularity,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                (QueryContext) null,
+                false,
+                virtualColumns
         );
     }
 
