@@ -202,7 +202,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             ZonelessTimeGrain timeGrain,
             Collection<Dimension> dimensions
     ) {
-        this(aggregations, postAggregations, nestedQuery, timeGrain, dimensions, Collections.emptySet());
+        this(aggregations, postAggregations, nestedQuery, timeGrain, dimensions, null);
     }
 
     /**

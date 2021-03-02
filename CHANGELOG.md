@@ -94,6 +94,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Add virtual column support in query building contexts](https://github.com/yahoo/fili/pull/1154)
+   * Added virtual column support in query building contexts.
+   
 - [Fix Fili-sql class loading issue in Java 11](https://github.com/yahoo/fili/pull/1153)
    * Set the thread's context class loader to avoid class loading issues in downstream Janino dynamic class loading logic.
   

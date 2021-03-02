@@ -70,7 +70,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 [sum(ADDED), sum(DELETED)],
                 [],
                 [interval(START, END)],
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
@@ -91,7 +92,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 [],
                 [interval(START, END)],
                 threshold,
-                getTopNMetric(API_PREPEND + topNMetric, direction)
+                getTopNMetric(API_PREPEND + topNMetric, direction),
+                null
         );
     }
 
@@ -109,7 +111,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 [sum(ADDED), sum(DELETED), count()],
                 [],
                 [interval(START, END)],
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
@@ -136,7 +139,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                         ])
                 ],
                 [interval(START, END)],
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
@@ -178,7 +182,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                         ])
                 ],
                 [interval(START, END)],
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
@@ -196,7 +201,8 @@ class DruidQueryToSqlConverterSpec extends Specification {
                 [new ThetaSketchAggregation("foo", "bar", 128)],
                 [],
                 [interval(START, END)],
-                limitSpec
+                limitSpec,
+                null
         )
     }
 

@@ -114,6 +114,7 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.emptyList(),
+                null,
                 null
         )
         Integer timeout = 20000

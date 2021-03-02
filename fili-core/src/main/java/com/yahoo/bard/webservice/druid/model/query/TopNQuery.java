@@ -90,7 +90,10 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
      * @param intervals  The intervals
      * @param threshold  The threshold
      * @param metric  The TopN metric
+     *
+     * @deprecated The constructor with virtual columns should be used instead
      */
+    @Deprecated
     public TopNQuery (
             DataSource dataSource,
             Granularity granularity,
@@ -115,6 +118,48 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
                 null,
                 false,
                 null
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimension  The dimension
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param threshold  The threshold
+     * @param metric  The TopN metric
+     * @param virtualColumns The virtual columns
+     */
+    public TopNQuery (
+            DataSource dataSource,
+            Granularity granularity,
+            Dimension dimension,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            long threshold,
+            TopNMetric metric,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        this(
+                dataSource,
+                granularity,
+                dimension,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                threshold,
+                metric,
+                null,
+                false,
+                virtualColumns
         );
     }
 

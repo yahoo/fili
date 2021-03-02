@@ -125,7 +125,8 @@ class SimpleDruidQueryBuilder {
                 filter,
                 aggregations,
                 postAggs,
-                intervals
+                intervals,
+                null
         )
     }
 
@@ -151,7 +152,8 @@ class SimpleDruidQueryBuilder {
                 aggregations,
                 postAggs,
                 intervals,
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
