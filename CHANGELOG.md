@@ -94,6 +94,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Fix Fili-sql class loading issue in Java 11](https://github.com/yahoo/fili/pull/1153)
+   * Set the thread's context class loader to avoid class loading issues in downstream Janino dynamic class loading logic.
+  
 - [Add finalizing field access to have no name](https://github.com/yahoo/fili/pull/1144)
    * Added a condition in `Postaggregation` to allow no name for type Finalizing Field Access.
    
