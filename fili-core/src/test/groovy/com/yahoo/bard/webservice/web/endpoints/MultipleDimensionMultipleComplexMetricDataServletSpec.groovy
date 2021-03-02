@@ -232,7 +232,8 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
           "value": 1
         }
       ],
-      "queryType": "groupBy"
+      "queryType": "groupBy",
+      "virtualColumns":[]
     },
     "type": "query"
   },
@@ -371,7 +372,8 @@ class MultipleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServ
       "type": "arithmetic"
     }
   ],
-  "queryType": "groupBy"
+  "queryType": "groupBy",
+  "virtualColumns":[]
 }"""
     }
 

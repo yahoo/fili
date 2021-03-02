@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.builders
 
+import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
+import org.apache.lucene.search.Sort
+
 import static com.yahoo.bard.webservice.database.Database.ADDED
 import static com.yahoo.bard.webservice.database.Database.CHANNEL
 import static com.yahoo.bard.webservice.database.Database.CITY_NAME
@@ -249,5 +252,9 @@ class SimpleDruidQueryBuilder {
                         ScanSearchProviderManager.getInstance(dimension)
                 )
         )
+    }
+
+    public static TopNMetric getTopNMetric(String metric, SortDirection direction) {
+        return new TopNMetric(metric, direction);
     }
 }
