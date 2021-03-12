@@ -309,6 +309,8 @@ Current
    * Rationalized dependencies for sample applications
 
 - [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
+
+- [Change the access specifier of LoadTask.setFuture to public](https://github.com/yahoo/fili/pull/1156)
    
 ### Removed:
 
