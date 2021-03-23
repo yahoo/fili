@@ -188,24 +188,6 @@ class TemplateDruidQuerySpec extends Specification {
         merged.getVirtualColumns().size() == 2
     }
 
-    def "verify q1.merge(q2) does not fail for duplicate virtual columns with same meaning and keeps only distinct"() {
-        setup:
-        VirtualColumn v1 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
-        VirtualColumn v2 = new ExpressionVirtualColumn("vCol2", "timestamp_format(__time,'yyyy-MM')", "LONG")
-
-        TemplateDruidQuery q1 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v1] as Set)
-        TemplateDruidQuery q2 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v2] as Set)
-
-
-        when:
-        TemplateDruidQuery merged = q1.merge(q2)
-
-        then:
-        merged.getVirtualColumns().sort() == [v1, v2].sort()
-        q1.merge(q2) == q2.merge(q1)
-        merged.getVirtualColumns().size() == 2
-    }
-
     def "verify q1.merge(q2) fails for duplicate virtual column names with different meaning"() {
         setup:
         VirtualColumn v1 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
