@@ -110,7 +110,7 @@ public abstract class LoadTask<V> implements Runnable {
      *
      * @param future  The future to associate
      */
-    synchronized void setFuture(ScheduledFuture<?> future) {
+    public synchronized void setFuture(ScheduledFuture<?> future) {
         this.future = future;
     }
 

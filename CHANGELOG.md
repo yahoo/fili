@@ -8,6 +8,23 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Fili-sql druid all time grain query support](https://github.com/yahoo/fili/issues/1140)
+
+- [Fix: Install python to support build tagging on new screwdriver image](https://github.com/yahoo/fili/issues/1132)
+
+- [Fix: Change Log Level of Presto Response] (https://github.com/yahoo/fili/issues/1130)
+
+- [Fix: Presto Limit and the SD build](https://github.com/yahoo/fili/issues/1129)
+
+- [Fix: Bug: dataSourceMetadataService in TestBinderFactory hides instance in AbstractBinderFactory](https://github.com/yahoo/fili/issues/1126)
+
+- [Fix: Another batch of security alerts](https://github.com/yahoo/fili/issues/1123)
+
+- [Fix: fili-presto inFilter RexNode construction](https://github.com/yahoo/fili/issues/1122)
+    * Fix inFilter RexNode construction
+
+- [Fix: fili-presto INSTANCE time grain](https://github.com/yahoo/fili/issues/1121)
+    * When time grain is chosen to be INSTANCE for the presto query, the timestamp column won't be a group key as we want the total aggregation across all time ranges
 
 - [Fix: Weight Check Query Caching](https://github.com/yahoo/fili/issues/1113)
     * Caching the weight check query instead of the druid query in `CacheWeightCheckRequestHandler`.
@@ -72,8 +89,36 @@ Current
     * Injected dynamic sort building into `BardConfigResources` and `DataApiServlet`
     * Changed `TestBinderFactory` to support protocol metric tests.
     * Created `LegacyGenerator` as a bridge interface from the existing constructor based api request impls and the factory based value object usage.
+    
+- [Update Presto Sketch Regex](https://github.com/yahoo/fili/issues/1142)
+    * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Add virtual column support in query building contexts](https://github.com/yahoo/fili/pull/1154)
+   * Added virtual column support in query building contexts.
+   
+- [Fix Fili-sql class loading issue in Java 11](https://github.com/yahoo/fili/pull/1153)
+   * Set the thread's context class loader to avoid class loading issues in downstream Janino dynamic class loading logic.
+  
+- [Add finalizing field access to have no name](https://github.com/yahoo/fili/pull/1144)
+   * Added a condition in `Postaggregation` to allow no name for type Finalizing Field Access.
+   
+- [Added virtual columns and first last any aggregation support](https://github.com/yahoo/fili/pull/1141)
+   * Added support for virtual columns and aggregation support for first/last and any aggregations
+   
+- [Added sql-presto daily table support](https://github.com/yahoo/fili/pull/1121)
+   * Added support for specifying hourly and daily timestamp format and choosing upon physical table time grain
+
+- [Added sql-presto topN support](https://github.com/yahoo/fili/pull/1121)
+   * Add topN support for presto queries
+
+- [Added more logging for cache set and get](https://github.com/yahoo/fili/pull/1118)
+   * Added additional cache set and get logging info on both success/failures.
+   * It will help us tracking query logs and get more insights about any cache issues.
+  
+- [Add filtered dimensions to combined dimensions](https://github.com/yahoo/fili/pull/1117)
+   * Included filtered dimensions in combined dimensions for `DataRequest`.
+
 - [Added more logging in BardQueryInfo for cache set and get failures](https://github.com/yahoo/fili/pull/1116)
    * Add more cache logging in `BardQueryInfo` which will hold map of `BardCacheInfo` cache set and get failures.
    * Added more counters in `BardQueryInfo` for factCacheSetFailures and factCacheSetTimeoutFailures.
@@ -166,8 +211,18 @@ Current
    WRITE NEW CODE REFERENCING THOSE METHODS unless you have a good reason to do so. Prefer
    creating instances of the generator.
    * Generators based on `DataApiRequestImpl` are not yet implemented.
+   
+- [Add Sketch Metrics support for Preso](https://github.com/yahoo/fili/issues/1138)
+   * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
 ### Changed:
+- [Support for embedded java client usage: made uri builder an optional contract](https://github.com/yahoo/fili/issues/1137)
+
+- [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)
+   * Modify RequestLog to support fetching without modification on Timers.
+   * Build TimeRemainingFunction to pull a time delta using the RequestLog start of request.
+   * Add injection constructors for WebServiceSelectorRequestHandler to inject TimeRemainingFunction and support counting down druid timeouts.
+
 - [Moving to open source screwdriver for builds](https://github.com/yahoo/fili/issues/1109)
   * Travis-ci.com was no longer funded, migrated builds onto screwdriver.
 
@@ -254,6 +309,8 @@ Current
    * Rationalized dependencies for sample applications
 
 - [Uses `addFactories` rather than `withFactories` in Luthier setup.](https://github.com/yahoo/fili/pull/991)
+
+- [Change the access specifier of LoadTask.setFuture to public](https://github.com/yahoo/fili/pull/1156)
    
 ### Removed:
 
