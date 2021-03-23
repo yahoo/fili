@@ -312,6 +312,11 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
         LinkedHashSet<PostAggregation> mergedPostAggregations = new LinkedHashSet<>(self.getPostAggregations());
         mergedPostAggregations.addAll(sibling.getPostAggregations());
 
+        // Merge all virtual columns
+        LinkedHashSet<VirtualColumn> mergedVirtualColumns =
+                mergeVirtualColumns(self.getVirtualColumns(), sibling.getVirtualColumns());
+        mergedVirtualColumns = mergedVirtualColumns.isEmpty() ? null : mergedVirtualColumns;
+
         // Merge the time grains
         ZonelessTimeGrain mergedGrain = mergeTimeGrains(self.getTimeGrain(), sibling.getTimeGrain());
         TemplateDruidQuery mergedNested = self.isNested() ?
@@ -325,7 +330,8 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 mergedPostAggregations,
                 mergedNested,
                 mergedGrain,
-                mergedDimensions
+                mergedDimensions,
+                mergedVirtualColumns
         );
     }
 
@@ -382,6 +388,56 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
     }
 
     /**
+     * Given two sets of Virtual Columns, merge them into a single set, combining where possible.
+     *
+     * @param set1  First set of Virtual Columns
+     * @param set2  Second set of VirtualColumns
+     *
+     * @return the merged Virtual Columns
+     */
+    private LinkedHashSet<VirtualColumn> mergeVirtualColumns(
+            Collection<VirtualColumn> set1,
+            Collection<VirtualColumn> set2
+    ) {
+
+        // Index the 1st set of virtual columns by name. This value set is also our result set
+        Map<String, VirtualColumn> resultVirtualColumnsByName = new LinkedHashMap<>();
+        if (set1 != null && !set1.isEmpty()) {
+            for (VirtualColumn col : set1) {
+                // Put and check for overwriting existing name, indicating that we had 2 virtual columns with same name
+                if (resultVirtualColumnsByName.put(col.getName(), col) != null) {
+                    String message = String.format("Duplicate name %s in virtual column set %s", col.getName(), set1);
+                    LOG.error(message);
+                    throw new IllegalArgumentException(message);
+                }
+            }
+        }
+
+
+        // Walk the other virtual columns and add them to the result set if missing, making conversions as needed
+        if (set2 != null && !set2.isEmpty()) {
+            for (VirtualColumn thatOne : set2) {
+                // See if we have an aggregation already with the same name
+                VirtualColumn thisOne = resultVirtualColumnsByName.get(thatOne.getName());
+
+                // Add this virtual column to result set if there isn't an agg with the same name, or it's an exact mach
+                if (thisOne == null || thisOne.equals(thatOne)) {
+                    resultVirtualColumnsByName.put(thatOne.getName(), thatOne);
+                    continue;
+                }
+
+                // We can't handle merging the virtual columns
+                String message =
+                        "Attempt to merge virtual columns with the same name, but over different expression/type";
+                LOG.error(message);
+                throw new IllegalArgumentException(message);
+            }
+        }
+
+        return new LinkedHashSet<>(resultVirtualColumnsByName.values());
+    }
+
+    /**
      * Merge two time grains together.
      * <p/>
      * This is the pattern for how the time grains are merged:
@@ -416,6 +472,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 "postAggregations=" + postAggregations + ",\n" +
                 "nestedQuery=" + nestedQuery + ",\n" +
                 "timeGrain=" + timeGrain + "\n" +
+                "virtualColumns" + virtualColumns + "\n" +
                 "}";
     }
 
