@@ -94,6 +94,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Add virtual column merge support in template druid query](https://github.com/yahoo/fili/pull/1157)
+   * Added virtual column merge support in `TemplateDruidQuery`.
+   
 - [Add virtual column support in query building contexts](https://github.com/yahoo/fili/pull/1154)
    * Added virtual column support in query building contexts.
    

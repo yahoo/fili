@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
-import java.util.Objects;
 
 /**
  * VirtualColumn to provide queryable column views created from a set of columns during a query.
@@ -70,18 +69,5 @@ public class ExpressionVirtualColumn implements VirtualColumn {
 
     public ExpressionVirtualColumn withOutputType(String outputType) {
         return new ExpressionVirtualColumn(getName(), getExpression(), outputType);
-    }
-
-    @Override
-    public boolean virtualColumnEquals(Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof ExpressionVirtualColumn)) { return false; }
-
-        ExpressionVirtualColumn that = (ExpressionVirtualColumn) o;
-
-        return
-                Objects.equals(expression, that.expression) &&
-                        Objects.equals(name, that.name) &&
-                        Objects.equals(outputType, that.outputType);
     }
 }

@@ -37,13 +37,4 @@ public interface VirtualColumn {
      * @return the updated copy
      */
     VirtualColumn withName(String name);
-
-
-    /**
-     * Compares the object with the virtual column object.
-     *
-     * @param o The object being compared
-     * @return whether the objects are equal
-     */
-    boolean virtualColumnEquals(Object o);
 }

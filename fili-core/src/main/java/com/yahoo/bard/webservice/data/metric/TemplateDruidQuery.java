@@ -421,7 +421,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
                 VirtualColumn thisOne = resultVirtualColumnsByName.get(thatOne.getName());
 
                 // Add this virtual column to result set if there isn't an agg with the same name, or it's an exact mach
-                if (thisOne == null || thisOne.virtualColumnEquals(thatOne)) {
+                if (thisOne == null || thisOne.equals(thatOne)) {
                     resultVirtualColumnsByName.put(thatOne.getName(), thatOne);
                     continue;
                 }
