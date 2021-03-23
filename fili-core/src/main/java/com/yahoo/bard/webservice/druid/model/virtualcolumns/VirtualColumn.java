@@ -40,7 +40,7 @@ public interface VirtualColumn {
 
 
     /**
-     * Compares the object with the virtual column object
+     * Compares the object with the virtual column object.
      *
      * @param o The object being compared
      * @return whether the objects are equal

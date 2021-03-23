@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.druid.model.virtualcolumns;
 
 import com.yahoo.bard.webservice.druid.model.VirtualColumnType;
 import com.yahoo.bard.webservice.druid.model.DefaultVirtualColumnType;
-import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
