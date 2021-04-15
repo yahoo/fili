@@ -105,7 +105,9 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Aggregation>singletonList(new LongSumAggregation("count", "count")),
                 Collections.<PostAggregation>emptyList(),
                 query.getIntervals(),
-                query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null
+                query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
+                query.getContext(),
+                false
         );
     }
 
@@ -207,7 +209,8 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         aggregations,
                         postAggregations,
                         innerQuery.getIntervals(),
-                        stripColumnsFromLimitSpec(innerQuery)
+                        stripColumnsFromLimitSpec(innerQuery),
+                        innerQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(inner);
             case TOP_N:
@@ -221,7 +224,8 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         aggregations,
                         postAggregations,
                         topNQuery.getIntervals(),
-                        null
+                        null,
+                        topNQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(transformed);
             default:

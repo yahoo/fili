@@ -56,8 +56,12 @@ public class QuerySignedCacheService implements CacheService {
     public static final Meter CACHE_MISSES = REGISTRY.meter("queries.meter.cache.misses");
     public static final Meter CACHE_REQUESTS = REGISTRY.meter("queries.meter.cache.total");
     public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
-    public static final String LOG_CACHE_READ_FAILURES = "cacheMiss";
+    public static final String LOG_CACHE_READ_FAILURES = "cacheReadFailure";
     public static final String LOG_CACHE_SET_FAILURES = "cacheSetFailure";
+
+    public static final String LOG_CACHE_GET_HIT = "cacheHit";
+    public static final String LOG_CACHE_GET_MISS = "cacheMiss";
+    public static final String LOG_CACHE_SIGNATURE_MISMATCH = "cacheSignatureMismatch";
 
     TupleDataCache<String, Long, String> dataCache;
     QuerySigningService<Long> querySigningService;
@@ -88,6 +92,7 @@ public class QuerySignedCacheService implements CacheService {
             RequestContext context,
             DruidAggregationQuery<?> druidQuery
     ) throws JsonProcessingException {
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         final TupleDataCache.DataEntry<String, Long, String> cacheEntry = dataCache.get(getKey(druidQuery));
         CACHE_REQUESTS.mark(1);
 
@@ -107,6 +112,18 @@ public class QuerySignedCacheService implements CacheService {
                     }
                     CACHE_HITS.mark(1);
                     BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
+                    BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            new BardCacheInfo(
+                                    LOG_CACHE_GET_HIT,
+                                    getKey(druidQuery).length(),
+                                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
+                                    cacheEntry.getValue().length()
+                            )
+                    );
                     return cacheEntry.getValue();
 
                 } catch (Exception e) {
@@ -114,12 +131,15 @@ public class QuerySignedCacheService implements CacheService {
                             getKey(druidQuery),
                             CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
                             e);
-                    BardQueryInfo.getBardQueryInfo().addReadFailureInfo(
+                    BardQueryInfo.getBardQueryInfo().addCacheInfo(
                             CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
                             new BardCacheInfo(
                                     LOG_CACHE_READ_FAILURES,
                                     getKey(druidQuery).length(),
                                     CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    querySignatureHash != null
+                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            : null,
                                     0
                             )
                     );
@@ -128,9 +148,33 @@ public class QuerySignedCacheService implements CacheService {
                 LOG.debug("Cache entry present but invalid for query with id: {}", RequestLog.getId());
                 CACHE_POTENTIAL_HITS.mark(1);
                 CACHE_MISSES.mark(1);
+                BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                        CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                        new BardCacheInfo(
+                                LOG_CACHE_SIGNATURE_MISMATCH,
+                                getKey(druidQuery).length(),
+                                CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
+                                0
+                        )
+                );
             }
         } else {
             CACHE_MISSES.mark(1);
+            BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                    new BardCacheInfo(
+                            LOG_CACHE_GET_MISS,
+                            getKey(druidQuery).length(),
+                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            querySignatureHash != null
+                                    ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                    : null,
+                            0
+                    )
+            );
         }
         return null;
     }
@@ -141,6 +185,7 @@ public class QuerySignedCacheService implements CacheService {
             JsonNode json,
             DruidAggregationQuery<?> druidQuery
             ) throws JsonProcessingException {
+        String querySignatureHash = String.valueOf(querySigningService.getSegmentSetId(druidQuery).orElse(null));
         if (CACHE_PARTIAL_DATA.isOn() || isCacheable(response)) {
             String cacheKey = getKey(druidQuery);
             String valueString = null;
@@ -168,12 +213,15 @@ public class QuerySignedCacheService implements CacheService {
                 //mark and log the cache put failure
                 CACHE_SET_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
-                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(
+                BardQueryInfo.getBardQueryInfo().addCacheInfo(
                         CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
                         new BardCacheInfo(
                                 LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
                                 CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                querySignatureHash != null
+                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        : null,
                                 valueString != null ? valueString.length() : 0
                         )
                 );

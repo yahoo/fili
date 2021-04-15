@@ -84,7 +84,8 @@ class NoDimensionMultipleSimpleMetricMultipleDateTimeDataServletSpec extends Bas
                   "type" : "period",
                   "period" : "P1W"
               },
-              "context": {}
+              "context": {},
+              "virtualColumns": []
             }"""
     }
 

@@ -3,12 +3,18 @@
 package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
 import com.yahoo.bard.webservice.druid.client.DruidWebService
+import com.yahoo.bard.webservice.druid.model.datasource.DataSource
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
+import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.TimeRemainingFunction
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.filters.BardLoggingFilter
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -85,6 +91,84 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
         5        |  null      | true            | 1
         null     |  1         | true            | 1
         5        |  1         | true            | 1
+    }
 
+    def "Test time function counts down based on total timing"() {
+        setup:
+
+        WebServiceSelectorRequestHandler handler = new WebServiceSelectorRequestHandler(
+                webService,
+                webServiceNext,
+                mapper,
+                TimeRemainingFunction.INSTANCE
+        )
+
+        RequestLog.startTiming(BardLoggingFilter.TOTAL_TIMER)
+        DataSource dataSource = Mock(DataSource)
+        GroupByQuery groupByQuery1 = new GroupByQuery(
+                dataSource,
+                DefaultTimeGrain.DAY,
+                Collections.emptyList(),
+                null,
+                null,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                null,
+                null
+        )
+        Integer timeout = 20000
+        Integer timeSoFar = 0
+        QueryContext latestActualContext = null
+
+        and: "Stubbing"
+        DruidWebService onWebService
+        DataRequestHandler nextHandler = webServiceNext
+        ContainerRequestContext crc = Mock(ContainerRequestContext)
+        crc.getHeaders() >> headerMap
+        headerMap.add(DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME, DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
+        headerMap.add("referer", "http://somewhere")
+
+        onWebService = webService
+        onWebService.getTimeout() >> timeout
+        onWebService.getServiceConfig() >> serviceConfig
+
+        nextHandler
+        rc = new RequestContext(crc, true)
+
+        when:
+        Thread.sleep(1000)
+        handler.handleRequest(rc, request, groupByQuery1, response)
+
+
+        then:
+        1 * nextHandler.handleRequest(rc, request, _, response) >> {
+            arguments ->
+                timeSoFar = (int) (RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration() / 1000000)
+                latestActualContext = ((GroupByQuery) arguments[2]).getContext()
+                return true
+        }
+        timeSoFar > 1000
+        timeSoFar < 19000
+        Math.abs(timeout - timeSoFar - latestActualContext.getTimeout() ) < 100
+
+        when:
+        Thread.sleep(2000)
+        handler.handleRequest(rc, request, groupByQuery1, response)
+
+
+        then:
+        1 * nextHandler.handleRequest(rc, request, _, response) >> {
+            arguments ->
+                timeSoFar = (int) (RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration() / 1000000)
+                latestActualContext = ((GroupByQuery) arguments[2]).getContext()
+                return true
+        }
+        timeSoFar > 3000
+        timeSoFar < 17000
+        Math.abs(timeout - timeSoFar - latestActualContext.getTimeout() ) < 100
+
+        cleanup:
+        RequestLog.stopTiming(BardLoggingFilter.TOTAL_TIMER)
     }
  }

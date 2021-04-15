@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
 import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -44,7 +45,10 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
      * @param context  The context
      * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
      * of the context.
+     *
+     * @deprecated The constructor with virtual columns should be the primary constructor
      */
+    @Deprecated
     protected TopNQuery(
             DataSource dataSource,
             Granularity granularity,
@@ -58,21 +62,20 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
             QueryContext context,
             boolean incrementQueryId
     ) {
-        super(
-                DefaultQueryType.TOP_N,
+        this(
                 dataSource,
                 granularity,
-                Collections.singletonList(dimension),
+                dimension,
                 filter,
                 aggregations,
                 postAggregations,
                 intervals,
+                threshold,
+                metric,
                 context,
-                incrementQueryId
+                incrementQueryId,
+                null
         );
-
-        this.threshold = threshold;
-        this.metric = metric;
     }
 
     /**
@@ -87,7 +90,10 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
      * @param intervals  The intervals
      * @param threshold  The threshold
      * @param metric  The TopN metric
+     *
+     * @deprecated The constructor with virtual columns should be used instead
      */
+    @Deprecated
     public TopNQuery (
             DataSource dataSource,
             Granularity granularity,
@@ -110,8 +116,100 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
                 threshold,
                 metric,
                 null,
-                false
+                false,
+                null
         );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimension  The dimension
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param threshold  The threshold
+     * @param metric  The TopN metric
+     * @param virtualColumns The virtual columns
+     */
+    public TopNQuery (
+            DataSource dataSource,
+            Granularity granularity,
+            Dimension dimension,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            long threshold,
+            TopNMetric metric,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        this(
+                dataSource,
+                granularity,
+                dimension,
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                threshold,
+                metric,
+                null,
+                false,
+                virtualColumns
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param dataSource  The datasource
+     * @param granularity  The granularity
+     * @param dimension  The dimension
+     * @param filter  The filter
+     * @param aggregations  The aggregations
+     * @param postAggregations  The post-aggregations
+     * @param intervals  The intervals
+     * @param threshold  The threshold
+     * @param metric  The TopN metric
+     * @param context  The context
+     * @param incrementQueryId  true to fork a new context and bump up the query id, or false to create an exact copy
+     * of the context.
+     * @param virtualColumns The virtual columns
+     */
+    protected TopNQuery(
+            DataSource dataSource,
+            Granularity granularity,
+            Dimension dimension,
+            Filter filter,
+            Collection<Aggregation> aggregations,
+            Collection<PostAggregation> postAggregations,
+            Collection<Interval> intervals,
+            long threshold,
+            TopNMetric metric,
+            QueryContext context,
+            boolean incrementQueryId,
+            Collection<VirtualColumn> virtualColumns
+    ) {
+        super(
+                DefaultQueryType.TOP_N,
+                dataSource,
+                granularity,
+                Collections.singletonList(dimension),
+                filter,
+                aggregations,
+                postAggregations,
+                intervals,
+                context,
+                incrementQueryId,
+                virtualColumns
+        );
+
+        this.threshold = threshold;
+        this.metric = metric;
     }
 
     public Dimension getDimension() {
@@ -136,7 +234,7 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
     // CHECKSTYLE:OFF
     @Override
     public TopNQuery withDataSource(DataSource dataSource) {
-        return new TopNQuery(dataSource, granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(dataSource, granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
@@ -145,36 +243,36 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
     }
 
     public TopNQuery withDimension(Dimension dimension) {
-        return new TopNQuery(getDataSource(), granularity, dimension, filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, dimension, filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     public TopNQuery withMetric(TopNMetric metric) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
     public TopNQuery withGranularity(Granularity granularity) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
     public TopNQuery withFilter(Filter filter) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
     public TopNQuery withAggregations(Collection<Aggregation> aggregations) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
     public TopNQuery withPostAggregations(Collection<PostAggregation> postAggregations) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
 
     @Override
     public TopNQuery withIntervals(Collection<Interval> intervals) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, true);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, true, virtualColumns);
     }
 
     @Override
@@ -184,7 +282,12 @@ public class TopNQuery extends AbstractDruidAggregationQuery<TopNQuery> {
 
     @Override
     public TopNQuery withContext(QueryContext context) {
-        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false);
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
+    }
+
+    @Override
+    public TopNQuery withVirtualColumns(Collection<VirtualColumn> virtualColumns) {
+        return new TopNQuery(getDataSource(), granularity, getDimension(), filter, aggregations, postAggregations, intervals, threshold, metric, context, false, virtualColumns);
     }
     // CHECKSTYLE:ON
 }

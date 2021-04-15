@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import com.yahoo.bard.webservice.table.Column;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -74,6 +75,13 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     Collection<PostAggregation> getPostAggregations();
 
     /**
+     * Returns the virtual columns of the query.
+     *
+     * @return the query virtual columns
+     */
+    Collection<VirtualColumn> getVirtualColumns();
+
+    /**
      * Returns a copy of this query with the specified aggregations.
      *
      * @param aggregations  the new aggregations
@@ -90,6 +98,15 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
      * @return the query copy
      */
     Q withPostAggregations(Collection<PostAggregation> postAggregations);
+
+    /**
+     * Returns a copy of this query with the specified virtual columns.
+     *
+     * @param virtualColumns  the new virtual columns
+     *
+     * @return the query copy
+     */
+    Q withVirtualColumns(Collection<VirtualColumn> virtualColumns);
 
     @Override
     @JsonIgnore
