@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yahoo.fili</groupId>
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
     <version>0.12-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -49,8 +49,9 @@
 
     <developers>
         <developer>
-            <name>Yahoo Inc.</name>
-            <url>https://github.com/yahoo</url>
+            <name>Fili Maintainers</name>
+            <organization>Yahoo! Inc.</organization>
+            <organizationUrl>http://www.yahoo.com/</organizationUrl>
         </developer>
     </developers>
 
@@ -159,27 +160,27 @@
         <dependencies>
             <!-- Local module dependencies -->
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-system-config</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>luthier</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
                 <type>test-jar</type>

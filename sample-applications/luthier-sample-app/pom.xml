@@ -3,9 +3,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.12-SNAPSHOT</version>
+        <version>0.12.75-44-g75ffca2e</version>
         <relativePath>../..</relativePath>
     </parent>
 
@@ -23,7 +23,7 @@
         <checkstyle.config.location>../../checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>../../checkstyle-suppressions.xml</checkstyle.suppressions.location>
         <skipLuthierTests>true</skipLuthierTests>
-        <version.fili>0.12-SNAPSHOT</version.fili>
+        <version.fili>0.12.75-44-g75ffca2e</version.fili>
     </properties>
 
     <profiles>
@@ -74,12 +74,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>luthier</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>sample-applications</artifactId>
             <version>${version.fili}</version>
             <type>pom</type>

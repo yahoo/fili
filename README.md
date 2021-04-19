@@ -94,7 +94,7 @@ and Gradle can be found at https://bintray.com/yahoo/maven/fili, and some exampl
 Maven:
 ```xml
 <dependency>
-    <groupId>com.yahoo.fili</groupId>
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili</artifactId>
     <version>x.y.z</version>
 </dependency>
@@ -112,7 +112,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.yahoo.fili:fili:x.y.z'
+    compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
 

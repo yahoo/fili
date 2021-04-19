@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.12-SNAPSHOT</version>
+        <version>0.12.75-44-g75ffca2e</version>
     </parent>
 
     <artifactId>fili</artifactId>
@@ -28,7 +28,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>fili-core</artifactId>
         </dependency>
     </dependencies>
