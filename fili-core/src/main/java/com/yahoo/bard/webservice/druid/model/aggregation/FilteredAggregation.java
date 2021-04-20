@@ -101,7 +101,6 @@ public class FilteredAggregation extends Aggregation {
     }
 
     @Override
-    @JsonIgnore
     public String getName() {
         return aggregation.getName();
     }
