@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <!-- false positive from presto library -->
-<!--    <suppress until="2021-03-01Z">-->
-<!--        <vulnerabilityName>CVE-2008-0660</vulnerabilityName>-->
-<!--    </suppress>-->
 
-<!--    <suppress until="2022-03-01Z">-->
-<!--        <vulnerabilityName>CVE-2020-8908</vulnerabilityName>-->
-<!--    </suppress>-->
 </suppressions>
