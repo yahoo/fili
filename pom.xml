@@ -772,7 +772,7 @@
                 <version>6.1.5</version>
                 <configuration>
                     <!-- Temporarily disengaging autoupdate because of broken CVE parsing -->
-<!--                    <autoUpdate>true</autoUpdate>-->
+                    <skip>true</skip>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
