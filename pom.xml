@@ -97,13 +97,13 @@
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
-        <version.asynchttp>2.11.0</version.asynchttp>
+        <version.asynchttp>2.12.3</version.asynchttp>
         <version.jersey>2.24</version.jersey>
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
-        <version.jetty>9.4.35.v20201120</version.jetty>
+        <version.jetty>9.4.40.v20210413</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
         <version.spring>5.1.18.RELEASE</version.spring>
@@ -114,6 +114,7 @@
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
         <version.druid.api>0.12.1</version.druid.api>
+
         <profiles.active>test</profiles.active>
 
         <disableDocLint>-Xdoclint:none</disableDocLint>
@@ -502,7 +503,6 @@
                 <artifactId>jetty-servlet</artifactId>
                 <version>${version.jetty}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -769,8 +769,10 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>6.0.5</version>
+                <version>6.1.5</version>
                 <configuration>
+                    <!-- Temporarily disengaging autoupdate because of broken CVE parsing -->
+                    <skip>true</skip>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
