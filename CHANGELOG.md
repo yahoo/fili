@@ -8,6 +8,8 @@ pull request if there was one.
 Current
 -------
 ### Fixed:
+- [Fix: Added name property back to FilteredAggreation](https://github.com/yahoo/fili/pull/1159) ]
+    * So that filteredAggregation can be sorted based on aggregator name during canonicalization of json object. 
 - [Fix: Fili-sql druid all time grain query support](https://github.com/yahoo/fili/issues/1140)
 
 - [Fix: Install python to support build tagging on new screwdriver image](https://github.com/yahoo/fili/issues/1132)
