@@ -35,4 +35,4 @@ jobs:
       - debug: |
          echo "Releasing : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
-      - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/bintray-publish.bash
+      - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/build.sh && ./screwdriver/publish.sh
