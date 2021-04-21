@@ -323,6 +323,9 @@ Current
    * Redis `KeyValueStore` implementation and support removed. 
 
 ### Fixed:
+-[Fix: Update vulnerabilities](https://github.com/yahoo/fili/issues/1160)
+   * Update OWASP vulnerabilities and temporarily suppress database updates.
+
 - [Fix vulnerability in printing stack trace instead of using logger](https://github.com/yahoo/fili/issues/1101)
    * Printing stack trace directly to standard.err is not safe.  Using logger instead.
 
