@@ -8,7 +8,7 @@ Setup
 - Add a dependency on `fili-sql`
     ```xml
     <dependency>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-core</artifactId>
     </dependency>
     ```

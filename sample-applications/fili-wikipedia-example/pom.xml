@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
         <version>0.12-SNAPSHOT</version>
         <relativePath>../..</relativePath>
@@ -33,7 +33,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>sample-applications</artifactId>
             <version>${version.fili}</version>
             <type>pom</type>

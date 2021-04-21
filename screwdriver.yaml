@@ -28,12 +28,17 @@ jobs:
 
   tag-release:
     secrets:
-      - BINTRAY_USER
-      - BINTRAY_API_KEY
+      - GPG_KEYNAME
+      - GPG_PASSPHRASE
+      - GPG_ENCPHRASE
+      - OSSRH_USER
+      - OSSRH_TOKEN
     requires: [~tag:/\d+\.\d+\.\d+/]
     steps:
       - header: echo "Starting the release pipeline"
       - debug: |
          echo "Releasing : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
-      - release: ./screwdriver/is_whitelisted.bash && ./screwdriver/bintray-publish.bash
+      - release: ./screwdriver/is_whitelisted.bash
+      - build: "screwdriver/scripts/build.sh"
+      - publish: "screwdriver/scripts/publish.sh"

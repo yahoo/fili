@@ -221,6 +221,9 @@ Current
    * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
 ### Changed:
+- [Migrating from bintray to maven central](https://github.com/yahoo/fili/pull/1158)
+  * Bintray EOL, migrating publishing of artifacts to Maven Central.
+
 - [Support for embedded java client usage: made uri builder an optional contract](https://github.com/yahoo/fili/issues/1137)
 
 - [Added support for druid timeouts to be cumulatively linked to request start time](https://github.com/yahoo/fili/issues/1119)
