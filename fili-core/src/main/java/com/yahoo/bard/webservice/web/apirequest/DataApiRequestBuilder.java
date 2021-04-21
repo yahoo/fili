@@ -71,6 +71,7 @@ public class DataApiRequestBuilder {
         HAVINGS,
         SORTS,
         COUNT,
+        SUBTOTALS,
         TOP_N,
         FORMAT,
         DOWNLOAD_FILENAME,
@@ -117,6 +118,7 @@ public class DataApiRequestBuilder {
     private LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
     private LinkedHashSet<OrderByColumn> sorts;
     private Integer count;
+    private List<List<String>> subtotalDimensions;
     private Integer topN;
     private ResponseFormatType format;
     private String downloadFilename;
@@ -298,6 +300,23 @@ public class DataApiRequestBuilder {
     public DataApiRequestBuilder setCount(RequestParameters params, Generator<Integer> generator) {
         built.put(RequestResource.COUNT, Boolean.TRUE);
         this.count = bindAndValidate(params, generator);
+        return this;
+    }
+
+
+    /**
+     * Generates and sets the requested count.
+     *
+     * @param params  Raw request params
+     * @param generator  Generator for count
+     * @return the builder
+     */
+    public DataApiRequestBuilder setSubtotalDimensions(
+            RequestParameters params,
+            Generator<List<List<String>>> generator
+    ) {
+        built.put(RequestResource.COUNT, Boolean.TRUE);
+        this.subtotalDimensions = bindAndValidate(params, generator);
         return this;
     }
 
@@ -759,6 +778,7 @@ public class DataApiRequestBuilder {
                 havings,
                 sorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,

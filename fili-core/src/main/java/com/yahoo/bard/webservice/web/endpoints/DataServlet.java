@@ -292,6 +292,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param havings  Requested list of having queries (as a formatted string)
      * @param sorts  Requested sorting (as a formatted string)
      * @param count  Requested number of rows in the response (as a formatted string)
+     * @param subtotals The list of list of subtotal dimensions
      * @param topN  Requested number of first rows per time bucket in the response (as a formatted string)
      * @param format  Requested format
      * @param timeZone  Requested time zone (impacts day based granularities and intervals)
@@ -319,6 +320,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("having") String havings,
             @QueryParam("sort") String sorts,
             @QueryParam("count") String count,
+            @QueryParam("subtotals") String subtotals,
             @QueryParam("topN") String topN,
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
@@ -341,6 +343,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 havings,
                 sorts,
                 count,
+                subtotals,
                 topN,
                 format,
                 timeZone,
@@ -367,6 +370,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param havings Requested list of havings (as a formatted string)
      * @param sorts  Requested sorting (as a formatted string)
      * @param count  Requested number of rows in the response (as a formatted string)
+     * @param subtotals The list of list of subtotal dimension names
      * @param topN  Requested number of first rows per time bucket in the response (as a formatted string)
      * @param timeZone Requested time zone (impacts day based granularities and intervals)
      * @param format  Requested format
@@ -395,6 +399,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @QueryParam("having") String havings,
             @QueryParam("sort") String sorts,
             @QueryParam("count") String count,
+            @QueryParam("subtotals") String subtotals,
             @QueryParam("topN") String topN,
             @QueryParam("format") String format,
             @QueryParam("timeZone") String timeZone,
@@ -418,6 +423,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         havings,
                         sorts,
                         count,
+                        subtotals,
                         topN,
                         formatResolver.apply(format, containerRequestContext),
                         downloadFilename,

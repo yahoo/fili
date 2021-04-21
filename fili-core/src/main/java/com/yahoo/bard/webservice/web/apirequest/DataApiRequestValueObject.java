@@ -54,6 +54,9 @@ public class DataApiRequestValueObject implements DataApiRequest {
     private final LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings;
     private final LinkedHashSet<OrderByColumn> allSorts;
     private final Integer count;
+
+    private final List<List<String>> subtotalDimensions;
+
     private final Integer topN;
     private final ResponseFormatType format;
     private final String downloadFilename;
@@ -75,6 +78,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
      * @param havings  The metric filters for this query
      * @param allSorts  The sorts for this query, include the sort on dateTime if present
      * @param count  The count for this query
+     * @param subtotalDimensions  A list of dimension lists for building subtotals
      * @param topN  The topN for this query
      * @param format  The data format the response should be returned as (e.g. JSON, CSV, ...)
      * @param downloadFilename  The name of the file the response should be downloaded as. The presence of this
@@ -95,6 +99,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
             LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings,
             LinkedHashSet<OrderByColumn> allSorts,
             Integer count,
+            List<List<String>> subtotalDimensions,
             Integer topN,
             ResponseFormatType format,
             String downloadFilename,
@@ -112,6 +117,9 @@ public class DataApiRequestValueObject implements DataApiRequest {
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.allSorts = UnmodifiableLinkedHashSet.of(allSorts);
         this.count = count;
+        this.subtotalDimensions = subtotalDimensions == null ?
+                subtotalDimensions :
+                Collections.unmodifiableList(subtotalDimensions);
         this.topN = topN;
         this.format = format;
         this.downloadFilename = downloadFilename;
@@ -185,6 +193,11 @@ public class DataApiRequestValueObject implements DataApiRequest {
 
 
     @Override
+    public Optional<List<List<String>>> getSubtotalDimensions() {
+        return Optional.ofNullable(subtotalDimensions);
+    }
+
+    @Override
     public Optional<Integer> getTopN() {
         return Optional.ofNullable(topN);
     }
@@ -231,6 +244,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -253,6 +267,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -275,6 +290,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -299,6 +315,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -321,6 +338,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -343,6 +361,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -365,6 +384,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -387,6 +407,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -409,6 +430,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -431,6 +453,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 DataApiRequest.combineSorts(getDateTimeSort().orElse(null), sorts),
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -453,6 +476,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 DataApiRequest.combineSorts(timeSort, getSorts()),
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -475,6 +499,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -497,6 +522,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -519,6 +545,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -541,6 +568,30 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
+                topN,
+                format,
+                downloadFilename,
+                timeZone,
+                asyncAfter,
+                paginationParameters
+        );
+    }
+
+    @Override
+    public DataApiRequest withSubtotalDimensions(List<List<String>> subtotalDimensions) {
+        return new DataApiRequestValueObject(
+                table,
+                granularity,
+                dimensions,
+                perDimensionFields,
+                metrics,
+                intervals,
+                apiFilters,
+                havings,
+                allSorts,
+                count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -563,6 +614,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -585,6 +637,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -607,6 +660,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,
@@ -629,6 +683,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 havings,
                 allSorts,
                 count,
+                subtotalDimensions,
                 topN,
                 format,
                 downloadFilename,

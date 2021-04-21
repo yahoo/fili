@@ -27,6 +27,7 @@ class DataApiRequestBuilderSpec extends Specification {
             "havings",
             "sorts",
             "count",
+            "subtotals",
             "topN",
             "format",
             "downloadFilename",

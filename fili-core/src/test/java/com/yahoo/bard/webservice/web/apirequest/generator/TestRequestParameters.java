@@ -28,6 +28,7 @@ public class TestRequestParameters extends RequestParameters {
     public String havings;
     public String sorts;
     public String count;
+    public String subtotals;
     public String topN;
     public String format;
     public String downloadFilename;
@@ -44,6 +45,7 @@ public class TestRequestParameters extends RequestParameters {
                 null,
                 null,
                 new ArrayList<>(),
+                null,
                 null,
                 null,
                 null,
@@ -108,6 +110,11 @@ public class TestRequestParameters extends RequestParameters {
     @Override
     public Optional<String> getCount() {
         return Optional.ofNullable(count);
+    }
+
+    @Override
+    public Optional<String> getSubtotals() {
+        return Optional.ofNullable(subtotals);
     }
 
     @Override

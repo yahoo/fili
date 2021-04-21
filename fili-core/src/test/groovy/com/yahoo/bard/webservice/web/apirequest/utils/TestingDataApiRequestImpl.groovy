@@ -34,6 +34,7 @@ class TestingDataApiRequestImpl extends DataApiRequestImpl {
                 (DateTimeZone) DateTimeZone.UTC,
                 0, // topN
                 0,  // count
+                null, // subtotals
                 (PaginationParameters) null,
                 (ResponseFormatType) null,
                 "",

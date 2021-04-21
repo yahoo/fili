@@ -104,6 +104,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private final Map<LogicalMetric, Set<ApiHaving>> havings;
     private final LinkedHashSet<OrderByColumn> sorts;
     private final OrderByColumn dateTimeSort;
+    private final List<List<String>> subtotalDimensions;
 
     private final int count;
     private final int topN;
@@ -190,6 +191,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 havings,
                 sorts,
                 count,
+                null,
                 topN,
                 format,
                 null,
@@ -230,6 +232,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param sorts  string of sort columns along with sort direction in the format:<pre>
      * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
      * @param count  count of number of records to be returned in the response
+     * @param subtotals  list of list of dimension names for subtotals
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
@@ -266,6 +269,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             String havings,
             String sorts,
             String count,
+            String subtotals,
             String topN,
             String format,
             String downloadFilename,
@@ -285,6 +289,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 havings,
                 sorts,
                 count,
+                subtotals,
                 topN,
                 format,
                 downloadFilename,
@@ -391,6 +396,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 havingsRequest,
                 sortsRequest,
                 countRequest,
+                null,
                 topNRequest,
                 formatRequest,
                 null,
@@ -431,6 +437,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param sortsRequest  string of sort columns along with sort direction in the format:<pre>
      * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
      * @param countRequest  count of number of records to be returned in the response
+     * @param subtotalRequest the list of list of subtotal dimensions
      * @param topNRequest  number of first records per time bucket to be returned in the response
      * @param formatRequest  response data format JSON or CSV. Default is JSON.
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
@@ -476,6 +483,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             String havingsRequest,
             String sortsRequest,
             String countRequest,
+            String subtotalRequest,
             String topNRequest,
             String formatRequest,
             String downloadFilename,
@@ -549,6 +557,9 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 .filter(column -> ! column.getType().equals(OrderByColumnType.TIME))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
+        // TODO  parse Subtotal Api expression
+        this.subtotalDimensions = null;
+
         // Overall requested number of rows in the response. Ignores grouping in time buckets.
         this.count = bindCount(countRequest);
         validateCount(countRequest, count);
@@ -568,6 +579,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                         " Havings: {},\n" +
                         " Logical metrics: {},\n\n" +
                         " Sorts: {}," +
+                        " Subtotal Dimensions: {}," +
                         " Count: {}," +
                         " TopN: {}," +
                         " AsyncAfter: {}" +
@@ -582,6 +594,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 logicalMetrics,
                 sorts,
                 count,
+                subtotalRequest,
                 topN,
                 asyncAfter,
                 format,
@@ -713,6 +726,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 timeZone,
                 topN,
                 count,
+                null,
                 paginationParameters.orElse(null),
                 format,
                 downloadFilename,
@@ -780,6 +794,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 timeZone,
                 topN,
                 count,
+                null,
                 paginationParameters.orElse(null),
                 format,
                 (String) null,
@@ -813,9 +828,10 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param timeZone  TimeZone for the request
      * @param filterBuilder  A builder to use when building filters for the request (ignored)
      *
-     * @deprecated Removing filterBuilder. Use {@link #DataApiRequestImpl(LogicalTable, Granularity, LinkedHashSet,
-     *      LinkedHashMap, LinkedHashSet, List, ApiFilters, Map, LinkedHashSet, OrderByColumn, DateTimeZone, Integer,
-     *      Integer, PaginationParameters, ResponseFormatType, String, Long, boolean)}
+     * @deprecated Removing filterBuilder. Use
+     * {@link #DataApiRequestImpl(LogicalTable, Granularity, LinkedHashSet, LinkedHashMap, LinkedHashSet, List,
+     * ApiFilters, Map, LinkedHashSet, OrderByColumn, DateTimeZone, Integer, Integer, List, PaginationParameters,
+     * ResponseFormatType, String, Long, boolean)}
      */
     @Deprecated
     protected DataApiRequestImpl(
@@ -852,6 +868,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
                 timeZone,
                 topN,
                 count,
+                null,
                 paginationParameters,
                 format,
                 downloadFilename,
@@ -881,6 +898,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param sorts  Sorting info for the request
      * @param dateTimeSort Override sort on time
      * @param count  Global limit for the request
+     * @param subtotalDimensions Dimension lists for subtotal rows
      * @param topN  Count of per-bucket limit (TopN) for the request
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      * @param timeZone  TimeZone for the request
@@ -902,6 +920,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             DateTimeZone timeZone,
             Integer topN,
             Integer count,
+            List<List<String>> subtotalDimensions,
             PaginationParameters paginationParameters,
             ResponseFormatType format,
             String downloadFilename,
@@ -920,6 +939,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.sorts = sorts;
         this.dateTimeSort = dateTimeSort;
         this.count = count;
+        this.subtotalDimensions = subtotalDimensions;
         this.topN = topN;
         this.timeZone = timeZone;
         this.filterBuilder = null;
@@ -1641,17 +1661,17 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     // CHECKSTYLE:OFF
     @Override
     public DataApiRequestImpl withFormat(ResponseFormatType format) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequest withDownloadFilename(String downloadFilename) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withPaginationParameters(PaginationParameters paginationParameters) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
@@ -1661,32 +1681,32 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Override
     public DataApiRequestImpl withTable(LogicalTable table) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withGranularity(Granularity granularity) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withIntervals(List<Interval> intervals) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
@@ -1697,44 +1717,48 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
     @Override
     public DataApiRequestImpl withFilters(ApiFilters apiFilters) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     // TODO
     @Override
     public DataApiRequestImpl withTimeSort(OrderByColumn timeSort) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, timeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, timeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withTimeZone(DateTimeZone timeZone) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withTopN(Integer topN) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
     public DataApiRequestImpl withCount(Integer count) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
+    @Override
+    public DataApiRequestImpl withSubtotalDimensions(List<List<String>> subtotalDimensions) {
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+    }
 
     @Override
     public DataApiRequestImpl withAsyncAfter(long asyncAfter) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
 
@@ -1745,7 +1769,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     public DataApiRequest withDruidOptimizations(boolean optimizable) {
-        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
+        return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, subtotalDimensions, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     // CHECKSTYLE:ON
@@ -1834,6 +1858,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     @Override
     public Optional<Integer> getCount() {
         return count == 0 ? Optional.empty() : Optional.of(count);
+    }
+
+    @Override
+    public Optional<List<List<String>>> getSubtotalDimensions() {
+        return count == 0 ? Optional.empty() : Optional.of(subtotalDimensions);
     }
 
     @Override

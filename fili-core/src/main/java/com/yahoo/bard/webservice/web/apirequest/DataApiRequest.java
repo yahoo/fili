@@ -218,6 +218,14 @@ public interface DataApiRequest extends ApiRequest {
      */
     Optional<Integer> getCount();
 
+    /**
+     * An optional list of subtotal dimension sets (names of the output field from the dimension spec).
+     *
+     * @return An optional integer.
+     */
+    Optional<List<List<String>>> getSubtotalDimensions();
+
+
     // Query model objects
 
     /**
@@ -382,6 +390,8 @@ public interface DataApiRequest extends ApiRequest {
     DataApiRequest withTopN(Integer topN);
 
     DataApiRequest withCount(Integer count);
+
+    DataApiRequest withSubtotalDimensions(List<List<String>> count);
 
     @Deprecated
     default DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {

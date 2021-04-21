@@ -29,6 +29,7 @@ public interface DataApiRequestFactory {
      * @param havings  URL having query String
      * @param sorts  string of sort columns along with sort direction
      * @param count  count of number of records to be returned in the response
+     * @param subtotals The list of subtotal dimension sets
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format
      * @param timeZoneId  a joda time zone id
@@ -53,6 +54,7 @@ public interface DataApiRequestFactory {
             String havings,
             String sorts,
             String count,
+            String subtotals,
             String topN,
             String format,
             String timeZoneId,
@@ -76,6 +78,7 @@ public interface DataApiRequestFactory {
      * @param havings  URL having query String
      * @param sorts  string of sort columns along with sort direction
      * @param count  count of number of records to be returned in the response
+     * @param subtotals the list of list of dimension names for subtotals
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format
      * @param timeZoneId  a joda time zone id
@@ -100,6 +103,7 @@ public interface DataApiRequestFactory {
             String havings,
             String sorts,
             String count,
+            String subtotals,
             String topN,
             String format,
             String downloadFilename,

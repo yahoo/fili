@@ -63,6 +63,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * @param sorts  string of sort columns along with sort direction in the format:<pre>
      * {@code (metricName or dimensionName)|(sortDirection) eg: pageViews|asc }</pre>
      * @param count  count of number of records to be returned in the response
+     * @param subtotals The list of list of subtotal dimension names
      * @param topN  number of first records per time bucket to be returned in the response
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
@@ -99,6 +100,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
             String havings,
             String sorts,
             String count,
+            String subtotals,
             String topN,
             String format,
             String downloadFilename,
@@ -118,6 +120,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 havings,
                 sorts,
                 count,
+                subtotals,
                 topN,
                 format,
                 downloadFilename,
@@ -149,6 +152,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * @param sorts  Sorting info for the request
      * @param dateTimeSort Override sort on time
      * @param count  Global limit for the request
+     * @param subtotals List of List of subtotal dimensions
      * @param topN  Count of per-bucket limit (TopN) for the request
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      * @param timeZone  TimeZone for the request
@@ -170,6 +174,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
             DateTimeZone timeZone,
             Integer topN,
             Integer count,
+            List<List<String>> subtotals,
             PaginationParameters paginationParameters,
             ResponseFormatType format,
             String downloadFilename,
@@ -190,6 +195,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 timeZone,
                 topN,
                 count,
+                subtotals,
                 paginationParameters,
                 format,
                 downloadFilename,

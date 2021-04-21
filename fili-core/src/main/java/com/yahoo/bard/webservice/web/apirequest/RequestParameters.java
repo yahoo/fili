@@ -23,6 +23,7 @@ public class RequestParameters {
     private final Optional<String> havings;
     private final Optional<String> sorts;
     private final Optional<String> count;
+    private final Optional<String> subtotals;
     private final Optional<String> topN;
     private final Optional<String> format;
     private final Optional<String> downloadFilename;
@@ -46,6 +47,7 @@ public class RequestParameters {
      * @param havings  The set of havings (filters on metrics) for this query
      * @param sorts  The sorts for this query (e.g. sort on revenue descending)
      * @param count  The the count of the query (????? what does count do)
+     * @param subtotals  A list of list of strings of dimension names for subtotals
      * @param topN  The limit on the sort (e.g. sort by revenue descending, give me top 3 results)
      * @param format  The format of the response should be in
      * @param downloadFilename  The filename of the response. The presence of this parameter indicated the result
@@ -67,6 +69,7 @@ public class RequestParameters {
             String havings,
             String sorts,
             String count,
+            String subtotals,
             String topN,
             String format,
             String downloadFilename,
@@ -86,6 +89,7 @@ public class RequestParameters {
         this.havings = Optional.ofNullable(havings);
         this.sorts = Optional.ofNullable(sorts);
         this.count = Optional.ofNullable(count);
+        this.subtotals = Optional.ofNullable(subtotals);
         this.topN = Optional.ofNullable(topN);
         this.format = Optional.ofNullable(format);
         this.downloadFilename = Optional.ofNullable(downloadFilename);
@@ -183,6 +187,15 @@ public class RequestParameters {
      */
     public Optional<String> getCount() {
         return count;
+    }
+
+    /**
+     * Getter for the subtotal dimensions.
+     *
+     * @return count
+     */
+    public Optional<String> getSubtotals() {
+        return subtotals;
     }
 
     /**
