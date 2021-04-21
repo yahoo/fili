@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.12</version>
+        <version>0.12-SNAPSHOT</version>
         <relativePath>../..</relativePath>
     </parent>
 
@@ -23,7 +23,7 @@
         <checkstyle.config.location>../../checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>../../checkstyle-suppressions.xml</checkstyle.suppressions.location>
         <skipLuthierTests>true</skipLuthierTests>
-        <version.fili>0.12</version.fili>
+        <version.fili>0.12-SNAPSHOT</version.fili>
     </properties>
 
     <profiles>
