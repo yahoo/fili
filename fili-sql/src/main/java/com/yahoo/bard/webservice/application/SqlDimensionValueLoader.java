@@ -90,7 +90,8 @@ public class SqlDimensionValueLoader implements DimensionValueLoader {
                 Collections.emptyList(),
                 Collections.emptyList(),
                 Collections.singletonList(INTERVAL),
-                new LimitSpec(Utils.asLinkedHashSet(), Optional.of(ROW_LIMIT))
+                new LimitSpec(Utils.asLinkedHashSet(), Optional.of(ROW_LIMIT)),
+                null
         );
 
         sqlBackedClient.executeQuery(groupByQuery, successCallback, failureCallback);

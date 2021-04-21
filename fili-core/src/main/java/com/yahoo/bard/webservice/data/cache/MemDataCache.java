@@ -108,12 +108,13 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                     CacheV2ResponseProcessor.getMD5Cksum(key),
                     warnThenIgnore.getMessage(),
                     warnThenIgnore);
-            BardQueryInfo.getBardQueryInfo().addReadFailureInfo(
+            BardQueryInfo.getBardQueryInfo().addCacheInfo(
                     CacheV2ResponseProcessor.getMD5Cksum(key),
                     new BardCacheInfo(
                             QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
                             key.length(),
                             CacheV2ResponseProcessor.getMD5Cksum(key),
+                            null,
                             0
                     )
             );
@@ -167,11 +168,13 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                 //mark and log the timeout errors on cache set
                 CACHE_SET_TIMEOUT_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetTimeoutFailures();
-                BardQueryInfo.getBardQueryInfo().addPutFailureInfo(CacheV2ResponseProcessor.getMD5Cksum(key),
+                BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                        CacheV2ResponseProcessor.getMD5Cksum(key),
                         new BardCacheInfo(
                                 LOG_CACHE_SET_TIMEOUT,
                                 key.length(),
                                 CacheV2ResponseProcessor.getMD5Cksum(key),
+                                null,
                                 value.toString().length()
                         )
                 );

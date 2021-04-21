@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
         <version>0.12-SNAPSHOT</version>
         <relativePath>../..</relativePath>
@@ -74,12 +74,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>luthier</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>sample-applications</artifactId>
             <version>${version.fili}</version>
             <type>pom</type>

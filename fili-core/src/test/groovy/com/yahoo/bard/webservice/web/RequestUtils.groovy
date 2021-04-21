@@ -49,6 +49,7 @@ class RequestUtils {
                 postAggregations,
                 intervals,
                 (LimitSpec) null,
+                null
         )
     }
 
@@ -78,7 +79,8 @@ class RequestUtils {
                 postAggregations,
                 intervals,
                 threshold,
-                (TopNMetric) null
+                (TopNMetric) null,
+                null
         )
     }
 
@@ -104,7 +106,8 @@ class RequestUtils {
                 (Filter) null,
                 aggregations,
                 postAggregations,
-                intervals
+                intervals,
+                null
         )
     }
 

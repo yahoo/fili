@@ -209,6 +209,8 @@ class LookbackQuerySpec extends Specification {
 
         String lookbackPrefixes = '["lookback_days_", "lookback_weeks_"]'
 
+        String virtualColumns = '[]'
+
         String expectedString = stringQuery(
                 dataSource: dataSrc,
                 postAggregations: postAgg,

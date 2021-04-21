@@ -61,7 +61,7 @@ Active development happens on the patch version of the highest minor version.
 Maven:
 ```xml
 <dependency>
-    <groupId>com.yahoo.fili</groupId>
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili</artifactId>
     <version>x.y.z</version>
 </dependency>
@@ -79,7 +79,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.yahoo.fili:fili:x.y.z'
+    compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
 

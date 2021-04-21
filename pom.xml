@@ -3,7 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yahoosc.fili</groupId>
+
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
     <version>0.12-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -49,8 +50,9 @@
 
     <developers>
         <developer>
-            <name>Yahoo Inc.</name>
-            <url>https://github.com/yahoo</url>
+            <name>Fili Maintainers</name>
+            <organization>Yahoo! Inc.</organization>
+            <organizationUrl>http://www.yahoo.com/</organizationUrl>
         </developer>
     </developers>
 
@@ -72,14 +74,14 @@
     </mailingLists>
 
     <distributionManagement>
-        <site>
-            <id>git</id>
-            <url>scm:git:ssh://git@github.com:yahoo/fili.git</url>
-        </site>
         <repository>
-            <id>bintray-fili-repo</id>
-            <url>https://api.bintray.com/maven/yahoo/maven/fili/;publish=1</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <scm>
@@ -90,6 +92,9 @@
     </scm>
 
     <properties>
+        <releaseRepoUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</releaseRepoUrl>
+        <snapshotRepoUrl>https://oss.sonatype.org/content/repositories/snapshots/</snapshotRepoUrl>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
@@ -97,23 +102,24 @@
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
-        <version.asynchttp>2.11.0</version.asynchttp>
+        <version.asynchttp>2.12.3</version.asynchttp>
         <version.jersey>2.24</version.jersey>
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
-        <version.jetty>9.4.20.v20190813</version.jetty>
+        <version.jetty>9.4.40.v20210413</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
         <version.spring>5.1.18.RELEASE</version.spring>
         <version.groovy>2.4.15</version.groovy>
-        <version.jackson>2.10.0</version.jackson>
-        <version.jackson-databind>2.10.0</version.jackson-databind>
+        <version.jackson>2.10.5</version.jackson>
+        <version.jackson-databind>2.10.5.1</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
-        <version.guava>25.0-jre</version.guava>
+        <version.guava>30.0-jre</version.guava>
         <version.druid.api>0.12.1</version.druid.api>
+
         <profiles.active>test</profiles.active>
 
         <disableDocLint>-Xdoclint:none</disableDocLint>
@@ -156,27 +162,27 @@
         <dependencies>
             <!-- Local module dependencies -->
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-system-config</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>luthier</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
                 <type>test-jar</type>
@@ -384,6 +390,11 @@
                         <artifactId>jackson-dataformat-smile</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+
+                    <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>hibernate-validator</artifactId>
                     </exclusion>
@@ -497,7 +508,6 @@
                 <artifactId>jetty-servlet</artifactId>
                 <version>${version.jetty}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -662,6 +672,7 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>%regex[.*Spec.*]</include>
+                            <include>**/*Test.java</include>
                         </includes>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
@@ -763,8 +774,10 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>5.3.1</version>
+                <version>6.1.5</version>
                 <configuration>
+                    <!-- Temporarily disengaging autoupdate because of broken CVE parsing -->
+                    <skip>true</skip>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
@@ -990,6 +1003,59 @@
     </reporting>
 
     <profiles>
+        <profile>
+            <id>ossrh</id>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.defaultKeyring>false</gpg.defaultKeyring>
+                <gpg.homedir>${env.SD_SOURCE_DIR}/screwdriver/deploy</gpg.homedir>
+                <gpg.publickeyring>pubring.gpg</gpg.publickeyring>
+                <gpg.secretkeyring>secring.gpg</gpg.secretkeyring>
+            </properties>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>coverage.build</id>
             <activation>

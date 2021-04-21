@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.aggregation
 
+import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static org.joda.time.DateTimeZone.UTC
 
@@ -103,6 +104,15 @@ class FilteredAggregationSpec extends Specification{
 
     def cleanupSpec() {
         FieldConverterSupplier.metricsFilterSetBuilder = oldBuilder
+    }
+
+    def "FilteredAggregation is serialized correctly"() {
+        when:
+        FilteredAggregation FA = new FilteredAggregation("test", metricAgg, Mock(Filter))
+        then:
+        new ObjectMappersSuite().jsonMapper.writeValueAsString(
+                FA
+        ) == """{"name":"test","filter":{"type":null},"type":"filtered","aggregator":{"name":"test","fieldName":"FOO_NO_BAR_SKETCH","size":16384,"type":"thetaSketch"}}"""
     }
 
     def "test the filtered aggregator constructor" (){

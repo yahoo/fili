@@ -15,7 +15,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAg
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAliasingPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
-
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.ExpressionVirtualColumn
+import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -145,10 +146,14 @@ class TemplateDruidQuerySpec extends Specification {
         PostAggregation nested_postagg1 = new ConstantPostAggregation("field6", 100)
         PostAggregation q2_postagg1 = new ConstantPostAggregation("field7", 100)
 
-        TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set)
-        TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [q1_postagg1] as Set, nested)
+        VirtualColumn v1 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
+        VirtualColumn v2 = new ExpressionVirtualColumn("vCol2", "timestamp_format(__time,'yyyy-MM')", "LONG")
+        VirtualColumn v3 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
 
-        TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set)
+        TemplateDruidQuery nested = new TemplateDruidQuery([nested_agg1] as Set, [nested_postagg1] as Set)
+        TemplateDruidQuery q1 = new TemplateDruidQuery([q1_agg1, q1_agg2] as Set, [q1_postagg1] as Set, nested, null, Collections.emptySet(), [v1, v2] as Set)
+
+        TemplateDruidQuery q2 = new TemplateDruidQuery([q2_agg1] as Set, [q2_postagg1] as Set, null, null, Collections.emptySet(), [v3] as Set)
 
         TemplateDruidQuery merged = q1.merge(q2)
 
@@ -159,8 +164,46 @@ class TemplateDruidQuerySpec extends Specification {
         merged.depth() == 2
         merged.getInnerQuery().get().getAggregations().sort() == [q2_agg1, nested_agg1].sort()
         merged.getInnerQuery().get().getPostAggregations().sort() == [nested_postagg1]
+        merged.getVirtualColumns().sort() == [v1, v2].sort()
 
         q1.merge(q2) == q2.merge(q1)
+    }
+
+    def "verify q1.merge(q2) does not fail for duplicate virtual columns with same meaning and ensures all distinct virtual columns are maintained"() {
+        setup:
+        VirtualColumn v1 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
+        VirtualColumn v2 = new ExpressionVirtualColumn("vCol2", "timestamp_format(__time,'yyyy-MM')", "LONG")
+        VirtualColumn v3 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
+
+        TemplateDruidQuery q1 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v1, v2] as Set)
+        TemplateDruidQuery q2 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v3] as Set)
+
+
+        when:
+        TemplateDruidQuery merged = q1.merge(q2)
+
+        then:
+        merged.getVirtualColumns().sort() == [v1, v2].sort()
+        q1.merge(q2) == q2.merge(q1)
+        merged.getVirtualColumns().size() == 2
+    }
+
+    def "verify q1.merge(q2) fails for duplicate virtual column names with different meaning"() {
+        setup:
+        VirtualColumn v1 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
+        VirtualColumn v2 = new ExpressionVirtualColumn("vCol2", "timestamp_format(__time,'yyyy-MM')", "LONG")
+        VirtualColumn v3 = new ExpressionVirtualColumn("vCol1", "timestamp_format(__time,'yyyy-MM')", "STRING")
+        VirtualColumn v4 = new ExpressionVirtualColumn("vCol2", "timestamp_format(__time,'yyyy-MM')", "STRING")
+
+        TemplateDruidQuery q1 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v1, v2] as Set)
+        TemplateDruidQuery q2 = new TemplateDruidQuery(Collections.emptySet(), Collections.emptySet(), null, null, Collections.emptySet(), [v3, v4] as Set)
+
+
+        when:
+        q1.merge(q2)
+
+        then:
+        thrown(IllegalArgumentException)
     }
 
     def "verify q1.merge(q2) fails for duplicate aggregation names"() {
