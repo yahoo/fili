@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.stream.Stream;
 
@@ -58,12 +59,12 @@ public class CsvResponseWriter implements ResponseWriter {
                                 } catch (IOException ioe) {
                                     String msg = String.format("Unable to write CSV data row: %s", row);
                                     LOG.error(msg, ioe);
-                                    throw new RuntimeException(msg, ioe);
+                                    throw new UncheckedIOException(msg, ioe);
                                 }
                             }
                     );
-        } catch (RuntimeException re) {
-            throw new IOException(re);
+        } catch (UncheckedIOException re) {
+            throw re.getCause();
         }
     }
 

@@ -69,6 +69,7 @@ import rx.observables.ConnectableObservable;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -607,7 +608,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             );
         } catch (JsonProcessingException e) {
             LOG.error("Error serializing JobRow: %s", e);
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

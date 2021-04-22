@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -236,12 +237,12 @@ public abstract class AbstractResponse<T> implements ResponseStream {
                         } catch (IOException ioe) {
                             String msg = String.format("Unable to write pagination field with key %s", k);
                             LOG.error(msg, ioe);
-                            throw new RuntimeException(msg, ioe);
+                            throw new UncheckedIOException(msg, ioe);
                         }
                     }
             );
-        } catch (RuntimeException re) {
-            throw new IOException(re);
+        } catch (UncheckedIOException re) {
+            throw re.getCause();
         }
 
         generator.writeNumberField("currentPage", pages.getPage());
