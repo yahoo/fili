@@ -12,7 +12,6 @@ jobs:
     requires: [~pr]
     steps:
       - header: echo "Starting the pipeline"
-      - gpg-install: apt-get update -qy && apt-get install -y gnupg
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - build: ./screwdriver/mvn-build.bash
 
