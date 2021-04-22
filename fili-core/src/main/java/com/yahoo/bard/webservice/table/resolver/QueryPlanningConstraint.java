@@ -11,6 +11,8 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.joda.time.Interval;
 
 import java.util.Collections;
@@ -205,10 +207,8 @@ public class QueryPlanningConstraint extends BaseDataSourceConstraint {
      * @return names of all {@link #logicalMetrics}
      */
     private Set<String> generateLogicalMetricNames() {
-        return Collections.unmodifiableSet(
-                logicalMetrics.stream()
+        return logicalMetrics.stream()
                         .map(LogicalMetric::getName)
-                        .collect(Collectors.toSet())
-        );
+                        .collect(ImmutableSet.toImmutableSet());
     }
 }

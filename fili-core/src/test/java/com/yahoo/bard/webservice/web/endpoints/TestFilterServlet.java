@@ -102,7 +102,7 @@ public class TestFilterServlet implements Runnable {
                 responses.clear();
             }
         } catch (InterruptedException ignore) {
-            // Do nothing
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -124,7 +124,7 @@ public class TestFilterServlet implements Runnable {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ignore) {
-                    // Ignore
+                    Thread.currentThread().interrupt();
                 }
                 throw new IOException();
             }

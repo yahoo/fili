@@ -15,6 +15,9 @@ import com.yahoo.bard.webservice.table.availability.Availability;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -312,31 +315,23 @@ public class TestPhysicalTable implements ConfigPhysicalTable {
     ) {
         this.name = name;
         this.grain = grain;
-        this.dsNames = Collections.unmodifiableSet(new HashSet<>(dsNames));
-        this.dimensions = Collections.unmodifiableSet(new HashSet<>(dimensions));
-        this.metrics = Collections.unmodifiableSet(new HashSet<>(metrics));
+        this.dsNames = ImmutableSet.copyOf(dsNames);
+        this.dimensions = ImmutableSet.copyOf(dimensions);
+        this.metrics = ImmutableSet.copyOf(metrics);
         this.allColumns = Stream.concat(this.metrics.stream(), this.dimensions.stream())
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toCollection(LinkedHashSet::new),
-                        Collections::unmodifiableSet
-                ));
-        this.logicalToPhysicalColumns = Collections.unmodifiableMap(new HashMap<>(logicalToPhysicalColumns));
+                .collect(ImmutableSet.toImmutableSet());
+        this.logicalToPhysicalColumns = ImmutableMap.copyOf(logicalToPhysicalColumns);
 
         this.availabilities = availability.entrySet().stream()
                 .map(entry ->
                         new AbstractMap.SimpleImmutableEntry<>(
                                 findColumnForName(entry.getKey(), this.allColumns),
                                 entry.getValue()
-                        )
-                ).collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toMap(
-                                        Map.Entry::getKey,
-                                        Map.Entry::getValue
-                                ),
-                                Collections::unmodifiableMap
-                        )
-                );
+                )).collect(
+                        ImmutableMap.toImmutableMap(
+                                Map.Entry::getKey,
+                                Map.Entry::getValue
+                ));
 
         this.schema = new PhysicalTableSchema(
                 this.grain,
@@ -432,12 +427,9 @@ public class TestPhysicalTable implements ConfigPhysicalTable {
                     .map(entry ->
                             new AbstractMap.SimpleImmutableEntry<>(entry.getKey().getName(), entry.getValue())
                     )
-                    .collect(Collectors.collectingAndThen(
-                            Collectors.toMap(
-                                    Map.Entry::getKey,
-                                    Map.Entry::getValue
-                            ),
-                            Collections::unmodifiableMap
+                    .collect(ImmutableMap.toImmutableMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue
                     ));
         }
 

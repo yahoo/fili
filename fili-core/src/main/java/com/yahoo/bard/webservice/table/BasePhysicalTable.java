@@ -11,11 +11,12 @@ import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -69,8 +70,7 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
     @Override
     public Set<DataSourceName> getDataSourceNames() {
         // TODO: Once the availability setter is removed from this class, move this to the constructor
-        return getAvailability().getDataSourceNames().stream()
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+        return ImmutableSet.copyOf(getAvailability().getDataSourceNames());
     }
 
     @Override

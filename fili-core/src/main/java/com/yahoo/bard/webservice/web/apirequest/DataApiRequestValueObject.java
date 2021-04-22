@@ -21,11 +21,11 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.filters.UnmodifiableApiFilters;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.google.common.collect.ImmutableList;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -107,7 +107,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
         this.dimensions = UnmodifiableLinkedHashSet.of(dimensions);
         this.perDimensionFields = UnmodifiableLinkedHashMap.of(perDimensionFields);
         this.metrics = UnmodifiableLinkedHashSet.of(metrics);
-        this.intervals = Collections.unmodifiableList(new ArrayList<>(intervals));
+        this.intervals = ImmutableList.copyOf(intervals);
         this.apiFilters = UnmodifiableApiFilters.of(new ApiFilters(apiFilters));
         this.havings = UnmodifiableLinkedHashMap.of(havings);
         this.allSorts = UnmodifiableLinkedHashSet.of(allSorts);
@@ -139,6 +139,7 @@ public class DataApiRequestValueObject implements DataApiRequest {
         return dimensions;
     }
 
+    @Override
     public LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> getDimensionFields() {
         return perDimensionFields;
     }

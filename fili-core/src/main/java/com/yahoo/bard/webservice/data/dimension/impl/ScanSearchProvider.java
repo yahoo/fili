@@ -19,14 +19,13 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -172,7 +171,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
             String dimRows = objectMapper.writeValueAsString(dimensionRowsSet);
             keyValueStore.put(allValuesKey, dimRows);
         } catch (IOException e) {
-            LOG.error("Exception while adding dimension entry in KeyValueStore : {}", e);
+            LOG.error("Exception while adding dimension entry in KeyValueStore : {}", e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -244,7 +243,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
                 keyValueStore.put(rowValueKey, updatedRowValueSKeys);
             }
         } catch (IOException e) {
-            LOG.error("Exception while adding dimension description entry in key value store : {}", e);
+            LOG.error("Exception while adding dimension description entry in key value store : {}", e.toString());
             throw new RuntimeException(e);
         }
     }
@@ -330,9 +329,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
     @Override
     public Pagination<DimensionRow> findAllDimensionRowsPaged(PaginationParameters paginationParameters) {
         return new SinglePagePagination<>(
-                Collections.unmodifiableList(
-                        new ArrayList<>(getAllDimensionRowsPaged(paginationParameters))
-                ),
+                ImmutableList.copyOf(getAllDimensionRowsPaged(paginationParameters)),
                 paginationParameters,
                 getDimRowIndexes().size()
         );
@@ -429,7 +426,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
         try {
             return objectMapper.readValue(value, typeReference);
         } catch (IOException e) {
-            LOG.error("Exception while reading dimension rows {}", e);
+            LOG.error("Exception while reading dimension rows", e);
             throw new RuntimeException(e);
         }
     }

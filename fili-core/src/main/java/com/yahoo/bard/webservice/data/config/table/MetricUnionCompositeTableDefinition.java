@@ -199,7 +199,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         Set<Column> columns = buildColumns(dictionaries.getDimensionDictionary());
         Set<String> metricNames = Utils.getSubsetByType(columns, MetricColumn.class).stream()
                 .map(MetricColumn::getName)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
+                .collect(ImmutableSet.toImmutableSet());
 
         Set<ConfigPhysicalTable> tables = mapNamestoTables(
                 dependentTableNameString,
@@ -207,15 +207,12 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
         );
         // Construct a map of tables to the metrics for that table
         return tables.stream()
-                .collect(
-                        Collectors.collectingAndThen(Collectors.toMap(
-                                Function.identity(),
-                                (ConfigPhysicalTable physicalTable) ->
-                                        Sets.intersection(
-                                                physicalTable.getSchema().getMetricColumnNames(),
-                                                metricNames
-                                        )
-                        ), ImmutableMap::copyOf)
-                );
+                .collect(ImmutableMap.toImmutableMap(
+                        Function.identity(),
+                        (ConfigPhysicalTable physicalTable) -> Sets.intersection(
+                                physicalTable.getSchema().getMetricColumnNames(),
+                                metricNames
+                        )
+                ));
     }
 }

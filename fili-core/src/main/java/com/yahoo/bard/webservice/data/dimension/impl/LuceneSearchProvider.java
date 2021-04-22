@@ -25,6 +25,8 @@ import com.yahoo.bard.webservice.web.PageNotFoundException;
 import com.yahoo.bard.webservice.web.RowLimitReachedException;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import com.google.common.collect.ImmutableList;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -163,6 +165,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new IllegalStateException(msg);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             String msg = String.format(
                     ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
                     getDimension()
@@ -199,6 +202,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 throw new IllegalStateException(msg);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             String msg = String.format(
                     ErrorMessageFormat.LUCENE_LOCK_INTERRUPTED.getMessageFormat(),
                     getDimension().getApiName()
@@ -849,7 +853,7 @@ public class LuceneSearchProvider implements SearchProvider {
             readUnlock();
         }
         return new SinglePagePagination<>(
-                Collections.unmodifiableList(filteredDimRows.stream().collect(Collectors.toList())),
+                ImmutableList.copyOf(filteredDimRows),
                 paginationParameters,
                 documentCount
         );

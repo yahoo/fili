@@ -8,12 +8,11 @@ import com.yahoo.bard.webservice.druid.serializers.DimensionToNameSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableSet;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +41,7 @@ public class CardinalityAggregation extends Aggregation {
      */
     public CardinalityAggregation(String name, Set<Dimension> dimensions, boolean byRow) {
         super(name, "");
-        this.dimensions = Collections.unmodifiableSet(new LinkedHashSet<>(dimensions));
+        this.dimensions = ImmutableSet.copyOf(dimensions);
         this.byRow = byRow;
     }
 
@@ -72,6 +71,7 @@ public class CardinalityAggregation extends Aggregation {
         return false;
     }
 
+    @Override
     public Set<Dimension> getDependentDimensions() {
         return dimensions;
     }

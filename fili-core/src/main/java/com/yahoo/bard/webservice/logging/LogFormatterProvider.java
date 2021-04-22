@@ -39,7 +39,7 @@ public class LogFormatterProvider {
             try {
                 logFormatter = Class.forName(logFormatterImplementation).asSubclass(LogFormatter.class).newInstance();
             } catch (Exception exception) {
-                LOG.error("Exception while loading Log formatter: {}", exception);
+                LOG.error("Exception while loading Log formatter: {}", exception.toString());
                 throw new IllegalStateException(exception);
             }
         }

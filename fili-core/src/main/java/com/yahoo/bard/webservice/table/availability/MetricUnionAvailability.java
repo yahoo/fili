@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -91,15 +91,12 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
         metricNames = availabilitiesToMetricNames.values()
                 .stream()
                 .flatMap(Set::stream)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
+                .collect(ImmutableSet.toImmutableSet());
 
         this.availabilitiesToMetricNames = availabilitiesToMetricNames.entrySet().stream()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                e -> Collections.unmodifiableSet(new HashSet<>(e.getValue()))
-                        ),
-                        Collections::unmodifiableMap
+                .collect(ImmutableMap.toImmutableMap(
+                        Map.Entry::getKey,
+                        e -> ImmutableSet.copyOf(e.getValue())
                 ));
 
         // validate metric uniqueness such that

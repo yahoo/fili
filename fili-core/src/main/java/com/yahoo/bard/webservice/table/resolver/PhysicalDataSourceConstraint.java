@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.table.resolver;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.table.PhysicalTableSchema;
 
-import java.util.Collections;
-import java.util.HashSet;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -36,7 +36,7 @@ public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
 
         this.allColumnPhysicalNames = dataSourceConstraint.getAllColumnNames().stream()
                 .map(physicalTableSchema::getPhysicalColumnName)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     /**
@@ -55,7 +55,7 @@ public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
     ) {
         super(dataSourceConstraint);
         this.schema = physicalTableSchema;
-        this.allColumnPhysicalNames = Collections.unmodifiableSet(new HashSet<>(allColumnPhysicalNames));
+        this.allColumnPhysicalNames = ImmutableSet.copyOf(allColumnPhysicalNames);
     }
 
     /**
@@ -71,7 +71,7 @@ public class PhysicalDataSourceConstraint extends BaseDataSourceConstraint {
         DataSourceConstraint filteredConstraint = super.withDimensionFilter(filter);
         Set<String> filteredPhysicalNames = filteredConstraint.getAllColumnNames().stream()
                 .map(schema::getPhysicalColumnName)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
+                .collect(ImmutableSet.toImmutableSet());
         return new PhysicalDataSourceConstraint(filteredConstraint, schema, filteredPhysicalNames);
     }
 

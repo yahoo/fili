@@ -90,7 +90,7 @@ public class TestLogAppender extends AppenderBase<ILoggingEvent> implements Clos
             try {
                 events.wait(MAX_MESSAGE_WAIT_MS);
             } catch (InterruptedException ignored) {
-                // Empty
+                Thread.currentThread().interrupt();
             }
         }
         return events.get(index).getFormattedMessage();

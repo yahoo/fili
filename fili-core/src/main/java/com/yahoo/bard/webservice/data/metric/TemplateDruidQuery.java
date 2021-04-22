@@ -20,6 +20,8 @@ import com.yahoo.bard.webservice.druid.model.query.QueryContext;
 import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -164,12 +166,12 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
             Collection<Dimension> dimensions,
             Collection<VirtualColumn> virtualColumns
     ) {
-        // Convert the sets to LinkedHashSet to preserve order, and then make them unmodifiable
-        this.aggregations = Collections.unmodifiableSet(new LinkedHashSet<>(aggregations));
-        this.postAggregations = Collections.unmodifiableSet(new LinkedHashSet<>(postAggregations));
+        // ImmutableSet preserves order
+        this.aggregations = ImmutableSet.copyOf(aggregations);
+        this.postAggregations = ImmutableSet.copyOf(postAggregations);
         this.nestedQuery = nestedQuery;
         this.timeGrain = timeGrain;
-        this.dimensions = Collections.unmodifiableSet(new LinkedHashSet<>(dimensions));
+        this.dimensions = ImmutableSet.copyOf(dimensions);
         this.virtualColumns = virtualColumns;
 
         // Check for duplicate field names
@@ -699,6 +701,7 @@ public class TemplateDruidQuery implements DruidAggregationQuery<TemplateDruidQu
      *
      * @return copy of the query
      */
+    @Override
     public TemplateDruidQuery withPostAggregations(Collection<PostAggregation> newPostAggregations) {
         return new TemplateDruidQuery(
                 aggregations,

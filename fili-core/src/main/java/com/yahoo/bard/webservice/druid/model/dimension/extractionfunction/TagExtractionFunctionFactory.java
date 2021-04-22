@@ -2,7 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.dimension.extractionfunction;
 
-import java.util.HashMap;
+import com.google.common.collect.ImmutableMap;
+
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -65,8 +66,7 @@ public final class TagExtractionFunctionFactory {
                 index,
                 replaceValue
         );
-        HashMap<String, String> map = new HashMap();
-        map.put(tagValue, trueValue);
+        ImmutableMap<String, String> map = ImmutableMap.of(tagValue, trueValue);
         MapLookup mapLookup = new MapLookup(map);
         ExtractionFunction lookupExtractionFunction = new LookupExtractionFunction(
                 mapLookup,
