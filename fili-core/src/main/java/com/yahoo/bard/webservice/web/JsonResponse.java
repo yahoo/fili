@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.UriInfo;
@@ -92,12 +93,12 @@ public class JsonResponse<T> extends AbstractResponse<T> {
                             } catch (IOException ioe) {
                                 String msg = String.format("Unable to write Json Object: %s", entry);
                                 LOG.error(msg, ioe);
-                                throw new RuntimeException(msg, ioe);
+                                throw new UncheckedIOException(msg, ioe);
                             }
                         }
                 );
-            } catch (RuntimeException re) {
-                throw new IOException(re);
+            } catch (UncheckedIOException re) {
+                throw new IOException(re.getMessage(), re);
             }
             g.writeEndArray();
 
