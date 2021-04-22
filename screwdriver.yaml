@@ -39,6 +39,7 @@ jobs:
       - debug: |
          echo "Releasing : ${SD_EVENT_ID} ${SD_JOB_NAME} ${SD_PARENT_BUILD_ID}"
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
+      - gpg-install: apt-get update -qy && apt-get install -y gnupg
       - release: ./screwdriver/is_whitelisted.bash
       - build: "screwdriver/scripts/build.sh"
       - publish: "screwdriver/scripts/publish.sh"
