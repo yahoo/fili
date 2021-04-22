@@ -220,6 +220,14 @@ Current
 - [Add Sketch Metrics support for Preso](https://github.com/yahoo/fili/issues/1138)
    * Fili can now translate requests that include sketch metrics to the correct presto sql statements.
 
+- Customizable CORS headers with origin header validation
+   * Addresses the potential security issue: the application trust an arbitrary domain that is provided in the Origin
+   header in cross-origin requests. The application does not validate the Origin header which can lead to data exposure
+   when a malicious site embeds JavaScript to read or update data from the application. This can lead to a user's data
+   being leaked or changed without a user's knowledge.
+   * Ability to configure dangerous methods such as PUT and DELETE in the CORS Access-Control-Allow-Methods header,
+   as well as Access-Control-Allow-Methods and Access-Control-Allow-Credentials.
+
 ### Changed:
 - [Migrating from bintray to maven central](https://github.com/yahoo/fili/pull/1158)
   * Bintray EOL, migrating publishing of artifacts to Maven Central.
