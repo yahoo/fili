@@ -246,13 +246,11 @@ public class DefaultOrderByGenerator implements Generator<List<OrderByColumn>>, 
                 .filter(s -> normalized.startsWith(s.name()))
                 .findFirst();
 
-        if (direction.isPresent()) {
-            return direction.get();
-        }
-
-        String sortDirectionName = columnWithDirection.get(1);
-        LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
-        throw new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
+        return direction.orElseThrow(() -> {
+            String sortDirectionName = columnWithDirection.get(1);
+            LOG.debug(SORT_DIRECTION_INVALID.logFormat(sortDirectionName));
+            return new BadApiRequestException(SORT_DIRECTION_INVALID.format(sortDirectionName));
+        });
     }
 
     /**

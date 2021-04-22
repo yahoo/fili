@@ -21,7 +21,6 @@ import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 import org.joda.time.Interval;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * Wrapper around an {@link DruidAggregationQuery} which always reports
@@ -133,10 +132,10 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withInnermostDataSource(DataSource dataSource) {
-        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
-        return !innerQuery.isPresent() ?
-                withDataSource(dataSource) :
-                withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
+        return withDataSource(this.dataSource.getQuery()
+                .map(DruidFactQuery.class::cast)
+                .map(innerQuery -> (DataSource) innerQuery.withInnermostDataSource(dataSource))
+                .orElse(dataSource));
     }
 
     public SqlAggregationQuery withDimensions(Collection<Dimension> dimensions) {
@@ -178,10 +177,11 @@ public class SqlAggregationQuery extends AbstractDruidAggregationQuery<SqlAggreg
 
     @Override
     public SqlAggregationQuery withAllIntervals(Collection<Interval> intervals) {
-        Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
-        return !innerQuery.isPresent() ?
-                withIntervals(intervals) :
-                withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);
+        return this.dataSource.getQuery()
+                .map(DruidFactQuery.class::cast)
+                .map(innerQuery -> withDataSource(new QueryDataSource(innerQuery.withAllIntervals(intervals)))
+                        .withIntervals(intervals))
+                .orElseGet(() -> withIntervals(intervals));
     }
 
     public SqlAggregationQuery withOrderBy(LimitSpec limitSpec) {

@@ -73,12 +73,9 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             );
         }
 
-        if (!builder.getLogicalTableIfInitialized().isPresent()) {
-            throw new BadApiRequestException("No logical table specified. Data requests require exactly one logical" +
-                    "table to be queried");
-        }
-
-        validateRequestDimensions(entity, builder.getLogicalTableIfInitialized().get());
+        validateRequestDimensions(entity, builder.getLogicalTableIfInitialized()
+                .orElseThrow(() -> new BadApiRequestException(
+                        "No logical table specified. Data requests require exactly one logical table to be queried")));
     }
 
     /**

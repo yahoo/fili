@@ -55,14 +55,11 @@ public class DefaultLogicalTableGenerator implements Generator<LogicalTable> {
             );
         }
 
-        if (!builder.getGranularityIfInitialized().isPresent()) {
-            throw new BadApiRequestException("Granularity is required for all data queries, but was not present in " +
-                    "the request. Please add granularity to your query and try again.");
-        }
-
         return generateTable(
                 params.getLogicalTable().orElse(""),
-                builder.getGranularityIfInitialized().get(),
+                builder.getGranularityIfInitialized().orElseThrow(() -> new BadApiRequestException(
+                        "Granularity is required for all data queries, but was not present in the request. "
+                        + "Please add granularity to your query and try again.")),
                 resources.getLogicalTableDictionary()
         );
     }

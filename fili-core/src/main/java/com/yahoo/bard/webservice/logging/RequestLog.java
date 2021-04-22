@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -162,17 +161,16 @@ public class RequestLog {
     private Map<String, Float> aggregateDurations() {
         Map<String, Long> durations = durations();
 
-        OptionalLong max = durations.entrySet()
+        durations.entrySet()
                 .stream()
                 .filter(e -> e.getKey().contains(DRUID_QUERY_TIMER))
                 .mapToLong(Map.Entry::getValue)
                 .peek(v -> REGISTRY.timer(DRUID_QUERY_ALL_TIMER).update(v, TimeUnit.NANOSECONDS))
-                .max();
-
-        if (max.isPresent()) {
-            REGISTRY.timer(DRUID_QUERY_MAX_TIMER).update(max.getAsLong(), TimeUnit.NANOSECONDS);
-            durations.put(DRUID_QUERY_MAX_TIMER, max.getAsLong());
-        }
+                .max()
+                .ifPresent(max -> {
+            REGISTRY.timer(DRUID_QUERY_MAX_TIMER).update(max, TimeUnit.NANOSECONDS);
+            durations.put(DRUID_QUERY_MAX_TIMER, max);
+        });
 
         return durations.entrySet()
                 .stream()

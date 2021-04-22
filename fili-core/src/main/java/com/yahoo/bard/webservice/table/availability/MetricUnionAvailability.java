@@ -129,7 +129,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
         return constructSubConstraint(constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
-                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+                .reduce(SimplifiedIntervalList::intersect).orElseGet(SimplifiedIntervalList::new);
     }
 
     /**
