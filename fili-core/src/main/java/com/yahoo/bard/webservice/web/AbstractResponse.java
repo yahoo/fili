@@ -242,7 +242,7 @@ public abstract class AbstractResponse<T> implements ResponseStream {
                     }
             );
         } catch (UncheckedIOException re) {
-            throw re.getCause();
+            throw new IOException(re.getMessage(), re);
         }
 
         generator.writeNumberField("currentPage", pages.getPage());

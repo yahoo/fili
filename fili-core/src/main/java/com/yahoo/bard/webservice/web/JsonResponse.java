@@ -98,7 +98,7 @@ public class JsonResponse<T> extends AbstractResponse<T> {
                         }
                 );
             } catch (UncheckedIOException re) {
-                throw re.getCause();
+                throw new IOException(re.getMessage(), re);
             }
             g.writeEndArray();
 

@@ -64,7 +64,7 @@ public class CsvResponseWriter implements ResponseWriter {
                             }
                     );
         } catch (UncheckedIOException re) {
-            throw re.getCause();
+            throw new IOException(re.getMessage(), re);
         }
     }
 

@@ -84,7 +84,7 @@ public class CsvResponse<T> extends AbstractResponse<T> {
                             }
                     );
         } catch (UncheckedIOException re) {
-            throw re.getCause();
+            throw new IOException(re.getMessage(), re);
         }
     }
 
