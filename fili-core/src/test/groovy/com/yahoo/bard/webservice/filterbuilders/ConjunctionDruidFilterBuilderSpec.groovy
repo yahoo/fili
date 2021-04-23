@@ -187,7 +187,7 @@ class ConjunctionDruidFilterBuilderSpec extends Specification {
     }
 
     List<Filter> getSearchFilters(List<String> values) {
-        return values.collect {new SearchFilter(resources.d16, SearchFilter.QueryType.Contains, it)}
+        return values.collect {new SearchFilter(resources.d16, SearchFilter.QueryType.CONTAINS, it)}
     }
 
     TreeSet<DimensionRow> getDimensionRows(List<String> ids) {

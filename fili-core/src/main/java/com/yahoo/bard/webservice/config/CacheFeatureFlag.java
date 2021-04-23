@@ -29,6 +29,8 @@ public enum CacheFeatureFlag implements FeatureFlag {
     private static final Logger LOG = LoggerFactory.getLogger(CacheFeatureFlag.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
+    public static final String QUERY_RESPONSE_CACHING_STRATEGY = "query_response_caching_strategy";
+
     private final String value;
     Boolean on = null;
 
@@ -52,7 +54,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
             // TODO: Remove this if conditional after cache V1 & V2 configuration flags are removed
             if (BardFeatureFlag.DRUID_CACHE.isSet() || BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
                 // no cache
-                if (this.value.equals("NoCache")) {
+                if (this.value.equals(NONE.value)) {
                     return ! BardFeatureFlag.DRUID_CACHE.isOn();
                 }
 
@@ -65,7 +67,7 @@ public enum CacheFeatureFlag implements FeatureFlag {
                         && BardFeatureFlag.DRUID_CACHE_V2.isOn());
             }
             on = value.equalsIgnoreCase(SYSTEM_CONFIG.getStringProperty(
-                    SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"), "NoCache")
+                    SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"), NONE.value)
             );
         }
         return on;
@@ -84,14 +86,14 @@ public enum CacheFeatureFlag implements FeatureFlag {
      */
     protected static void resetAll() {
         for (CacheFeatureFlag featureFlag: CacheFeatureFlag.values()) {
-            SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"));
+            SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName(QUERY_RESPONSE_CACHING_STRATEGY));
             featureFlag.on = null;
         }
     }
 
     @Override
     public void reset() {
-        SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName("query_response_caching_strategy"));
+        SYSTEM_CONFIG.clearProperty(SYSTEM_CONFIG.getPackageVariableName(QUERY_RESPONSE_CACHING_STRATEGY));
         on = null;
     }
 }

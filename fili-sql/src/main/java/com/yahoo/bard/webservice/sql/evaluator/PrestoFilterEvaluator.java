@@ -51,7 +51,7 @@ public class PrestoFilterEvaluator extends FilterEvaluator {
         String valueToFind = searchFilter.getQueryValue();
 
         switch (optionalQuery) {
-            case Contains:
+            case CONTAINS:
                 String filterLiteral = "%" + valueToFind + "%";
                 if (valueToFind.isEmpty()) {
                     filterLiteral = "";
@@ -61,7 +61,7 @@ public class PrestoFilterEvaluator extends FilterEvaluator {
                         builder.cast(builder.field(apiToFieldMapper.apply(columnName)), SqlTypeName.VARCHAR),
                         builder.literal(filterLiteral)
                 );
-            case InsensitiveContains:
+            case INSENSITIVE_CONTAINS:
                 // todo maybe look at SqlCollation
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
@@ -71,7 +71,7 @@ public class PrestoFilterEvaluator extends FilterEvaluator {
                         ),
                         builder.literal("%" + valueToFind.toLowerCase(Locale.ENGLISH) + "%")
                 );
-            case Fragment:
+            case FRAGMENT:
                 // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
                 // http://druid.io/docs/0.9.1.1/querying/filters.html
             default:

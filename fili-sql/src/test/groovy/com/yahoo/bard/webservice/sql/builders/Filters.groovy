@@ -17,7 +17,7 @@ class Filters {
     public static SearchFilter search(String dimension, String search) {
         return new SearchFilter(
                 SimpleDruidQueryBuilder.getDimension(dimension),
-                SearchFilter.QueryType.Contains,
+                SearchFilter.QueryType.CONTAINS,
                 search
         )
     }

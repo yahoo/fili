@@ -33,7 +33,7 @@ public class JobRow extends LinkedHashMap<JobField, String> {
      *
      * @throws IllegalArgumentException if jobId is not a key in fieldValueMap
      */
-    protected JobRow(@NotNull String jobId, Map<JobField, String> fieldValueMap) {
+    protected JobRow(String jobId, Map<JobField, String> fieldValueMap) {
         super(fieldValueMap);
         if (jobId == null) {
             if (LOG.isErrorEnabled()) {
