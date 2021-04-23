@@ -9,6 +9,7 @@ import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterT
 import static com.yahoo.bard.webservice.druid.model.filter.Filter.DefaultFilterType.SELECTOR
 
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
+import com.yahoo.bard.webservice.data.dimension.DimensionRow
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder
 import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.druid.model.filter.Filter
@@ -210,5 +211,29 @@ class DruidOrFilterBuilderSpec extends Specification {
         filterString             | outerFilterType | orFilterSize | selectIndex | searchDimension | value
         "dim16|id-contains[1]"   | OR              | 1            | 0           | "dim16"         | "1"
         "dim16|id-contains[1,2]" | OR              | 2            | 1           | "dim16"         | "2"
+    }
+
+        @Unroll
+    def "buildSelectorFilters constructs one selector filter for each id #ids"() {
+        expect:
+        filterBuilder.buildSelectorFilters(resources.d3, getDimensionRows(ids)) == getSelectorFilters(ids)
+
+        where:
+        ids                  | _
+        []                   | _
+        ["1"]                | _
+        ["2", "3"]           | _
+        ["1", "2", "3", "4"] | _
+        ["1", "3", "4"]      | _
+
+
+    }
+
+    TreeSet<DimensionRow> getDimensionRows(List<String> ids) {
+        return ids.collect {resources.d3.findDimensionRowByKeyValue(it)} as TreeSet<DimensionRow>
+    }
+
+    List<Filter> getSelectorFilters(List<String> ids) {
+        ids.collect { new SelectorFilter(resources.d3, it)}
     }
 }

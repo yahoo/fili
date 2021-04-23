@@ -254,14 +254,9 @@ class FlagFromTagDimensionDataServletSpec extends BaseDataServletComponentSpec {
             "filter": {
                 "type": "not",
                 "field" : {
-                    "fields": [
-                        {
-                            "dimension": "filteringDimension",
-                            "type": "selector",
-                            "value": "TAG_VALUE"
-                        }
-                    ],
-                    "type": "or"
+                    "dimension": "filteringDimension",
+                    "type": "in",
+                    "values": [ "TAG_VALUE" ]
                 }
             },
             "aggregations": [

@@ -48,8 +48,11 @@ import java.util.stream.Collectors;
  *              NotFilter(OrFilter(select(sports, baseball), select(sports, track), select(sports, lacrosse)))
  *       )
  * }
+ *
+ * @deprecated Deprecated in favor of InFilter usage
  */
-public class ConsolidatingDruidFilterBuilder extends ConjunctionDruidFilterBuilder {
+@Deprecated
+public class ConsolidatingDruidFilterBuilder extends DruidOrFilterBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(ConsolidatingDruidFilterBuilder.class);
 
     @Override

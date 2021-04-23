@@ -1,5 +1,7 @@
 // Copyright 2019 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
+package com.yahoo.bard.webservice.sql
+
 import com.yahoo.bard.webservice.druid.client.SuccessCallback
 import com.yahoo.bard.webservice.druid.model.datasource.TableDataSource
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
