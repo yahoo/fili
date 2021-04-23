@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -132,7 +133,7 @@ public class Utils {
         try {
             Files.walkFileTree(file, DELETE_VISITOR);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

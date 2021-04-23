@@ -1,7 +1,14 @@
 Fili
 ====
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/)
+[![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) 
+[![Screwdriver](https://cd.screwdriver.cd/pipelines/6154/badge)](https://cd.screwdriver.cd/pipelines/6154) 
+[![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=alert_status)](https://sonarcloud.io/dashboard?id=yahoo_fili)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=coverage)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=ncloc)](https://sonarcloud.io/dashboard?id=yahoo_fili)
 
 Fili是用来搭建和维护RESTful web服务的Java框架，主要应用于时间数据的访问和分析。Fili的[访问API](docs/end-user-api.md)基于HTTP GET，十分简洁，易于使用，大大简化了[metic和dimension定义](docs/end-user-api.md)，数据存储，以及访问查询优化。Fili是一个适用于大数据，高拓展性的框架，目前完全支持[Druid](http://druid.io)数据库，Fili有很强的扩展性，可以兼容其他任何数据库。
 
