@@ -41,7 +41,7 @@ class FilterEvaluatorSpec extends Specification {
         builder.filter(rexnode)
 
         expect:
-        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
+        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitRoot(builder.build()).
                 asSelect().
                 toString()
         sql.endsWith(filterString)
