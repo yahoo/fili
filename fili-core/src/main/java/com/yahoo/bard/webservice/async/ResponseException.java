@@ -24,7 +24,7 @@ public class ResponseException extends Exception {
     private final int statusCode;
     private final String reason;
     private final String description;
-    private final DruidQuery<?> druidQuery;
+    private final transient DruidQuery<?> druidQuery;
 
     /**
      * Class constructor with all the parameters to prepare the error response, plus a writer to serialize the Druid

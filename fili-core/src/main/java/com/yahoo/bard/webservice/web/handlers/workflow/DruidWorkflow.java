@@ -80,7 +80,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
      * @param partialDataHandler  Handler for dealing with the partial data step
      * @param querySigningService  Service to sign a query based on it's segment metadata
      * @param volatileIntervalsService  Service to get volatile intervals from
-     * @param querySignedCacheService The service for cache support
+     * @param querySignedCacheService  Service for cache support
      * @param mapper  JSON mapper
      */
     @Inject
@@ -116,24 +116,7 @@ public class DruidWorkflow implements RequestWorkflowProvider {
             handler = new DruidPartialDataRequestHandler(handler);
         }
 
-        // If query caching is enabled, the cache is checked before sending the request
-        if (CacheFeatureFlag.TTL.isOn()) {
-            handler = new CacheRequestHandler(handler, dataCache, mapper);
-        } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
-            handler = new CacheV2RequestHandler(
-                    handler,
-                    dataCache,
-                    querySigningService,
-                    querySignedCacheService,
-                    mapper
-            );
-        } else if (CacheFeatureFlag.ETAG.isOn()) {
-            handler = new EtagCacheRequestHandler(
-                    handler,
-                    (TupleDataCache<String, String, String>) dataCache,
-                    mapper
-            );
-        }
+        handler = addCaching(handler);
 
         if (BardFeatureFlag.QUERY_SPLIT.isOn()) {
             handler = new SplitQueryRequestHandler(handler);
@@ -161,6 +144,19 @@ public class DruidWorkflow implements RequestWorkflowProvider {
 
         handler = new TopNMapperRequestHandler(handler);
 
+        handler = addAvailability(handler);
+
+        return handler;
+    }
+
+    /**
+     * Add handlers which affect availability of data requested.
+     *
+     * @param handler  the handler being wrapped
+     *
+     * @return the handler wrapped in partial and volatile data capture
+     */
+    protected DataRequestHandler addAvailability(DataRequestHandler handler) {
         handler = new PartialDataRequestHandler(handler, partialDataHandler);
 
         handler = new VolatileDataRequestHandler(
@@ -168,7 +164,35 @@ public class DruidWorkflow implements RequestWorkflowProvider {
                 physicalTableDictionary,
                 volatileIntervalsService
         );
+        return handler;
+    }
 
+    /**
+     * Add cache checking for data requests.
+     *
+     * @param handler  the handler being wrapped
+     *
+     * @return the handler wrapped in a cache checking handler
+     */
+    protected DataRequestHandler addCaching(DataRequestHandler handler) {
+        // If query caching is enabled, the cache is checked before sending the request
+        if (CacheFeatureFlag.TTL.isOn()) {
+            handler = new CacheRequestHandler(handler, dataCache, mapper);
+        } else if (CacheFeatureFlag.LOCAL_SIGNATURE.isOn()) {
+            handler = new CacheV2RequestHandler(
+                    handler,
+                    dataCache,
+                    querySigningService,
+                    querySignedCacheService,
+                    mapper
+            );
+        } else if (CacheFeatureFlag.ETAG.isOn()) {
+            handler = new EtagCacheRequestHandler(
+                    handler,
+                    (TupleDataCache<String, String, String>) dataCache,
+                    mapper
+            );
+        }
         return handler;
     }
 }

@@ -154,7 +154,7 @@ public class DruidQueryBuilder {
                     filter,
                     tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
-                    tableFilteredRequest.getTopN().get()
+                    tableFilteredRequest.getTopN().orElse(null)
             ) :
              canOptimizeTimeSeries(tableFilteredRequest, template) ?
                 buildTimeSeriesQuery(
@@ -238,7 +238,7 @@ public class DruidQueryBuilder {
             // Build the inner query without an order by, since we only want to do that at the top level
             // Sorts and Having don't apply to inner queries and Filters only apply to the innermost query
             GroupByQuery query = buildGroupByQuery(
-                    template.getInnerQuery().get(),
+                    template.getInnerQuery().orElse(null),
                     table,
                     mergedGranularity,
                     timeZone,

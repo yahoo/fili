@@ -35,6 +35,7 @@ import javax.inject.Singleton;
 public class DruidResponseParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(DruidResponseParser.class);
+    public static final String TIMESTAMP = "timestamp";
 
     /**
      * Parse Druid GroupBy result into ResultSet.
@@ -119,7 +120,7 @@ public class DruidResponseParser {
         List<Result> results = new ArrayList<>();
 
         for (JsonNode record : jsonResult) {
-            DateTime timeStamp = new DateTime(record.get("timestamp").asText(), dateTimeZone);
+            DateTime timeStamp = new DateTime(record.get(TIMESTAMP).asText(), dateTimeZone);
 
             JsonNode event = record.get("event");
             LinkedHashMap<DimensionColumn, DimensionRow> dimensionRows = extractDimensionRows(dimensionColumns, event);
@@ -151,7 +152,7 @@ public class DruidResponseParser {
 
         /* loop over all records */
         for (JsonNode record : jsonResult) {
-            DateTime timeStamp = new DateTime(record.get("timestamp").asText(), dateTimeZone);
+            DateTime timeStamp = new DateTime(record.get(TIMESTAMP).asText(), dateTimeZone);
             JsonNode result = record.get("result");
 
             /* loop over records per timebucket */
@@ -187,7 +188,7 @@ public class DruidResponseParser {
 
         /* loop over all records */
         for (JsonNode record : jsonResult) {
-            DateTime timeStamp = new DateTime(record.get("timestamp").asText(), dateTimeZone);
+            DateTime timeStamp = new DateTime(record.get(TIMESTAMP).asText(), dateTimeZone);
 
             JsonNode result = record.get("result");
             LinkedHashMap<MetricColumn, Object> metricValues = extractMetricValues(metricColumns, result);
@@ -217,7 +218,7 @@ public class DruidResponseParser {
         List<Result> results = new ArrayList<>();
 
         for (JsonNode record : jsonResult) {
-            DateTime timeStamp = new DateTime(record.get("timestamp").asText(), dateTimeZone);
+            DateTime timeStamp = new DateTime(record.get(TIMESTAMP).asText(), dateTimeZone);
 
             JsonNode result = record.get("result");
             LinkedHashMap<MetricColumn, Object> metricValues = extractMetricValues(metricColumns, result);

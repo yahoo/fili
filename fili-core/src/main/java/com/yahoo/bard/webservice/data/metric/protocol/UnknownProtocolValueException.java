@@ -11,7 +11,7 @@ public class UnknownProtocolValueException extends RuntimeException {
 
     public static final String MESSAGE_FORMAT = "Unknown value for parameter %s: %s";
 
-    private final Protocol protocol;
+    private final transient Protocol protocol;
     private final Map<String, String> parameterValues;
 
     /**

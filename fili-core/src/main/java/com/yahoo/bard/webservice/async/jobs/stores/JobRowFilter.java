@@ -188,8 +188,8 @@ public class JobRowFilter {
             return new LinkedHashSet<>(
                     FilterTokenizer.split(
                             tokenizedQuery.group(3)
-                                    .replaceAll("\\[", "")
-                                    .replaceAll("\\]", "")
+                                    .replace("\\[", "")
+                                    .replace("\\]", "")
                                     .trim()
                     )
             );
