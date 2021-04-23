@@ -17,9 +17,6 @@ export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
 ```
 <sub>Note: This assumes you have Java v1.8 installed</sub>
 
-Additionally, to work with `yahoo.bintray.com/maven`, the repo to which Fili's artifacts are published, you need to copy
-the [settings.xml](settings.xml) file into `~/.m2/
-
 Tests don't seem to run correctly with a fresh checkout
 -------------------------------------------------------
 

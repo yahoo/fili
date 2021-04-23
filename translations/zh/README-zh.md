@@ -63,7 +63,6 @@ Active development happens on the patch version of the highest minor version.
 下载
 ------------------------
 
-编译好的Fili放在[Bintray](https://bintray.com/yahoo/maven/fili)。Maven, Ivy, Gradle开发者可以参照https://bintray.com/yahoo/maven/fili，例如：
 
 Maven:
 ```xml
@@ -73,26 +72,17 @@ Maven:
     <version>x.y.z</version>
 </dependency>
 
-<repository>
-    <id>fili</id>
-    <url>http://yahoo.bintray.com/maven</url>
-</repository>
 ```
 
 Gradle:
 ```groovy
 repositories {
-    maven { url 'http://yahoo.bintray.com/maven' }
 }
 
 dependencies {
     compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
-
-最新发布版本: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
-
-最新稳定版本: [![Stable](https://img.shields.io/badge/Stable-0.7.36-blue.svg)](https://bintray.com/yahoo/maven/fili/0.7.36)
 
 
 扩展
