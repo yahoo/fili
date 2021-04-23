@@ -132,8 +132,8 @@
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
         <maven.deploy.skip>${env.DO_NOT_PUBLISH}</maven.deploy.skip>
         <enforcer.skip>false</enforcer.skip>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.11</maven.compiler.source>
+        <maven.compiler.target>1.11</maven.compiler.target>
 
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
