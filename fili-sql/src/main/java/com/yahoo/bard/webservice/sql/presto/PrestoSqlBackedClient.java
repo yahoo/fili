@@ -122,9 +122,11 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                 druidQueryToPrestoConverter.getTimeConverter()
         );
 
-        try (Connection connection = calciteHelper.getConnection()) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(sqlQuery);
+        try (
+                Connection connection = calciteHelper.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sqlQuery)
+        ) {
             resultSetProcessor.process(resultSet);
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
             LOG.trace("Created response: {}", jsonNode);

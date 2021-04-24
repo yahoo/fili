@@ -4,14 +4,14 @@ package com.yahoo.bard.webservice.data.dimension.impl;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.dimension.SearchQuerySearchProvider;
 import com.yahoo.bard.webservice.util.DimensionStoreKeyUtils;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
-import com.yahoo.bard.webservice.data.dimension.SearchQuerySearchProvider;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.simple.SimpleQueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.IndexSearcher;
@@ -158,7 +158,7 @@ public class NormalizedLuceneSearchProvider extends LuceneSearchProvider impleme
      * @return the query object
      */
     private Query getSearchQuery(String searchQueryString) {
-        return queryParser.parse(QueryParser.escape(searchQueryString));
+        return queryParser.parse(QueryParserBase.escape(searchQueryString));
     }
 
     /**

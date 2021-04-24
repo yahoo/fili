@@ -18,7 +18,6 @@ public class ExtractionDimensionSpec extends DimensionSpec {
     private final String dimension;
     private final String outputName;
     private final ExtractionFunction extractionFunction;
-    protected final Dimension configDimension;
 
     /**
      * Constructor.
@@ -46,11 +45,10 @@ public class ExtractionDimensionSpec extends DimensionSpec {
             ExtractionFunction extractionFunction,
             Dimension configDimension
     ) {
-        super(DefaultDimensionSpecType.EXTRACTION);
+        super(DefaultDimensionSpecType.EXTRACTION, configDimension);
         this.dimension = dimension;
         this.outputName = outputName;
         this.extractionFunction = extractionFunction;
-        this.configDimension = configDimension;
     }
 
     public String getDimension() {
@@ -64,7 +62,7 @@ public class ExtractionDimensionSpec extends DimensionSpec {
     @JsonIgnore
     @Override
     public Optional<Dimension> getConfigDimension() {
-        return Optional.ofNullable(configDimension);
+        return super.getConfigDimension();
     }
 
     @JsonProperty(value = "extractionFn")

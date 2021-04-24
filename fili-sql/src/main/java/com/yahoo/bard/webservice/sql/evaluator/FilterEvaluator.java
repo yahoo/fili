@@ -145,13 +145,13 @@ public class FilterEvaluator implements ReflectiveVisitor {
         String valueToFind = searchFilter.getQueryValue();
 
         switch (optionalQuery) {
-            case Contains:
+            case CONTAINS:
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
                         builder.field(apiToFieldMapper.apply(columnName)),
                         builder.literal("%" + valueToFind + "%")
                 );
-            case InsensitiveContains:
+            case INSENSITIVE_CONTAINS:
                 // todo maybe look at SqlCollation
                 return builder.call(
                         SqlStdOperatorTable.LIKE,
@@ -161,7 +161,7 @@ public class FilterEvaluator implements ReflectiveVisitor {
                         ),
                         builder.literal("%" + valueToFind.toLowerCase(Locale.ENGLISH) + "%")
                 );
-            case Fragment:
+            case FRAGMENT:
                 // todo: fragment takes json array of strings and checks if any are contained? just OR search over them?
                 // http://druid.io/docs/0.9.1.1/querying/filters.html
             default:

@@ -27,7 +27,7 @@ public enum HavingOperation {
     notBetween(DefaultHavingType.LESS_THAN, true, "notBetween", "nbet")
     ;
 
-    private static final Map<String, HavingOperation> ALIASES = new HashMap<>();
+    private static final Map<String, HavingOperation> ALIAS_MAP = new HashMap<>();
 
     private final List<String> aliases;
     private final HavingType type;
@@ -35,9 +35,9 @@ public enum HavingOperation {
 
     static {
         for (HavingOperation op : HavingOperation.values()) {
-            ALIASES.put(op.name(), op);
+            ALIAS_MAP.put(op.name(), op);
             for (String alias : op.aliases) {
-                ALIASES.put(alias, op);
+                ALIAS_MAP.put(alias, op);
             }
         }
     }
@@ -51,7 +51,7 @@ public enum HavingOperation {
      * @throws IllegalArgumentException if no Having was found
      */
     static public HavingOperation fromString(@NotNull String value) throws IllegalArgumentException {
-        return Optional.ofNullable(ALIASES.get(value))
+        return Optional.ofNullable(ALIAS_MAP.get(value))
                 .orElseThrow(() -> new IllegalArgumentException("unknown having operation: " + value));
     }
 

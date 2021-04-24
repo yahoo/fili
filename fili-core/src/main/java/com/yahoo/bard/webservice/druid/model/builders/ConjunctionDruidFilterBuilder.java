@@ -243,7 +243,7 @@ public abstract class ConjunctionDruidFilterBuilder implements DruidFilterBuilde
      */
     protected List<Filter> buildContainsSearchFilters(Dimension dimension, List<String> values) {
         return values.stream()
-                .map(value -> new SearchFilter(dimension, SearchFilter.QueryType.Contains, value))
+                .map(value -> new SearchFilter(dimension, SearchFilter.QueryType.CONTAINS, value))
                 .collect(Collectors.toList());
     }
 }

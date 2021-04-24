@@ -149,7 +149,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
             List<String> dimensions,
             LimitSpec limitSpec
     ) {
-        Filter filter1 = new SearchFilter(getDimension(METRO_CODE), SearchFilter.QueryType.Contains, "search");
+        Filter filter1 = new SearchFilter(getDimension(METRO_CODE), SearchFilter.QueryType.CONTAINS, "search");
         Filter filter2 = new NotFilter(filter1);
         return new GroupByQuery(
                 getWikitickerDatasource(API_PREPEND, ""),
@@ -268,7 +268,7 @@ class DruidQueryToSqlConverterSpec extends Specification {
 
         where:
         grain | dims         | filter                                                                                | metrics          | metricDirections | expectedOutput
-        DAY   | [METRO_CODE] | new SearchFilter(getDimension(METRO_CODE), SearchFilter.QueryType.Contains, "search") | [ADDED, DELETED] | [DESC, DESC]     | """
+        DAY   | [METRO_CODE] | new SearchFilter(getDimension(METRO_CODE), SearchFilter.QueryType.CONTAINS, "search") | [ADDED, DELETED] | [DESC, DESC] | """
 SELECT "metroCode", "YEAR", "DAYOFYEAR", SUM("api_added") AS "api_added", SUM("api_deleted") AS "api_deleted", SUM("api_addedFiltered") AS "api_addedFiltered", 1.0 * SUM("api_addedFiltered") / (SUM("api_added") + SUM("api_deleted")) AS "addedRatio"
 FROM (SELECT "metroCode", YEAR("TIME") AS "YEAR", DAYOFYEAR("TIME") AS "DAYOFYEAR", SUM("added") AS "api_added", SUM("deleted") AS "api_deleted", SUM(0) AS "api_addedFiltered"
             FROM "PUBLIC"."wikiticker"

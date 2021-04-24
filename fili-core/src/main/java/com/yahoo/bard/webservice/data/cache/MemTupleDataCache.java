@@ -31,7 +31,7 @@ public class MemTupleDataCache<T extends Serializable, V extends Serializable>
     private static final String DEFAULT_HASH_ALGORITHM = "SHA-512";
 
     // To reuse a MessageDigest and avoiding locking, every thread puts its hash generator in thread local storage
-    private static final ThreadLocal<MessageDigest> HASH_GENERATOR = ThreadLocal.withInitial(
+    protected static final ThreadLocal<MessageDigest> HASH_GENERATOR = ThreadLocal.withInitial(
             () -> {
                 try {
                     return MessageDigest.getInstance(DEFAULT_HASH_ALGORITHM);

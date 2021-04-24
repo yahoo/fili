@@ -32,9 +32,9 @@ public class SearchFilter extends DimensionalFilter {
      * Query type for the search.
      */
     public enum QueryType {
-        InsensitiveContains("insensitive_contains"),
-        Fragment("fragment"),
-        Contains("contains");
+        INSENSITIVE_CONTAINS("insensitive_contains"),
+        FRAGMENT("fragment"),
+        CONTAINS("contains");
 
         String type;
 

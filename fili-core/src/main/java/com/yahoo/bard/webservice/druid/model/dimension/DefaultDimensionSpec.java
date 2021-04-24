@@ -15,7 +15,6 @@ import java.util.Optional;
 public class DefaultDimensionSpec extends DimensionSpec {
     private final String dimension;
     private final String outputName;
-    protected final Dimension configDimension;
 
     /**
      * Constructor.
@@ -36,10 +35,9 @@ public class DefaultDimensionSpec extends DimensionSpec {
      * param
      */
     public DefaultDimensionSpec(String dimension, String outputName, Dimension configDimension) {
-        super(DefaultDimensionSpecType.DEFAULT);
+        super(DefaultDimensionSpecType.DEFAULT, configDimension);
         this.dimension = dimension;
         this.outputName = outputName;
-        this.configDimension = configDimension;
     }
 
     public String getDimension() {
@@ -51,9 +49,8 @@ public class DefaultDimensionSpec extends DimensionSpec {
     }
 
     @JsonIgnore
-    @Override
     public Optional<Dimension> getConfigDimension() {
-        return Optional.ofNullable(configDimension);
+        return super.getConfigDimension();
     }
 
     // CHECKSTYLE:OFF

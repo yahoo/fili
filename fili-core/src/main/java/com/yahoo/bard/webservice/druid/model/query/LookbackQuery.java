@@ -55,56 +55,6 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      * Constructor.
      *
      * @param dataSource  DataSource for the query
-     * @param granularity  Granularity for the query
-     * @param filter  Filter for the query
-     * @param aggregations  Aggregations for the query
-     * @param postAggregations  Post-aggregation operation trees for the query
-     * @param context  Query context
-     * @param intervals  Query intervals
-     * @param incrementQueryId  If the query should track it's forks or not
-     * @param lookbackOffsets  Set of period offsets
-     * @param lookbackPrefixes  Set of prefixes for the lookback queries (should match the lookbackOffsets)
-     * @param having  Having clause to apply to the result query
-     * @param limitSpec  Limit spec to apply to the result query
-     *
-     * @deprecated The constructor with virtual columns should be the primary constructor
-     */
-    @Deprecated
-    private LookbackQuery(
-            DataSource dataSource,
-            Granularity granularity,
-            Filter filter,
-            Collection<Aggregation> aggregations,
-            Collection<PostAggregation> postAggregations,
-            Collection<Interval> intervals,
-            QueryContext context,
-            boolean incrementQueryId,
-            Collection<Period> lookbackOffsets,
-            Collection<String> lookbackPrefixes,
-            Having having,
-            LimitSpec limitSpec
-    ) {
-        this(
-                dataSource,
-                granularity,
-                filter,
-                aggregations,
-                postAggregations,
-                intervals,
-                context,
-                incrementQueryId,
-                lookbackOffsets,
-                lookbackPrefixes,
-                having,
-                limitSpec,
-                null
-        );
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param dataSource  DataSource for the query
      * @param postAggregations  Post-aggregation operation trees for the query
      * @param context  Query context
      * @param lookbackOffsets  Set of period offsets
@@ -125,9 +75,9 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 dataSource,
                 null,
                 null,
-                Collections.<Aggregation>emptySet(),
+                Collections.emptySet(),
                 postAggregations,
-                Collections.<Interval>emptySet(),
+                Collections.emptySet(),
                 context,
                 false,
                 lookbackOffsets,
@@ -174,7 +124,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 DefaultQueryType.LOOKBACK,
                 dataSource,
                 granularity,
-                Collections.<Dimension>emptySet(),
+                Collections.emptySet(),
                 filter,
                 aggregations,
                 postAggregations,
@@ -202,7 +152,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      */
     @JsonIgnore
     private DruidAggregationQuery<?> getInnerQueryUnchecked() {
-        return getInnerQuery().get();
+        return getInnerQuery().orElse(null);
     }
 
     public Having getHaving() {
@@ -228,7 +178,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      * @return  The collection of lookback offsets.
      */
     @JsonProperty(value = "lookbackOffsets")
-    public List<String> getlookbackOffsets() {
+    public List<String> getLookbackOffsetNames() {
         return lookbackOffsets.stream().map(AbstractPeriod::toString).collect(Collectors.toList());
     }
 
@@ -354,7 +304,8 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     @Override
     public LookbackQuery withInnermostDataSource(DataSource dataSource) {
         Optional<DruidFactQuery<?>> innerQuery = this.dataSource.getQuery().map(DruidFactQuery.class::cast);
-        return (innerQuery == null) ?
+
+        return (! innerQuery.isPresent()) ?
                 withDataSource(dataSource) :
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
     }
