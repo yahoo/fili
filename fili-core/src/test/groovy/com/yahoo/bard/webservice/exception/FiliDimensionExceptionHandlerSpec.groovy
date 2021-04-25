@@ -78,10 +78,10 @@ class FiliDimensionExceptionHandlerSpec extends Specification {
 
     def "A Throwable returns a Bad Request"() {
         given:
-        Throwable throwable = new Throwable("Throw")
+        Throwable t = new Throwable("Throw")
 
         when:
-        Response response = dimensionExceptionHandler.handleThrowable(throwable, request, null)
+        Response response = dimensionExceptionHandler.handleThrowable(t, request, null)
 
         then:
         response.status == Response.Status.BAD_REQUEST.statusCode

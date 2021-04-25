@@ -106,7 +106,7 @@ class QuerySignedCacheServiceSpec extends Specification {
         String cachedValue = cacheService.readCache(requestContext, groupByQuery)
 
         then: "Check the cache and return valid json"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 1234L, "value")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 1234L, "value")
 
         then: "The cahed value is retrieved"
         cachedValue == "value"
@@ -140,7 +140,7 @@ class QuerySignedCacheServiceSpec extends Specification {
         String cachedValue = cacheService.readCache(requestContext, groupByQuery)
 
         then: "Check the cache and return a stale entry"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 5678L, "[]")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 5678L, "[]")
 
         then: "We delegate to the next handler, wrapping in a CacheV2ResponseProcessor"
         cachedValue == null

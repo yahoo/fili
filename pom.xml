@@ -111,11 +111,12 @@
         <version.hibernate>5.4.3.Final</version.hibernate>
 
         <version.spring>5.1.18.RELEASE</version.spring>
-        <version.groovy>2.4.15</version.groovy>
+        <version.groovy>3.0.7</version.groovy>
         <version.jackson>2.10.5</version.jackson>
         <version.jackson-databind>2.10.5.1</version.jackson-databind>
+        <version.junit5>5.7.0</version.junit5>
 
-        <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
+        <version.gmavenplus.plugin>1.12.1</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
         <version.druid.api>0.12.1</version.druid.api>
 
@@ -145,7 +146,7 @@
         <maven-javadoc-plugin-version>3.1.0</maven-javadoc-plugin-version>
         <maven-jar-plugin-version>3.1.1</maven-jar-plugin-version>
         <maven-war-plugin-version>3.2.2</maven-war-plugin-version>
-        <maven-compiler-plugin-version>3.8.0</maven-compiler-plugin-version>
+        <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
         <maven-pmd-plugin-version>3.11.0</maven-pmd-plugin-version>
         <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
         <maven-surefire-plugin-version>3.0.0-M3</maven-surefire-plugin-version>
@@ -238,19 +239,13 @@
                 <version>${version.spring}</version>
             </dependency>
 
-            <!-- Test -->
+            <!--  spock stuff -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.1</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency><!-- Mandatory dependency for using Spock -->
                 <groupId>org.spockframework</groupId>
-                <artifactId>spock-core</artifactId>
-                <version>1.2-groovy-2.4</version>
-                <scope>test</scope>
+                <artifactId>spock-bom</artifactId>
+                <version>2.0-M5-groovy-3.0</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Optional dependencies for using Spock -->
@@ -514,8 +509,34 @@
     <dependencies>
         <!-- Mandatory dependencies for using Spock -->
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${version.junit5}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${version.junit5}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    
+        <!-- add dependencies below to enable JUnit 4 style tests -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${version.junit5}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-junit4</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Optional dependencies for using Spock -->
@@ -553,6 +574,7 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${version.groovy}</version>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
 
@@ -649,16 +671,6 @@
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>${version.gmavenplus.plugin}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>addSources</goal>
-                                <goal>addTestSources</goal>
-                                <goal>compile</goal>
-                                <goal>compileTests</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

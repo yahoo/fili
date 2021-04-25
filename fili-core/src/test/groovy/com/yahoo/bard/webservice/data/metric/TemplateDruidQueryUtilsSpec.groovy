@@ -47,15 +47,15 @@ class TemplateDruidQueryUtilsSpec extends Specification {
 
     def "Checking internal node that IS the target node returns the result node WITHOUT checking subtree"() {
         setup:
-        WithPostAggregations<PostAggregation> toReplace1 = Mock()
-        WithPostAggregations<PostAggregation> replacement1 = Mock()
+        WithPostAggregations toReplace1 = Mock()
+        WithPostAggregations replacement1 = Mock()
 
         WithMetricField toReplace2 = Mock()
         WithMetricField replacement2 = Mock()
 
 
         when:
-        WithPostAggregations<PostAggregation> res = TemplateDruidQueryUtils.repointToNewMetricField(toReplace1, toReplace1, replacement1,)
+        WithPostAggregations res = TemplateDruidQueryUtils.repointToNewMetricField(toReplace1, toReplace1, replacement1,)
 
         then:
         res == replacement1

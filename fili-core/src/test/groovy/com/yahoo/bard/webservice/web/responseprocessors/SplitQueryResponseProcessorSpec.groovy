@@ -158,7 +158,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         sqrp.completedIntervals.size() == 2
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
-        1 * nextFail.invoke() { it -> captureT = it }
+        1 * nextFail.invoke() >> { it -> captureT = it }
         captureT.getMessage() == expectedError
 
         when:
@@ -185,7 +185,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         sqrp.completedIntervals.size() == 2
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
-        1 * nextFail.invoke() { it -> captureT = it }
+        1 * nextFail.invoke() >> { it -> captureT = it }
         captureT.getMessage() == expectedError
     }
 }

@@ -509,8 +509,8 @@ class GroupByQuerySpec extends Specification {
         and: "A nested query"
         TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
-        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
-        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)
+        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource(inner), intervals: startingIntervals)
+        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource(middle), intervals: startingIntervals)
 
         when: "We set all intervals"
         GroupByQuery converted = outer.withAllIntervals(endingIntervals)
