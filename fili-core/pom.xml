@@ -177,13 +177,6 @@
             <artifactId>spymemcached</artifactId>
         </dependency>
 
-        <!-- Test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Jersey Test 'grizzly' container -->
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
