@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.data.cache
 
 
-import static com.yahoo.bard.webservice.data.cache.MemDataCache.SYSTEM_CONFIG
+import com.yahoo.bard.webservice.data.cache.MemDataCache
 
 
 import net.spy.memcached.MemcachedClient
@@ -16,14 +16,14 @@ class MemDataCacheSpec extends Specification {
     MemDataCache memDataCache;
 
     void setup() {
-        SYSTEM_CONFIG.setProperty(MemDataCache.OPERATION_TIMEOUT_CONFIG_KEY, "12345")
-        SYSTEM_CONFIG.setProperty(MemDataCache.EXPIRATION_KEY, "1234")
+        MemDataCache.SYSTEM_CONFIG.setProperty(MemDataCache.OPERATION_TIMEOUT_CONFIG_KEY, "12345")
+        MemDataCache.SYSTEM_CONFIG.setProperty(MemDataCache.EXPIRATION_KEY, "1234")
     }
 
     void cleanup() {
-        SYSTEM_CONFIG.clearProperty(MemDataCache.OPERATION_TIMEOUT_CONFIG_KEY)
-        SYSTEM_CONFIG.clearProperty(MemDataCache.EXPIRATION_KEY)
-        SYSTEM_CONFIG.clearProperty(MemDataCache.WAIT_FOR_FUTURE)
+        MemDataCache.SYSTEM_CONFIG.clearProperty(MemDataCache.OPERATION_TIMEOUT_CONFIG_KEY)
+        MemDataCache.SYSTEM_CONFIG.clearProperty(MemDataCache.EXPIRATION_KEY)
+        MemDataCache.SYSTEM_CONFIG.clearProperty(MemDataCache.WAIT_FOR_FUTURE)
     }
 
     def "Constructor has correct expiration and timeout"() {
@@ -51,7 +51,7 @@ class MemDataCacheSpec extends Specification {
 
     def "check #waitForFuture feature flag behaves correctly and doesn't wait for future when set to true"() {
 
-        SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, "false")
+        MemDataCache.SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, "false")
         OperationFuture future = Mock(OperationFuture)
         MemcachedClient client = Mock(MemcachedClient)
         memDataCache = new MemDataCache(client);
@@ -63,7 +63,7 @@ class MemDataCacheSpec extends Specification {
         0 * future.get()
         result
 
-        SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, "true")
+        MemDataCache.SYSTEM_CONFIG.setProperty(MemDataCache.WAIT_FOR_FUTURE, "true")
         when:
         boolean result1 = memDataCache.setInSeconds("key", "value",1000)
 
