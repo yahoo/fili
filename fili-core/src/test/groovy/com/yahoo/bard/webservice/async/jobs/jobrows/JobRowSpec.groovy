@@ -87,7 +87,7 @@ class JobRowSpec extends Specification {
         equalityOperation = truefalse ? {r1, r2 -> r1 == r2} : {r1, r2 -> r1 != r2}
     }
 
-    def "A job with id #id has hashcode #hashcode"() {
+    def "A job with id #id has hashcode"() {
         expect: "A JobRow with the specified id has the specified hashcode"
         JobTestUtils.buildJobRow([(JOB_TICKET): id]).hashCode() == id.hashCode()
 

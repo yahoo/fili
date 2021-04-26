@@ -148,7 +148,7 @@ class BaseCompositeAvailabilitySpec extends Specification {
     }
 
     @Unroll
-    def "earliest start is at position #pos in the availabilities stream"() {
+    def "earliest start is at position #desc in the availabilities stream"() {
         given:
         start_1 = Optional.ofNullable((DateTime) testExpectedStart_1)
         start_2 = Optional.ofNullable((DateTime) testExpectedStart_2)

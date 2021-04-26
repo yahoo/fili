@@ -12,7 +12,7 @@ class RegexSearchQuerySpecSpec extends Specification {
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
 
     @Unroll
-    def "Spec with value '#value' serializes to '#expectedJson'"() {
+    def "Spec with value '#pattern' serializes to '#expectedJson'"() {
         expect:
         OBJECT_MAPPER.writeValueAsString(new RegexSearchQuerySpec(pattern)) == expectedJson
 
