@@ -69,7 +69,7 @@ class JsonResponseSpec extends Specification {
     }
 
     @Unroll
-    def "The JsonResponse correctly serializes (#notincluding a metadata block) with #pages for pagination"() {
+    def "The JsonResponse correctly serializes (#not a metadata block) with #pages for pagination"() {
         given: "A JsonResponse with the appropriate Pagination"
 
         JsonResponse jsonResponse = new JsonResponse<>(
