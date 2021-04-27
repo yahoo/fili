@@ -10,7 +10,7 @@ import spock.lang.Unroll
 class SketchAggregationSpec extends Specification {
 
     @Unroll
-    def "verify nesting with basic sketch metrics base: #originalSketch.simpleName outer: #outer.simpleName inner: #inner.simpleName"() {
+    def "verify nesting with basic sketch metrics base: #originalSketch.simpleName outer: #outerSketch.simpleName inner: #innerSketch.simpleName"() {
         setup:
         Aggregation original = originalSketch.newInstance(["name", "fieldName", 1024].toArray())
         Aggregation outer = outerSketch.newInstance(["name", "name", 1024].toArray())

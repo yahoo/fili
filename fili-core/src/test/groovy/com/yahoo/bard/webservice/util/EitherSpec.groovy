@@ -30,7 +30,7 @@ public class EitherSpec extends Specification {
     }
 
     @Unroll
-    def "Attempting to get the #rightLeftValue from a #leftRight Either throws UnsupportedOperationException"() {
+    def "Attempting to get the #invalidUnwrap from a #leftRight Either throws UnsupportedOperationException"() {
         when:
         invalidUnwrap(wrap(value))
 

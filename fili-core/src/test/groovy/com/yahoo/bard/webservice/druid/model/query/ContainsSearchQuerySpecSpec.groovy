@@ -12,7 +12,7 @@ class ContainsSearchQuerySpecSpec extends Specification {
     static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
 
     @Unroll
-    def "#caseSensitive spec on '#values' values serializes to '#expectedJson'"() {
+    def "#caseSensitive spec on '#value' values serializes to '#expectedJson'"() {
         expect:
         OBJECT_MAPPER.writeValueAsString(new ContainsSearchQuerySpec(isCaseSensitive, value)) == expectedJson
 

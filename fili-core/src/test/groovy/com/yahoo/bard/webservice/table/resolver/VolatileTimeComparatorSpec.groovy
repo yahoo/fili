@@ -82,7 +82,7 @@ class VolatileTimeComparatorSpec extends Specification {
 
 
     @Unroll
-    def "getAvailableVolatileDataDuration gives #duration with #available available, #volatility volatility, at #granularity"() {
+    def "getAvailableVolatileDataDuration gives #duration with #available available, #volatility volatility, at #requestGranularity"() {
         given: "Availability and volatility"
         resources.setupVolatileTables([
                 [resources.volatileHourTable, new Interval(available), new Interval(volatility)]

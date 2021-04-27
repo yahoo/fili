@@ -47,10 +47,10 @@ class FiliSlicesExceptionHandlerSpec extends Specification {
 
     def "A Throwable returns an Internal Server Error"() {
         given:
-        Throwable throwable = new Throwable("Throw")
+        Throwable t = new Throwable("Throw")
 
         when:
-        Response response = slicesExceptionHandler.handleThrowable(throwable, request, null)
+        Response response = slicesExceptionHandler.handleThrowable(t, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode

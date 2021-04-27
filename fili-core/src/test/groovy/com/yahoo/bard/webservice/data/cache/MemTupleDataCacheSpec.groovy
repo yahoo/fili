@@ -35,7 +35,7 @@ class MemTupleDataCacheSpec extends Specification {
         jtb = new JerseyTestBinder(false, DataServlet.class)
         if (System.getenv("BUILD_NUMBER") != null) {
             // Only use real memcached client if in the CI environment
-            jtb.dataCache = new MemTupleDataCache<String>()
+            jtb.dataCache = new MemTupleDataCache<String,String>()
         }
         jtb.querySigningService = Mock(SegmentIntervalsHashIdGenerator)
         jtb.querySigningService.getSegmentSetId(_) >> { Optional.of(defaultCheckSum) }

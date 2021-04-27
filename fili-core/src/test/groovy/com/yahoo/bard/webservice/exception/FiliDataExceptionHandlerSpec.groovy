@@ -95,10 +95,10 @@ class FiliDataExceptionHandlerSpec extends Specification {
 
     def "A Throwable returns a Bad Request"() {
         given:
-        Throwable throwable = new Throwable("Throw")
+        Throwable t = new Throwable("Throw")
 
         when:
-        dataExceptionHandler.handleThrowable(throwable, response, Optional.empty(), containerRequestContext,  writer)
+        dataExceptionHandler.handleThrowable(t, response, Optional.empty(), containerRequestContext,  writer)
 
         then:
         1 * response.resume(_) >> {
