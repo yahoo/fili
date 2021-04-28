@@ -13,14 +13,6 @@
                         <enabled>true</enabled>
                     </releases>
                 </repository>
-                <repository>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                    <id>bintray-yahoo-maven</id>
-                    <name>bintray</name>
-                    <url>http://yahoo.bintray.com/maven</url>
-                </repository>
             </repositories>
         </profile>
     </profiles>

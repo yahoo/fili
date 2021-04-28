@@ -96,8 +96,8 @@ using them. After deprecated APIs are no longer supported, they may be removed a
 Binaries (How to Get It)
 ------------------------
 
-Binaries for Fili are stored in [Bintray](https://bintray.com/yahoo/maven/fili). Dependency information for Maven, Ivy,
-and Gradle can be found at https://bintray.com/yahoo/maven/fili, and some examples are below.
+Binaries for Fili are stored in [Maven Central](https://search.maven.org/search?q=com.yahoo.bard). Dependency information for Maven, Ivy,
+and Gradle can be found at https://search.maven.org/search?q=com.yahoo.bard, and some examples are below.
 
 Maven:
 ```xml
@@ -123,11 +123,6 @@ dependencies {
     compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
-
-The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
-
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.9.137-blue.svg)](https://bintray.com/yahoo/maven/fili/0.9.128)
-
 
 Extending
 ---------
