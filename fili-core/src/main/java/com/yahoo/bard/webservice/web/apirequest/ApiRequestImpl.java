@@ -25,6 +25,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerat
 import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -42,7 +43,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
 
 /**
  * API Request. Abstract class offering default implementations for the common components of API request objects.
@@ -251,7 +251,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
     protected LinkedHashSet<Dimension> generateDimensions(
-            List<PathSegment> apiDimensions,
+            List<RequestColumn> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         return DefaultDimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);

@@ -55,6 +55,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -83,7 +84,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 
 /**
@@ -165,7 +165,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -259,7 +259,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -360,7 +360,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularityRequest,
-            List<PathSegment> dimensionsRequest,
+            List<RequestColumn> dimensionsRequest,
             String logicalMetricsRequest,
             String intervalsRequest,
             String apiFiltersRequest,
@@ -469,7 +469,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularityRequest,
-            List<PathSegment> dimensionsRequest,
+            List<RequestColumn> dimensionsRequest,
             String logicalMetricsRequest,
             String intervalsRequest,
             String apiFiltersRequest,
@@ -983,7 +983,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
     protected LinkedHashSet<Dimension> bindGroupingDimensions(
-            List<PathSegment> rawGroupingDimensions,
+            List<RequestColumn> rawGroupingDimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
@@ -1001,7 +1001,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @throws BadApiRequestException if invalid
      */
     protected void validateGroupingDimensions(
-            List<PathSegment> rawGroupingDimensions,
+            List<RequestColumn> rawGroupingDimensions,
             LinkedHashSet<Dimension> groupingDimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
@@ -1015,7 +1015,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param requestColumns  Path segments for the dimensions
      * @param dimensions  The bound dimensions for this query
      * @param logicalTable  The logical table for this query
      * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
@@ -1023,18 +1023,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> bindDimensionFields(
-            List<PathSegment> apiDimensionPathSegments,
+            List<RequestColumn> requestColumns,
             LinkedHashSet<Dimension> dimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) {
-        return generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
+        return generateDimensionFields(requestColumns, dimensionDictionary);
     }
 
     /**
      * Validated dimension field objects.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param requestColumns  Path segments for the dimensions
      * @param perDimensionFields  The bound dimension fields for this query
      * @param dimensions  The bound dimensions for this query
      * @param logicalTable  The logical table for this query
@@ -1044,7 +1044,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      */
 
     protected void validateDimensionFields(
-            List<PathSegment> apiDimensionPathSegments,
+            List<RequestColumn> requestColumns,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
             LinkedHashSet<Dimension> dimensions,
             LogicalTable logicalTable,
@@ -1299,20 +1299,20 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param requestColumns  Path segments for the dimensions
      * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
      *
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
-            @NotNull List<PathSegment> apiDimensionPathSegments,
+            @NotNull List<RequestColumn> requestColumns,
             @NotNull DimensionDictionary dimensionDictionary
     ) {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
-            return apiDimensionPathSegments.stream()
-                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
+            return requestColumns.stream()
+                    .filter(requestColumn -> !requestColumn.getApiName().isEmpty())
                     .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
+                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getApiName()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
                             (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
                                     StreamUtils.orderedSetMerge(e, i),
@@ -1332,12 +1332,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
     private LinkedHashSet<DimensionField> bindShowClause(
-            PathSegment pathSegment,
+            RequestColumn pathSegment,
             DimensionDictionary dimensionDictionary
     )
             throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
-        List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
+        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getApiName());
+        List<String> showFields = pathSegment.getParameters().asMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equals("show"))
                 .flatMap(entry -> entry.getValue().stream())
                 .flatMap(s -> Arrays.stream(s.split(",")))

@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestExceptio
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -40,7 +41,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.Response;
 
 /**
@@ -187,7 +187,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             @NotNull String perPage,
             @NotNull String page,
             BardConfigResources bardConfigResources,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String metrics,
             String intervals,
             String filters,
@@ -243,7 +243,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
             @NotNull String perPage,
             @NotNull String page,
             BardConfigResources bardConfigResources,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String metrics,
             String intervals,
             String filters,
