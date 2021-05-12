@@ -3,6 +3,8 @@
 package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.application.JerseyTestBinder
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.endpoints.MetricsServlet
@@ -21,9 +23,19 @@ class MetricsApiRequestImplSpec extends Specification {
     @Shared
     MetricDictionary emptyDictionary = new MetricDictionary()
 
+    @Shared
+    LinkedHashSet<LogicalMetric> metrics = new LinkedHashSet<>()
+
+    LogicalMetric metric1
+    LogicalMetric metric2
+
     def setup() {
         jtb = new JerseyTestBinder(MetricsServlet.class)
         fullDictionary = jtb.configurationLoader.metricDictionary
+        metric1 = new LogicalMetricImpl(null, null, "met1")
+        metric2 = new LogicalMetricImpl(null, null, "met2")
+        metrics.add(metric1)
+        metrics.add(metric2)
     }
 
     def cleanup() {
@@ -80,5 +92,20 @@ class MetricsApiRequestImplSpec extends Specification {
         name     | dictionary      | exception              | reason
         "height" | emptyDictionary | BadApiRequestException | ".*Metric.*do not exist.*"
         "weight" | fullDictionary  | BadApiRequestException | ".*Metric.*do not exist.*"
+    }
+
+    def "re-write api request with desired metrics"() {
+        when:
+        MetricsApiRequestImpl apiRequest = new MetricsApiRequestImpl(
+                null,
+                null,
+                null,
+                metrics
+        )
+
+        then:
+        apiRequest.getMetrics().size() == 2
+        apiRequest.getMetrics().getAt(0) == metric1
+        apiRequest.getMetrics().getAt(1) == metric2
     }
 }

@@ -96,6 +96,9 @@ Current
     * Update presto sketch regex statement to account for underscores ('_') is metric names.
 
 ### Added:
+- [Add support to rewrite api request with desired metrics](https://github.com/yahoo/fili/pull/1172)
+   * Added support to rewrite `MetricsApiRequest` with desired set of `LogicalMetric`.
+   
 - [Add virtual column merge support in template druid query](https://github.com/yahoo/fili/pull/1157)
    * Added virtual column merge support in `TemplateDruidQuery`.
    
