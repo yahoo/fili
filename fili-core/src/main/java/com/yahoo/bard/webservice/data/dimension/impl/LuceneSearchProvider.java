@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -262,7 +263,7 @@ public class LuceneSearchProvider implements SearchProvider {
                     luceneIndexIsHealthy = false;
                     String message = String.format("Unable to write empty index to %s:", luceneIndexPath);
                     LOG.error(message, emptyIndexWriteException);
-                    throw new RuntimeException(emptyIndexWriteException);
+                    throw new UncheckedIOException(emptyIndexWriteException);
                 }
                 reopenIndexSearcher(false);
             } else {
@@ -270,7 +271,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 luceneIndexIsHealthy = false;
                 String message = String.format("Unable to open index searcher for %s:", luceneIndexPath);
                 LOG.error(message, reopenException);
-                throw new RuntimeException(reopenException);
+                throw new UncheckedIOException(reopenException);
             }
         } finally {
             writeUnlock();
@@ -388,7 +389,7 @@ public class LuceneSearchProvider implements SearchProvider {
             } catch (IOException e) {
                 luceneIndexIsHealthy = false;
                 LOG.error("Failed to refresh index for dimension rows", e);
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
                 // Commit all the changes to the index (on .close, called by try-resources) and refresh the cardinality
             }
             //This must be outside the try-resources block because it may _also_ need to open an IndexWriter, and
@@ -484,7 +485,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 Files.createDirectory(destinationPath);
             } catch (IOException e) {
                 LOG.error(ErrorMessageFormat.UNABLE_TO_CREATE_DIR.format(destinationDir));
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -512,7 +513,7 @@ public class LuceneSearchProvider implements SearchProvider {
             });
         } catch (IOException e) {
             LOG.error("I/O error thrown by SimpleFileVisitor method");
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -527,7 +528,7 @@ public class LuceneSearchProvider implements SearchProvider {
         } catch (IOException e) {
             String message = ErrorMessageFormat.UNABLE_TO_DELETE_DIR.format(path);
             LOG.error(message);
-            throw new RuntimeException(message);
+            throw new UncheckedIOException(message, e);
         }
     }
 
@@ -564,7 +565,7 @@ public class LuceneSearchProvider implements SearchProvider {
                 writer.commit();
             } catch (IOException e) {
                 LOG.error(ErrorMessageFormat.FAIL_TO_WIPTE_LUCENE_INDEX_DIR.format(luceneDirectory));
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
 
             //This must be outside the try-resources block because it may _also_ need to open an IndexWriter, and
@@ -840,7 +841,7 @@ public class LuceneSearchProvider implements SearchProvider {
                                         return luceneIndexSearcher.doc(hit.doc);
                                     } catch (IOException e) {
                                         LOG.error("Unable to convert hit " + hit);
-                                        throw new RuntimeException(e);
+                                        throw new UncheckedIOException(e);
                                     }
                                 }
                         )
@@ -900,7 +901,7 @@ public class LuceneSearchProvider implements SearchProvider {
         } catch (IOException e) {
             String errorMessage = "Unable to find dimension rows for specified page.";
             LOG.error(errorMessage);
-            throw new RuntimeException(errorMessage);
+            throw new UncheckedIOException(errorMessage, e);
         } catch (TimeLimitingCollector.TimeExceededException e) {
             LOG.warn("Lucene query timeout: {}. {}", query, e.getMessage());
             throw new TimeoutException(e.getMessage(), e);

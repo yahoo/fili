@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -110,7 +111,7 @@ public class SqlResultSetProcessor {
 
             return jsonWriter.asParser().readValueAsTree();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write json.", e);
+            throw new UncheckedIOException("Failed to write json.", e);
         }
 
     }
