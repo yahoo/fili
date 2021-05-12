@@ -4,15 +4,25 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 
+import com.google.common.collect.Sets;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.web.ApiFilter;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
+import com.yahoo.bard.webservice.web.filters.ApiFilters;
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -102,6 +112,25 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     }
 
     /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  Format of the request
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param paginationParameters  Pagination info for the request
+     * @param metrics  Desired metrics of the request
+     */
+    private MetricsApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            PaginationParameters paginationParameters,
+            LinkedHashSet<LogicalMetric> metrics
+    ) {
+        super(format, downloadFilename, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
+        this.metrics = metrics;
+    }
+
+    /**
      * Generates the set of all available metrics.
      *
      * @param metricName  string corresponding to the metric name specified in the URL
@@ -134,5 +163,15 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     @Override
     public LogicalMetric getMetric() {
         return this.metrics.iterator().next();
+    }
+
+    @Override
+    public MetricsApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
+        return new MetricsApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                logicalMetrics
+        );
     }
 }
