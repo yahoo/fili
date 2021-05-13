@@ -1312,7 +1312,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             return requestColumns.stream()
                     .filter(requestColumn -> !requestColumn.getApiName().isEmpty())
                     .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getApiName()),
+                            requestColumn -> dimensionDictionary.findByApiName(requestColumn.getApiName()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
                             (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
                                     StreamUtils.orderedSetMerge(e, i),
@@ -1325,19 +1325,19 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Given a path segment, bind the fields specified in it's "show" matrix parameter for the dimension specified in
      * the path segment's path.
      *
-     * @param pathSegment  Path segment to bind from
+     * @param requestColumn  Path segment to bind from
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      *
      * @return the set of bound DimensionFields specified in the show clause
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
     private LinkedHashSet<DimensionField> bindShowClause(
-            RequestColumn pathSegment,
+            RequestColumn requestColumn,
             DimensionDictionary dimensionDictionary
     )
             throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getApiName());
-        List<String> showFields = pathSegment.getParameters().asMap().entrySet().stream()
+        Dimension dimension = dimensionDictionary.findByApiName(requestColumn.getApiName());
+        List<String> showFields = requestColumn.getParameters().asMap().entrySet().stream()
                 .filter(entry -> entry.getKey().equals("show"))
                 .flatMap(entry -> entry.getValue().stream())
                 .flatMap(s -> Arrays.stream(s.split(",")))

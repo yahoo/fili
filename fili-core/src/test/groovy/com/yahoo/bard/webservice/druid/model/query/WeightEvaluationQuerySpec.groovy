@@ -22,30 +22,30 @@ import com.yahoo.bard.webservice.data.config.ConfigurationLoader
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
-import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
-import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
-import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.DefaultQueryType
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
+import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
+import com.yahoo.bard.webservice.druid.model.builders.DruidOrFilterBuilder
 import com.yahoo.bard.webservice.table.resolver.DefaultPhysicalTableResolver
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.endpoints.DataServlet
 
+import org.apache.commons.collections4.ListValuedMap
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import org.joda.time.Interval
 
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import javax.ws.rs.core.MultivaluedHashMap
-import javax.ws.rs.core.PathSegment
 
 class WeightEvaluationQuerySpec extends Specification {
 
@@ -54,10 +54,10 @@ class WeightEvaluationQuerySpec extends Specification {
     DruidQueryBuilder builder
     DataServlet dataServlet
 
-    PathSegment size = Mock(PathSegment)
-    PathSegment shape = Mock(PathSegment)
-    PathSegment color = Mock(PathSegment)
-    PathSegment other = Mock(PathSegment)
+    RequestColumn size = Mock(RequestColumn)
+    RequestColumn shape = Mock(RequestColumn)
+    RequestColumn color = Mock(RequestColumn)
+    RequestColumn other = Mock(RequestColumn)
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
@@ -96,15 +96,15 @@ class WeightEvaluationQuerySpec extends Specification {
                 new DefaultDruidHavingBuilder()
         )
 
-        Map emptyMap = new MultivaluedHashMap<>()
-        size.getPath() >> "size"
-        size.getMatrixParameters() >> emptyMap
-        shape.getPath() >> "shape"
-        shape.getMatrixParameters() >> emptyMap
-        color.getPath() >> "color"
-        color.getMatrixParameters() >> emptyMap
-        other.getPath() >> "other"
-        other.getMatrixParameters() >> emptyMap
+        ArrayListValuedHashMap emptyMap = new ArrayListValuedHashMap<String, String>()
+        size.getApiName() >> "size"
+        size.getParameters() >> emptyMap
+        shape.getApiName() >> "shape"
+        shape.getParameters() >> emptyMap
+        color.getApiName() >> "color"
+        color.getParameters() >> emptyMap
+        other.getApiName() >> "other"
+        other.getParameters() >> emptyMap
     }
 
     def cleanup() {
