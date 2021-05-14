@@ -7,6 +7,67 @@ pull request if there was one.
 
 Current
 -------
+
+### Fixed:
+
+### Added:
+
+### Changed:
+
+### Removed:
+
+### Fixed:
+
+### Deprecated:
+
+### Known Issues:
+
+## Contract changes:
+
+
+
+-------------
+
+
+### Extensive deprecation cleanup
+0.12 Highlights
+-------------
+
+### Extensibility improvements
+Added extensions for query transformation before and after running queries.  Added additional binding points and
+some additional interfaces to extend.
+
+
+### Protocols Metrics
+
+We extended protocol metrics to underpin most of the makers.
+
+### Infrastructure 
+
+Motivated by changes in resource availability and billing, we migrated off Jenkins onto Screwdriver.  
+With bintray shutting down we migrated off bintray onto maven central.
+With this migration we realigned our group id from com.yahoo.fili to com.yahoo.bard to better reflect the codebase.
+
+### Sample applications
+
+We split out sample applications into different modules
+
+
+### Performance improvements
+
+We fixed a number of performance issues, including caching weight check queries, making timeouts global across query 
+splits and using non blocking calls to memcached.
+
+
+### General Extensibility
+
+We added a number of methods and classes to make it easier to add extensions, such as Chaining ResultSetMappers so
+post aggregation functions in fili can be multistep. Support for a full protocol aware metric grammar in antler.  
+Support for druid virtual columns in queries.  And more options for binding suppliers.
+
+v0.12.109 - 2021/03/13
+=====
+
 ### Fixed:
 - [Fix: Added name property back to FilteredAggreation](https://github.com/yahoo/fili/pull/1159) ]
     * So that filteredAggregation can be sorted based on aggregator name during canonicalization of json object. 
