@@ -5,7 +5,7 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
-import io.druid.timeline.DataSegment;
+import org.apache.druid.timeline.DataSegment;
 
 import java.util.List;
 import java.util.Set;
@@ -56,7 +56,7 @@ public interface DataSourceConfiguration {
     TimeGrain getValidTimeGrain();
 
     /**
-     * Gets a list of {@link io.druid.timeline.DataSegment data segments} for a datasource in Druid.
+     * Gets a list of {@link org.apache.druidtimeline.DataSegment data segments} for a datasource in Druid.
      *
      * @return the list of data segments reported by druid.
      */

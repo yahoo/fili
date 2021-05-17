@@ -5,7 +5,7 @@ package com.yahoo.wiki.webservice.data.config.auto;
 import com.yahoo.bard.webservice.data.config.names.TableName;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
-import io.druid.timeline.DataSegment;
+import org.apache.druid.timeline.DataSegment;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.util.Utils;
 
-import io.druid.timeline.DataSegment;
+import org.apache.druid.timeline.DataSegment;
 
 import java.util.ArrayList;
 import java.util.Collections;

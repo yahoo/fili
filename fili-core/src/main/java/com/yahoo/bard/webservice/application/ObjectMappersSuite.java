@@ -14,8 +14,8 @@ import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 import org.joda.time.Interval;
 
-import io.druid.timeline.DataSegment;
-import io.druid.timeline.partition.ShardSpec;
+import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.partition.ShardSpec;
 
 /**
  * Gathers all the object mappers that are used for object serialization/deserialization.
@@ -40,7 +40,7 @@ public class ObjectMappersSuite {
         jsonMapper.registerModule(new AfterburnerModule());
 
         InjectableValues.Std injectableValues = new InjectableValues.Std();
-        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.class, DataSegment.PruneLoadSpecHolder.DEFAULT);
+        injectableValues.addValue(DataSegment.PruneSpecsHolder.class, DataSegment.PruneSpecsHolder.DEFAULT);
         jsonMapper.setInjectableValues(injectableValues);
     }
 
