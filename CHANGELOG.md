@@ -55,7 +55,6 @@ Current
 
 ## Contract changes:
 
-
 -------------
 
 

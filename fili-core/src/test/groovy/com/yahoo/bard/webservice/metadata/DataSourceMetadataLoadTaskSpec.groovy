@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.InjectableValues
 
 import org.joda.time.Interval
 
-import io.druid.timeline.DataSegment
+import org.apache.druid.timeline.DataSegment
 
 class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
 
@@ -79,7 +79,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
 
         InjectableValues injectableValues = new InjectableValues.Std()
         MAPPERS.mapper.setInjectableValues(injectableValues)
-        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.name, DataSegment.PruneLoadSpecHolder.DEFAULT)
+        injectableValues.addValue(DataSegment.PruneSpecsHolder.name, DataSegment.PruneSpecsHolder.DEFAULT)
 
         dimensions13 = [
                 dimensions.(TestApiDimensionName.BREED.asName()).asName(),
@@ -243,8 +243,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                             "partitions": $partitions
                         },
                         "binaryVersion": $binVersion,
-                        "size": $size,
-                        "identifier": ""
+                        "size": $size
         }"""
     }
 
@@ -263,8 +262,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                             "partitionDimensions" : $partitionDimensions
                         },
                         "binaryVersion": $binVersion,
-                        "size": $size,
-                        "identifier": ""
+                        "size": $size
         }"""
     }
 }
