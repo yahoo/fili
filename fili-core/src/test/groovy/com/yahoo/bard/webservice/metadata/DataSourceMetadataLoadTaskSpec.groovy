@@ -23,6 +23,7 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 
 import com.fasterxml.jackson.databind.InjectableValues
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.joda.time.Interval
 
@@ -78,7 +79,8 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
         childSetupSpec()
 
         InjectableValues injectableValues = new InjectableValues.Std()
-        MAPPERS.mapper.setInjectableValues(injectableValues)
+        ObjectMapper mapper = MAPPERS.getMapper()
+        mapper.setInjectableValues(injectableValues)
         injectableValues.addValue(DataSegment.PruneSpecsHolder.name, DataSegment.PruneSpecsHolder.DEFAULT)
 
         dimensions13 = [
@@ -159,7 +161,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 tableDict,
                 metadataService,
                 druidWS,
-                MAPPERS.mapper
+                MAPPERS.metadataMapper
         )
         DataSource dataSource = Mock(DataSource)
         dataSource.physicalTable >> Mock(ConstrainedTable) {
@@ -184,7 +186,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 tableDict,
                 localMetadataService,
                 druidWS,
-                MAPPERS.mapper
+                MAPPERS.metadataMapper
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         StrictPhysicalTable table = Mock(StrictPhysicalTable)
@@ -243,7 +245,8 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                             "partitions": $partitions
                         },
                         "binaryVersion": $binVersion,
-                        "size": $size
+                        "size": $size,
+                        "identifier": ""
         }"""
     }
 
@@ -262,7 +265,8 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                             "partitionDimensions" : $partitionDimensions
                         },
                         "binaryVersion": $binVersion,
-                        "size": $size
+                        "size": $size,
+                        "identifier": ""
         }"""
     }
 }
