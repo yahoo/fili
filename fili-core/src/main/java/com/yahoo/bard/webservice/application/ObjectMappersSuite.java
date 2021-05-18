@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.application;
 
 import com.yahoo.bard.webservice.druid.model.metadata.ShardSpecMixIn;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -24,6 +25,7 @@ public class ObjectMappersSuite {
 
     private final ObjectMapper jsonMapper;
     private final CsvMapper csvMapper;
+    private final ObjectMapper metadataMapper;
 
     /**
      * No-arg constructor.
@@ -31,6 +33,7 @@ public class ObjectMappersSuite {
     public ObjectMappersSuite() {
         jsonMapper = new ObjectMapper();
         csvMapper = new CsvMapper();
+
 
         JodaModule jodaModule = new JodaModule();
         jodaModule.addSerializer(Interval.class, new ToStringSerializer());
@@ -42,6 +45,10 @@ public class ObjectMappersSuite {
         InjectableValues.Std injectableValues = new InjectableValues.Std();
         injectableValues.addValue(DataSegment.PruneSpecsHolder.class, DataSegment.PruneSpecsHolder.DEFAULT);
         jsonMapper.setInjectableValues(injectableValues);
+
+        metadataMapper = jsonMapper.copy();
+        metadataMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
     }
 
     /**
@@ -52,6 +59,16 @@ public class ObjectMappersSuite {
      */
     public ObjectMapper getMapper() {
         return jsonMapper;
+    }
+
+    /**
+     * Get the mapper for reading druid metadata.
+     * This is the JSON object mapper.
+     *
+     * @return the instance of ObjectMapper
+     */
+    public ObjectMapper getMetadataMapper() {
+        return metadataMapper;
     }
 
     /**

@@ -336,7 +336,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                             metadataDruidWebService,
                             loader.getPhysicalTableDictionary(),
                             dataSourceMetadataService,
-                            getMappers().getMapper()
+                            getMappers().getMetadataMapper()
                     );
 
                     setupDataSourceMetaData(healthCheckRegistry, dataSourceMetadataLoader);
