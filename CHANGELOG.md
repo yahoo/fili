@@ -14,6 +14,10 @@ Current
 
 ### Changed:
 
+- [Bumping druid api dependency] (https://github.com/yahoo/fili/issues/1174)
+   * Moved druid dependency to Druid 0.20
+   * Disabled jackson validation error
+
 ### Removed:
 
 ### Fixed:
@@ -23,7 +27,6 @@ Current
 ### Known Issues:
 
 ## Contract changes:
-
 
 
 -------------
