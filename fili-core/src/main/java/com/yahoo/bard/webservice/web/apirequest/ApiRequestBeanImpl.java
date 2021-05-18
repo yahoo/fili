@@ -12,7 +12,6 @@ import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
-import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator;
@@ -35,12 +34,10 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
 
@@ -50,7 +47,6 @@ import javax.validation.constraints.NotNull;
 public abstract class ApiRequestBeanImpl implements ApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(ApiRequestBeanImpl.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
     private static final int DEFAULT_PER_PAGE = SYSTEM_CONFIG.getIntProperty(
             SYSTEM_CONFIG.getPackageVariableName("default_per_page")
@@ -469,25 +465,6 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
         return asyncAfter;
     }
 
-    @Deprecated
-    public PaginationParameters getDefaultPagination() {
-        return DEFAULT_PAGINATION;
-    }
-
-    /**
-     * This method returns a Function that can basically take a Collection and return an instance of
-     * AllPagesPagination.
-     *
-     * @param paginationParameters  The PaginationParameters to be used to generate AllPagesPagination instance
-     * @param <T>  The type of items in the Collection which needs to be paginated
-     *
-     * @return A Function that takes a Collection and returns an instance of AllPagesPagination
-     */
-    public <T> Function<Collection<T>, AllPagesPagination<T>> getAllPagesPaginationFactory(
-            PaginationParameters paginationParameters
-    ) {
-        return data -> new AllPagesPagination<>(data, paginationParameters);
-    }
 
     /**
      * Parses the asyncAfter parameter into a long describing how long the user is willing to wait for the results of a

@@ -24,19 +24,19 @@ public class MapRequestUtil {
      * @return a map describing the parameter values.
      *
      */
-    public static Map<String, Object> constructorConverter(
+    public static Map<String, String> constructorConverter(
             String format,
             String downloadFilename,
             String asyncAfter,
-            @NotNull String perPage,
-            @NotNull String page
+            String perPage,
+            String page
     ) {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put(ApiRequestMapImpl.FORMAT_KEY, format);
-        params.put(ApiRequestMapImpl.FILENAME_KEY, downloadFilename);
-        params.put(ApiRequestMapImpl.ASYNC_AFTER_KEY, asyncAfter);
-        params.put(ApiRequestMapImpl.PER_PAGE, perPage);
-        params.put(ApiRequestMapImpl.PAGE, page);
+        HashMap<String, String> params = new HashMap<>();
+        params.computeIfAbsent(ApiRequestMapImpl.FORMAT_KEY, val -> format);
+        params.computeIfAbsent(ApiRequestMapImpl.FILENAME_KEY, val -> downloadFilename);
+        params.computeIfAbsent(ApiRequestMapImpl.ASYNC_AFTER_KEY, val -> asyncAfter);
+        params.computeIfAbsent(ApiRequestMapImpl.PER_PAGE, val -> perPage);
+        params.computeIfAbsent(ApiRequestMapImpl.PAGE, val -> page);
         return params;
     }
 }

@@ -4,13 +4,16 @@ package com.yahoo.bard.webservice.web.apirequest;
 
 import static com.yahoo.bard.webservice.util.DateTimeFormatterFactory.FULLY_OPTIONAL_DATETIME_FORMATTER;
 
+import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Interface offering default implementations for the common components of API request objects.
@@ -21,6 +24,8 @@ public interface ApiRequest {
 
     String SYNCHRONOUS_REQUEST_FLAG = "never";
     String ASYNCHRONOUS_REQUEST_FLAG = "always";
+
+    String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
     /**
      * Get the DateTimeFormatter shifted to the given time zone.
@@ -66,4 +71,19 @@ public interface ApiRequest {
      * asynchronous
      */
      Long getAsyncAfter();
+
+    /**
+     * This method returns a Function that can basically take a Collection and return an instance of
+     * AllPagesPagination.
+     *
+     * @param paginationParameters  The PaginationParameters to be used to generate AllPagesPagination instance
+     * @param <T>  The type of items in the Collection which needs to be paginated
+     *
+     * @return A Function that takes a Collection and returns an instance of AllPagesPagination
+     */
+    static <T> Function<Collection<T>, AllPagesPagination<T>> getAllPagesPaginationFactory(
+            PaginationParameters paginationParameters
+    ) {
+        return data -> new AllPagesPagination<>(data, paginationParameters);
+    }
 }

@@ -18,7 +18,7 @@ import spock.lang.Timeout
 import java.util.concurrent.atomic.AtomicInteger
 
 /* Do not test on Jenkins since URL requests are inconsistent */
-@Retry
+@Retry(count=5)
 @Timeout(30)    // Fail test if hangs
 @IgnoreIf({System.getenv("BUILD_NUMBER") != null})
 class RateLimitFilterSpec extends Specification {

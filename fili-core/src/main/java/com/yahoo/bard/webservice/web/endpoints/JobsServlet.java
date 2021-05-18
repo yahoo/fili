@@ -149,6 +149,7 @@ public class JobsServlet extends EndpointServlet {
      */
     @GET
     @Timed
+    @SuppressWarnings("unchecked")
     public void getJobs(
             @DefaultValue("") @NotNull @QueryParam("perPage") String perPage,
             @DefaultValue("") @NotNull @QueryParam("page") String page,
@@ -159,7 +160,7 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
-    JobsApiRequestImpl apiRequest = null;
+        JobsApiRequestImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
@@ -185,7 +186,7 @@ public class JobsServlet extends EndpointServlet {
             JobsApiRequestImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
-                    jobsApiRequest.getAllPagesPaginationFactory(
+                    ApiRequest.getAllPagesPaginationFactory(
                             jobsApiRequest.getPaginationParameters()
                                     .orElse(
                                             ApiRequestBeanImpl.DEFAULT_PAGINATION
@@ -225,6 +226,7 @@ public class JobsServlet extends EndpointServlet {
     @GET
     @Timed
     @Path("/{ticket}")
+    @SuppressWarnings("unchecked")
     public void getJobByTicket(
             @PathParam("ticket") String ticket,
             @Context UriInfo uriInfo,
@@ -238,6 +240,7 @@ public class JobsServlet extends EndpointServlet {
             RequestLog.record(new JobRequest(ticket));
             apiRequest = new JobsApiRequestImpl(
                     DefaultResponseFormatType.JSON.toString(),
+                    "",
                     null,
                     "",
                     "",
@@ -284,6 +287,7 @@ public class JobsServlet extends EndpointServlet {
     @GET
     @Timed
     @Path("/{ticket}/results")
+    @SuppressWarnings("unchecked")
     public void getJobResultsByTicket(
             @PathParam("ticket") String ticket,
             @QueryParam("format") String format,
@@ -393,7 +397,7 @@ public class JobsServlet extends EndpointServlet {
      *
      * @return An Observable wrapping a PreResponse or an empty Observable in case a timeout occurs.
      */
-    protected Observable<PreResponse> getResults(@NotNull String ticket, long asyncAfter) {
+    protected Observable<PreResponse> getResults(@NotNull String ticket, Long asyncAfter) {
         if (asyncAfter == JobsApiRequest.ASYNCHRONOUS_ASYNC_AFTER_VALUE) {
             // If the user specifies that they always want the asynchronous payload, then we need to force the system
             // to behave like the results are not ready in the store, and the asynchronous timeout has expired even

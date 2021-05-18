@@ -105,6 +105,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 null,
                 "",
                 "",
@@ -130,6 +131,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 null,
                 "",
                 "",
@@ -154,6 +156,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 null,
                 "",
                 "",
@@ -182,7 +185,17 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
     def "getResults returns an empty observable if the PreResponse is not available in the PreResponseStore before the async timeout"() {
         setup:
         TestSubscriber<PreResponse> testSubscriber = new TestSubscriber<>()
-        JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(null, "5", "", "", null, uriInfo, jobPayloadBuilder, apiJobStore)
+        JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+                null,
+                "",
+                "5",
+                "",
+                "",
+                null,
+                uriInfo,
+                jobPayloadBuilder,
+                apiJobStore
+        )
 
         when: "we start the async chain"
         jobsServlet.getResults("ticket3", apiRequest.asyncAfter).subscribe(testSubscriber)
@@ -199,6 +212,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         setup:
         JobsApiRequestImpl apiRequest1 = new JobsApiRequestImpl(
                 null,
+                "",
                 "5",
                 "",
                 "",
@@ -228,6 +242,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         and:
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 "never",
                 "",
                 "",
@@ -266,6 +281,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         setup:
         JobsApiRequestImpl apiRequest1 = new JobsApiRequestImpl(
                 null,
+                "",
                 "2",
                 "",
                 "",
@@ -291,6 +307,7 @@ class JobsServletReactiveChainforResultsEndpointSpec extends Specification {
         setup:
         JobsApiRequestImpl apiRequest1 = new JobsApiRequestImpl(
                 null,
+                "",
                 "never",
                 "",
                 "",

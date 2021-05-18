@@ -27,6 +27,7 @@ class FiliJobsExceptionHandlerSpec extends Specification {
     Optional<JobsApiRequest> request = Optional.of(
             new JobsApiRequestImpl(
                     "json",
+                    "",
                     "500",
                     "",
                     "",

@@ -78,6 +78,7 @@ class JobsApiRequestImplSpec extends Specification {
 
         defaultApiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 null,
                 "",
                 "",
@@ -210,6 +211,7 @@ class JobsApiRequestImplSpec extends Specification {
 
         JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
                 null,
+                "",
                 null,
                 "",
                 "",
