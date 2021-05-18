@@ -28,7 +28,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Jobs API Request Implementation binds, validates, and models the parts of a request to the jobs endpoint.
  */
-public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest {
+public class JobsApiRequestImpl extends ApiRequestBeanImpl implements JobsApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(JobsApiRequestImpl.class);
 
     private final JobPayloadBuilder jobPayloadBuilder;

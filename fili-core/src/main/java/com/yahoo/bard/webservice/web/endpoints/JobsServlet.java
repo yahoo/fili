@@ -29,7 +29,7 @@ import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
@@ -188,7 +188,7 @@ public class JobsServlet extends EndpointServlet {
                     jobsApiRequest.getAllPagesPaginationFactory(
                             jobsApiRequest.getPaginationParameters()
                                     .orElse(
-                                            ApiRequestImpl.DEFAULT_PAGINATION
+                                            ApiRequestBeanImpl.DEFAULT_PAGINATION
                                     )
                     );
 

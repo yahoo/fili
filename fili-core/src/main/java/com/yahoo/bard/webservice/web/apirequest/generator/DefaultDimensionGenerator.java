@@ -12,9 +12,10 @@ import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.slf4j.Logger;
@@ -27,8 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.core.PathSegment;
 
 /**
  * Default Generator implementation for generating grouping {@link Dimension}s. Dimensions are dependent on the
@@ -92,7 +91,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
     public static LinkedHashSet<Dimension> generateDimensions(
-            List<PathSegment> apiDimensions,
+            List<RequestColumn> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensions")) {
@@ -103,7 +102,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
 
             // set of dimension names (strings)
             List<String> dimApiNames = apiDimensions.stream()
-                    .map(PathSegment::getPath)
+                    .map(RequestColumn::getApiName)
                     .filter(s -> !s.isEmpty())
                     .collect(Collectors.toList());
 

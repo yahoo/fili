@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -32,8 +33,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.ws.rs.core.PathSegment;
 
 /**
  * ProtocolMetricDataApiRequest supports the parameterized metric contracts used by protocol metrics.
@@ -92,7 +91,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
     public ProtocolMetricDataApiReqestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,

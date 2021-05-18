@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response;
 /**
  * Dimension API Request Implementation binds, validates, and models the parts of a request to the dimension endpoint.
  */
-public class DimensionsApiRequestImpl extends ApiRequestImpl implements DimensionsApiRequest {
+public class DimensionsApiRequestImpl extends ApiRequestBeanImpl implements DimensionsApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionsApiRequestImpl.class);
 
     private final LinkedHashSet<Dimension> dimensions;

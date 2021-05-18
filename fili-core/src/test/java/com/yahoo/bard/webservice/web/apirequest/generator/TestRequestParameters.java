@@ -3,16 +3,11 @@
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
-
-import org.glassfish.jersey.internal.util.collection.ImmutableMultivaluedMap;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.PathSegment;
 
 /**
  * Extension of request parameters meant for easy use while testing.
@@ -21,7 +16,7 @@ public class TestRequestParameters extends RequestParameters {
 
     public String logicalTable;
     public String granularity;
-    public List<PathSegment> dimensions;
+    public List<RequestColumn> dimensions;
     public String logicalMetrics;
     public String intervals;
     public String apiFilters;
@@ -71,7 +66,7 @@ public class TestRequestParameters extends RequestParameters {
     }
 
     @Override
-    public List<PathSegment> getDimensions() {
+    public List<RequestColumn> getDimensions() {
         return dimensions;
     }
 
@@ -138,47 +133,5 @@ public class TestRequestParameters extends RequestParameters {
     @Override
     public Optional<String> getPage() {
         return Optional.ofNullable(page);
-    }
-
-    /**
-     * Simple implementation of PathSegment for easy testing.
-     */
-    public static class TestPathSegment implements PathSegment {
-
-        private final String path;
-        private final MultivaluedMap<String, String> map;
-
-        /**
-         * Constructor. Just takes the string representation of the path segment with no parameters.
-         *
-         * @param path the path
-         */
-        public TestPathSegment(String path) {
-            this(path, new MultivaluedHashMap<>());
-        }
-
-        /**
-         * Constructor. Takes the string representation of the path segment as well as a {@link MultivaluedMap} for the
-         * path segment parameters.
-         *
-         * {@link MultivaluedHashMap} is a simple implementation of {@link MultivaluedMap}.
-         *
-         * @param path the path
-         * @param map the path parameters
-         */
-        public TestPathSegment(String path, MultivaluedMap<String, String> map) {
-            this.path = path;
-            this.map = new ImmutableMultivaluedMap<>(map);
-        }
-
-        @Override
-        public String getPath() {
-            return path;
-        }
-
-        @Override
-        public MultivaluedMap<String, String> getMatrixParameters() {
-            return map;
-        }
     }
 }

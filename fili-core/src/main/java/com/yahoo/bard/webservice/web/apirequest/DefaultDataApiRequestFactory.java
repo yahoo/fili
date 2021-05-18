@@ -3,22 +3,20 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import java.util.List;
-
-import javax.ws.rs.core.PathSegment;
 
 /**
  * An implementation of DataApiRequestFactory that does not modify the initial parameters at all.
  */
 public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
 
-    @Override
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -58,7 +56,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,

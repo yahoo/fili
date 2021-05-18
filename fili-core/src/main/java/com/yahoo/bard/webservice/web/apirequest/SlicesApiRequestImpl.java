@@ -35,7 +35,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Slices API Request Implementation binds, validates, and models the parts of a request to the Slices endpoint.
  */
-public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiRequest {
+public class SlicesApiRequestImpl extends ApiRequestBeanImpl implements SlicesApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(SlicesApiRequestImpl.class);
 
     private final LinkedHashSet<Map<String, String>> slices;

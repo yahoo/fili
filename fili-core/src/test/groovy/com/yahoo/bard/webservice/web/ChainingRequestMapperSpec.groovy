@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl
 
 import spock.lang.Specification
 
@@ -13,7 +13,7 @@ import javax.ws.rs.container.ContainerRequestContext
 class ChainingRequestMapperSpec extends Specification {
 
     RequestMapper nextMapper = Mock(RequestMapper)
-    ApiRequestImpl mockRequest = Mock(ApiRequestImpl)
+    ApiRequestBeanImpl mockRequest = Mock(ApiRequestBeanImpl)
     ResourceDictionaries resourceDictionaries = new ResourceDictionaries()
     ContainerRequestContext containerRequestContext = Mock(ContainerRequestContext)
 

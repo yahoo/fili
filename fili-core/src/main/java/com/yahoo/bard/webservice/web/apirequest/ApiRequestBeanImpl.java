@@ -25,6 +25,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerat
 import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -42,13 +43,12 @@ import java.util.Set;
 import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
 
 /**
  * API Request. Abstract class offering default implementations for the common components of API request objects.
  */
-public abstract class ApiRequestImpl implements ApiRequest {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
+public abstract class ApiRequestBeanImpl implements ApiRequest {
+    private static final Logger LOG = LoggerFactory.getLogger(ApiRequestBeanImpl.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
 
@@ -88,7 +88,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @deprecated prefer constructor with downloadFilename
      */
     @Deprecated
-    public ApiRequestImpl(
+    public ApiRequestBeanImpl(
             String format,
             String asyncAfter,
             @NotNull String perPage,
@@ -112,7 +112,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
-    public ApiRequestImpl(
+    public ApiRequestBeanImpl(
             String format,
             String downloadFilename,
             String asyncAfter,
@@ -140,7 +140,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
      */
-    public ApiRequestImpl(
+    public ApiRequestBeanImpl(
             String format,
             @NotNull String perPage,
             @NotNull String page
@@ -155,10 +155,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
      *
-     * @deprecated Use {@link #ApiRequestImpl(ResponseFormatType, String, long, PaginationParameters)}
+     * @deprecated Use {@link #ApiRequestBeanImpl(ResponseFormatType, String, long, PaginationParameters)}
      */
     @Deprecated
-    protected ApiRequestImpl(
+    protected ApiRequestBeanImpl(
             ResponseFormatType format,
             long asyncAfter,
             Optional<PaginationParameters> paginationParameters
@@ -175,10 +175,10 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
      *
-     * @deprecated Use {@link #ApiRequestImpl(ResponseFormatType, String, long, PaginationParameters)}
+     * @deprecated Use {@link #ApiRequestBeanImpl(ResponseFormatType, String, long, PaginationParameters)}
      */
     @Deprecated
-    protected ApiRequestImpl(
+    protected ApiRequestBeanImpl(
             ResponseFormatType format,
             String downloadFilename,
             long asyncAfter,
@@ -196,7 +196,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
      */
-    protected ApiRequestImpl(
+    protected ApiRequestBeanImpl(
             ResponseFormatType format,
             String downloadFilename,
             long asyncAfter,
@@ -251,7 +251,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
     protected LinkedHashSet<Dimension> generateDimensions(
-            List<PathSegment> apiDimensions,
+            List<RequestColumn> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
         return DefaultDimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);

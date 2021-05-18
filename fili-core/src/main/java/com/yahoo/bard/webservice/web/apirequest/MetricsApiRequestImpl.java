@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Metrics API Request Implementation binds, validates, and models the parts of a request to the metrics endpoint.
  */
-public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiRequest {
+public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements MetricsApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequestImpl.class);
 
     private final LinkedHashSet<LogicalMetric> metrics;

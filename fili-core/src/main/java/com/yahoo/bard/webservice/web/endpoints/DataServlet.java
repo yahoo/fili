@@ -46,6 +46,8 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
 import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestUtils;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -75,6 +77,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -407,12 +410,15 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             @Suspended final AsyncResponse asyncResponse
     ) {
         DataApiRequest apiRequest = null;
+        List<RequestColumn> requestColumns = dimensions.stream()
+                .map(RequestUtils::toRequestColumn)
+                .collect(Collectors.toList());
         try {
             try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
                 apiRequest = dataApiRequestFactory.buildApiRequest(
                         tableName,
                         timeGrain,
-                        dimensions,
+                        requestColumns,
                         metrics,
                         intervals,
                         filters,

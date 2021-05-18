@@ -3,10 +3,10 @@
 package com.yahoo.bard.webservice.web.apirequest.utils
 
 import com.yahoo.bard.webservice.web.ResponseFormatType
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl
 import com.yahoo.bard.webservice.web.util.PaginationParameters
 
-class TestingApiRequestImpl extends ApiRequestImpl {
+class TestingApiRequestImpl extends ApiRequestBeanImpl {
     TestingApiRequestImpl() {
         super((ResponseFormatType) null, "", Long.MAX_VALUE, (PaginationParameters) null)
     }

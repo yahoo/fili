@@ -3,11 +3,10 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 
 import java.util.List;
 import java.util.Optional;
-
-import javax.ws.rs.core.PathSegment;
 
 /**
  * Data object all raw pieces of data in an api request.
@@ -16,7 +15,7 @@ public class RequestParameters {
 
     private final Optional<String> logicalTable;
     private final Optional<String> granularity;
-    private final List<PathSegment> dimensions;
+    private final List<RequestColumn> dimensions;
     private final Optional<String> logicalMetrics;
     private final Optional<String> intervals;
     private final Optional<String> apiFilters;
@@ -60,7 +59,7 @@ public class RequestParameters {
     public RequestParameters(
             String logicalTable,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -118,7 +117,7 @@ public class RequestParameters {
      *
      * @return the dimensions
      */
-    public List<PathSegment> getDimensions() {
+    public List<RequestColumn> getDimensions() {
         return dimensions;
     }
 
