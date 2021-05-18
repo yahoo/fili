@@ -5,7 +5,7 @@
 
     <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Fili: parent pom</name>
@@ -97,7 +97,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
-        <version.fili>1.0-SNAPSHOT</version.fili>
+        <version.fili>2.0-SNAPSHOT</version.fili>
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
