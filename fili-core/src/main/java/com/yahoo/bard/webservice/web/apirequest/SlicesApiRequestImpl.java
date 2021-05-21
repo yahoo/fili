@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.table.Column;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet;

@@ -4,57 +4,87 @@ package com.yahoo.bard.webservice.web.apirequest
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY_MISMATCH
 
+import com.yahoo.bard.webservice.config.SystemConfig
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableIdentifier
+import com.yahoo.bard.webservice.web.DefaultResponseFormatType
+import com.yahoo.bard.webservice.web.ResponseFormatType
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
-import com.yahoo.bard.webservice.web.apirequest.utils.TestingApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator
+import com.yahoo.bard.webservice.web.apirequest.utils.TestingApiRequestProvider
+import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
-class ApiRequestImplSpec extends Specification {
-    TestingApiRequestImpl apiRequestImpl
+abstract class ApiRequestImplSpec extends Specification {
 
-    def setup() {
-        apiRequestImpl = new TestingApiRequestImpl()
+    ApiRequest apiRequestImpl
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    abstract ApiRequest buildApiRequestImpl(String format, String filename, String async, String perPage, String page)
+
+    @Unroll
+    def "getFormat retrieves a reasonable format for #format"() {
+        when:
+        ApiRequest apiRequestImpl = buildApiRequestImpl(format.toString(), "", "-1", "1", "1")
+
+        then:
+        apiRequestImpl.getFormat() == format
+
+        where:
+        format << (Arrays.asList(DefaultResponseFormatType.values()))
     }
 
-    def "generateTable() returns existing LogicalTable"() {
-        given: "we insert a LogicalTable into LogicalTableDictionary"
-        String tableName = "tableName"
-        Granularity granularity = Mock(Granularity)
-        LogicalTableDictionary logicalTableDictionary = Mock(LogicalTableDictionary)
-        TableIdentifier tableIdentifier = new TableIdentifier(tableName, granularity)
-        LogicalTable logicalTable = Mock(LogicalTable)
-        logicalTableDictionary.get(tableIdentifier) >> logicalTable
+    def "getFileName retrieves expected filename"() {
+        ApiRequest apiRequestImpl = buildApiRequestImpl(DefaultResponseFormatType.JSON.toString(), name, "-1", "1", "1")
 
-        expect: "we can fetch the LogicalTable from it"
-        apiRequestImpl.generateTable(tableName, granularity, logicalTableDictionary) == logicalTable
+        expect:
+        apiRequestImpl.getDownloadFilename() == value
+
+        where:
+        name    | value
+        "test1" | Optional.of("test1")
+        null    | Optional.empty()
     }
 
-    def "generateTable() throws BadApiRequestException on non-existing LogicalTable"() {
-        given: "we insert a LogicalTable into LogicalTableDictionary"
-        String tableName = "tableName"
-        Granularity granularity = Mock(Granularity)
-        LogicalTableDictionary logicalTableDictionary = Mock(LogicalTableDictionary)
-        TableIdentifier tableIdentifier = new TableIdentifier(tableName, granularity)
-        LogicalTable logicalTable = Mock(LogicalTable)
-        logicalTableDictionary.get(tableIdentifier) >> logicalTable
+    @Unroll
+    def "getAsyncAfter with #name retrieves expected value #expected"() {
+        ApiRequest apiRequestImpl = buildApiRequestImpl(DefaultResponseFormatType.JSON.toString(), "foo", name, "1", "1")
 
-        String nonExistingTableName = "I don't exist"
+        expect:
+        apiRequestImpl.getAsyncAfter() == expected
 
-        when: "we try to fetch a non-existing LogicalTable"
-        apiRequestImpl.generateTable(nonExistingTableName, granularity, logicalTableDictionary)
-
-        then: "we get a BadApiRequestException"
-        BadApiRequestException exception = thrown()
-        exception.message == TABLE_GRANULARITY_MISMATCH.logFormat(granularity, nonExistingTableName)
+        where:
+        name     | expected
+        "-1"     | -1
+        null     | DefaultAsyncAfterGenerator.generateAsyncAfter(null)
+        "never"  | Long.MAX_VALUE
+        "always" | 0
     }
 
+    @Unroll
+    def "getPaginationParameters with perPage, Page (#perPage, #page) retrieves expected #value"() {
+        ApiRequest apiRequestImpl = buildApiRequestImpl(DefaultResponseFormatType.JSON.toString(), "foo", null as String, perPage, page)
+
+        expect:
+        apiRequestImpl.getPaginationParameters() == value
+
+        where:
+        perPage | page | value
+        "1"  | "1"  | Optional.of(new PaginationParameters("1", "1"))
+        ""   | ""   | Optional.empty()
+        null | null | Optional.empty()
+    }
+/*
+    These tests need to be moved or deleted
     def "generateLogicalMetrics() returns existing LogicalMetrics"() {
         given: "two LogicalMetrics in MetricDictionary"
         LogicalMetric logicalMetric1 = Mock(LogicalMetric)
@@ -80,5 +110,5 @@ class ApiRequestImplSpec extends Specification {
         then: "BadApiRequestException is thrown"
         BadApiRequestException exception = thrown()
         exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
-    }
+    }*/
 }

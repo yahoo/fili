@@ -1,11 +1,9 @@
 // Copyright 2021 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest.map;
+package com.yahoo.bard.webservice.web.apirequest.mapimpl;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Utilities to aid in converting to Map based ApiRequests.

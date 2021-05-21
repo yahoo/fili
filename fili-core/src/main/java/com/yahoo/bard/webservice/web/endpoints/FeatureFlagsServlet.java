@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.config.FeatureFlagRegistry;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.blocks.FeatureFlagRequest;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -73,7 +73,7 @@ public class FeatureFlagsServlet extends EndpointServlet {
          */
         @Deprecated
         FeatureFlagApiRequest(String format, String perPage, String page) {
-            super(format, perPage, page);
+            super(format, "", null, perPage, page);
         }
 
         /**

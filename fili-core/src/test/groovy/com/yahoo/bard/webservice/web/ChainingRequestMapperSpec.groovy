@@ -4,7 +4,7 @@ package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl
 
 import spock.lang.Specification
 

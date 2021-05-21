@@ -29,9 +29,9 @@ import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.JobsApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKeys;
 import com.yahoo.bard.webservice.web.util.PaginationLink;
@@ -160,12 +160,12 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
-        JobsApiRequestImpl apiRequest = null;
+        JobsApiRequestBeanImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest("all"));
 
-            apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestBeanImpl(
                     formatResolver.apply(format, containerRequestContext),
                     downloadFilename,
                     null, //asyncAfter is null so it behaves like a synchronous request
@@ -178,12 +178,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestBeanImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequestImpl jobsApiRequest = apiRequest;
+            JobsApiRequestBeanImpl jobsApiRequest = apiRequest;
 
             Function<Collection<Map<String, String>>, AllPagesPagination<Map<String, String>>> paginationFactory =
                     ApiRequest.getAllPagesPaginationFactory(
@@ -234,11 +234,11 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
-        JobsApiRequestImpl apiRequest = null;
+        JobsApiRequestBeanImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
-            apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestBeanImpl(
                     DefaultResponseFormatType.JSON.toString(),
                     "",
                     null,
@@ -251,7 +251,7 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestBeanImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             observableResponse = handleJobResponse(ticket, apiRequest, uriInfo);
@@ -300,12 +300,12 @@ public class JobsServlet extends EndpointServlet {
             @Suspended AsyncResponse asyncResponse
     ) {
         Observable<Response> observableResponse;
-        JobsApiRequestImpl apiRequest = null;
+        JobsApiRequestBeanImpl apiRequest = null;
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new JobRequest(ticket));
 
-            apiRequest = new JobsApiRequestImpl(
+            apiRequest = new JobsApiRequestBeanImpl(
                     format,
                     downloadFilename,
                     asyncAfter,
@@ -318,12 +318,12 @@ public class JobsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (JobsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (JobsApiRequestBeanImpl) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             // apiRequest is not final and cannot be used inside a lambda. Therefore we are assigning apiRequest to
             // jobsApiRequest.
-            JobsApiRequestImpl jobsApiRequest = apiRequest;
+            JobsApiRequestBeanImpl jobsApiRequest = apiRequest;
 
             Observable<PreResponse> preResponseObservable = getResults(ticket, apiRequest.getAsyncAfter());
 
@@ -359,7 +359,7 @@ public class JobsServlet extends EndpointServlet {
      * result to the user.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
+     * @param apiRequest  JobsApiRequestBeanImpl object with all the associated info in it
      * @param containerRequestContext the context for the http request
      * @param asyncResponse  Parameter specifying for how long the request should be asyncAfter
      * @param preResponseObservable  An Observable wrapping a PreResponse or an empty observable
@@ -369,7 +369,7 @@ public class JobsServlet extends EndpointServlet {
      */
     protected Observable<Response> handlePreResponse(
             String ticket,
-            JobsApiRequestImpl apiRequest,
+            JobsApiRequestBeanImpl apiRequest,
             ContainerRequestContext containerRequestContext,
             AsyncResponse asyncResponse,
             Observable<PreResponse> preResponseObservable,
@@ -454,12 +454,16 @@ public class JobsServlet extends EndpointServlet {
      * Process a request to get job payload.
      *
      * @param ticket  The ticket that can uniquely identify a Job
-     * @param apiRequest  JobsApiRequestImpl object with all the associated info in it
+     * @param apiRequest  JobsApiRequestBeanImpl object with all the associated info in it
      * @param uriInfo The Uri Info needed to build response links
      *
      * @return an observable response to be consumed.
      */
-    protected Observable<Response> handleJobResponse(String ticket, JobsApiRequestImpl apiRequest, UriInfo uriInfo) {
+    protected Observable<Response> handleJobResponse(
+            String ticket,
+            JobsApiRequestBeanImpl apiRequest,
+            UriInfo uriInfo
+    ) {
         return apiRequest.getJobViewObservable(ticket)
                 //map the job to Json String
                 .map(

@@ -27,7 +27,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class TablesApiRequestImplSpec extends Specification {
+class TablesServletSpec extends Specification {
 
     JerseyTestBinder jtb
 

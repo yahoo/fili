@@ -10,7 +10,7 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.CsvResponse;
 import com.yahoo.bard.webservice.web.JsonResponse;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestBeanImpl;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
 import com.yahoo.bard.webservice.web.util.ResponseUtils;
 

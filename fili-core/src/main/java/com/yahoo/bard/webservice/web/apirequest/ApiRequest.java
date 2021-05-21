@@ -20,7 +20,7 @@ import java.util.function.Function;
  */
 public interface ApiRequest {
     long SYNCHRONOUS_ASYNC_AFTER_VALUE = Long.MAX_VALUE;
-    long ASYNCHRONOUS_ASYNC_AFTER_VALUE = -1;
+    long ASYNCHRONOUS_ASYNC_AFTER_VALUE = 0;
 
     String SYNCHRONOUS_REQUEST_FLAG = "never";
     String ASYNCHRONOUS_REQUEST_FLAG = "always";

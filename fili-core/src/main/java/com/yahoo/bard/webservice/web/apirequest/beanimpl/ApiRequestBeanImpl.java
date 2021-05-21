@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest;
+package com.yahoo.bard.webservice.web.apirequest.beanimpl;
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
@@ -75,30 +76,6 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * @param format  response data format JSON or CSV. Default is JSON.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
      * defaults to the system config {@code default_asyncAfter}
-     * @param perPage  number of rows to display per page of results. If present in the original request, must be a
-     * positive integer. If not present, must be the empty string.
-     * @param page  desired page of results. If present in the original request, must be a positive integer. If not
-     * present, must be the empty string.
-     *
-     * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
-     * @deprecated prefer constructor with downloadFilename
-     */
-    @Deprecated
-    public ApiRequestBeanImpl(
-            String format,
-            String asyncAfter,
-            @NotNull String perPage,
-            @NotNull String page
-    ) throws BadApiRequestException {
-        this(format, null, asyncAfter, perPage, page);
-    }
-
-    /**
-     * Parses the API request URL and generates the API request object.
-     *
-     * @param format  response data format JSON or CSV. Default is JSON.
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request in milliseconds, if null
-     * defaults to the system config {@code default_asyncAfter}
      * @param downloadFilename  The filename for the response to be downloaded as. If null or empty indicates response
      * should not be downloaded.
      * @param perPage  number of rows to display per page of results. If present in the original request, must be a
@@ -135,7 +112,9 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * present, must be the empty string.
      *
      * @throws BadApiRequestException if pagination parameters in the API request are not positive integers.
+     * @deprecated Use the main constructor instead
      */
+    @Deprecated
     public ApiRequestBeanImpl(
             String format,
             @NotNull String perPage,
@@ -148,51 +127,12 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * All argument constructor, meant to be used for rewriting apiRequest.
      *
      * @param format  The format of the response
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
-     * @param paginationParameters  The parameters used to describe pagination
-     *
-     * @deprecated Use {@link #ApiRequestBeanImpl(ResponseFormatType, String, long, PaginationParameters)}
-     */
-    @Deprecated
-    protected ApiRequestBeanImpl(
-            ResponseFormatType format,
-            long asyncAfter,
-            Optional<PaginationParameters> paginationParameters
-    ) {
-        this(format, null, asyncAfter, paginationParameters.orElse(null));
-    }
-
-    /**
-     * All argument constructor, meant to be used for rewriting apiRequest.
-     *
-     * @param format  The format of the response
-     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
-     * the provided filename. Otherwise indicates the response should be rendered in the browser.
-     * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
-     * @param paginationParameters  The parameters used to describe pagination
-     *
-     * @deprecated Use {@link #ApiRequestBeanImpl(ResponseFormatType, String, long, PaginationParameters)}
-     */
-    @Deprecated
-    protected ApiRequestBeanImpl(
-            ResponseFormatType format,
-            String downloadFilename,
-            long asyncAfter,
-            Optional<PaginationParameters> paginationParameters
-    ) {
-        this(format, downloadFilename, asyncAfter, paginationParameters.orElse(null));
-    }
-
-    /**
-     * All argument constructor, meant to be used for rewriting apiRequest.
-     *
-     * @param format  The format of the response
      * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
      * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param asyncAfter  How long the user is willing to wait for a synchronous request, in milliseconds
      * @param paginationParameters  The parameters used to describe pagination
      */
-    protected ApiRequestBeanImpl(
+    public ApiRequestBeanImpl(
             ResponseFormatType format,
             String downloadFilename,
             long asyncAfter,
@@ -214,7 +154,7 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * @return A granularity instance with time zone information
      * @throws BadApiRequestException if the string matches no meaningful granularity
      */
-    protected Granularity generateGranularity(
+    public Granularity generateGranularity(
             @NotNull String granularity,
             @NotNull DateTimeZone dateTimeZone,
             @NotNull GranularityParser granularityParser
@@ -231,7 +171,7 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * @return A granularity instance without time zone information
      * @throws BadApiRequestException if the string matches no meaningful granularity
      */
-    protected Granularity generateGranularity(String granularity, GranularityParser granularityParser)
+    public Granularity generateGranularity(String granularity, GranularityParser granularityParser)
             throws BadApiRequestException {
         return DefaultGranularityGenerator.generateGranularity(granularity, granularityParser);
     }
@@ -272,7 +212,9 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * @param filterString  Single dimension filter string.
      *
      * @return Metric name extension created for the filter.
+     * @deprecated No known usages exist
      */
+    @Deprecated
     protected String generateMetricName(String filterString) {
         return filterString.replace("|", "_").replace("-", "_").replace(",", "_").replace("]", "").replace("[", "_");
     }
@@ -437,7 +379,7 @@ public abstract class ApiRequestBeanImpl implements ApiRequest {
      * @return Set of logical table objects.
      * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
      */
-    protected LogicalTable generateTable(
+    protected static LogicalTable generateTable(
             String tableName,
             Granularity granularity,
             LogicalTableDictionary logicalTableDictionary

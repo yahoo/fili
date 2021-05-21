@@ -1,18 +1,17 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest;
+package com.yahoo.bard.webservice.web.apirequest.mapimpl;
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.JobNotFoundException;
 import com.yahoo.bard.webservice.web.JobRequestFailedException;
-import com.yahoo.bard.webservice.web.apirequest.map.ApiRequestMapImpl;
-import com.yahoo.bard.webservice.web.apirequest.map.MapRequestUtil;
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +29,14 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Jobs API Request Implementation binds, validates, and models the parts of a request to the jobs endpoint.
  */
-public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequest {
-    private static final Logger LOG = LoggerFactory.getLogger(JobsApiRequestImpl.class);
+public class JobsApiRequestMapImpl extends ApiRequestMapImpl implements JobsApiRequest {
+    private static final Logger LOG = LoggerFactory.getLogger(JobsApiRequestMapImpl.class);
 
-    private final JobPayloadBuilder jobPayloadBuilder;
-    private final ApiJobStore apiJobStore;
-    private final String filters;
-    private final UriInfo uriInfo;
+    public static final String FILTERS_KEY = "filters";
+
+    public static final String JOB_PAYLOAD_BUILDER_KEY = "jobPayloadBuilder";
+    public static final String API_JOB_STORE_KEY = "apiJobStore";
+    public static final String URI_INFO = "uriInfo";
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -57,7 +57,7 @@ public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequ
      * @param jobPayloadBuilder  The JobRowMapper to be used to map JobRow to the Job returned by the api
      * @param apiJobStore  The ApiJobStore containing Job metadata
      */
-    public JobsApiRequestImpl(
+    public JobsApiRequestMapImpl(
             String format,
             String downloadFilename,
             String asyncAfter,
@@ -69,10 +69,10 @@ public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequ
             ApiJobStore apiJobStore
     ) {
         super(MapRequestUtil.constructorConverter(format, downloadFilename, asyncAfter, perPage, page));
-        this.uriInfo = uriInfo;
-        this.jobPayloadBuilder = jobPayloadBuilder;
-        this.apiJobStore = apiJobStore;
-        this.filters = filters;
+        setRequestParameter(FILTERS_KEY, filters);
+        putResource(URI_INFO, uriInfo);
+        putBinder(JOB_PAYLOAD_BUILDER_KEY, jobPayloadBuilder);
+        putResource(API_JOB_STORE_KEY, apiJobStore);
     }
 
     /**
@@ -84,11 +84,14 @@ public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequ
      * JobNotFoundException if the Job is not available in the ApiJobStore
      */
     public Observable<Map<String, String>> getJobViewObservable(String ticket) {
+        ApiJobStore apiJobStore = (ApiJobStore) getResource(API_JOB_STORE_KEY);
+        JobPayloadBuilder builder = (JobPayloadBuilder) getBinder(JOB_PAYLOAD_BUILDER_KEY);
+        UriInfo uriInfo = (UriInfo) getResource(URI_INFO);
         return apiJobStore.get(ticket)
                 .switchIfEmpty(
                         Observable.error(new JobNotFoundException(ErrorMessageFormat.JOB_NOT_FOUND.format(ticket)))
                 )
-                .map(jobRow -> jobPayloadBuilder.buildPayload(jobRow, uriInfo));
+                .map(jobRow -> builder.buildPayload(jobRow, uriInfo));
     }
 
     /**
@@ -100,6 +103,9 @@ public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequ
      * @return An Observable containing a stream of Maps representing the job to be returned to the user
      */
     public Observable<Map<String, String>> getJobViews() {
+        ApiJobStore apiJobStore = (ApiJobStore) getResource(API_JOB_STORE_KEY);
+        String filters = getRequestParameter(FILTERS_KEY);
+
         Observable<JobRow> rows;
         if (filters == null || "".equals(filters)) {
             rows = apiJobStore.getAllRows();
@@ -143,8 +149,11 @@ public class JobsApiRequestImpl extends ApiRequestMapImpl implements JobsApiRequ
      * @return Job payload to be returned to the user
      */
     private Map<String, String> mapJobRowsToJobViews(JobRow jobRow) {
+        JobPayloadBuilder builder = (JobPayloadBuilder) getBinder(JOB_PAYLOAD_BUILDER_KEY);
+        UriInfo uriInfo = (UriInfo) getResource(URI_INFO);
+
         try {
-            return jobPayloadBuilder.buildPayload(jobRow, uriInfo);
+            return builder.buildPayload(jobRow, uriInfo);
         } catch (JobRequestFailedException ignored) {
             String msg = ErrorMessageFormat.JOBS_RETREIVAL_FAILED.format(jobRow.getId());
             LOG.error(msg);

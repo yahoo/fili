@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest
-import com.yahoo.bard.webservice.web.apirequest.JobsApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.JobsApiRequestBeanImpl
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -25,7 +25,7 @@ class FiliJobsExceptionHandlerSpec extends Specification {
     FiliJobsExceptionHandler jobsExceptionHandler = new FiliJobsExceptionHandler(objectMappersSuite)
 
     Optional<JobsApiRequest> request = Optional.of(
-            new JobsApiRequestImpl(
+            new JobsApiRequestBeanImpl(
                     "json",
                     "",
                     "500",

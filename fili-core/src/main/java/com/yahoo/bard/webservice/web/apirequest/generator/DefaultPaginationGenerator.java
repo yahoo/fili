@@ -56,7 +56,9 @@ public class DefaultPaginationGenerator implements Generator<PaginationParameter
      */
     public static Optional<PaginationParameters> generatePaginationParameters(String perPage, String page) {
         try {
-            return "".equals(perPage) && "".equals(page) ?
+            String pageLocal = page == null ? "" : page;
+            String perPageLocal = perPage == null ? "" : perPage;
+            return "".equals(pageLocal) && "".equals(perPageLocal) ?
                     Optional.empty() :
                     Optional.of(new PaginationParameters(perPage, page));
         } catch (BadPaginationException invalidParameters) {

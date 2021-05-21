@@ -1,6 +1,6 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest
+package com.yahoo.bard.webservice.web.apirequest.beanimpl
 
 import com.yahoo.bard.webservice.async.broadcastchannels.BroadcastChannel
 import com.yahoo.bard.webservice.async.broadcastchannels.SimpleBroadcastChannel
@@ -16,6 +16,8 @@ import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter
 import com.yahoo.bard.webservice.async.preresponses.stores.HashPreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore
 import com.yahoo.bard.webservice.async.preresponses.stores.PreResponseTestingUtils
+import com.yahoo.bard.webservice.web.apirequest.JobsApiRequest
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.JobsApiRequestBeanImpl
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
 import com.yahoo.bard.webservice.web.JobNotFoundException
@@ -30,9 +32,9 @@ import javax.ws.rs.core.UriBuilder
 import javax.ws.rs.core.UriInfo
 
 /**
- * Tests for JobsApiRequestImpl.
+ * Tests for JobsApiRequestBeanImpl.
  */
-class JobsApiRequestImplSpec extends Specification {
+class JobsApiRequestBeanImplSpec extends Specification {
     BroadcastChannel<String> broadcastChannel
     UriInfo uriInfo
     JobPayloadBuilder jobPayloadBuilder
@@ -76,7 +78,7 @@ class JobsApiRequestImplSpec extends Specification {
 
         broadcastChannel = new SimpleBroadcastChannel<>(PublishSubject.create())
 
-        defaultApiRequest = new JobsApiRequestImpl(
+        defaultApiRequest = new JobsApiRequestBeanImpl(
                 null,
                 "",
                 null,
@@ -209,7 +211,7 @@ class JobsApiRequestImplSpec extends Specification {
         apiJobStore.save(userFooJobRow2)
         apiJobStore.save(userFooJobRow3)
 
-        JobsApiRequestImpl apiRequest = new JobsApiRequestImpl(
+        JobsApiRequestBeanImpl apiRequest = new JobsApiRequestBeanImpl(
                 null,
                 "",
                 null,

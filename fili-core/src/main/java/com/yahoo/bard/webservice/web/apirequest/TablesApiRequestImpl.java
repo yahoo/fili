@@ -16,8 +16,11 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalTableGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
@@ -284,7 +287,7 @@ public class TablesApiRequestImpl extends ApiRequestBeanImpl implements TablesAp
                         )
                 )
         );
-        validateTimeAlignment(this.granularity, this.intervals);
+        UtcBasedIntervalGenerator.validateTimeAlignment(this.granularity, this.intervals);
 
         // parse filters
         ApiFilters requestFilters = getFilterGenerator().generate(filters, table, dimensionDictionary);
@@ -443,7 +446,6 @@ public class TablesApiRequestImpl extends ApiRequestBeanImpl implements TablesAp
      * @return Set of metric objects.
      * @throws BadApiRequestException if the metric dictionary returns a null or if the apiMetricQuery is invalid.
      */
-    @Override
     protected LinkedHashSet<LogicalMetric> generateLogicalMetrics(
             String apiMetricQuery,
             MetricDictionary metricDictionary
@@ -714,4 +716,22 @@ public class TablesApiRequestImpl extends ApiRequestBeanImpl implements TablesAp
         );
     }
     //CHECKSTYLE:ON
+
+    /**
+     * Extracts a specific logical table object given a valid table name and a valid granularity.
+     *
+     * @param tableName  logical table corresponding to the table name specified in the URL
+     * @param granularity  logical table corresponding to the table name specified in the URL
+     * @param logicalTableDictionary  Logical table dictionary contains the map of valid table names and table objects.
+     *
+     * @return Set of logical table objects.
+     * @throws BadApiRequestException Invalid table exception if the table dictionary returns a null.
+     */
+    protected static LogicalTable generateTable(
+            String tableName,
+            Granularity granularity,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
+        return DefaultLogicalTableGenerator.generateTable(tableName, granularity, logicalTableDictionary);
+    }
 }

@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
@@ -142,7 +143,7 @@ public class DimensionsApiRequestImpl extends ApiRequestBeanImpl implements Dime
             Iterable<Dimension> dimensions,
             Iterable<ApiFilter> filters
     ) {
-        super(format, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
+        super(format, null, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters.orElse(null));
         this.dimensions = Sets.newLinkedHashSet(dimensions);
         this.filters = Sets.newLinkedHashSet(filters);
     }

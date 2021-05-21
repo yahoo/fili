@@ -20,7 +20,6 @@ import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class IntersectionReportingFlagOffSpec extends Specification {

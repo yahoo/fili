@@ -47,9 +47,11 @@ import com.yahoo.bard.webservice.web.DimensionFieldSpecifierKeywords;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.MetricParser;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.IntervalBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders;
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
@@ -1129,6 +1131,7 @@ public class DataApiRequestImpl extends ApiRequestBeanImpl implements DataApiReq
         SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
         DateTime adjustedNow = new DateTime();
 
+        // TODO Feature flag paths need tests
         if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
             adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
             result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
@@ -1163,7 +1166,7 @@ public class DataApiRequestImpl extends ApiRequestBeanImpl implements DataApiReq
             DateTimeZone timeZone
     )
             throws BadApiRequestException {
-        validateTimeAlignment(granularity, intervals);
+        UtcBasedIntervalGenerator.validateTimeAlignment(granularity, intervals);
     }
 
     /**
@@ -1570,7 +1573,7 @@ public class DataApiRequestImpl extends ApiRequestBeanImpl implements DataApiReq
             } else {
                 //Feature flag for intersection reporting is disabled
                 // list of metrics extracted from the query string
-                generated = generateLogicalMetrics(apiMetricQuery, metricDictionary);
+                generated = metricBinder.generateLogicalMetrics(apiMetricQuery, metricDictionary);
             }
             LOG.trace("Generated set of logical metric: {}", generated);
             return generated;
