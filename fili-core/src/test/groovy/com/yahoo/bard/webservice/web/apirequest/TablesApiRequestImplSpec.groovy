@@ -6,14 +6,18 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_GRANULARITY
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
+import com.yahoo.bard.webservice.data.time.GranularityParser
+import com.yahoo.bard.webservice.data.time.StandardGranularityParser
+import com.yahoo.bard.webservice.data.time.StandardGranularityParserSpec
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.LogicalTableDictionary
+import com.yahoo.bard.webservice.table.PhysicalTable
+import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
-import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
-import com.yahoo.bard.webservice.web.apirequest.utils.TestingApiRequestProvider
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 import spock.lang.Specification
@@ -22,9 +26,19 @@ abstract class TablesApiRequestImplSpec extends Specification {
 
     BardConfigResources bardConfigResources = Mock(BardConfigResources)
 
-    TablesApiRequestImpl tablesApiRequestImpl
-    LogicalTableDictionary logicalTableDictionary
-    abstract ApiRequest buildApiRequestImpl(String tableName, String granularity)
+    abstract ApiRequest buildTableApiRequestImpl(String tableName, String granularity)
+
+    MetricDictionary metricDictionary = new MetricDictionary();
+    TableGroup group = new TableGroup(new LinkedHashSet<PhysicalTable>(), Collections.emptySet(), Collections.emptySet())
+    LogicalTable table = new LogicalTable("table1", DefaultTimeGrain.DAY, group, metricDictionary)
+    LogicalTableDictionary logicalTableDictionary = new LogicalTableDictionary()
+    TableIdentifier tableIdentifier = new TableIdentifier(table)
+    GranularityParser granularityParser = new StandardGranularityParser()
+
+    def setup() {
+        bardConfigResources.getLogicalTableDictionary() >> logicalTableDictionary
+        bardConfigResources.getGranularityParser() >> granularityParser
+    }
 
     def "generateTable() returns existing LogicalTable"() {
         given: "we insert a LogicalTable into LogicalTableDictionary"
@@ -57,7 +71,7 @@ abstract class TablesApiRequestImplSpec extends Specification {
         BadApiRequestException exception = thrown()
         exception.message == TABLE_GRANULARITY_MISMATCH.logFormat(granularity, nonExistingTableName)
     }
-/*
+
     def "generateLogicalMetrics() returns existing LogicalMetrics"() {
         given: "two LogicalMetrics in MetricDictionary"
         LogicalMetric logicalMetric1 = Mock(LogicalMetric)
@@ -65,9 +79,10 @@ abstract class TablesApiRequestImplSpec extends Specification {
         MetricDictionary metricDictionary = Mock(MetricDictionary)
         metricDictionary.get("logicalMetric1") >> logicalMetric1
         metricDictionary.get("logicalMetric2") >> logicalMetric2
+        TablesApiRequestImpl tablesApiRequest = buildTableApiRequestImpl("table1", "day")
 
         expect: "the two metrics are returned on request"
-        tablesApiRequestImpl.generateLogicalMetrics("logicalMetric1,logicalMetric2", metricDictionary) ==
+        tablesApiRequest.generateLogicalMetrics("logicalMetric1,logicalMetric2", metricDictionary) ==
                 [logicalMetric1, logicalMetric2] as LinkedHashSet
     }
 
@@ -76,7 +91,8 @@ abstract class TablesApiRequestImplSpec extends Specification {
         LogicalMetric logicalMetric = Mock(LogicalMetric)
         MetricDictionary metricDictionary = Mock(MetricDictionary)
         metricDictionary.get("logicalMetric") >> logicalMetric
-        TablesApiRequestImpl tablesApiRequest = buildApiRequestImpl(final String tableName, String granularity)
+
+        TablesApiRequestImpl tablesApiRequest = buildTableApiRequestImpl("table1", "day")
 
         when: "a non-existing metrics request"
         tablesApiRequest.generateLogicalMetrics("nonExistingMetric", metricDictionary)
@@ -84,5 +100,5 @@ abstract class TablesApiRequestImplSpec extends Specification {
         then: "BadApiRequestException is thrown"
         BadApiRequestException exception = thrown()
         exception.message == ErrorMessageFormat.METRICS_UNDEFINED.logFormat(["nonExistingMetric"])
-    }*/
+    }
 }

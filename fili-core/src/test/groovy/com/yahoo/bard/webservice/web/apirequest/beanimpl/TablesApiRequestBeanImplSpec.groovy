@@ -18,18 +18,12 @@ import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 class TablesApiRequestBeanImplSpec extends TablesApiRequestImplSpec{
 
-    MetricDictionary metricDictionary = new MetricDictionary();
-    TableGroup group = new TableGroup(new LinkedHashSet<PhysicalTable>(), Collections.emptySet(), Collections.emptySet())
-    LogicalTable table = new LogicalTable("table1", DefaultTimeGrain.DAY, group, metricDictionary)
-    LogicalTableDictionary logicalTableDictionary = new LogicalTableDictionary()
-    TableIdentifier tableIdentifier = new TableIdentifier(table);
-
     def setup() {
         logicalTableDictionary.put(tableIdentifier, table)
     }
 
     @Override
-    TablesApiRequestImpl buildApiRequestImpl(final String tableName, String granularity) {
+    TablesApiRequestImpl buildTableApiRequestImpl(final String tableName, String granularity) {
         return new TablesApiRequestImpl(tableName, granularity, "json", null, "1", "1", bardConfigResources);
     }
 }

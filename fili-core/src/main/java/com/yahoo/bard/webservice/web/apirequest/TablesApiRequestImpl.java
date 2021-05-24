@@ -164,61 +164,6 @@ public class TablesApiRequestImpl extends ApiRequestBeanImpl implements TablesAp
      * @param tableName  Logical table corresponding to the table name specified in the URL
      * @param granularity  Requested time granularity
      * @param format  Response data format JSON or CSV. Default is JSON.
-     * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
-     * string if it's not specified
-     * @param page  Desired page of results. It must represent a positive integer or an empty
-     * string if it's not specified
-     * @param bardConfigResources  The configuration resources used to build this API request
-     * @param dimensions  Grouping dimensions / Dimension constraint
-     * @param metrics  Metrics constraint
-     * @param intervals  Data / Time constraint
-     * @param filters  Filter constraint
-     * @param timeZoneId  A joda time zone id
-     *
-     * @throws BadApiRequestException on
-     * <ol>
-     *     <li>invalid table</li>
-     *     <li>invalid pagination parameters</li>
-     * </ol>
-     * @deprecated prefer constructor with downloadFilename
-     */
-    @Deprecated
-    public TablesApiRequestImpl(
-            String tableName,
-            String granularity,
-            String format,
-            @NotNull String perPage,
-            @NotNull String page,
-            BardConfigResources bardConfigResources,
-            List<RequestColumn> dimensions,
-            String metrics,
-            String intervals,
-            String filters,
-            String timeZoneId
-    ) throws BadApiRequestException {
-        this(
-                tableName,
-                granularity,
-                format,
-                null,
-                perPage,
-                page,
-                bardConfigResources,
-                dimensions,
-                metrics,
-                intervals,
-                filters,
-                timeZoneId
-        );
-    }
-
-    /**
-     * Parses the API request URL and generates the API Request object with specified query constraints, i.e.
-     * dimensions, metrics, date time intervals, and filters.
-     *
-     * @param tableName  Logical table corresponding to the table name specified in the URL
-     * @param granularity  Requested time granularity
-     * @param format  Response data format JSON or CSV. Default is JSON.
      * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
      * the provided filename. Otherwise indicates the response should be rendered in the browser.
      * @param perPage  Number of rows to display per page of results. It must represent a positive integer or an empty
@@ -329,46 +274,6 @@ public class TablesApiRequestImpl extends ApiRequestBeanImpl implements TablesAp
      */
     protected FilterGenerator getFilterGenerator() {
         return FilterBinders.getInstance()::generateFilters;
-    }
-
-    /**
-     * All argument constructor and its used primarily for withers - hence its private.
-     *
-     * @param format Response data format JSON or CSV. Default is JSON
-     * @param paginationParameters The parameters used to describe pagination
-     * @param tables Set of logical tables
-     * @param table Logical table
-     * @param granularity Requested time granularity
-     * @param dimensions Grouping dimensions / Dimension constraint
-     * @param metrics Metrics constraint
-     * @param intervals Data / Time constraint
-     * @param filters Filter constraint
-     * @deprecated prefer constructor with downloadFilename
-     */
-    @Deprecated
-    private TablesApiRequestImpl(
-            ResponseFormatType format,
-            Optional<PaginationParameters> paginationParameters,
-            LinkedHashSet<LogicalTable> tables,
-            LogicalTable table,
-            Granularity granularity,
-            LinkedHashSet<Dimension> dimensions,
-            LinkedHashSet<LogicalMetric> metrics,
-            List<Interval> intervals,
-            ApiFilters filters
-    ) {
-        this(
-                format,
-                null,
-                paginationParameters.orElse(null),
-                tables,
-                table,
-                granularity,
-                dimensions,
-                metrics,
-                intervals,
-                filters
-        );
     }
 
     /**
