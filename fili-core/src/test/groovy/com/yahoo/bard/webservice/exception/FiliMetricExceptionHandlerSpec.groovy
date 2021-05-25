@@ -11,7 +11,7 @@ import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest
-import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.MetricsApiRequestBeanImpl
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -34,9 +34,10 @@ class FiliMetricExceptionHandlerSpec extends Specification {
 
     def setup() {
         dictionary.put("metric", metric)
-        request = Optional.of(new MetricsApiRequestImpl(
+        request = Optional.of(new MetricsApiRequestBeanImpl(
                 "metric",
                 "json",
+                "",
                 "",
                 "",
                 dictionary

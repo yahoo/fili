@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Base class to implement map based api request behaviors.
+ */
 public class BaseRequestMapImpl {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseRequestMapImpl.class);
@@ -82,36 +85,73 @@ public class BaseRequestMapImpl {
      *
      * @param requestParams The map describing the parameters.
      * @param resources Non parameter request bound objects.
+     * @param binders Factory classes for requests
      */
     public BaseRequestMapImpl(
             Map<String, String> requestParams,
-            Map<String, Object> resources
+            Map<String, Object> resources,
+            Map<String, Object> binders
     ) {
         this.requestParams = new HashMap<>(Collections.unmodifiableMap(requestParams));
         this.resources = new HashMap<>(Collections.unmodifiableMap(resources));
-        binders = new HashMap<>(Collections.unmodifiableMap(getDefaultBinders()));
+        this.binders = new HashMap<>(Collections.unmodifiableMap(binders));
         boundObjectCache = new HashMap<>();
     }
 
+    /**
+     * Process the binding of properties that are allowed to be Optionals.
+     *
+     * @param key  The key of the property and the binder
+     *
+     * @return The bound object if any wrapped in an optional
+     */
     @SuppressWarnings("unchecked")
     protected Optional<?> bindAndGetOptionalProperty(String key) {
         if (! boundObjectCache.containsKey(key)) {
             Optional<String> value = Optional.ofNullable(requestParams.getOrDefault(key, getDefaultParams().get(key)));
-            Function<String, ?> binder = (Function<String, ?>) binders.get(key);
+            Function<String, ?> binder = (Function<String, ?>) getBinderOrDefault(key);
             boundObjectCache.put(key, value.map(binder));
         }
         return (Optional<?>) boundObjectCache.get(key);
     }
 
+    /**
+     * Process the binding of properties that are not treated as optionals.
+     *
+     * @param key  The key of the property and the binder
+     *
+     * @return The bound object or null
+     */
     @SuppressWarnings("unchecked")
     protected Object bindAndGetNonOptionalProperty(String key) {
         if (!boundObjectCache.containsKey(key)) {
             String value = requestParams.getOrDefault(key, getDefaultParams().get(key));
-            Function<String, ?> binder = (Function<String, ?>) binders.get(key);
+            Function<String, ?> binder = (Function<String, ?>) getBinderOrDefault(key);
             boundObjectCache.put(key, binder.apply(value));
         }
         return boundObjectCache.get(key);
     }
+
+    /**
+     * Utility method to allow reading through to the default binder map without exposing it.
+     *
+     * @param key  The binder's name
+     *
+     * @return Either the local binder or the defaulted one if no local one was added.
+     */
+    protected Object getBinderOrDefault(String key) {
+        return binders.getOrDefault(key, getDefaultBinders().get(key));
+    }
+
+    /**
+     * Internal method to support copy construction.
+     *
+     * @return Either the local binder or the defaulted one if no local one was added.
+     */
+    protected Object getBinders() {
+        return binders;
+    }
+
 
     /**
      * Add a request parameter.
@@ -215,5 +255,33 @@ public class BaseRequestMapImpl {
      */
     public Map<String, Object> getDefaultBinders() {
         return DEFAULT_BINDERS;
+    }
+
+    /**
+     * Add a bound object to the cache.
+     *
+     * @param key The property name for the binder
+     * @param resource  The binder being provided by default
+     * @param <T> The type of the binder being provided
+     *
+     * @return Any existing defaulted resource
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T putBoundObject(String key, T resource) {
+        return (T) boundObjectCache.put(key, resource);
+    }
+
+    /**
+     * Retrieve a bound object to the cache.
+     *
+     * @param key The property name for the binder
+     * @param resource  The binder being provided by default
+     * @param <T> The type of the binder being provided
+     *
+     * @return Any existing defaulted resource
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getBoundObject(String key, T resource) {
+        return (T) boundObjectCache.put(key, resource);
     }
 }

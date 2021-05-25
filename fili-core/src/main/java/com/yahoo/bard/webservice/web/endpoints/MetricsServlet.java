@@ -16,7 +16,7 @@ import com.yahoo.bard.webservice.web.MetadataObject;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
-import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequestImpl;
+import com.yahoo.bard.webservice.web.apirequest.beanimpl.MetricsApiRequestBeanImpl;
 import com.yahoo.bard.webservice.web.endpoints.views.MetricMetadataFormatter;
 
 import com.codahale.metrics.annotation.Timed;
@@ -136,7 +136,7 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest("all"));
 
-            apiRequest = new MetricsApiRequestImpl(
+            apiRequest = new MetricsApiRequestBeanImpl(
                     null,
                     formatResolver.apply(format, containerRequestContext),
                     downloadFilename,
@@ -146,7 +146,7 @@ public class MetricsServlet extends EndpointServlet {
             );
 
             if (requestMapper != null) {
-                apiRequest = (MetricsApiRequestImpl) requestMapper.apply(apiRequest, containerRequestContext);
+                apiRequest = (MetricsApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
             }
 
             Response response = paginateAndFormatResponse(
@@ -195,7 +195,7 @@ public class MetricsServlet extends EndpointServlet {
             RequestLog.startTiming(this);
             RequestLog.record(new MetricRequest(metricName));
 
-            apiRequest = new MetricsApiRequestImpl(
+            apiRequest = new MetricsApiRequestBeanImpl(
                     metricName,
                     format,
                     null,

@@ -1,13 +1,14 @@
 // Copyright 2017 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web.apirequest;
+package com.yahoo.bard.webservice.web.apirequest.beanimpl;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
-import com.yahoo.bard.webservice.web.apirequest.beanimpl.ApiRequestBeanImpl;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.MetricsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
@@ -23,8 +24,8 @@ import javax.validation.constraints.NotNull;
 /**
  * Metrics API Request Implementation binds, validates, and models the parts of a request to the metrics endpoint.
  */
-public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements MetricsApiRequest {
-    private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequestImpl.class);
+public class MetricsApiRequestBeanImpl extends ApiRequestBeanImpl implements MetricsApiRequest {
+    private static final Logger LOG = LoggerFactory.getLogger(MetricsApiRequestBeanImpl.class);
 
     private final LinkedHashSet<LogicalMetric> metrics;
 
@@ -48,9 +49,9 @@ public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements Metrics
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
      * @deprecated prefer constructor with downloadFilename
-     */
+
     @Deprecated
-    public MetricsApiRequestImpl(
+    public MetricsApiRequestBeanImpl(
             String metricName,
             String format,
             @NotNull String perPage,
@@ -58,7 +59,8 @@ public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements Metrics
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
         this(metricName, format, null, perPage, page, metricDictionary);
-    }
+    }*/
+
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -82,7 +84,7 @@ public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements Metrics
      *     <li>Pagination parameters in the API request that are not positive integers.</li>
      * </ol>
      */
-    public MetricsApiRequestImpl(
+    public MetricsApiRequestBeanImpl(
             String metricName,
             String format,
             String downloadFilename,
@@ -113,7 +115,7 @@ public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements Metrics
      * @param paginationParameters  Pagination info for the request
      * @param metrics  Desired metrics of the request
      */
-    private MetricsApiRequestImpl(
+    private MetricsApiRequestBeanImpl(
             ResponseFormatType format,
             String downloadFilename,
             PaginationParameters paginationParameters,
@@ -160,7 +162,7 @@ public class MetricsApiRequestImpl extends ApiRequestBeanImpl implements Metrics
 
     @Override
     public MetricsApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new MetricsApiRequestImpl(
+        return new MetricsApiRequestBeanImpl(
                 format,
                 downloadFilename,
                 paginationParameters,

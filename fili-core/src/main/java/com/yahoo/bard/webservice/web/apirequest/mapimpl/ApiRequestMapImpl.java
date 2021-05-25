@@ -63,7 +63,24 @@ public class ApiRequestMapImpl extends BaseRequestMapImpl implements ApiRequest 
      * @param requestParams The map describing the parameters.
      */
     public ApiRequestMapImpl(Map<String, String> requestParams) {
-        super(requestParams, Collections.emptyMap());
+        this(requestParams, Collections.emptyMap(), Collections.emptyMap());
+    }
+
+    /**
+     * Constructor.
+     *
+     * Constructor used to build ApiRequest objects.
+     *
+     * @param requestParams The map describing the parameters.
+     * @param resources  A map of state carrying objects used in the request
+     * @param binders Factories for constructing bound objects
+     */
+    public ApiRequestMapImpl(
+            Map<String, String> requestParams,
+            Map<String, Object> resources,
+            Map<String, Object> binders
+    ) {
+        super(requestParams, resources, binders);
     }
 
     @Override
@@ -85,7 +102,7 @@ public class ApiRequestMapImpl extends BaseRequestMapImpl implements ApiRequest 
         String page = Optional.ofNullable((String) requestParams.get(PAGE)).orElse("");
 
         BiFunction<String, String, Optional<PaginationParameters>> binder =
-                (BiFunction<String, String, Optional<PaginationParameters>>) binders.get(PAGINATION_PARAMETERS);
+                (BiFunction<String, String, Optional<PaginationParameters>>) getBinderOrDefault(PAGINATION_PARAMETERS);
         return (binder.apply(perPage, page));
     }
 

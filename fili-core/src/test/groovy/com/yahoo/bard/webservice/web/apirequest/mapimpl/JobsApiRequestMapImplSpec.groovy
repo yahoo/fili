@@ -79,15 +79,9 @@ class JobsApiRequestMapImplSpec extends Specification {
         broadcastChannel = new SimpleBroadcastChannel<>(PublishSubject.create())
 
         defaultApiRequest = new JobsApiRequestMapImpl(
-                null,
-                "",
-                null,
-                "",
-                "",
-                null,
-                uriInfo,
-                jobPayloadBuilder,
-                apiJobStore
+                MapRequestUtil.jobApiRequestParameters(null, "", null, "", "", ""),
+                MapRequestUtil.jobApiRequestResources(uriInfo, apiJobStore),
+                jobPayloadBuilder
         )
     }
 

@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.web.RequestValidationException
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.filters.ApiFilters
+import com.yahoo.bard.webservice.web.util.PaginationParameters
 
 import com.fasterxml.jackson.core.JsonProcessingException
 
@@ -26,7 +27,8 @@ class FiliTablesExceptionHandlerSpec extends Specification {
 
     Optional<TablesApiRequest> request = Optional.of(new TablesApiRequestImpl(
             DefaultResponseFormatType.JSON,
-            Optional.empty(),
+            (String) null,
+            (PaginationParameters) null,
             [] as LinkedHashSet,
             new LogicalTable(
                     "table",

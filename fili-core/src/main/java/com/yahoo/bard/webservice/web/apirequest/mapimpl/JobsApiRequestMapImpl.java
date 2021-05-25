@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.mapimpl;
 
 import com.yahoo.bard.webservice.async.jobs.jobrows.JobRow;
+import com.yahoo.bard.webservice.async.jobs.payloads.DefaultJobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.payloads.JobPayloadBuilder;
 import com.yahoo.bard.webservice.async.jobs.stores.ApiJobStore;
 import com.yahoo.bard.webservice.async.jobs.stores.JobRowFilter;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +39,8 @@ public class JobsApiRequestMapImpl extends ApiRequestMapImpl implements JobsApiR
     public static final String JOB_PAYLOAD_BUILDER_KEY = "jobPayloadBuilder";
     public static final String API_JOB_STORE_KEY = "apiJobStore";
     public static final String URI_INFO = "uriInfo";
+
+    public static final JobPayloadBuilder DEFAULT_FACTORY = new DefaultJobPayloadBuilder();
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -68,11 +72,39 @@ public class JobsApiRequestMapImpl extends ApiRequestMapImpl implements JobsApiR
             JobPayloadBuilder jobPayloadBuilder,
             ApiJobStore apiJobStore
     ) {
-        super(MapRequestUtil.constructorConverter(format, downloadFilename, asyncAfter, perPage, page));
+        super(MapRequestUtil.apiConstructorConverter(format, downloadFilename, asyncAfter, perPage, page));
         setRequestParameter(FILTERS_KEY, filters);
         putResource(URI_INFO, uriInfo);
         putBinder(JOB_PAYLOAD_BUILDER_KEY, jobPayloadBuilder);
         putResource(API_JOB_STORE_KEY, apiJobStore);
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param parameters  Request parameters
+     * @param resources Resource objects
+     * @param jobPayloadBuilder The builder for the jobs api request
+     */
+    public JobsApiRequestMapImpl(
+            Map<String, String> parameters,
+            Map<String, Object> resources,
+            JobPayloadBuilder jobPayloadBuilder
+    ) {
+        super(parameters, resources, Collections.singletonMap(JOB_PAYLOAD_BUILDER_KEY, jobPayloadBuilder));
+    }
+
+    /**
+     * Parses the API request URL and generates the Api Request object.
+     *
+     * @param parameters  Request parameters
+     * @param resources Resource objects
+     */
+    public JobsApiRequestMapImpl(
+            Map<String, String> parameters,
+            Map<String, Object> resources
+    ) {
+        this(parameters, resources, DEFAULT_FACTORY);
     }
 
     /**

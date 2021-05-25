@@ -69,7 +69,7 @@ public class JobsApiRequestBeanImpl extends ApiRequestMapImpl implements JobsApi
             JobPayloadBuilder jobPayloadBuilder,
             ApiJobStore apiJobStore
     ) {
-        super(MapRequestUtil.constructorConverter(format, downloadFilename, asyncAfter, perPage, page));
+        super(MapRequestUtil.apiConstructorConverter(format, downloadFilename, asyncAfter, perPage, page));
         this.uriInfo = uriInfo;
         this.jobPayloadBuilder = jobPayloadBuilder;
         this.apiJobStore = apiJobStore;
