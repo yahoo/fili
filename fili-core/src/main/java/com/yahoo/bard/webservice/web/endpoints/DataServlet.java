@@ -21,6 +21,7 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
@@ -36,9 +37,11 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
@@ -101,24 +104,24 @@ import javax.ws.rs.core.UriInfo;
 @Path("data")
 @Singleton
 public class DataServlet extends CORSPreflightServlet implements BardConfigResources {
-    private static final Logger LOG = LoggerFactory.getLogger(DataServlet.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DataServlet.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
-    private final ResourceDictionaries resourceDictionaries;
-    private final DruidQueryBuilder druidQueryBuilder;
-    private final TemplateDruidQueryMerger templateDruidQueryMerger;
-    private final DruidResponseParser druidResponseParser;
-    private final DataRequestHandler dataRequestHandler;
-    private final RequestMapper requestMapper;
-    private final DruidFilterBuilder filterBuilder;
-    private final HavingGenerator havingGenerator;
-    private final JobRowBuilder jobRowBuilder;
-    private final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
-    private final JobPayloadBuilder jobPayloadBuilder;
-    private final BroadcastChannel<String> preResponseStoredNotifications;
-    private final DateTimeFormatter dateTimeFormatter;
+    protected final ResourceDictionaries resourceDictionaries;
+    protected final DruidQueryBuilder druidQueryBuilder;
+    protected final TemplateDruidQueryMerger templateDruidQueryMerger;
+    protected final DruidResponseParser druidResponseParser;
+    protected final DataRequestHandler dataRequestHandler;
+    protected final RequestMapper requestMapper;
+    protected final DruidFilterBuilder filterBuilder;
+    protected final HavingGenerator havingGenerator;
+    protected final JobRowBuilder jobRowBuilder;
+    protected final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
+    protected final JobPayloadBuilder jobPayloadBuilder;
+    protected final BroadcastChannel<String> preResponseStoredNotifications;
+    protected final DateTimeFormatter dateTimeFormatter;
 
     private final ApiRequestLogicalMetricBinder metricBinder;
     private final LegacyGenerator<List<OrderByColumn>> orderByGenerator;
@@ -408,52 +411,36 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     ) {
         DataApiRequest apiRequest = null;
         try {
-            try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-                apiRequest = dataApiRequestFactory.buildApiRequest(
-                        tableName,
-                        timeGrain,
-                        dimensions,
-                        metrics,
-                        intervals,
-                        filters,
-                        havings,
-                        sorts,
-                        count,
-                        topN,
-                        formatResolver.apply(format, containerRequestContext),
-                        downloadFilename,
-                        timeZone,
-                        asyncAfter,
-                        perPage,
-                        page,
-                        this
-                );
-            }
-
-            if (requestMapper != null) {
-                try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
-                    apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
-                }
-            }
-
+            apiRequest = prepareDataApiRequest(
+                    uriInfo,
+                    containerRequestContext,
+                    tableName,
+                    timeGrain,
+                    dimensions,
+                    metrics,
+                    intervals,
+                    filters,
+                    havings,
+                    sorts,
+                    count,
+                    topN,
+                    format,
+                    timeZone,
+                    asyncAfter,
+                    downloadFilename,
+                    perPage,
+                    page
+            );
             // Build the query template
-            TemplateDruidQuery templateQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
-                templateQuery = templateDruidQueryMerger.merge(apiRequest);
-            }
 
-            // Select the performance slice and build the final query
-            DruidAggregationQuery<?> druidQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
-                druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
-            }
+            TemplateDruidQuery templateQuery = prepareTemplateDruidQuery(apiRequest);
 
-            // Accumulate data needed for request processing workflow
-            RequestContext context;
-            try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
-                // In embedded contexts, containerRequestContext may be null
-                context = new RequestContext(containerRequestContext, readCache);
-            }
+            DruidAggregationQuery<?> druidQuery = prepareDruidQuery(
+                    apiRequest,
+                    templateQuery
+            );
+
+            RequestContext context = prepareContext(containerRequestContext, readCache);
 
             Subject<PreResponse, PreResponse> queryResultsEmitter = PublishSubject.create();
 
@@ -507,6 +494,89 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 );
             }
         }
+    }
+
+    protected RequestContext prepareContext(
+            final ContainerRequestContext containerRequestContext,
+            final Boolean readCache
+    ) {
+        // Accumulate data needed for request processing workflow
+        RequestContext context;
+        try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
+            // In embedded contexts, containerRequestContext may be null
+            context = new RequestContext(containerRequestContext, readCache);
+        }
+        return context;
+    }
+
+    protected DruidAggregationQuery<?> prepareDruidQuery(
+            final DataApiRequest apiRequest,
+            final TemplateDruidQuery templateQuery
+    ) throws FilterBuilderException, NoMatchFoundException {
+        // Select the performance slice and build the final query
+        DruidAggregationQuery<?> druidQuery;
+        try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
+            druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
+        }
+        return druidQuery;
+    }
+
+    protected TemplateDruidQuery prepareTemplateDruidQuery(final DataApiRequest apiRequest) {
+        TemplateDruidQuery templateQuery;
+        try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
+            templateQuery = templateDruidQueryMerger.merge(apiRequest);
+        }
+        return templateQuery;
+    }
+
+    protected DataApiRequest prepareDataApiRequest(
+            UriInfo uriInfo,
+            ContainerRequestContext containerRequestContext,
+            String tableName,
+            String timeGrain,
+            List<PathSegment> dimensions,
+            String metrics,
+            String intervals,
+            String filters,
+            String havings,
+            String sorts,
+            String count,
+            String topN,
+            String format,
+            String timeZone,
+            String asyncAfter,
+            String downloadFilename,
+            String perPage,
+            String page) throws RequestValidationException {
+        DataApiRequest dataApiRequest;
+        try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
+            dataApiRequest = dataApiRequestFactory.buildApiRequest(
+                    tableName,
+                    timeGrain,
+                    dimensions,
+                    metrics,
+                    intervals,
+                    filters,
+                    havings,
+                    sorts,
+                    count,
+                    topN,
+                    formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
+                    timeZone,
+                    asyncAfter,
+                    perPage,
+                    page,
+                    this
+            );
+        }
+
+        if (requestMapper != null) {
+            try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
+                dataApiRequest = (DataApiRequest) requestMapper.apply(dataApiRequest, containerRequestContext);
+            }
+        }
+        return dataApiRequest;
     }
 
     /**
