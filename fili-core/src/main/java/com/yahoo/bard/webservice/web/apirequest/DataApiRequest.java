@@ -3,17 +3,12 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
-import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.table.LogicalTable;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
@@ -32,8 +27,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 /**
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
@@ -221,30 +214,6 @@ public interface DataApiRequest extends ApiRequest {
     // Query model objects
 
     /**
-     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
-     * <p>
-     * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
-     *
-     * @return the filter used in the Query Model
-     *
-     * @deprecated Build query filters outside the API Request using FilterBuilders
-     */
-    @Deprecated
-    Filter getQueryFilter();
-
-    /**
-     * Builds and returns the Druid filters from this request's {@link ApiFilter}s.
-     * <p>
-     * The Druid filters are built (an expensive operation) every time this method is called. Use it judiciously.
-     *
-     * @return the Druid filter
-     */
-    @Deprecated
-    default Filter getDruidFilter() {
-        return getQueryFilter();
-    }
-
-    /**
      * The fact model having (should probably remove this).
      *
      * @return A fact model having
@@ -252,49 +221,8 @@ public interface DataApiRequest extends ApiRequest {
      * @deprecated Query builders should have responsibility for building Having
      */
     @Deprecated
-    Having getQueryHaving();
+    //Having getQueryHaving();
 
-    /**
-     *  The fact model having (should probably remove this).
-     *
-     * @return A fact model having
-     *
-     * @deprecated Use {@link #getQueryHaving()}
-     */
-    @Deprecated
-    default Having getHaving() {
-        return getQueryHaving();
-    }
-
-    // Builder methods
-
-    /**
-     *  Get the filter builder tool for downstream filter building.
-     *
-     * @return A favtory for building filters.
-     *
-     * @deprecated Current client should provide their own filter builders.
-     */
-    @Deprecated
-    DruidFilterBuilder getFilterBuilder();
-
-     /**
-     * Generates filter objects on the based on the filter query in the api request.
-     *
-     * @param filterQuery  Expects a URL filter query String in the format:
-     * (dimension name).(fieldname)-(operation):[?(value or comma separated values)]?
-     * @param table  The logical table for the data request
-     * @param dimensionDictionary  DimensionDictionary
-     *
-     * @return Set of filter objects.
-     * @deprecated Use FilterBinders.getInstance()::generateFilters as an alternative
-     */
-    @Deprecated
-    Map<Dimension, Set<ApiFilter>> generateFilters(
-            String filterQuery,
-            LogicalTable table,
-            DimensionDictionary dimensionDictionary
-    );
 
     // CHECKSTYLE:OFF
 
@@ -314,22 +242,7 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withIntervals(List<Interval> intervals);
 
-    /**
-     * @param intervals  The intervals being applied.
-     *
-     * @return a new DataApiRequest
-     *
-     * @deprecated Use @see{{@link #withIntervals(List)}}
-     */
-    @Deprecated
-    DataApiRequest withIntervals(Set<Interval> intervals);
-
     DataApiRequest withFilters(ApiFilters filters);
-
-    @Deprecated
-    default DataApiRequest withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return withHavings(new LinkedHashMap<>(havings));
-    }
 
     default DataApiRequest withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
         throw new UnsupportedOperationException("this method has not been implemented");
@@ -410,14 +323,6 @@ public interface DataApiRequest extends ApiRequest {
     default boolean optimizeBackendQuery() {
         return true;
     }
-
-    // Builder with methods
-
-    @Deprecated
-    DataApiRequest withBuilder(Response.ResponseBuilder builder);
-
-    @Deprecated
-    DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
 
     /**
      * The set of referenced dimensions on this ApiRequest.

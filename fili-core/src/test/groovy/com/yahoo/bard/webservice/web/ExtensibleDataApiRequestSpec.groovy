@@ -21,10 +21,12 @@ import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest
 import com.yahoo.bard.webservice.web.apirequest.ExtensibleDataApiRequestImpl
+
 import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
 import org.apache.commons.collections4.MultiValuedMap
@@ -117,7 +119,7 @@ class ExtensibleDataApiRequestSpec extends Specification {
         extensibleDataApiRequest = new ExtensibleDataApiRequestImpl(
                 table.getName(),
                 "day", // granularity
-                [] as List<PathSegment>, // dimensions
+                [] List<RequestColumn>, // dimensions
                 "", // metrics
                 "P1D/Current",
                 "", //apiFilters
@@ -132,6 +134,7 @@ class ExtensibleDataApiRequestSpec extends Specification {
                 "", // perPage
                 "", // page
                 testParams, // queryParams
+                null,
                 bardConfigResources  // config resources
         )
 

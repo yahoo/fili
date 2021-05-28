@@ -18,16 +18,16 @@ import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
+import org.apache.commons.collections4.ListValuedMap
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import org.joda.time.DateTime
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import javax.ws.rs.core.MultivaluedHashMap
-import javax.ws.rs.core.PathSegment
 
 class AggregatabilityValidationSpec extends Specification {
 
@@ -36,7 +36,7 @@ class AggregatabilityValidationSpec extends Specification {
     @Shared
     LogicalTable table
     @Shared
-    Map emptyMap = new MultivaluedHashMap<>()
+    ListValuedMap<String, String> emptyMap = new ArrayListValuedHashMap<>()
 
     def setup() {
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
@@ -145,16 +145,16 @@ class AggregatabilityValidationSpec extends Specification {
         ["one"]        | ["four"]          | "one|id-in[blue,red],four|desc-in[cat,dog]"                             | "1 agg, 1 non-agg, 2 values filter in the agg, 2 values filter in the non-agg (not key)"
 
         aggDims = aggDimStrings.collect { String name ->
-            Mock(PathSegment) {
-                getPath() >> name
-                getMatrixParameters() >> emptyMap
+            Mock(RequestColumn) {
+                getApiName() >> name
+                getParameters() >> emptyMap
             }
         }
 
         nonAggDims = nonAggDimStrings.collect { String name ->
-            Mock(PathSegment) {
-                getPath() >> name
-                getMatrixParameters() >> emptyMap
+            Mock(RequestColumn) {
+                getApiName() >> name
+                getParameters() >> emptyMap
             }
         }
 
@@ -201,16 +201,16 @@ class AggregatabilityValidationSpec extends Specification {
         ["one", "two"] | ["four", "five"] | "two|id-in[M,F],three|id-in[3,7],four|id-in[cat,dog],five|id-in[square]" | "2 aggs, 2 non-aggs, 2 values filter in one agg, 1 and 2 values filter in the non-aggs, 2 values filter in another non-agg"
 
         aggDims = aggDimStrings.collect { String name ->
-            Mock(PathSegment) {
-                getPath() >> name
-                getMatrixParameters() >> emptyMap
+            Mock(RequestColumn) {
+                getApiName() >> name
+                getParameters() >> emptyMap
             }
         }
 
         nonAggDims = nonAggDimStrings.collect { String name ->
-            Mock(PathSegment) {
-                getPath() >> name
-                getMatrixParameters() >> emptyMap
+            Mock(RequestColumn) {
+                getApiName() >> name
+                getParameters() >> emptyMap
             }
         }
 

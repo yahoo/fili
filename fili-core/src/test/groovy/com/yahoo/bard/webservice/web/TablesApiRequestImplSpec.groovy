@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.endpoints.TablesServlet
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.PaginationParameters
@@ -25,8 +26,6 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import javax.ws.rs.core.PathSegment
 
 class TablesApiRequestImplSpec extends Specification {
 
@@ -258,9 +257,9 @@ class TablesApiRequestImplSpec extends Specification {
                 "",  // page
                 tablesServlet,
                 [
-                        Mock(PathSegment) {getPath() >> "dim1"},
-                        Mock(PathSegment) {getPath() >> "dim2"},
-                        Mock(PathSegment) {getPath() >> "dim3"},
+                        Mock(RequestColumn) {getApiName() >> "dim1"},
+                        Mock(RequestColumn) {getApiName() >> "dim2"},
+                        Mock(RequestColumn) {getApiName() >> "dim3"},
                 ] as List, // dimensions
                 "", // metrics
                 "current/P1D", // intervals

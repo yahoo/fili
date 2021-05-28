@@ -2,14 +2,18 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import static com.yahoo.bard.webservice.config.BardFeatureFlag.PSEUDO_DIMENSION_SUPPORT;
+
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.apache.commons.collections4.MultiValuedMap;
 
+import java.util.HashMap;
 import java.util.List;
-
-import javax.ws.rs.core.PathSegment;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of DataApiRequestFactory that does not modify the initial parameters at all.
@@ -20,7 +24,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -60,7 +64,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
     public DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -77,11 +81,24 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             MultiValuedMap<String, String> queryParams,
             BardConfigResources bardConfigResources
     ) {
+        List<RequestColumn> dimensionsFiltered = dimensions;
+
+        Map<String, Object> extendedObjects = new HashMap<>();
+        if (PSEUDO_DIMENSION_SUPPORT.isOn()) {
+            List<RequestColumn> pseudoDimensions = dimensions.stream()
+                    .filter(column -> column.getApiName().startsWith("__"))
+                    .collect(Collectors.toList());
+            dimensionsFiltered = dimensions.stream()
+                    .filter(column -> ! column.getApiName().startsWith("__"))
+                    .collect(Collectors.toList());
+            extendedObjects.put(ExtensibleDataApiReqestImpl.PSEUDO_DIMENSION_KEY, pseudoDimensions);
+        }
+
         if (bardConfigResources.getMetricBinder() instanceof ProtocolLogicalMetricGenerator) {
             return new ProtocolMetricDataApiReqestImpl(
                     tableName,
                     granularity,
-                    dimensions,
+                    dimensionsFiltered,
                     logicalMetrics,
                     intervals,
                     apiFilters,
@@ -96,13 +113,14 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                     perPage,
                     page,
                     queryParams,
+                    extendedObjects,
                     bardConfigResources
             );
         }
         return new ExtensibleDataApiRequestImpl(
                 tableName,
                 granularity,
-                dimensions,
+                dimensionsFiltered,
                 logicalMetrics,
                 intervals,
                 apiFilters,
@@ -117,6 +135,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                 perPage,
                 page,
                 queryParams,
+                extendedObjects,
                 bardConfigResources
         );
     }

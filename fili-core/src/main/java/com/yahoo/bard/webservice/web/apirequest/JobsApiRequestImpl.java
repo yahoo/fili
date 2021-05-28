@@ -155,7 +155,7 @@ public class JobsApiRequestImpl extends ApiRequestImpl implements JobsApiRequest
      */
     public LinkedHashSet<JobRowFilter> buildJobStoreFilter(@NotNull String filterQuery) {
         // split on '],' to get list of filters
-        return Arrays.stream(filterQuery.split(COMMA_AFTER_BRACKET_PATTERN))
+        return Arrays.stream(filterQuery.split(ApiRequestImpl.COMMA_AFTER_BRACKET_PATTERN))
                 .map(
                         filter -> {
                             try {

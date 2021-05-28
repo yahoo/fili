@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.apache.commons.collections4.MultiValuedMap;
@@ -9,7 +10,6 @@ import org.apache.commons.collections4.MultiValuedMap;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
 
 /**
  * Layer of injection to provide preprocessing of BardConfig in response to request parameters and transformation of
@@ -48,7 +48,7 @@ public interface DataApiRequestFactory {
     DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -95,7 +95,7 @@ public interface DataApiRequestFactory {
     default DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -165,7 +165,7 @@ public interface DataApiRequestFactory {
     DataApiRequest buildApiRequest(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,

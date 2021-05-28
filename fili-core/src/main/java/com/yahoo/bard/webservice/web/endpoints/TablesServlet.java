@@ -24,6 +24,8 @@ import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestUtils;
 import com.yahoo.bard.webservice.web.endpoints.views.DefaultMetadataViewFormatters;
 import com.yahoo.bard.webservice.web.endpoints.views.TableFullViewFormatter;
 import com.yahoo.bard.webservice.web.endpoints.views.TableMetadataFormatter;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -341,6 +344,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
             @Context final ContainerRequestContext containerRequestContext
     ) {
         TablesApiRequestImpl tablesApiRequest = null;
+        List<RequestColumn> requestColumns = dimensions.stream()
+                .map(RequestUtils::toRequestColumn)
+                .collect(Collectors.toList());
+
         try {
             RequestLog.startTiming(this);
             RequestLog.record(new TableRequest(tableName, granularity));
@@ -353,7 +360,7 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                     "",
                     "",
                     this,
-                    dimensions,
+                    requestColumns,
                     metrics,
                     intervals,
                     filters,

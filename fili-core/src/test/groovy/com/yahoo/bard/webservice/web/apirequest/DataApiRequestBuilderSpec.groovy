@@ -6,6 +6,7 @@ import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 import com.yahoo.bard.webservice.web.util.BardConfigResources
 
@@ -19,7 +20,7 @@ class DataApiRequestBuilderSpec extends Specification {
     @Shared RequestParameters simpleRequestParameters = new RequestParameters(
             "logicalTable",
             "day", // granularity
-            [] as List<PathSegment>, // dimensions
+            [] as List<RequestColumn>, // dimensions
             "logicalMetrics",
             "intervals",
             "apiFilters",

@@ -3,18 +3,13 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
-import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.util.UnmodifiableLinkedHashMap;
 import com.yahoo.bard.webservice.util.UnmodifiableLinkedHashSet;
-import com.yahoo.bard.webservice.web.ApiFilter;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
@@ -29,12 +24,8 @@ import org.joda.time.Interval;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
 
 /**
  * And immutable POJO implementation of {@link DataApiRequest} contract. All data is provided through the constructor
@@ -354,28 +345,6 @@ public class DataApiRequestValueObject implements DataApiRequest {
     }
 
     @Override
-    public DataApiRequest withIntervals(Set<Interval> intervals) {
-        return new DataApiRequestValueObject(
-                table,
-                granularity,
-                dimensions,
-                perDimensionFields,
-                metrics,
-                intervals.stream().collect(Collectors.toList()),
-                apiFilters,
-                havings,
-                allSorts,
-                count,
-                topN,
-                format,
-                downloadFilename,
-                timeZone,
-                asyncAfter,
-                paginationParameters
-        );
-    }
-
-    @Override
     public DataApiRequest withFilters(ApiFilters filters) {
         return new DataApiRequestValueObject(
                 table,
@@ -637,87 +606,5 @@ public class DataApiRequestValueObject implements DataApiRequest {
                 asyncAfter,
                 paginationParameters
         );
-    }
-
-    //*************************************************************
-    //************** DEPRECATED METHODS ON INTERFACE **************
-    //*************************************************************
-
-    /**
-     * Unsupported operation. Throws UnsupportedOperationException if invoked. Druid filters are being split from the
-     * ApiRequest model and should be handled separately.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public Filter getQueryFilter() {
-        throw new UnsupportedOperationException("Druid filters are being split from the ApiRequest model and " +
-                "should be handled separately.");
-    }
-
-    /**
-     * Unsupported operation. Throws UnsupportedOperationException if invoked. Druid havings are being split from the
-     * ApiRequest model and should be handled separately.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public Having getQueryHaving() {
-        throw new UnsupportedOperationException("Druid havings are being split from the ApiRequest model and should " +
-                "be handled separately.");
-    }
-
-    /**
-     * Unsupported operation. Throws UnsupportedOperationException if invoked. Druid filters are being split from the
-     * ApiRequest model and should be handled separately.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public DruidFilterBuilder getFilterBuilder() {
-        throw new UnsupportedOperationException("Druid filters are being split from the ApiRequest model and " +
-                "should be handled separately.");
-    }
-
-    /**
-     * Unsupported operation. Throws UnsupportedOperationException if invoked. Druid filters are being split from the
-     * ApiRequest model and should be handled separately.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public Map<Dimension, Set<ApiFilter>> generateFilters(
-            final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
-    ) {
-        throw new UnsupportedOperationException("Druid filters are being split from the ApiRequest model and " +
-                "should be handled separately.");
-    }
-
-    /**
-     * Unsupported operation. Throws {@link UnsupportedOperationException} if invoked. Druid specific logic is being
-     * removed from the api request model.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public DataApiRequest withBuilder(Response.ResponseBuilder builder) {
-        throw new UnsupportedOperationException("Druid specific logic is being removed from the api request model");
-    }
-
-    /**
-     * Unsupported operation. Throws {@link UnsupportedOperationException} if invoked. Druid specific logic is being
-     * removed from the api request model.
-     *
-     * @throws UnsupportedOperationException if invoked.
-     */
-    @Deprecated
-    @Override
-    public DataApiRequest withFilterBuilder(final DruidFilterBuilder filterBuilder) {
-        throw new UnsupportedOperationException("Druid specific logic is being removed from the api request model");
     }
 }

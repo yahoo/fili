@@ -42,7 +42,8 @@ class FeatureFlagRegistrySpec extends Specification {
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
                    "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query",
-                   "adjust_current_by_timezone", "require_all_data_request_building_stages_called"] as Set
+                   "adjust_current_by_timezone", "require_all_data_request_building_stages_called",
+                   "pseudo_dimension_support_enabled"] as Set
     }
 
     @Unroll

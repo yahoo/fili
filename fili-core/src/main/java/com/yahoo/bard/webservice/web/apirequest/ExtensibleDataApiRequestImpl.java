@@ -12,32 +12,32 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.UnmodifiableMultiValuedMap;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.core.PathSegment;
-
 /**
  * ProtocolMetricDataApiRequest supports the parameterized metric contracts used by protocol metrics.
  */
 public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExtensibleDataApiRequestImpl.class);
+    public static final String PSEUDO_DIMENSION_KEY = "psedoDimension";
 
     protected final MultiValuedMap<String, String> queryParameters;
+    protected final Map<String, Object> extendedObjects;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -71,6 +71,7 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
      * @param queryParameters  A multimap of parameterized values
+     * @param extendedObjects A map of other request or bound objects for extended features
      * @param bardConfigResources  The configuration resources used to build this api request
      *
      * @throws BadApiRequestException in the following scenarios:
@@ -90,7 +91,7 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
     public ExtensibleDataApiRequestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -105,6 +106,7 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
             String perPage,
             String page,
             MultiValuedMap<String, String> queryParameters,
+            Map<String, Object> extendedObjects,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
         super(
@@ -126,7 +128,8 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
                 page,
                 bardConfigResources
         );
-        this.queryParameters = queryParameters;
+        this.queryParameters = UnmodifiableMultiValuedMap.unmodifiableMultiValuedMap(queryParameters);
+        this.extendedObjects = Collections.unmodifiableMap(extendedObjects);
     }
 
     /**
@@ -149,11 +152,12 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
      * @param paginationParameters  Pagination info
      * @param format  Format for the response
      * @param downloadFilename  The filename for the response to be downloaded as. If null indicates response should
-* not be downloaded.
+     * not be downloaded.
      * @param asyncAfter  How long in milliseconds the user is willing to wait for a synchronous response
      * @param optimizable  Whether or not this request can be safely optimized into a topN or timeseries Druid query,
-* if this is false a groupBy should always be built, even if the request would otherwise be eligible for one of
+     * if this is false a groupBy should always be built, even if the request would otherwise be eligible for one of
      * @param queryParameters Additional parameters from the request
+     * @param extendedObjects A map of other request or bound objects for extended features
      */
     protected ExtensibleDataApiRequestImpl(
             LogicalTable table,
@@ -174,7 +178,8 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
             String downloadFilename,
             Long asyncAfter,
             boolean optimizable,
-            MultiValuedMap<String, String> queryParameters
+            MultiValuedMap<String, String> queryParameters,
+            Map<String, Object> extendedObjects
     ) {
         super(
                 table,
@@ -196,7 +201,8 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
                 asyncAfter,
                 optimizable
         );
-        this.queryParameters = queryParameters;
+        this.queryParameters = UnmodifiableMultiValuedMap.unmodifiableMultiValuedMap(queryParameters);
+        this.extendedObjects = Collections.unmodifiableMap(extendedObjects);
         // Metric generator shouldn't be required if objects are already bound.
         this.metricBinder = null;
     }
@@ -224,99 +230,106 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
         return queryParameters;
     }
 
+    public Map<String, Object> getExtendedObjects() {
+        return extendedObjects;
+    }
+
     // CHECKSTYLE:OFF
     @Override
     public ExtensibleDataApiRequestImpl withFormat(ResponseFormatType format) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withDownloadFilename(String downloadFilename) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withPaginationParameters(PaginationParameters paginationParameters) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withTable(LogicalTable table) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withGranularity(Granularity granularity) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withIntervals(List<Interval> intervals) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withFilters(ApiFilters apiFilters) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
-    public ExtensibleDataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    public ExtensibleDataApiRequestImpl withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withSorts(LinkedHashSet<OrderByColumn> sorts) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
-    // TODO
     @Override
     public ExtensibleDataApiRequestImpl withTimeSort(OrderByColumn dateTimeSort) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withTimeZone(DateTimeZone timeZone) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withTopN(Integer topN) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withCount(Integer count) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     @Override
     public ExtensibleDataApiRequestImpl withAsyncAfter(long asyncAfter) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
     public ExtensibleDataApiRequestImpl withDruidOptimizations(boolean optimizable) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
 
-    public ExtensibleDataApiRequestImpl withQueryParameters(MultiValuedMap queryParameters) {
-        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    public ExtensibleDataApiRequestImpl withQueryParameters(MultiValuedMap<String, String> queryParameters) {
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
+    }
+
+    public ExtensibleDataApiRequestImpl withExtendedObjects(Map<String, Object> extendedObjects) {
+        return new ExtensibleDataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters, extendedObjects);
     }
     // CHECKSTYLE:ON
 }

@@ -22,11 +22,14 @@ import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
+import org.apache.commons.collections4.ListValuedMap
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
@@ -35,9 +38,6 @@ import org.joda.time.format.DateTimeFormatter
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-
-import javax.ws.rs.core.MultivaluedHashMap
-import javax.ws.rs.core.PathSegment
 
 class ApiRequestSpec extends Specification {
 
@@ -130,7 +130,7 @@ class ApiRequestSpec extends Specification {
     def "check empty generateDimensions"() {
 
         Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions(
-                new ArrayList<PathSegment>(),
+                new ArrayList<RequestColumn>(),
                 dimensionDict
         )
 
@@ -140,17 +140,17 @@ class ApiRequestSpec extends Specification {
 
     def "check parsing generateDimensions"() {
 
-        PathSegment one = Mock(PathSegment)
-        PathSegment two = Mock(PathSegment)
-        PathSegment three = Mock(PathSegment)
-        Map emptyMap = new MultivaluedHashMap<>()
+        RequestColumn one = Mock(RequestColumn)
+        RequestColumn two = Mock(RequestColumn)
+        RequestColumn three = Mock(RequestColumn)
+        ListValuedMap emptyMap = new ArrayListValuedHashMap<>()
 
-        one.getPath() >> "one"
-        one.getMatrixParameters() >> emptyMap
-        two.getPath() >> "two"
-        two.getMatrixParameters() >> emptyMap
-        three.getPath() >> "three"
-        three.getMatrixParameters() >> emptyMap
+        one.getApiName() >> "one"
+        one.getParameters() >> emptyMap
+        two.getApiName() >> "two"
+        two.getParameters() >> emptyMap
+        three.getApiName() >> "three"
+        three.getParameters() >> emptyMap
 
         Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions([one, two, three], dimensionDict)
 

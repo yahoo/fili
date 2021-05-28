@@ -219,7 +219,7 @@ public class DimensionsApiRequestImpl extends ApiRequestImpl implements Dimensio
             return generated;
         }
         // split on '],' to get list of filters
-        String[] apiFilters = filterQuery.split(COMMA_AFTER_BRACKET_PATTERN);
+        String[] apiFilters = filterQuery.split(ApiRequestImpl.COMMA_AFTER_BRACKET_PATTERN);
 
         for (String apiFilter : apiFilters) {
             ApiFilter newFilter;

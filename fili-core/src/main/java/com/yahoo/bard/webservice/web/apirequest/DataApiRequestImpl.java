@@ -24,10 +24,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
-import com.yahoo.bard.webservice.druid.model.builders.DefaultDruidHavingBuilder;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
-import com.yahoo.bard.webservice.druid.model.filter.Filter;
-import com.yahoo.bard.webservice.druid.model.having.Having;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumnType;
 import com.yahoo.bard.webservice.druid.model.orderby.SortDirection;
@@ -55,6 +52,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterGenerator
 import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
+import com.yahoo.bard.webservice.web.apirequest.requestParameters.RequestColumn;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -62,6 +60,7 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import org.apache.commons.collections4.ListValuedMap;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -83,8 +82,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.PathSegment;
-import javax.ws.rs.core.Response;
 
 /**
  * Data API Request Implementation binds, validates, and models the parts of a request to the data endpoint.
@@ -111,9 +108,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     protected final boolean optimizable;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
-
-    @Deprecated
-    private final DruidFilterBuilder filterBuilder;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -165,7 +159,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -259,7 +253,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularity,
-            List<PathSegment> dimensions,
+            List<RequestColumn> dimensions,
             String logicalMetrics,
             String intervals,
             String apiFilters,
@@ -360,7 +354,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularityRequest,
-            List<PathSegment> dimensionsRequest,
+            List<RequestColumn> dimensionsRequest,
             String logicalMetricsRequest,
             String intervalsRequest,
             String apiFiltersRequest,
@@ -469,7 +463,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     public DataApiRequestImpl(
             String tableName,
             String granularityRequest,
-            List<PathSegment> dimensionsRequest,
+            List<RequestColumn> dimensionsRequest,
             String logicalMetricsRequest,
             String intervalsRequest,
             String apiFiltersRequest,
@@ -510,9 +504,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         // Map of dimension to its fields specified using show clause (matrix params)
         this.perDimensionFields = bindDimensionFields(dimensionsRequest, dimensions, table, dimensionDictionary);
         validateDimensionFields(dimensionsRequest, perDimensionFields, dimensions, table, dimensionDictionary);
-
-        // At least one logical metric is required
-        this.filterBuilder = druidFilterBuilder;  // required for intersection metrics to work
 
         this.metricBinder = metricBinder;
         this.logicalMetrics = bindLogicalMetrics(logicalMetricsRequest, table, metricDictionary, dimensionDictionary);
@@ -922,7 +913,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         this.count = count;
         this.topN = topN;
         this.timeZone = timeZone;
-        this.filterBuilder = null;
         this.optimizable = optimizable;
     }
 
@@ -975,7 +965,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension
      * objects based on it.
      *
-     * @param rawGroupingDimensions  Dimension path segments from the URL.
+     * @param rawGroupingDimensions  Dimension columns from the URL.
      * @param logicalTable  The table containing the grouping dimensions
      * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
      *
@@ -983,7 +973,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
     protected LinkedHashSet<Dimension> bindGroupingDimensions(
-            List<PathSegment> rawGroupingDimensions,
+            List<RequestColumn> rawGroupingDimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
@@ -1001,7 +991,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @throws BadApiRequestException if invalid
      */
     protected void validateGroupingDimensions(
-            List<PathSegment> rawGroupingDimensions,
+            List<RequestColumn> rawGroupingDimensions,
             LinkedHashSet<Dimension> groupingDimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
@@ -1015,7 +1005,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param apiDimensionRequestColumns  Path segments for the dimensions
      * @param dimensions  The bound dimensions for this query
      * @param logicalTable  The logical table for this query
      * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
@@ -1023,18 +1013,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> bindDimensionFields(
-            List<PathSegment> apiDimensionPathSegments,
+            List<RequestColumn> apiDimensionRequestColumns,
             LinkedHashSet<Dimension> dimensions,
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) {
-        return generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
+        return generateDimensionFields(apiDimensionRequestColumns, dimensionDictionary);
     }
 
     /**
      * Validated dimension field objects.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param apiDimensionRequestColumns  Path segments for the dimensions
      * @param perDimensionFields  The bound dimension fields for this query
      * @param dimensions  The bound dimensions for this query
      * @param logicalTable  The logical table for this query
@@ -1044,7 +1034,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      */
 
     protected void validateDimensionFields(
-            List<PathSegment> apiDimensionPathSegments,
+            List<RequestColumn> apiDimensionRequestColumns,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields,
             LinkedHashSet<Dimension> dimensions,
             LogicalTable logicalTable,
@@ -1299,23 +1289,22 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * <p>
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
-     * @param apiDimensionPathSegments  Path segments for the dimensions
+     * @param apiDimensionRequestColumns  Path segments for the dimensions
      * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
      *
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
-            @NotNull List<PathSegment> apiDimensionPathSegments,
+            @NotNull List<RequestColumn> apiDimensionRequestColumns,
             @NotNull DimensionDictionary dimensionDictionary
     ) {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
-            return apiDimensionPathSegments.stream()
-                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
+            return apiDimensionRequestColumns.stream()
+                    .filter(column -> ! column.getApiName().isEmpty())
                     .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
-                            pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
-                                    StreamUtils.orderedSetMerge(e, i),
+                            column -> dimensionDictionary.findByApiName(column.getApiName()),
+                            column -> bindShowClause(column, dimensionDictionary),
+                            StreamUtils::orderedSetMerge,
                             LinkedHashMap::new
                     ));
         }
@@ -1325,21 +1314,23 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * Given a path segment, bind the fields specified in it's "show" matrix parameter for the dimension specified in
      * the path segment's path.
      *
-     * @param pathSegment  Path segment to bind from
+     * @param column  Path segment to bind from
      * @param dimensionDictionary  Dimension dictionary to look the dimension up in
      *
      * @return the set of bound DimensionFields specified in the show clause
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
     private LinkedHashSet<DimensionField> bindShowClause(
-            PathSegment pathSegment,
+            RequestColumn column,
             DimensionDictionary dimensionDictionary
     )
             throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
-        List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
-                .filter(entry -> entry.getKey().equals("show"))
-                .flatMap(entry -> entry.getValue().stream())
+        Dimension dimension = dimensionDictionary.findByApiName(column.getApiName());
+
+        ListValuedMap<String, String> parameters = column.getParameters();
+        List<String> showFields = column.getParameters().keySet().stream()
+                .filter("show"::equals)
+                .map(key -> parameters.get(key).get(0))
                 .flatMap(s -> Arrays.stream(s.split(",")))
                 .collect(Collectors.toList());
 
@@ -1626,17 +1617,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         }
     }
 
-    /**
-     * Get a filter generator binder for writing ApiFilters.
-     *
-     * @return  An implementation of FilterGenerator.
-     *
-     * @deprecated Remove when removing {@link #generateFilters(String, LogicalTable, DimensionDictionary)}
-     */
-    @Deprecated
-    protected FilterGenerator getFilterGenerator() {
-        return FilterBinders.getInstance()::generateFilters;
-    }
 
     // CHECKSTYLE:OFF
     @Override
@@ -1652,11 +1632,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     @Override
     public DataApiRequestImpl withPaginationParameters(PaginationParameters paginationParameters) {
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
-    }
-
-    @Override
-    public DataApiRequestImpl withBuilder(Response.ResponseBuilder builder) {
-        return this;
     }
 
     @Override
@@ -1690,18 +1665,12 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    @Deprecated
-    public DataApiRequestImpl withIntervals(Set<Interval> intervals) {
-        return withIntervals(new ArrayList<>(intervals));
-    }
-
-    @Override
     public DataApiRequestImpl withFilters(ApiFilters apiFilters) {
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
     @Override
-    public DataApiRequestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+    public DataApiRequestImpl withHavings(LinkedHashMap<LogicalMetric, Set<ApiHaving>> havings) {
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
     }
 
@@ -1735,13 +1704,6 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     @Override
     public DataApiRequestImpl withAsyncAfter(long asyncAfter) {
         return new DataApiRequestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable);
-    }
-
-
-    @Override
-    public DataApiRequestImpl withFilterBuilder(DruidFilterBuilder filterBuilder) {
-        // The constructors that take in a filterBuilder just throw away the filterBuilder. So `withFilterBuilder` doesn't actually do anything!
-        return this;
     }
 
     public DataApiRequest withDruidOptimizations(boolean optimizable) {
@@ -1786,39 +1748,8 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     }
 
     @Override
-    @Deprecated
-    public Map<Dimension, Set<ApiFilter>> generateFilters(
-            final String filterQuery, final LogicalTable table, final DimensionDictionary dimensionDictionary
-    ) {
-        return filterGenerator.generate(filterQuery, table, dimensionDictionary);
-    }
-
-    @Override
-    @Deprecated
-    public Filter getQueryFilter() {
-        try (TimedPhase timer = RequestLog.startTiming("BuildingDruidFilter")) {
-            return filterBuilder.buildFilters(this.apiFilters);
-        } catch (FilterBuilderException e) {
-            LOG.debug(e.getMessage());
-            throw new BadApiRequestException(e);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public DruidFilterBuilder getFilterBuilder() {
-        return filterBuilder;
-    }
-
-    @Override
     public Map<LogicalMetric, Set<ApiHaving>> getHavings() {
         return this.havings;
-    }
-
-    @Override
-    @Deprecated
-    public Having getQueryHaving() {
-        return DefaultDruidHavingBuilder.INSTANCE.buildHavings(havings);
     }
 
     @Override

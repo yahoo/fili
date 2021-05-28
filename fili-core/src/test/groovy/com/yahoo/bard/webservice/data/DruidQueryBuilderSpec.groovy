@@ -440,7 +440,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest.dimensions >> ([] as Set)
         apiRequest.logicalMetrics >> ([resources.m1] as Set)
         apiRequest.havings >> havingMap
-        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
+        //apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
         apiRequest.optimizeBackendQuery() >> canOptimize
 
         initDefault(apiRequest)
@@ -476,7 +476,7 @@ class DruidQueryBuilderSpec extends Specification {
                     [new OrderByColumn("m1", SortDirection.DESC)] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
+        //apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
@@ -520,7 +520,7 @@ class DruidQueryBuilderSpec extends Specification {
                     [] as Set
         }
         apiRequest.havings >> havingMap
-        apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
+        //apiRequest.queryHaving >> { DefaultDruidHavingBuilder.INSTANCE.buildHavings(havingMap) }
 
         initDefault(apiRequest)
 
