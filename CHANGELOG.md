@@ -15,6 +15,11 @@ Current
 ### Changed:
 
 - [Make Data Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
+* Make field less private
+* Decomposed getData into overridable methods
+
+- [Make DataApiRequest Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
+* Add parent subclass with query parameters to support adding general query elements
 
 ### Removed:
 
