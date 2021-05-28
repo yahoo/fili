@@ -3,7 +3,6 @@
 package com.yahoo.bard.webservice.web.apirequest
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.data.time.Granularity
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator

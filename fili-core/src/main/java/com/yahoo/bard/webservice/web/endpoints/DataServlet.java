@@ -62,6 +62,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -75,6 +77,7 @@ import rx.subjects.Subject;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -549,6 +552,14 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             String perPage,
             String page) throws RequestValidationException {
         DataApiRequest dataApiRequest;
+
+        MultiValuedMap<String, String> wrappedQueryParams = new ArrayListValuedHashMap<>();
+
+        for (Map.Entry<String, List<String>> entry : containerRequestContext.getUriInfo()
+                .getQueryParameters().entrySet()) {
+            wrappedQueryParams.putAll(entry.getKey(), entry.getValue());
+        }
+
         try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
             dataApiRequest = dataApiRequestFactory.buildApiRequest(
                     tableName,
@@ -567,6 +578,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                     asyncAfter,
                     perPage,
                     page,
+                    wrappedQueryParams,
                     this
             );
         }
