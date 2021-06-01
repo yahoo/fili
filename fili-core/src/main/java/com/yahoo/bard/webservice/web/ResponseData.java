@@ -293,8 +293,11 @@ public class ResponseData {
                 dimension,
                 (key) -> new ConcurrentHashMap()
         );
+
         return columnNamesForDimensionFields.computeIfAbsent(
-                dimensionField, (field) -> dimension.getApiName() + "|" + field.getName()
+                dimensionField,
+                (field) -> field.getName()
+                        .isEmpty() ? dimension.getApiName() : dimension.getApiName() + "|" + field.getName()
         );
     }
 }

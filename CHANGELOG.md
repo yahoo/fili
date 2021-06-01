@@ -18,12 +18,13 @@ Current
 * Make field less private
 
 - [Make Data Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
-* Make field less private
-* Decomposed getData into overridable methods
+  * Make field less private
+  * Decomposed getData into overridable methods
 
 - [Make DataApiRequest Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
-* Add parent subclass with query parameters to support adding general query elements
+  * Add parent subclass with query parameters to support adding general query elements
 
+- [Support unnamed dimension fields](https://github.com/yahoo/fili/issues/1179)
 ### Removed:
 
 ### Fixed:
