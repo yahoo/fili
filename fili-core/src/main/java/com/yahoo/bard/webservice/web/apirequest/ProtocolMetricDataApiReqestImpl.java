@@ -22,6 +22,7 @@ import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
+import org.apache.commons.collections4.MultiValuedMap;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ import javax.ws.rs.core.PathSegment;
 /**
  * ProtocolMetricDataApiRequest supports the parameterized metric contracts used by protocol metrics.
  */
-public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
+public class ProtocolMetricDataApiReqestImpl extends ExtensibleDataApiRequestImpl {
 
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
 
@@ -73,6 +74,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * must be a positive integer. If not present, must be the empty string.
      * @param page  desired page of results. If present in the original request, must be a positive
      * integer. If not present, must be the empty string.
+     * @param queryParameters Multimap of additional arguments
      * @param bardConfigResources  The configuration resources used to build this api request
      *
      * @throws BadApiRequestException in the following scenarios:
@@ -106,6 +108,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
             String asyncAfter,
             String perPage,
             String page,
+            MultiValuedMap queryParameters,
             BardConfigResources bardConfigResources
     ) throws BadApiRequestException {
         super(
@@ -125,6 +128,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 asyncAfter,
                 perPage,
                 page,
+                queryParameters,
                 bardConfigResources
         );
     }
@@ -155,6 +159,7 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
      * @param optimizable  Whether or not this request can be safely optimized into a topN or timeseries Druid query,
      * if this is false a groupBy should always be built, even if the request would otherwise be eligible for one of
      * the other query types
+     * @param queryParameters Multimap of additional arguments
      */
     protected ProtocolMetricDataApiReqestImpl(
             LogicalTable table,
@@ -174,7 +179,8 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
             ResponseFormatType format,
             String downloadFilename,
             Long asyncAfter,
-            boolean optimizable
+            boolean optimizable,
+            MultiValuedMap queryParameters
     ) {
         super(
                 table,
@@ -194,7 +200,8 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
                 format,
                 downloadFilename,
                 asyncAfter,
-                optimizable
+                optimizable,
+                queryParameters
         );
         // Metric generator shouldn't be required if objects are already bound.
         this.metricBinder = null;
@@ -261,4 +268,100 @@ public class ProtocolMetricDataApiReqestImpl extends DataApiRequestImpl {
     ) throws BadApiRequestException {
         metricBinder.validateMetrics(metrics, logicalTable);
     }
+
+
+    // CHECKSTYLE:OFF
+    @Override
+    public ProtocolMetricDataApiReqestImpl withFormat(ResponseFormatType format) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withDownloadFilename(String downloadFilename) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withPaginationParameters(PaginationParameters paginationParameters) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withTable(LogicalTable table) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withGranularity(Granularity granularity) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withDimensions(LinkedHashSet<Dimension> dimensions) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withPerDimensionFields(LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withLogicalMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withIntervals(List<Interval> intervals) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withFilters(ApiFilters apiFilters) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withHavings(Map<LogicalMetric, Set<ApiHaving>> havings) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withSorts(LinkedHashSet<OrderByColumn> sorts) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withTimeSort(OrderByColumn dateTimeSort) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withTimeZone(DateTimeZone timeZone) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withTopN(Integer topN) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withCount(Integer count) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    @Override
+    public ProtocolMetricDataApiReqestImpl withAsyncAfter(long asyncAfter) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    public ProtocolMetricDataApiReqestImpl withDruidOptimizations(boolean optimizable) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+
+    public ProtocolMetricDataApiReqestImpl withQueryParameters(MultiValuedMap queryParameters) {
+        return new ProtocolMetricDataApiReqestImpl(table, granularity, dimensions, perDimensionFields, logicalMetrics, intervals, apiFilters, havings, sorts, dateTimeSort, timeZone, topN, count, paginationParameters, format, downloadFilename, asyncAfter, optimizable, queryParameters);
+    }
+    // CHECKSTYLE:ON
 }

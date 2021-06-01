@@ -92,23 +92,23 @@ import javax.ws.rs.core.Response;
 public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
 
-    private final LogicalTable table;
+    protected final LogicalTable table;
 
-    private final Granularity granularity;
+    protected final Granularity granularity;
 
-    private final LinkedHashSet<Dimension> dimensions;
-    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
-    private final LinkedHashSet<LogicalMetric> logicalMetrics;
-    private final List<Interval> intervals;
-    private final ApiFilters apiFilters;
-    private final Map<LogicalMetric, Set<ApiHaving>> havings;
-    private final LinkedHashSet<OrderByColumn> sorts;
-    private final OrderByColumn dateTimeSort;
+    protected final LinkedHashSet<Dimension> dimensions;
+    protected final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
+    protected final LinkedHashSet<LogicalMetric> logicalMetrics;
+    protected final List<Interval> intervals;
+    protected final ApiFilters apiFilters;
+    protected final Map<LogicalMetric, Set<ApiHaving>> havings;
+    protected final LinkedHashSet<OrderByColumn> sorts;
+    protected final OrderByColumn dateTimeSort;
 
-    private final int count;
-    private final int topN;
-    private final DateTimeZone timeZone;
-    private final boolean optimizable;
+    protected final int count;
+    protected final int topN;
+    protected final DateTimeZone timeZone;
+    protected final boolean optimizable;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
 
