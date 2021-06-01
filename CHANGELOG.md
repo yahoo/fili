@@ -25,6 +25,10 @@ Current
   * Add parent subclass with query parameters to support adding general query elements
 
 - [Support unnamed dimension fields](https://github.com/yahoo/fili/issues/1179)
+
+- [Support vritual dimensions](https://github.com/yahoo/fili/issues/1179)
+  * Virtual dimensions have no storage associated with them and no physical columns
+
 ### Removed:
 
 ### Fixed:

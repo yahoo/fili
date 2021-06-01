@@ -111,7 +111,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
             List<String> invalidDimensions = new ArrayList<>();
             for (String dimApiName : dimApiNames) {
-                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
+                Dimension dimension = resolveDimension(dimensionDictionary, dimApiName);
 
                 // If dimension dictionary returns a null, it means the requested dimension is not found.
                 if (dimension == null) {
@@ -129,6 +129,22 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             LOG.trace("Generated set of dimension: {}", generated);
             return generated;
         }
+    }
+
+    /**
+     * Lookup dimension from dimension dictionary or other source.
+     *
+     * @param dimensionDictionary  The dimension dictionary
+     * @param dimApiName  The api name for the dimension to be found
+     *
+     * @return A resolved dimension or null if the name cannot be resolved.
+     */
+    protected static Dimension resolveDimension(
+            final DimensionDictionary dimensionDictionary,
+            final String dimApiName
+    ) {
+        Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
+        return dimension;
     }
 
     /**

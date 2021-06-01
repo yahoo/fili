@@ -33,6 +33,7 @@ import com.yahoo.bard.webservice.data.dimension.impl.LookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.RegisteredLookupDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
@@ -67,6 +68,9 @@ class QueryBuildingTestingResources {
 
     // Aggregatable dimensions, numbered for identification
     public Dimension d1, d2, d3, d4, d5
+
+    // SimpleVirtual Dimensions
+    public Dimension v1
 
     // Non-aggregatable dimensions, numbered for identification
     public Dimension d6, d7, d8, d9, d10, d11, d12, d13
@@ -207,6 +211,7 @@ class QueryBuildingTestingResources {
         d12 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(1))
         d13 = new RegisteredLookupDimension(registeredLookupDimConfig.getAt(2))
 
+        v1 = new SimpleVirtualDimension("v1")
 
         dimensionDictionary = new DimensionDictionary()
         dimensionDictionary.addAll([d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13])
