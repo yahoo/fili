@@ -1126,13 +1126,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
         DateTime adjustedNow = new DateTime();
 
         if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
             adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
             result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
         } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
+            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
