@@ -31,10 +31,10 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
     private static final Logger LOG = LoggerFactory.getLogger(GroupByQuery.class);
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final Having having;
+    protected final Having having;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final LimitSpec limitSpec;
+    protected final LimitSpec limitSpec;
 
     /**
      * Constructor.
