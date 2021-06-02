@@ -28,6 +28,7 @@ import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
+import com.yahoo.bard.webservice.web.apirequest.utils.TestPathSegment
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -36,6 +37,8 @@ import org.joda.time.DateTimeZone
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import javax.ws.rs.core.PathSegment
 
 class DataApiRequestImplSpec extends Specification {
 
@@ -125,6 +128,80 @@ class DataApiRequestImplSpec extends Specification {
 
         expect:
         logicalMetrics == expected
+    }
+
+
+    def "generateDimensions parses known dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+
+        Set<Dimension> groupDimensions = new TestingDataApiRequestImpl().generateDimensions(
+                pathSegmentList,
+                dimensionDict
+        )
+
+        then:
+        groupDimensions.size() == 2
+    }
+
+    def "generatePerDimensionFields parses known dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                new TestingDataApiRequestImpl().generateDimensionFields(pathSegmentList, dimensionDict)
+
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+
+        then:
+        dimensionFields.keySet().size() == 2
+        dimensionFields.get(locale).size() == 2
+        dimensionFields.get(one).size() == 1
+        dimensionFields.get(one).first().name == "desc"
+    }
+
+    def "generatePerDimensionFields ignores unknown dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
+
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                new TestingDataApiRequestImpl().generateDimensionFields(pathSegmentList, dimensionDict)
+
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+
+        then:
+        dimensionFields.keySet().size() == 2
+        dimensionFields.get(locale).size() == 2
+        dimensionFields.get(one).size() == 1
+        dimensionFields.get(one).first().name == "desc"
+    }
+
+    def "generateDimensions fails on unknown dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
+
+        Set<Dimension> groupDimensions = new TestingDataApiRequestImpl().generateDimensions(
+                pathSegmentList,
+                dimensionDict
+        )
+
+        then:
+        thrown(BadApiRequestException)
     }
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {

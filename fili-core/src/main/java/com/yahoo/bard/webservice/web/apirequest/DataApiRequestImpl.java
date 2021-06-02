@@ -1311,6 +1311,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
             return apiDimensionPathSegments.stream()
                     .filter(pathSegment -> !pathSegment.getPath().isEmpty())
+                    .filter(pathSegment -> (dimensionDictionary.findByApiName(pathSegment.getPath()) != null))
                     .collect(Collectors.toMap(
                             pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
                             pathSegment -> bindShowClause(pathSegment, dimensionDictionary),

@@ -39,6 +39,8 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDimensionGenerator.class);
 
+    public static final DefaultDimensionGenerator INSTANCE = new DefaultDimensionGenerator();
+
     @Override
     public LinkedHashSet<Dimension> bind(
             DataApiRequestBuilder builder,
@@ -91,7 +93,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      * @return Set of dimension objects.
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
-    public static LinkedHashSet<Dimension> generateDimensions(
+    public LinkedHashSet<Dimension> generateDimensions(
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
@@ -139,7 +141,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      *
      * @return A resolved dimension or null if the name cannot be resolved.
      */
-    protected static Dimension resolveDimension(
+    protected Dimension resolveDimension(
             final DimensionDictionary dimensionDictionary,
             final String dimApiName
     ) {
@@ -158,7 +160,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      *
      * @throws BadApiRequestException if any of the dimensions do not match the logical table
      */
-    public static void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
+    public void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
         // Requested dimensions must lie in the logical table
         requestDimensions = new HashSet<>(requestDimensions);

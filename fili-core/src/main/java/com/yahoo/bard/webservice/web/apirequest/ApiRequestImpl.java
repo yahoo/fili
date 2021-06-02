@@ -254,7 +254,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return DefaultDimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);
+        return DefaultDimensionGenerator.INSTANCE.generateDimensions(apiDimensions, dimensionDictionary);
     }
 
     /**
@@ -267,7 +267,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
-       DefaultDimensionGenerator.validateRequestDimensions(requestDimensions, table);
+       DefaultDimensionGenerator.INSTANCE.validateRequestDimensions(requestDimensions, table);
     }
 
     /**
