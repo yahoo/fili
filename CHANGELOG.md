@@ -26,8 +26,15 @@ Current
 
 - [Support unnamed dimension fields](https://github.com/yahoo/fili/issues/1179)
 
-- [Support vritual dimensions](https://github.com/yahoo/fili/issues/1179)
+- [Support virtual dimensions](https://github.com/yahoo/fili/issues/1179)
   * Virtual dimensions have no storage associated with them and no physical columns
+  * Virtual dimensions will be bound in children of `ExtensibleDataApiRequestImpl` to maintain backwards compatibility for now in `DataApiRequestImpl`
+  * `SimpleVirtualDimension`  will have its columns serialized without '|fieldname'
+  * Output columns are not driven by requested columns not columns in the result set.  Missing dimension rows will be expressed as null field values.
+  * parsing of PerDimensionFields will no longer rely on dimension dictionary but instead on the already chosen grouping dimensions
+  *  `REQUESTED_API_DIMENSION_FIELDS` context property was added to support JobServlet asynchronous requests, however it doesn't work well with VirtualDimensions so if the ApiRequest is able to be the authority on requested fields it will be used instead.
+  * `DataServlet` sanitized empty path elements early to avoid validation later
+  
 
 ### Removed:
 

@@ -1028,7 +1028,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) {
-        return generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
+        return generateDimensionFields(apiDimensionPathSegments, dimensions);
     }
 
     /**
@@ -1300,25 +1300,30 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
      * @param apiDimensionPathSegments  Path segments for the dimensions
-     * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
+     * @param dimensions  Set of bound dimensions to bind fields against
      *
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
             @NotNull List<PathSegment> apiDimensionPathSegments,
-            @NotNull DimensionDictionary dimensionDictionary
+            Set<Dimension> dimensions
     ) {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
-            return apiDimensionPathSegments.stream()
-                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
-                    .filter(pathSegment -> (dimensionDictionary.findByApiName(pathSegment.getPath()) != null))
-                    .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
-                            pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
-                                    StreamUtils.orderedSetMerge(e, i),
-                            LinkedHashMap::new
-                    ));
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> result = new LinkedHashMap<>();
+
+            for (PathSegment p: apiDimensionPathSegments) {
+                String apiName = p.getPath();
+                Dimension d = dimensions.stream()
+                        .filter(dim -> dim.getApiName().equals(apiName))
+                        .findAny()
+                        .orElse(null);
+                if (d == null) {
+                    continue;
+                }
+                LinkedHashSet<DimensionField> shows = bindShowClause(p, d);
+                result.putIfAbsent(d, shows);
+            }
+            return result;
         }
     }
 
@@ -1327,17 +1332,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * the path segment's path.
      *
      * @param pathSegment  Path segment to bind from
-     * @param dimensionDictionary  Dimension dictionary to look the dimension up in
+     * @param dimension  Dimension to bind the show clause against
      *
      * @return the set of bound DimensionFields specified in the show clause
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
     private LinkedHashSet<DimensionField> bindShowClause(
             PathSegment pathSegment,
-            DimensionDictionary dimensionDictionary
+            Dimension dimension
     )
             throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
+        String apiName = pathSegment.getPath();
+
         List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
                 .filter(entry -> entry.getKey().equals("show"))
                 .flatMap(entry -> entry.getValue().stream())

@@ -26,7 +26,7 @@ class TestingDataApiRequestImpl {
             protocols
     );
 
-    public static DataApiRequestImpl buildDataApiRequestValue() {
+    public static ProtocolMetricDataApiReqestImpl buildDataApiRequestValue() {
         buildDataApiRequestValue(new ArrayListValuedHashMap<String, String>())
     }
 

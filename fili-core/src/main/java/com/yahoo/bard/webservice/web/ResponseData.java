@@ -187,33 +187,35 @@ public class ResponseData {
      * @return map of result row
      */
     public Map<String, Object> buildResultRow(Result result) {
-        Map<String, Object> row = new LinkedHashMap<>();
-        row.put("dateTime", result.getTimeStamp().toString(DateTimeFormatterFactory.getOutputFormatter()));
+        Map<String, Object> outputRow = new LinkedHashMap<>();
+        outputRow.put("dateTime", result.getTimeStamp().toString(DateTimeFormatterFactory.getOutputFormatter()));
 
-        // Loop through the Map<DimensionColumn, DimensionRow> and format it to dimensionColumnName : dimensionRowDesc
-        Map<DimensionColumn, DimensionRow> dr = result.getDimensionRows();
-        for (Entry<DimensionColumn, DimensionRow> dce : dr.entrySet()) {
-            DimensionRow drow = dce.getValue();
-            Dimension dimension = dce.getKey().getDimension();
+        // TODO change this to loop on requested fields instead
+        Set<Dimension> requestedDimensions = requestedApiDimensionFields.keySet();
 
-            Set<DimensionField> requestedDimensionFields;
-            if (requestedApiDimensionFields.get(dimension) != null) {
-                requestedDimensionFields = requestedApiDimensionFields.get(dimension);
+        // Loop through the Map<DimensionColumn, DimensionRow> and format it to dimension : dimensionRowDesc
+        Map<Dimension, DimensionRow> resultRowsByDimension = result.getDimensionRows().entrySet().stream()
+                .collect(Collectors.toMap(e -> e.getKey().getDimension(), e -> e.getValue()));
 
-                if (!requestedDimensionFields.isEmpty()) {
-                    // Otherwise, show the fields requested, with the pipe-separated name
-                    for (DimensionField dimensionField : requestedDimensionFields) {
-                        row.put(getDimensionColumnName(dimension, dimensionField), drow.get(dimensionField));
-                    }
+        for (Dimension dim : requestedDimensions) {
+            Set<DimensionField> fields = requestedApiDimensionFields.get(dim);
+            DimensionRow drow = resultRowsByDimension.get(dim);
+            if (drow != null) {
+                for (DimensionField field : fields) {
+                    outputRow.put(getDimensionColumnName(dim, field), drow.get(field));
+                }
+            } else {
+                for (DimensionField field : fields) {
+                    outputRow.put(getDimensionColumnName(dim, field), null);
                 }
             }
         }
 
         // Loop through the Map<MetricColumn, Object> and format it to a metricColumnName: metricValue map
         for (MetricColumn apiMetricColumn : apiMetricColumns) {
-            row.put(apiMetricColumn.getName(), result.getMetricValue(apiMetricColumn));
+            outputRow.put(apiMetricColumn.getName(), result.getMetricValue(apiMetricColumn));
         }
-        return row;
+        return outputRow;
     }
 
     /**
@@ -238,7 +240,7 @@ public class ResponseData {
             // Get the pieces we need out of the map entry
             Dimension dimension = dimensionColumnEntry.getKey().getDimension();
             DimensionRow dimensionRow = dimensionColumnEntry.getValue();
-            Set<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
+            LinkedHashSet<DimensionField> requestedDimensionFields = requestedApiDimensionFields.get(dimension);
 
             if (requestedDimensionFields == null || requestedDimensionFields.isEmpty())
             {

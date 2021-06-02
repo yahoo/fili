@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -117,7 +118,7 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
 
         GranularityParser granularityParser = new StandardGranularityParser()
 
-        DefaultHavingApiGenerator havingApiGenerator = new DefaultHavingApiGenerator(metricDict);
+        DefaultHavingApiGenerator havingApiGenerator = new DefaultHavingApiGenerator(metricDict)
 
         DefaultOrderByGenerator orderByGenerator = new DefaultOrderByGenerator()
 
@@ -201,14 +202,17 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
 
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+
+        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+
         pathSegmentList.add(new TestPathSegment("locale", null))
         pathSegmentList.add(new TestPathSegment("one", "desc"))
 
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
-                REQUEST.generateDimensionFields(pathSegmentList, dimensionDict)
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
 
-        Dimension locale = dimensionDict.findByApiName("locale")
-        Dimension one = dimensionDict.findByApiName("one")
 
         then:
         dimensionFields.keySet().size() == 2
@@ -217,25 +221,29 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
         dimensionFields.get(one).first().name == "desc"
     }
 
-    def "generatePerDimensionFields ignores unknown dimensions"() {
+    def "generatePerDimensionFields collects nameless fields for Virtual dimensions"() {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+        Dimension unconfigured = new SimpleVirtualDimension("__unconfigured")
+
+        Set<Dimension> dimensions = [locale, one, unconfigured] as LinkedHashSet
 
         pathSegmentList.add(new TestPathSegment("locale", null))
         pathSegmentList.add(new TestPathSegment("one", "desc"))
         pathSegmentList.add(new TestPathSegment("__unconfigured", null))
 
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
-                REQUEST.generateDimensionFields(pathSegmentList, dimensionDict)
-
-        Dimension locale = dimensionDict.findByApiName("locale")
-        Dimension one = dimensionDict.findByApiName("one")
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
 
         then:
-        dimensionFields.keySet().size() == 2
+        dimensionFields.keySet().size() == 3
         dimensionFields.get(locale).size() == 2
         dimensionFields.get(one).size() == 1
         dimensionFields.get(one).first().name == "desc"
+        dimensionFields.get(unconfigured).first().name == ""
     }
 
     def "generateDimensions parses unknown dimensions with __ prefix as Virtual Dimensions"() {
@@ -256,7 +264,7 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 table,
                 metricDict,

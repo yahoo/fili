@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -156,11 +157,12 @@ class DataApiRequestImplSpec extends Specification {
         pathSegmentList.add(new TestPathSegment("locale", null))
         pathSegmentList.add(new TestPathSegment("one", "desc"))
 
-        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
-                REQUEST.generateDimensionFields(pathSegmentList, dimensionDict)
-
         Dimension locale = dimensionDict.findByApiName("locale")
         Dimension one = dimensionDict.findByApiName("one")
+
+        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
 
         then:
         dimensionFields.keySet().size() == 2
@@ -177,11 +179,15 @@ class DataApiRequestImplSpec extends Specification {
         pathSegmentList.add(new TestPathSegment("one", "desc"))
         pathSegmentList.add(new TestPathSegment("__unconfigured", null))
 
-        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
-                REQUEST.generateDimensionFields(pathSegmentList, dimensionDict)
-
         Dimension locale = dimensionDict.findByApiName("locale")
         Dimension one = dimensionDict.findByApiName("one")
+        Dimension unconfigured = new SimpleVirtualDimension("__unconfigured")
+
+        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+
+
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
 
         then:
         dimensionFields.keySet().size() == 2

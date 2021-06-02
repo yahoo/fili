@@ -151,18 +151,21 @@ class DailyAvgWeekWithVirtualSpec extends BaseDataServletComponentSpec {
                     "dateTime" : "2014-09-01 00:00:00.000",
                     "color|id" : "Foo",
                     "color|desc" : "FooDesc",
+                    "__test" : null,
                     "dayAvgUsers" : 10
                   },
                   {
                     "dateTime" : "2014-09-01 00:00:00.000",
                     "color|id" : "Bar",
                     "color|desc" : "BarDesc",
+                    "__test" : null,
                     "dayAvgUsers" : 11
                   },
                   {
                     "dateTime" : "2014-09-01 00:00:00.000",
                     "color|id" : "Baz",
                     "color|desc" : "BazDesc",
+                    "__test" : null,
                     "dayAvgUsers" : 12
                   }
                 ]

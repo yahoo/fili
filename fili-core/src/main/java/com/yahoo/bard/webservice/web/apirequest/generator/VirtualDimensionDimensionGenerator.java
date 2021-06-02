@@ -1,3 +1,5 @@
+// Copyright 2021 Oath Inc.
+// Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.DIMENSIONS_NOT_IN_TABLE;
@@ -41,7 +43,6 @@ public class VirtualDimensionDimensionGenerator extends DefaultDimensionGenerato
         return dimension;
     }
 
-
     /**
      * Ensure all request dimensions are part of the logical table.
      *
@@ -57,8 +58,8 @@ public class VirtualDimensionDimensionGenerator extends DefaultDimensionGenerato
             throws BadApiRequestException {
         // Requested dimensions must lie in the logical table
         List<Dimension> invalids = requestDimensions.stream()
-                .filter(dim -> table.getDimensions().contains(dim))
-                .filter(dim -> dim instanceof VirtualDimension)
+                .filter(dim -> ! table.getDimensions().contains(dim))
+                .filter(dim -> ! (dim instanceof VirtualDimension))
                 .collect(Collectors.toList());
 
         if (!invalids.isEmpty()) {
