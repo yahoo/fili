@@ -238,7 +238,7 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
         dimensionFields.get(one).first().name == "desc"
     }
 
-    def "generateDimensions fails on unknown dimensions"() {
+    def "generateDimensions parses unknown dimensions with __ prefix as Virtual Dimensions"() {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
 
@@ -251,7 +251,7 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
         )
 
         then:
-        thrown(BadApiRequestException)
+        groupDimensions.size() == 2
     }
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
