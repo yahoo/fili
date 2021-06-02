@@ -14,6 +14,9 @@ Current
 
 ### Changed:
 
+- [Make GroupBy Query Extensible](https://github.com/yahoo/fili/issues/1181)
+* Make field less private
+
 - [Make Data Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
 * Make field less private
 * Decomposed getData into overridable methods
