@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.config.BardFeatureFlag
+import com.yahoo.bard.webservice.data.config.ResourceDictionaries
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
@@ -22,16 +23,25 @@ import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.druid.model.builders.DruidInFilterBuilder
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.table.LogicalTable
+import com.yahoo.bard.webservice.table.LogicalTableDictionary
 import com.yahoo.bard.webservice.table.TableGroup
+import com.yahoo.bard.webservice.table.TableIdentifier
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.generator.having.DefaultHavingApiGenerator
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator
+import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator
 import com.yahoo.bard.webservice.web.apirequest.utils.TestPathSegment
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
+import com.yahoo.bard.webservice.web.util.BardConfigResources
 
+import org.apache.commons.collections4.MultiValuedMap
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
@@ -41,7 +51,7 @@ import spock.lang.Unroll
 
 import javax.ws.rs.core.PathSegment
 
-class DataApiRequestImplSpec extends Specification {
+class ExtensibleDataApiRequstImplSpec extends Specification {
 
     @Shared
     DimensionDictionary dimensionDict
@@ -50,9 +60,11 @@ class DataApiRequestImplSpec extends Specification {
     @Shared
     LogicalTable table
 
+    BardConfigResources bardConfigResources
+
     GranularityParser granularityParser = new StandardGranularityParser()
 
-    public static final DataApiRequestImpl REQUEST = TestingDataApiRequestImpl.buildStableDataApiRequestImpl()
+    public static final ProtocolMetricDataApiReqestImpl REQUEST = TestingDataApiRequestImpl.buildDataApiRequestValue()
 
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
 
@@ -61,11 +73,10 @@ class DataApiRequestImplSpec extends Specification {
     }
 
     def setup() {
-        LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()
-        dimensionFields.add(BardDimensionField.ID)
-        dimensionFields.add(BardDimensionField.DESC)
+        LinkedHashSet dimensionFields = [BardDimensionField.ID, BardDimensionField.DESC]
 
         dimensionDict = new DimensionDictionary()
+
         KeyValueStoreDimension keyValueStoreDimension
         [ "locale", "one", "two", "three" ].each { String name ->
             keyValueStoreDimension = new KeyValueStoreDimension(
@@ -79,16 +90,53 @@ class DataApiRequestImplSpec extends Specification {
             dimensionDict.add(keyValueStoreDimension)
         }
 
+
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
             metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
+
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)
         tg.getDimensions() >> dimensionDict.apiNameToDimension.values()
         table = new LogicalTable("name", DAY, tg, metricDict)
+
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.setOn(false)
+
+
+        LogicalTableDictionary logicalTableDictionary = new LogicalTableDictionary()
+        TableIdentifier tableIdentifier = new TableIdentifier(table.getName(), DAY)
+        logicalTableDictionary.put(tableIdentifier, table)
+        ResourceDictionaries dictionaries = new ResourceDictionaries(
+                null,
+                logicalTableDictionary,
+                metricDict,
+                dimensionDict
+        )
+
+        ApiRequestLogicalMetricBinder metricBinder = new DefaultLogicalMetricGenerator()
+
+        GranularityParser granularityParser = new StandardGranularityParser()
+
+        DefaultHavingApiGenerator havingApiGenerator = new DefaultHavingApiGenerator(metricDict)
+
+        DefaultOrderByGenerator orderByGenerator = new DefaultOrderByGenerator()
+
+
+        bardConfigResources = Mock(BardConfigResources)
+        bardConfigResources.getResourceDictionaries() >> dictionaries
+        bardConfigResources.getMetricDictionary() >> metricDict
+        bardConfigResources.getLogicalTableDictionary() >> logicalTableDictionary
+        bardConfigResources.getDimensionDictionary() >> dimensionDict
+        bardConfigResources.getGranularityParser() >> granularityParser
+        bardConfigResources.getMetricBinder() >> metricBinder
+        bardConfigResources.getHavingApiGenerator() >> havingApiGenerator
+        bardConfigResources.getOrderByGenerator() >> orderByGenerator
     }
 
+    def cleanup() {
+        BardFeatureFlag.REQUIRE_METRICS_QUERY.reset()
+    }
     def cleanupSpec() {
         DateTimeZone.default = orginalTimeZone
     }
@@ -154,15 +202,17 @@ class DataApiRequestImplSpec extends Specification {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
 
-        pathSegmentList.add(new TestPathSegment("locale", null))
-        pathSegmentList.add(new TestPathSegment("one", "desc"))
-
         Dimension locale = dimensionDict.findByApiName("locale")
         Dimension one = dimensionDict.findByApiName("one")
 
         Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
                 REQUEST.generateDimensionFields(pathSegmentList, dimensions)
+
 
         then:
         dimensionFields.keySet().size() == 2
@@ -171,32 +221,32 @@ class DataApiRequestImplSpec extends Specification {
         dimensionFields.get(one).first().name == "desc"
     }
 
-    def "generatePerDimensionFields ignores unknown dimensions"() {
+    def "generatePerDimensionFields collects nameless fields for Virtual dimensions"() {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
-
-        pathSegmentList.add(new TestPathSegment("locale", null))
-        pathSegmentList.add(new TestPathSegment("one", "desc"))
-        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
 
         Dimension locale = dimensionDict.findByApiName("locale")
         Dimension one = dimensionDict.findByApiName("one")
         Dimension unconfigured = new SimpleVirtualDimension("__unconfigured")
 
-        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+        Set<Dimension> dimensions = [locale, one, unconfigured] as LinkedHashSet
 
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
 
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
                 REQUEST.generateDimensionFields(pathSegmentList, dimensions)
 
         then:
-        dimensionFields.keySet().size() == 2
+        dimensionFields.keySet().size() == 3
         dimensionFields.get(locale).size() == 2
         dimensionFields.get(one).size() == 1
         dimensionFields.get(one).first().name == "desc"
+        dimensionFields.get(unconfigured).first().name == ""
     }
 
-    def "generateDimensions fails on unknown dimensions"() {
+    def "generateDimensions parses unknown dimensions with __ prefix as Virtual Dimensions"() {
         when:
         List<PathSegment> pathSegmentList = new ArrayList<>()
 
@@ -209,12 +259,12 @@ class DataApiRequestImplSpec extends Specification {
         )
 
         then:
-        thrown(BadApiRequestException)
+        groupDimensions.size() == 2
     }
 
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 table,
                 metricDict,
@@ -305,5 +355,46 @@ class DataApiRequestImplSpec extends Specification {
         intersectionReportingOn | interreport
         false                   | "disabled"
         true                    | "enabled"
+    }
+
+    @Unroll
+    def "Dataapirequest captures queryParameter under construct and build"() {
+        MultiValuedMap<String, String> testParams = new ArrayListValuedHashMap<>()
+        testParams.put("testdata", "testValued")
+
+        when:
+        ExtensibleDataApiRequestImpl extensibleDataApiRequest = new ExtensibleDataApiRequestImpl(
+                table.getName(),
+                "day", // granularity
+                [] as List<PathSegment>, // dimensions
+                "", // metrics
+                "P1D/Current",
+                "", //apiFilters
+                "", // havings
+                "", // sorts
+                null,  // count
+                null, // topN
+                "json", // format
+                "", // filename
+                "UTC", // timeZoneId
+                -1 as String, //Asynch after
+                "", // perPage
+                "", // page
+                testParams, // queryParams
+                bardConfigResources  // config resources
+        )
+
+        then:
+        extensibleDataApiRequest.getQueryParameters() == testParams
+
+        when:
+        MultiValuedMap<String, String> otherParams = new ArrayListValuedHashMap<>()
+        otherParams.put("testdata", "otherTestValue")
+
+        ApiRequest withOtherParams = extensibleDataApiRequest.withQueryParameters(otherParams)
+
+        then:
+        otherParams != testParams
+        ((ExtensibleDataApiRequestImpl) withOtherParams).queryParameters == otherParams
     }
 }

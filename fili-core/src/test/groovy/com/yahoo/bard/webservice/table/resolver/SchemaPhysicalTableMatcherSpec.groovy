@@ -14,6 +14,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService
 import com.yahoo.bard.webservice.table.PhysicalTable
@@ -28,6 +29,7 @@ import spock.lang.Specification
 class SchemaPhysicalTableMatcherSpec extends Specification {
     SchemaPhysicalTableMatcher schemaPhysicalTableMatcher
     DataApiRequest request = Mock(DataApiRequest)
+    DataApiRequest requestVirtual = Mock(DataApiRequest)
     TemplateDruidQuery query = Mock(TemplateDruidQuery)
 
     PhysicalTable physicalTable
@@ -74,24 +76,46 @@ class SchemaPhysicalTableMatcherSpec extends Specification {
                 Mock(DataSourceMetadataService)
         )
 
-        request.getGranularity() >> DAY.buildZonedTimeGrain(UTC)
         query.getInnermostQuery() >> query
         query.getDimensions() >> (['dimB'] as Set)
         query.getMetricDimensions() >> ([] as Set)
         query.getDependentFieldNames() >> ([] as Set)
+
+        dimensionDictionary = new DimensionDictionary(dimSet)
+    }
+
+    def "schema matcher resolves table containing a logical name for a dimension same as physical name for other dimension"() {
+        setup:
+
+        request.getGranularity() >> DAY.buildZonedTimeGrain(UTC)
         request.getFilterDimensions() >> []
         request.getDimensions() >> (dimSet)
         request.getApiFilters() >> Collections.emptyMap()
         request.getIntervals() >> []
         request.getLogicalMetrics() >> []
 
-        dimensionDictionary = new DimensionDictionary(dimSet)
-        schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(
-                new QueryPlanningConstraint(request, query)
-        )
+        schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(new QueryPlanningConstraint(request, query))
+
+        expect:
+        schemaPhysicalTableMatcher.test(physicalTable)
     }
 
-    def "schema matcher resolves table containing a logical name for a dimension same as physical name for other dimension"() {
+    def "schema matcher resolves table matches while ignoring virtual dimensions"() {
+        setup:
+        Dimension virtual = new SimpleVirtualDimension("v1")
+
+        Set<Dimension> dimSetVirtual = new LinkedHashSet<>(dimSet)
+        dimSetVirtual.add(virtual)
+
+        request.getGranularity() >> DAY.buildZonedTimeGrain(UTC)
+        request.getFilterDimensions() >> []
+        request.getDimensions() >> (dimSetVirtual)
+        request.getApiFilters() >> Collections.emptyMap()
+        request.getIntervals() >> []
+        request.getLogicalMetrics() >> []
+
+        schemaPhysicalTableMatcher = new SchemaPhysicalTableMatcher(new QueryPlanningConstraint(request, query))
+
         expect:
         schemaPhysicalTableMatcher.test(physicalTable)
     }

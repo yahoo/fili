@@ -39,6 +39,8 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDimensionGenerator.class);
 
+    public static final DefaultDimensionGenerator INSTANCE = new DefaultDimensionGenerator();
+
     @Override
     public LinkedHashSet<Dimension> bind(
             DataApiRequestBuilder builder,
@@ -91,7 +93,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      * @return Set of dimension objects.
      * @throws BadApiRequestException if an invalid dimension is requested.
      */
-    public static LinkedHashSet<Dimension> generateDimensions(
+    public LinkedHashSet<Dimension> generateDimensions(
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
@@ -111,7 +113,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
             LinkedHashSet<Dimension> generated = new LinkedHashSet<>();
             List<String> invalidDimensions = new ArrayList<>();
             for (String dimApiName : dimApiNames) {
-                Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
+                Dimension dimension = resolveDimension(dimensionDictionary, dimApiName);
 
                 // If dimension dictionary returns a null, it means the requested dimension is not found.
                 if (dimension == null) {
@@ -132,6 +134,22 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
     }
 
     /**
+     * Lookup dimension from dimension dictionary or other source.
+     *
+     * @param dimensionDictionary  The dimension dictionary
+     * @param dimApiName  The api name for the dimension to be found
+     *
+     * @return A resolved dimension or null if the name cannot be resolved.
+     */
+    protected Dimension resolveDimension(
+            final DimensionDictionary dimensionDictionary,
+            final String dimApiName
+    ) {
+        Dimension dimension = dimensionDictionary.findByApiName(dimApiName);
+        return dimension;
+    }
+
+    /**
      * Ensure all request dimensions are part of the logical table.
      *
      * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
@@ -142,7 +160,7 @@ public class DefaultDimensionGenerator implements Generator<LinkedHashSet<Dimens
      *
      * @throws BadApiRequestException if any of the dimensions do not match the logical table
      */
-    public static void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
+    public void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
         // Requested dimensions must lie in the logical table
         requestDimensions = new HashSet<>(requestDimensions);
