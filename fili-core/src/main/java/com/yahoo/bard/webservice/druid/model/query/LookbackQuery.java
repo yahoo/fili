@@ -41,15 +41,15 @@ import java.util.stream.Stream;
 public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final Having having;
+    protected final Having having;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final LimitSpec limitSpec;
+    protected final LimitSpec limitSpec;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final Collection<String> lookbackPrefixes;
+    protected final Collection<String> lookbackPrefixes;
 
-    private final Collection<Period> lookbackOffsets;
+    protected final Collection<Period> lookbackOffsets;
 
     /**
      * Constructor.
@@ -155,7 +155,7 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
      * @param limitSpec  Limit spec to apply to the result query
      * @param virtualColumns Virtual columns for the query
      */
-    private LookbackQuery(
+    protected LookbackQuery(
             DataSource dataSource,
             Granularity granularity,
             Filter filter,

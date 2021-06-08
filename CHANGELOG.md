@@ -13,6 +13,8 @@ Current
 ### Added:
 
 ### Changed:
+- [Make LookBackQuery Extensible](https://github.com/yahoo/fili/issues/1182)
+* Make field and constructor less private
 
 - [Make GroupBy Query Extensible](https://github.com/yahoo/fili/issues/1181)
 * Make field less private
