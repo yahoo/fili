@@ -23,6 +23,7 @@ import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
 import com.yahoo.bard.webservice.util.IntervalUtils
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
@@ -46,15 +47,15 @@ class DataApiRequestIntervalsSpec extends Specification {
     @Shared
     LogicalTable table
 
+    static final DataApiRequest REQUEST = TestingDataApiRequestImpl.buildStableDataApiRequestImpl()
     static GranularityParser granularityParser = new StandardGranularityParser()
     DateTimeFormatter dateTimeFormatter
 
+
     @Shared
-    Function<TimeGrain, DateTime> dateParser = { new TestingDataApiRequestImpl().getCurrentDate(new DateTime(), it)}
+    Function<TimeGrain, DateTime> dateParser = { REQUEST.getCurrentDate(new DateTime(), it)}
 
     static final DateTimeZone originalTimeZone = DateTimeZone.default
-
-    TestingDataApiRequestImpl apiRequest = new TestingDataApiRequestImpl()
 
     def setupSpec() {
         DateTimeZone.default = IntervalUtils.SYSTEM_ALIGNMENT_EPOCH.zone
@@ -95,15 +96,15 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser), dateTimeFormatter
+                REQUEST.generateGranularity(name, granularityParser), dateTimeFormatter
         ).size() == 1
 
         and: "It parses to the interval we expect"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser), dateTimeFormatter
+                REQUEST.generateGranularity(name, granularityParser), dateTimeFormatter
         ).first() == expectedInterval
 
         where:
@@ -142,15 +143,15 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser), dateTimeFormatter
+                REQUEST.generateGranularity(name, granularityParser), dateTimeFormatter
         ).size() == 1
 
         and: "It parses to the interval we expect"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser), dateTimeFormatter
+                REQUEST.generateGranularity(name, granularityParser), dateTimeFormatter
         ).first() == expectedInterval
 
         where:
@@ -194,16 +195,16 @@ class DataApiRequestIntervalsSpec extends Specification {
         Interval expectedInterval = new Interval(parsedStart, parsedStop)
 
         expect: "The interval string parses into a single interval"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser),
+                REQUEST.generateGranularity(name, granularityParser),
                 dateTimeFormatter
         ).size() == 1
 
         and: "It parses to the interval we expect"
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser),
+                REQUEST.generateGranularity(name, granularityParser),
                 dateTimeFormatter
         ).first() == expectedInterval
 
@@ -238,9 +239,9 @@ class DataApiRequestIntervalsSpec extends Specification {
     @Unroll
     def "check invalid usage of macros as time intervals string #intervalString"() {
         when:
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 intervalString,
-                apiRequest.generateGranularity(name, granularityParser),
+                REQUEST.generateGranularity(name, granularityParser),
                 dateTimeFormatter
         )
 
@@ -265,9 +266,9 @@ class DataApiRequestIntervalsSpec extends Specification {
         }
 
         expect:
-        Set<Interval> intervals = new TestingDataApiRequestImpl().generateIntervals(
+        Set<Interval> intervals = REQUEST.generateIntervals(
                 interval1 + "," + interval2,
-                apiRequest.generateGranularity("day", granularityParser),
+                REQUEST.generateGranularity("day", granularityParser),
                 dateTimeFormatter
         )
         intervals == expected
@@ -280,9 +281,9 @@ class DataApiRequestIntervalsSpec extends Specification {
     @Unroll
     def "check bad generateIntervals throws #reason.simpleName"() {
         when:
-        new TestingDataApiRequestImpl().generateIntervals(
+        REQUEST.generateIntervals(
                 interval1 + "," + interval2,
-                apiRequest.generateGranularity("day", granularityParser),
+                REQUEST.generateGranularity("day", granularityParser),
                 dateTimeFormatter
         )
 

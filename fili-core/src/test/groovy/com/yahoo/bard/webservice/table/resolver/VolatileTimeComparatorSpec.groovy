@@ -131,7 +131,7 @@ class VolatileTimeComparatorSpec extends Specification {
     private DataApiRequest initializeApiRequest(List<Interval> intervals, Granularity granularity) {
         Stub(DataApiRequest) {
             getIntervals() >> intervals
-            getDimensions() >> [resources.d1]
+            getDimensions() >> [resources.d1, resources.v1]
             getFilterDimensions() >> []
             getGranularity() >> granularity
         }

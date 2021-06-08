@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -12,6 +13,8 @@ import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.VirtualAwareDimensionGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -38,6 +41,8 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
     private static final Logger LOG = LoggerFactory.getLogger(ExtensibleDataApiRequestImpl.class);
 
     protected final MultiValuedMap<String, String> queryParameters;
+
+    static DefaultDimensionGenerator dimensionGenerator = VirtualAwareDimensionGenerator.INSTANCE;
 
     /**
      * Parses the API request URL and generates the Api Request object.
@@ -201,6 +206,35 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
         this.metricBinder = null;
     }
 
+    /**
+     * Extracts the list of dimension names from the url dimension path segments and generates a set of dimension
+     * objects based on it.
+     *
+     * @param apiDimensions  Dimension path segments from the URL.
+     * @param dimensionDictionary  Dimension dictionary contains the map of valid dimension names and dimension objects.
+     *
+     * @return Set of dimension objects.
+     * @throws BadApiRequestException if an invalid dimension is requested.
+     */
+    protected LinkedHashSet<Dimension> generateDimensions(
+            List<PathSegment> apiDimensions,
+            DimensionDictionary dimensionDictionary
+    ) throws BadApiRequestException {
+        return dimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);
+    }
+
+    /**
+     * Ensure all request dimensions are part of the logical table.
+     *
+     * @param requestDimensions  The dimensions being requested
+     * @param table  The logical table being checked
+     *
+     * @throws BadApiRequestException if any of the dimensions do not match the logical table
+     */
+    protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
+            throws BadApiRequestException {
+        dimensionGenerator.validateRequestDimensions(requestDimensions, table);
+    }
     /**
      * Validated bound api filter objects.
      *

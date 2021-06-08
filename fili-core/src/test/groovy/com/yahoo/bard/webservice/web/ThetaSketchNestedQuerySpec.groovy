@@ -16,12 +16,15 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationPostAggFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
 
 class ThetaSketchNestedQuerySpec extends Specification {
+
+    public static final DataApiRequest REQUEST = TestingDataApiRequestImpl.buildDataApiRequestValue()
 
     ThetaSketchIntersectionReportingResources resources
     boolean intersectionReportingState
@@ -71,7 +74,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "Intersection reporting when Logical Metric has nested query"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  REQUEST.generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.table,
                 resources.metricDict,
@@ -101,7 +104,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "metric filter on viz metric and expect children of unRegFoos have right sketch operation function"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
                 "viz(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.table,
                 resources.metricDict,
@@ -126,7 +129,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
 
     def "When metrics of Ratio category are filtered, BadApiException is thrown"() {
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "ratioMetric(AND(country|id-in[US,IN],property|id-in[14,125]))",
                 resources.table,
                 resources.metricDict,
@@ -139,7 +142,7 @@ class ThetaSketchNestedQuerySpec extends Specification {
     }
 
     def "The dimensions returned from the filtered nested logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
                 "dayAvgFoos(AND(country|id-in[US,IN],property|id-in[114,125]))",
                 resources.table,
                 resources.metricDict,

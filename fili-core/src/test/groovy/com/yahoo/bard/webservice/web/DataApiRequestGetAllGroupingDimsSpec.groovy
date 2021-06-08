@@ -134,6 +134,6 @@ class DataApiRequestGetAllGroupingDimsSpec extends Specification {
 
             then: //getAllGroupingDimensions is called for every buildQuery call
             dq?.queryType == DefaultQueryType.GROUP_BY
-            1 * apiRequest.getAllGroupingDimensions()
+            1 * apiRequest.getAllGroupingDimensions() >> ([] as Set)
         }
 }

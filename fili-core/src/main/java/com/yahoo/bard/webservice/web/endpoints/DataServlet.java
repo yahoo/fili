@@ -81,6 +81,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -552,6 +553,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             String perPage,
             String page) throws RequestValidationException {
         DataApiRequest dataApiRequest;
+        List<PathSegment> cleanedDimensions = dimensions.stream().filter(ps -> !ps.getPath().isEmpty())
+                .collect(Collectors.toList()
+        );
 
         MultiValuedMap<String, String> wrappedQueryParams = new ArrayListValuedHashMap<>();
 
@@ -564,7 +568,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             dataApiRequest = dataApiRequestFactory.buildApiRequest(
                     tableName,
                     timeGrain,
-                    dimensions,
+                    cleanedDimensions,
                     metrics,
                     intervals,
                     filters,
