@@ -1340,9 +1340,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
     private LinkedHashSet<DimensionField> bindShowClause(
             PathSegment pathSegment,
             Dimension dimension
-    )
-            throws BadApiRequestException {
-        String apiName = pathSegment.getPath();
+    ) throws BadApiRequestException {
 
         List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
                 .filter(entry -> entry.getKey().equals("show"))

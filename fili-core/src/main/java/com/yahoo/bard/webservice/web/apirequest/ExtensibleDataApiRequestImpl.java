@@ -14,7 +14,7 @@ import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.VirtualDimensionDimensionGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.VirtualAwareDimensionGenerator;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
@@ -42,7 +42,7 @@ public class ExtensibleDataApiRequestImpl extends DataApiRequestImpl {
 
     protected final MultiValuedMap<String, String> queryParameters;
 
-    static DefaultDimensionGenerator dimensionGenerator = VirtualDimensionDimensionGenerator.INSTANCE;
+    static DefaultDimensionGenerator dimensionGenerator = VirtualAwareDimensionGenerator.INSTANCE;
 
     /**
      * Parses the API request URL and generates the Api Request object.

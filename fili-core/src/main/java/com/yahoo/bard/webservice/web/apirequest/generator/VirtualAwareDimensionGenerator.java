@@ -18,11 +18,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class VirtualDimensionDimensionGenerator extends DefaultDimensionGenerator {
+public class VirtualAwareDimensionGenerator extends DefaultDimensionGenerator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(VirtualDimensionDimensionGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VirtualAwareDimensionGenerator.class);
 
-    public static final VirtualDimensionDimensionGenerator INSTANCE = new VirtualDimensionDimensionGenerator();
+    public static final VirtualAwareDimensionGenerator INSTANCE = new VirtualAwareDimensionGenerator();
 
     /**
      * Lookup dimension from dimension dictionary or other source.
