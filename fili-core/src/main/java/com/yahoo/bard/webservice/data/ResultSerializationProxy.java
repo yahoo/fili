@@ -2,9 +2,16 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data;
 
+import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
+import com.yahoo.bard.webservice.data.dimension.DimensionRow;
+import com.yahoo.bard.webservice.data.metric.MetricColumn;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.joda.time.format.ISODateTimeFormat;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -31,7 +38,7 @@ public class ResultSerializationProxy {
         this.result = result;
         this.dimensionValues = getDimensionValues(result);
         this.metricValues = getMetricValues(result);
-        this.timeStamp = result.getTimeStamp().toString();
+        this.timeStamp = result.getTimestamp(ISODateTimeFormat.dateTime());
     }
 
     @JsonProperty(DIMENSION_VALUES_KEY)
@@ -80,10 +87,12 @@ public class ResultSerializationProxy {
      * @return custom map of dimension names and their respective unique id
      */
     private Map<String, String> getDimensionValues(Result result) {
-        return result.getDimensionRows().entrySet().stream().collect(Collectors.toMap(
-                columnRow -> columnRow.getKey().getName(),
-                columnRow -> columnRow.getValue().get(columnRow.getKey().getDimension().getKey())
-        ));
+        LinkedHashMap<String, String> valueMap = new LinkedHashMap<>();
+        for (Map.Entry<DimensionColumn, DimensionRow> entry : result.getDimensionRows().entrySet()) {
+            String value = entry.getValue() == null ? null : entry.getValue().getKeyValue();
+            valueMap.put(entry.getKey().getName(), value);
+        }
+        return valueMap;
     }
 
     /**
@@ -94,9 +103,10 @@ public class ResultSerializationProxy {
      * @return  custom map of metric names and their values
      */
     private Map<String, Object> getMetricValues(Result result) {
-        return result.getMetricValues().entrySet().stream().collect(Collectors.toMap(
-                metricColumn -> metricColumn.getKey().getName(),
-                metricColumn -> metricColumn.getValue()
-        ));
+        LinkedHashMap<String, Object> valueMap = new LinkedHashMap<>();
+        for (Map.Entry<MetricColumn, Object> entry : result.getMetricValues().entrySet()) {
+            valueMap.put(entry.getKey().getName(), entry.getValue());
+        }
+        return valueMap;
     }
 }
