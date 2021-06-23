@@ -51,7 +51,9 @@ public class TimeDimensionResultSetMapper extends ResultSetMapper {
 
         if (timeColumn.isPresent()) {
             DimensionRow dimensionRow = result.getDimensionRow(timeColumn.get());
-            dateTime =  (dimensionRow == null || dimensionRow.getKeyValue() == null) ?
+            dateTime = (dimensionRow == null ||
+                        dimensionRow.getKeyValue() == null ||
+                        dimensionRow.getKeyValue().isEmpty()) ?
                     null :
                     new DateTime(Long.parseLong(dimensionRow.getKeyValue()), dateTimeZone);
         }
