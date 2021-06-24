@@ -200,6 +200,14 @@ abstract class ResponseWriterSpec extends Specification {
     }
 
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
+        return buildTestResultSet(metricValues, requestedMetrics, [dateTime, dateTime])
+    }
+
+    ResultSet buildTestResultSet(
+            Map<MetricColumn, Object> metricValues,
+            Set<MetricColumn> requestedMetrics,
+            List<DateTime> dateTimes
+    ) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
             new LogicalMetricImpl(null, null, it.name)
@@ -279,8 +287,8 @@ abstract class ResponseWriterSpec extends Specification {
 
         apiRequest.getDimensionFields() >> { return defaultDimensionFieldsToShow }
 
-        Result result1 = new Result(dimensionRows1, metricValues, dateTime)
-        Result result2 = new Result(dimensionRows2, metricValues, dateTime)
+        Result result1 = new Result(dimensionRows1, metricValues, dateTimes[0])
+        Result result2 = new Result(dimensionRows2, metricValues, dateTimes[1])
 
         resultSet = new ResultSet(schema, [result1, result2])
 

@@ -41,6 +41,14 @@ class ResultSerializationProxySpec extends Specification {
         serializeResult.getDimensionValues(resources.result1) == dimensionRows
     }
 
+    def "Custom serialization of a null dimension rows of a Result produces the expected json output"() {
+        setup:
+        HashMap dimensionRows = ["ageBracket":null, "country":null, "gender":null]
+
+        expect:
+        serializeResult.getDimensionValues(resources.nullResult) == dimensionRows
+    }
+
     @Unroll
     def "Custom serialization of all the metric rows of a Result produces the expected json output"() {
         setup:

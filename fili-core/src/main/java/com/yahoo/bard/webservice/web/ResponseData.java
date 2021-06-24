@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricColumn;
+import com.yahoo.bard.webservice.data.time.TimeDimension;
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory;
 import com.yahoo.bard.webservice.util.DateTimeUtils;
 import com.yahoo.bard.webservice.util.Pagination;
@@ -188,14 +189,15 @@ public class ResponseData {
      */
     public Map<String, Object> buildResultRow(Result result) {
         Map<String, Object> outputRow = new LinkedHashMap<>();
-        outputRow.put("dateTime", result.getTimeStamp().toString(DateTimeFormatterFactory.getOutputFormatter()));
+        String timeStamp = result.getTimestamp(DateTimeFormatterFactory.getOutputFormatter());
+        outputRow.put(TimeDimension.TIME_DIMENSION_NAME, timeStamp);
 
         // TODO change this to loop on requested fields instead
         Set<Dimension> requestedDimensions = requestedApiDimensionFields.keySet();
 
         // Loop through the Map<DimensionColumn, DimensionRow> and format it to dimension : dimensionRowDesc
         Map<Dimension, DimensionRow> resultRowsByDimension = result.getDimensionRows().entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey().getDimension(), e -> e.getValue()));
+                .collect(Collectors.toMap(e -> e.getKey().getDimension(), Entry::getValue));
 
         for (Dimension dim : requestedDimensions) {
             Set<DimensionField> fields = requestedApiDimensionFields.get(dim);
@@ -232,7 +234,10 @@ public class ResponseData {
     ) {
 
         Map<String, Object> row = new LinkedHashMap<>();
-        row.put("dateTime", result.getTimeStamp().toString(DateTimeFormatterFactory.getOutputFormatter()));
+        row.put(
+                TimeDimension.TIME_DIMENSION_NAME,
+                result.getTimestamp(DateTimeFormatterFactory.getOutputFormatter())
+        );
 
         // Loop through the Map<DimensionColumn, DimensionRow> and format it to dimensionColumnName : dimensionRowKey
         Map<DimensionColumn, DimensionRow> dr = result.getDimensionRows();

@@ -11,6 +11,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.DateTimeParser;
 import org.joda.time.format.DateTimePrinter;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * Holder for the system-wide date-time formatters.
@@ -38,6 +39,15 @@ public class DateTimeFormatterFactory {
             datetimeOutputFormatter = DateTimeFormat.forPattern(formatString);
         }
         return datetimeOutputFormatter;
+    }
+
+    /**
+     * Get the output formatter for the system.
+     *
+     * @return the output formatter, pulling it from a configuration if we've not gotten it before.
+     */
+    public static DateTimeFormatter getZonedOutputFormatter() {
+        return ISODateTimeFormat.dateTimeParser();
     }
 
     public static final DateTimeFormatter FULLY_OPTIONAL_DATETIME_FORMATTER = new DateTimeFormatterBuilder()

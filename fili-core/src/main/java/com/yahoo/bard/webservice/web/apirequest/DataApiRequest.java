@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
@@ -40,13 +42,15 @@ import javax.ws.rs.core.Response;
  */
 public interface DataApiRequest extends ApiRequest {
 
+    SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
     String METRIC_GENERATOR_NAMESPACE = "metric_generator";
     String ORDER_BY_GENERATOR_NAMESPACE = "order_by_generator";
 
 
     String RATIO_METRIC_CATEGORY = "Ratios";
-    String DATE_TIME_STRING = "dateTime";
+    String DATE_TIME_STRING = SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("time_dimension"));
 
     // utility methods
 
@@ -386,7 +390,7 @@ public interface DataApiRequest extends ApiRequest {
     @Deprecated
     default DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
         return withPaginationParameters(paginationParameters.orElse(null));
-    };
+    }
 
     DataApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 

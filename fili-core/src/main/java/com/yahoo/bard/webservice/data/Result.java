@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -84,6 +85,17 @@ public class Result {
      */
     public DateTime getTimeStamp() {
         return timeStamp;
+    }
+
+    /**
+     * The timestamp representing the start moment of the aggregated record.
+     *
+     * @param dateTimeFormatter A formatter for the date time
+     *
+     * @return timestamp  A formatted timestamp or null string if none is present
+     */
+    public String getTimestamp(DateTimeFormatter dateTimeFormatter) {
+        return (timeStamp == null) ? null : timeStamp.toString(dateTimeFormatter);
     }
 
     /**
@@ -178,6 +190,7 @@ public class Result {
 
     @Override
     public String toString() {
-        return timeStamp.toString() + " " + dimensionRows.keySet() + metricValues.toString();
+        String time = timeStamp == null ? "null" : timeStamp.toString();
+        return time + " " + dimensionRows.keySet() + metricValues.toString();
     }
 }

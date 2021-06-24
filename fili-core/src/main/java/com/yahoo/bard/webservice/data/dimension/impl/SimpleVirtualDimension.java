@@ -18,7 +18,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 public class SimpleVirtualDimension implements Dimension, VirtualDimension {
 
@@ -37,7 +40,7 @@ public class SimpleVirtualDimension implements Dimension, VirtualDimension {
      *
      * @param apiName the apiName for the virtual dimension
      */
-    public SimpleVirtualDimension(String apiName) {
+    public SimpleVirtualDimension(@NotNull String apiName) {
         this.apiName = apiName;
     }
 
@@ -144,5 +147,23 @@ public class SimpleVirtualDimension implements Dimension, VirtualDimension {
     @Override
     public boolean isAggregatable() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return apiName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof SimpleVirtualDimension) {
+            return Objects.equals(((SimpleVirtualDimension) o).getApiName(), getApiName());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return apiName.hashCode();
     }
 }

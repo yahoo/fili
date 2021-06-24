@@ -36,8 +36,15 @@ Current
   * parsing of PerDimensionFields will no longer rely on dimension dictionary but instead on the already chosen grouping dimensions
   *  `REQUESTED_API_DIMENSION_FIELDS` context property was added to support JobServlet asynchronous requests, however it doesn't work well with VirtualDimensions so if the ApiRequest is able to be the authority on requested fields it will be used instead.
   * `DataServlet` sanitized empty path elements early to avoid validation later
-  
 
+- [Support null valued dimension, metric and time values to be null]https://github.com/yahoo/fili/issues/1183)  
+   * Result to support null serialization of time, dimensions
+   * Sortable nullable DateTime in ResultSetMapper
+   * TimeDimensionResultSetMapper pulls dimension time into timestamp 
+   * TimeDimension SimpleVirtualDimension to simplify time injecting queries
+   * Made virtual dimension equality based on apiName (to allow distinct but equal request and response dimensions)
+      
+   
 ### Removed:
 
 ### Fixed:

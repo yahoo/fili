@@ -31,10 +31,12 @@ class SerializationResources extends Specification {
     DimensionDictionary dimensionDictionary
     PreResponse preResponse
     ResultSet resultSet
-    Result result1, result2, result3, result4
+    Result result1, result2, result3, result4, nullResult
     ResponseContext responseContext, responseContext1
     ResultSetSchema schema, schema3
     HashMap dimensionRows1
+    HashMap nullDimensionRows
+
     Map<MetricColumn, Object> metricValues1, metricValues2, metricValues3, metricValues4
     Granularity granularity
     Interval interval
@@ -63,41 +65,49 @@ class SerializationResources extends Specification {
 
         dimensionRows1 = new HashMap<>()
         HashMap dimensionRows2 = new HashMap<>()
+        nullDimensionRows = new HashMap()
 
-        //ageBracket dimension rows preparation
         Dimension ageBracketDim =  dimensionDictionary.findByApiName("ageBracket")
-
-        DimensionRow ageBracketRow1 = BardDimensionField.makeDimensionRow(ageBracketDim, "1", "1")
-        dimensionRows1.put(new DimensionColumn(ageBracketDim), ageBracketRow1)
-        ageBracketDim.addDimensionRow(ageBracketRow1)
-
-        DimensionRow ageBracketRow2 = BardDimensionField.makeDimensionRow(ageBracketDim, "4", "4")
-        dimensionRows2.put(new DimensionColumn(ageBracketDim), ageBracketRow2)
-        ageBracketDim.addDimensionRow(ageBracketRow2)
-
-
-        //Gender dimension preparation
         Dimension genderDim = dimensionDictionary.findByApiName("gender")
-
-        DimensionRow gendeRow1 = BardDimensionField.makeDimensionRow(genderDim, "m", "m")
-        dimensionRows1.put(new DimensionColumn(genderDim), gendeRow1)
-        genderDim.addDimensionRow(gendeRow1)
-
-        DimensionRow gendeRow2 = BardDimensionField.makeDimensionRow(genderDim, "f", "f")
-        dimensionRows2.put(new DimensionColumn(genderDim), gendeRow2)
-        genderDim.addDimensionRow(gendeRow2)
-
-
-        //Country dimension preparation
         Dimension countryDim = dimensionDictionary.findByApiName("country")
 
+        DimensionColumn ageDimColumn = new DimensionColumn(ageBracketDim)
+        DimensionColumn genderDimColumn = new DimensionColumn(genderDim)
+        DimensionColumn countryDimColumn = new DimensionColumn(countryDim)
+        //ageBracket dimension rows preparation
+
+        DimensionRow ageBracketRow1 = BardDimensionField.makeDimensionRow(ageBracketDim, "1", "1")
+        dimensionRows1.put(ageDimColumn, ageBracketRow1)
+                ageBracketDim.addDimensionRow(ageBracketRow1)
+
+        DimensionRow ageBracketRow2 = BardDimensionField.makeDimensionRow(ageBracketDim, "4", "4")
+        dimensionRows2.put(ageDimColumn, ageBracketRow2)
+        ageBracketDim.addDimensionRow(ageBracketRow2)
+
+        nullDimensionRows.put(ageDimColumn, null)
+
+        //Gender dimension preparation
+
+        DimensionRow genderRow1 = BardDimensionField.makeDimensionRow(genderDim, "m", "m")
+        dimensionRows1.put(genderDimColumn, genderRow1)
+        genderDim.addDimensionRow(genderRow1)
+
+        DimensionRow gendeRow2 = BardDimensionField.makeDimensionRow(genderDim, "f", "f")
+        dimensionRows2.put(genderDimColumn, gendeRow2)
+        genderDim.addDimensionRow(gendeRow2)
+
+        nullDimensionRows.put(genderDimColumn, null)
+        //Country dimension preparation
+
         DimensionRow countyRow1 = BardDimensionField.makeDimensionRow(countryDim, "US", "US")
-        dimensionRows1.put(new DimensionColumn(countryDim), countyRow1)
+        dimensionRows1.put(countryDimColumn, countyRow1)
         countryDim.addDimensionRow(countyRow1)
 
         DimensionRow countyRow2 = BardDimensionField.makeDimensionRow(countryDim, "IN", "IN")
-        dimensionRows2.put(new DimensionColumn(countryDim), countyRow2)
+        dimensionRows2.put(countryDimColumn, countyRow2)
         countryDim.addDimensionRow(countyRow2)
+
+        nullDimensionRows.put(countryDimColumn, null)
 
         metricValues1 = new HashMap()
         metricValues1.put(new MetricColumn("simplePageViews"), new BigDecimal(111))
@@ -125,6 +135,7 @@ class SerializationResources extends Specification {
         result1 = new Result(dimensionRows1, metricValues1, DateTime.parse(("2016-01-12T00:00:00.000Z")))
         result2 = new Result(dimensionRows2, metricValues2, DateTime.parse(("2016-01-12T00:00:00.000Z")))
         result3 = new Result(dimensionRows2, metricValues3, DateTime.parse(("2016-01-12T00:00:00.000Z")))
+        nullResult = new Result(nullDimensionRows, metricValues1, null)
 
         result4 = new Result(dimensionRows2, metricValues4, DateTime.parse(("2016-01-12T00:00:00.000Z")))
 
