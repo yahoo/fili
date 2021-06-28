@@ -14,8 +14,6 @@ import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec;
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation;
 import com.yahoo.bard.webservice.druid.model.virtualcolumns.VirtualColumn;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +24,9 @@ import java.util.Optional;
 /**
  * Druid groupBy query.
  */
-public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
+public class GroupByQuery extends AbstractDruidDimensionAggregationQuery<GroupByQuery> {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroupByQuery.class);
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected final Having having;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected final LimitSpec limitSpec;
 
     /**
      * Constructor.
@@ -206,15 +198,15 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 granularity,
                 dimensions,
                 filter,
+                having,
                 aggregations,
                 postAggregations,
                 intervals,
+                limitSpec,
                 context,
                 incrementQueryId,
                 virtualColumn
         );
-        this.having = having;
-        this.limitSpec = limitSpec;
 
         LOG.trace(
                 "Query type: {}\n\n" +
@@ -244,14 +236,6 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
         );
     }
 
-    public Having getHaving() {
-        return having;
-    }
-
-    public LimitSpec getLimitSpec() {
-        return limitSpec;
-    }
-
     // CHECKSTYLE:OFF
     @Override
     public GroupByQuery withDataSource(DataSource dataSource) {
@@ -266,6 +250,7 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 withDataSource(new QueryDataSource(innerQuery.get().withInnermostDataSource(dataSource)));
     }
 
+    @Override
     public GroupByQuery withDimensions(Collection<Dimension> dimensions) {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
@@ -280,10 +265,12 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
+    @Override
     public GroupByQuery withHaving(Having having) {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
 
+    @Override
     public GroupByQuery withLimitSpec(LimitSpec limitSpec) {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
@@ -311,6 +298,15 @@ public class GroupByQuery extends AbstractDruidAggregationQuery<GroupByQuery> {
                 withDataSource(new QueryDataSource(innerQuery.get().withAllIntervals(intervals))).withIntervals(intervals);
     }
 
+    /**
+     * A deprecated alias for the limit spec expression.
+     *
+     * @param limitSpec  The limit spec predicate.
+     *
+     * @return A copy of the query
+     * @deprecated Use withLimitSpec instead
+     */
+    @Deprecated
     public GroupByQuery withOrderBy(LimitSpec limitSpec) {
         return new GroupByQuery(getDataSource(), granularity, dimensions, filter, having, aggregations, postAggregations, intervals, limitSpec, context, false, virtualColumns);
     }
