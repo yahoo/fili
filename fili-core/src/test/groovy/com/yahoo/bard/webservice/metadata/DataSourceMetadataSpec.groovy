@@ -15,7 +15,7 @@ import com.google.common.collect.TreeRangeSet
 import org.joda.time.DateTime
 import org.joda.time.Interval
 
-import io.druid.timeline.DataSegment
+import org.apache.druid.timeline.DataSegment
 
 class DataSourceMetadataSpec extends BaseDataSourceMetadataSpec {
     DataSourceMetadata metadata

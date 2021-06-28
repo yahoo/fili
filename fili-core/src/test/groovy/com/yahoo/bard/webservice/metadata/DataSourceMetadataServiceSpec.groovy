@@ -51,8 +51,8 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
                 .map({it.values()})
                 .map({it.collect {it.identifier}})
                 .collect(Collectors.toList())  == [
-                        [segments.segment1.identifier, segments.segment2.identifier],
-                        [segments.segment3.identifier, segments.segment4.identifier]
+                        [segments.segment1.id.toString(), segments.segment2.id.toString()],
+                        [segments.segment3.id.toString(), segments.segment4.id.toString()]
                 ]
 
         and: "all the intervals by column in metadata service are simplified to interval12"
@@ -71,7 +71,9 @@ class DataSourceMetadataServiceSpec extends BaseDataSourceMetadataSpec {
 
         expect:
         segmentByTime.keySet() == [dateTime1, dateTime2] as Set
-        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments.segment3.identifier, segments.segment4.identifier] as Set
+        Set s = segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet()
+        Set s2 = [segments.segment3.id, segments.segment4.id] as Set
+        segmentByTime.get(new DateTime(intervals["interval2"].start)).keySet() == [segments.segment3.id.toString(), segments.segment4.id.toString()] as Set
     }
 
     def "grouping intervals by column behave as expected"() {
