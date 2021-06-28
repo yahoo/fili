@@ -14,10 +14,10 @@ Current
 
 ### Changed:
 - [Make LookBackQuery Extensible](https://github.com/yahoo/fili/issues/1182)
-* Make field and constructor less private
+   * Make field and constructor less private
 
 - [Make GroupBy Query Extensible](https://github.com/yahoo/fili/issues/1181)
-* Make field less private
+   * Make field less private
 
 - [Make Data Servlet Extensible](https://github.com/yahoo/fili/issues/1176)
   * Make field less private
@@ -43,13 +43,18 @@ Current
    * TimeDimensionResultSetMapper pulls dimension time into timestamp 
    * TimeDimension SimpleVirtualDimension to simplify time injecting queries
    * Made virtual dimension equality based on apiName (to allow distinct but equal request and response dimensions)
-      
+
+- [Bumping druid api dependency] (https://github.com/yahoo/fili/issues/1174)
+   * Moved druid dependency to Druid 0.20
+   * Disabled jackson validation error
+
 - [Moving having and limitspec support to an interface and abstract implementation](https://github.com/yahoo/fili/issues/1185)
    * Added an interface for the group by and other related query types to offer abstract support for limitspec and having
    * Deprecated withOrderBy because there hasn't been a lot of conceptual gain drawing a line between logical and actual sort implementations.
    * Made `LookbackQuery` support withDimensions in cases where the inner datasource supports withDimensions.
    * Made `GroupByQuery` devolve limitspec and having support to parent abstract class.
       
+
 ### Removed:
 
 ### Fixed:
@@ -59,8 +64,6 @@ Current
 ### Known Issues:
 
 ## Contract changes:
-
-
 -------------
 
 
