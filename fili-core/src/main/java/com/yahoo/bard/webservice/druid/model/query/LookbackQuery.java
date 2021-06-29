@@ -38,14 +38,10 @@ import java.util.stream.Stream;
 /**
  * Druid lookback query.
  */
-public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> {
+public class LookbackQuery extends AbstractDruidDimensionAggregationQuery<LookbackQuery> {
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected final Having having;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    protected final LimitSpec limitSpec;
-
+    public static final String NO_WITH_DIMENSIONS_ERROR_FORMAT =
+            "Query: %s doesn't support operation 'withDimensions'.";
     @JsonInclude(JsonInclude.Include.NON_NULL)
     protected final Collection<String> lookbackPrefixes;
 
@@ -176,16 +172,16 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
                 granularity,
                 Collections.<Dimension>emptySet(),
                 filter,
+                having,
                 aggregations,
                 postAggregations,
                 intervals,
+                limitSpec,
                 context,
                 incrementQueryId,
                 virtualColumns
         );
 
-        this.having = having;
-        this.limitSpec = limitSpec;
         this.lookbackOffsets = lookbackOffsets != null ? new ArrayList<>(lookbackOffsets) : null;
         this.lookbackPrefixes = lookbackPrefixes != null ? new ArrayList<>(lookbackPrefixes) : null;
     }
@@ -205,10 +201,12 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
         return getInnerQuery().get();
     }
 
+    @Override
     public Having getHaving() {
         return having;
     }
 
+    @Override
     public LimitSpec getLimitSpec() {
         return limitSpec;
     }
@@ -320,6 +318,17 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     }
 
     @Override
+    public LookbackQuery withDimensions(Collection<Dimension> dimensions) {
+        DruidAggregationQuery druidAggregationQuery = getInnerQueryUnchecked();
+        if (!(druidAggregationQuery instanceof DruidDimensionAggregationQuery)) {
+            String error = NO_WITH_DIMENSIONS_ERROR_FORMAT;
+            throw new UnsupportedOperationException(String.format(error, druidAggregationQuery.toString()));
+        }
+        DruidDimensionAggregationQuery query = (DruidDimensionAggregationQuery) druidAggregationQuery;
+        return withDataSource(new QueryDataSource(query.withDimensions(dimensions)));
+    }
+
+    @Override
     public LookbackQuery withIntervals(Collection<Interval> intervals) {
         return new LookbackQuery(
                 new QueryDataSource(getInnerQueryUnchecked().withIntervals(intervals)),
@@ -363,12 +372,26 @@ public class LookbackQuery extends AbstractDruidAggregationQuery<LookbackQuery> 
     public LookbackQuery withContext(QueryContext context) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec, virtualColumns);
     }
-
+    /**
+     * A deprecated alias for the limit spec expression.
+     *
+     * @param limitSpec  The limit spec predicate.
+     *
+     * @return A copy of the query
+     * @deprecated Use withLimitSpec instead
+     */
+    @Deprecated
     public LookbackQuery withOrderBy(LimitSpec limitSpec) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec, virtualColumns);
     }
 
+    @Override
     public LookbackQuery withHaving(Having having) {
+        return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec, virtualColumns);
+    }
+
+    @Override
+    public LookbackQuery withLimitSpec(LimitSpec limitSpec) {
         return new LookbackQuery(dataSource, granularity, filter, aggregations, postAggregations, intervals, context, false, lookbackOffsets, lookbackPrefixes, having, limitSpec, virtualColumns);
     }
 

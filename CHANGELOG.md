@@ -48,6 +48,13 @@ Current
    * Moved druid dependency to Druid 0.20
    * Disabled jackson validation error
 
+- [Moving having and limitspec support to an interface and abstract implementation](https://github.com/yahoo/fili/issues/1185)
+   * Added an interface for the group by and other related query types to offer abstract support for limitspec and having
+   * Deprecated withOrderBy because there hasn't been a lot of conceptual gain drawing a line between logical and actual sort implementations.
+   * Made `LookbackQuery` support withDimensions in cases where the inner datasource supports withDimensions.
+   * Made `GroupByQuery` devolve limitspec and having support to parent abstract class.
+      
+
 ### Removed:
 
 ### Fixed:
