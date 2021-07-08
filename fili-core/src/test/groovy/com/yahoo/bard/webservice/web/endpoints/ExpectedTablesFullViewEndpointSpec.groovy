@@ -13,6 +13,8 @@ import spock.lang.Shared
 import spock.lang.Timeout
 /**
  * Checks that all of the table/grain pairs have the dimensions and columns expected.
+ *
+ * If this test fails with an OutOfMemoryError, try running ExpectedTablesFullViewEndpointMinifiedSpec test instead.
  */
 @spock.lang.Ignore
 @Timeout(30)    // Fail test if hangs
