@@ -13,6 +13,9 @@ Current
 ### Added:
 
 ### Changed:
+- [Enhance Rate Limiting Capability](https://github.com/yahoo/fili/issues/1187)
+   * Add UI and non-UI user count capability to rate limiter
+   
 - [Make LookBackQuery Extensible](https://github.com/yahoo/fili/issues/1182)
    * Make field and constructor less private
 
