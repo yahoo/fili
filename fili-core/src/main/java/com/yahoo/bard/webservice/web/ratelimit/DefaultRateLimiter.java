@@ -99,11 +99,13 @@ public class DefaultRateLimiter implements RateLimiter {
     /**
      * Get the current count for this username. If user does not have a counter, create one.
      *
+     * @param request  The request context
+     * @param isUIQuery  Flag to check if it is a UI query
      * @param userName  Username to get the count for
      *
      * @return The atomic count for the user
      */
-    protected AtomicInteger getCount(String userName) {
+    protected AtomicInteger getCount(ContainerRequestContext request, boolean isUIQuery, String userName) {
         AtomicInteger count = userCounts.get(userName);
 
         // Create a counter if we don't have one yet
@@ -180,7 +182,7 @@ public class DefaultRateLimiter implements RateLimiter {
             requestLimit = requestLimitPerUser;
         }
 
-        AtomicInteger count = getCount(userName);
+        AtomicInteger count = getCount(request, isUIQuery, userName);
         return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
     }
 
