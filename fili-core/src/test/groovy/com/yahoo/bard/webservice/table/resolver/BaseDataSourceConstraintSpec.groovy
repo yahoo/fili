@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver
 
 import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 
 import spock.lang.Specification
@@ -44,6 +45,12 @@ class BaseDataSourceConstraintSpec extends Specification {
         Dimension dim4 = Mock(Dimension)
         Dimension dim5 = Mock(Dimension)
 
+        dim1.getApiName() >> "dim1"
+        dim2.getApiName() >> "dim2"
+        dim3.getApiName() >> "dim3"
+        dim4.getApiName() >> "dim4"
+        dim5.getApiName() >> "dim5"
+
         BaseDataSourceConstraint constraint =  new BaseDataSourceConstraint(
                 [dim1, dim2] as Set,
                 [dim3, dim4] as Set,
@@ -60,5 +67,40 @@ class BaseDataSourceConstraintSpec extends Specification {
         filtered.getFilterDimensions() == [dim4] as Set
         filtered.getMetricDimensions() == [dim5] as Set
         filtered.getAllDimensions() == [dim2, dim4, dim5] as Set
+        filtered.getAllDimensionNames() == ["dim2", "dim4", "dim5"] as Set
+    }
+
+
+    def "Dimension filtering properly removes filtered dimensions and all derived fields are properly rebuilt virtual dimensions are skipped"() {
+        setup:
+        Dimension dim1 = Mock(Dimension)
+        Dimension dim2 = Mock(Dimension)
+        Dimension dim3 = Mock(Dimension)
+        Dimension dim4 = Mock(Dimension)
+        Dimension dim5 = Mock(SimpleVirtualDimension)
+
+        dim1.getApiName() >> "dim1"
+        dim2.getApiName() >> "dim2"
+        dim3.getApiName() >> "dim3"
+        dim4.getApiName() >> "dim4"
+        dim5.getApiName() >> "dim5"
+
+        BaseDataSourceConstraint constraint =  new BaseDataSourceConstraint(
+                [dim1, dim2] as Set,
+                [dim3, dim4] as Set,
+                [dim5] as Set,
+                [] as Set,
+                apiFilters
+        )
+
+        when:
+        BaseDataSourceConstraint filtered = constraint.withDimensionFilter({![dim1, dim3].contains(it)})
+
+        then:
+        filtered.getRequestDimensions() == [dim2] as Set
+        filtered.getFilterDimensions() == [dim4] as Set
+        filtered.getMetricDimensions() == [dim5] as Set
+        filtered.getAllDimensions() == [dim2, dim4, dim5] as Set
+        filtered.getAllDimensionNames() == ["dim2", "dim4"] as Set
     }
 }

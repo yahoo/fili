@@ -3,12 +3,10 @@ Fili
 
 *Read this in other languages: [中文](./translations/zh/README-zh.md).*
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/)
 [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) 
 [![Screwdriver](https://cd.screwdriver.cd/pipelines/6154/badge)](https://cd.screwdriver.cd/pipelines/6154) 
 [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) 
-[![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) 
-[![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)<br>
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=alert_status)](https://sonarcloud.io/dashboard?id=yahoo_fili)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=coverage)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
@@ -98,8 +96,8 @@ using them. After deprecated APIs are no longer supported, they may be removed a
 Binaries (How to Get It)
 ------------------------
 
-Binaries for Fili are stored in [Bintray](https://bintray.com/yahoo/maven/fili). Dependency information for Maven, Ivy,
-and Gradle can be found at https://bintray.com/yahoo/maven/fili, and some examples are below.
+Binaries for Fili are stored in [Maven Central](https://search.maven.org/search?q=com.yahoo.bard). Dependency information for Maven, Ivy,
+and Gradle can be found at https://search.maven.org/search?q=com.yahoo.bard, and some examples are below.
 
 Maven:
 ```xml
@@ -125,11 +123,6 @@ dependencies {
     compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
-
-The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
-
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.9.137-blue.svg)](https://bintray.com/yahoo/maven/fili/0.9.128)
-
 
 Extending
 ---------

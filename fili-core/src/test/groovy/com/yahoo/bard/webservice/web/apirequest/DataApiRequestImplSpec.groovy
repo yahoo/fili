@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -28,6 +29,7 @@ import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
 import com.yahoo.bard.webservice.web.FilteredThetaSketchMetricsHelper
 import com.yahoo.bard.webservice.web.MetricsFilterSetBuilder
+import com.yahoo.bard.webservice.web.apirequest.utils.TestPathSegment
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -36,6 +38,8 @@ import org.joda.time.DateTimeZone
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import javax.ws.rs.core.PathSegment
 
 class DataApiRequestImplSpec extends Specification {
 
@@ -47,6 +51,8 @@ class DataApiRequestImplSpec extends Specification {
     LogicalTable table
 
     GranularityParser granularityParser = new StandardGranularityParser()
+
+    public static final DataApiRequestImpl REQUEST = TestingDataApiRequestImpl.buildStableDataApiRequestImpl()
 
     static final DateTimeZone orginalTimeZone = DateTimeZone.default
 
@@ -94,14 +100,14 @@ class DataApiRequestImplSpec extends Specification {
 
         where:
         responseFormat                 | expectedFormat
-        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
-        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
-        DefaultResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
+        DefaultResponseFormatType.JSON | REQUEST.generateAcceptFormat(null)
+        DefaultResponseFormatType.JSON | REQUEST.generateAcceptFormat("json")
+        DefaultResponseFormatType.CSV  | REQUEST.generateAcceptFormat("csv")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new TestingDataApiRequestImpl().generateAcceptFormat("bad")
+        REQUEST.generateAcceptFormat("bad")
 
         then:
         thrown BadApiRequestException
@@ -109,7 +115,7 @@ class DataApiRequestImplSpec extends Specification {
 
     def "check parsing generateLogicalMetrics"() {
         given:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
                 "met1,met2,met3",
                 table,
                 metricDict,
@@ -127,9 +133,88 @@ class DataApiRequestImplSpec extends Specification {
         logicalMetrics == expected
     }
 
+
+    def "generateDimensions parses known dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+
+        Set<Dimension> groupDimensions = REQUEST.generateDimensions(
+                pathSegmentList,
+                dimensionDict
+        )
+
+        then:
+        groupDimensions.size() == 2
+    }
+
+    def "generatePerDimensionFields parses known dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+
+        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
+
+        then:
+        dimensionFields.keySet().size() == 2
+        dimensionFields.get(locale).size() == 2
+        dimensionFields.get(one).size() == 1
+        dimensionFields.get(one).first().name == "desc"
+    }
+
+    def "generatePerDimensionFields ignores unknown dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("one", "desc"))
+        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
+
+        Dimension locale = dimensionDict.findByApiName("locale")
+        Dimension one = dimensionDict.findByApiName("one")
+        Dimension unconfigured = new SimpleVirtualDimension("__unconfigured")
+
+        Set<Dimension> dimensions = [locale, one] as LinkedHashSet
+
+
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> dimensionFields =
+                REQUEST.generateDimensionFields(pathSegmentList, dimensions)
+
+        then:
+        dimensionFields.keySet().size() == 2
+        dimensionFields.get(locale).size() == 2
+        dimensionFields.get(one).size() == 1
+        dimensionFields.get(one).first().name == "desc"
+    }
+
+    def "generateDimensions fails on unknown dimensions"() {
+        when:
+        List<PathSegment> pathSegmentList = new ArrayList<>()
+
+        pathSegmentList.add(new TestPathSegment("locale", null))
+        pathSegmentList.add(new TestPathSegment("__unconfigured", null))
+
+        Set<Dimension> groupDimensions = REQUEST.generateDimensions(
+                pathSegmentList,
+                dimensionDict
+        )
+
+        then:
+        thrown(BadApiRequestException)
+    }
+
     def "generateLogicalMetrics throws BadApiRequestException on non-existing LogicalMetric"() {
         when:
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
                 "met1,met2,nonExistingMetric",
                 table,
                 metricDict,
@@ -144,7 +229,7 @@ class DataApiRequestImplSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
+        REQUEST.generateGranularity(name, granularityParser) == expected
 
         where:
         name    | expected
@@ -158,7 +243,7 @@ class DataApiRequestImplSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, granularityParser)
+        REQUEST.generateGranularity(timeGrainName, granularityParser)
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -174,7 +259,7 @@ class DataApiRequestImplSpec extends Specification {
         FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
 
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "",
                 table,
                 metricDict,
@@ -201,7 +286,7 @@ class DataApiRequestImplSpec extends Specification {
         FieldConverterSupplier.metricsFilterSetBuilder = new FilteredThetaSketchMetricsHelper(new DruidInFilterBuilder())
 
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "",
                 table,
                 metricDict,

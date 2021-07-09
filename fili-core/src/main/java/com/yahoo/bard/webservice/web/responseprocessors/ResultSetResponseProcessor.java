@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.data.DruidResponseParser;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
@@ -33,10 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import rx.subjects.Subject;
 
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response.Status;
@@ -97,14 +96,8 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
                     .map(LogicalMetric::getName)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            LinkedHashMap<String, HashSet<DimensionField>> requestedApiDimensionFields = apiRequest.getDimensionFields()
-                    .entrySet().stream()
-                    .collect(Collectors.toMap(
-                            e -> e.getKey().getApiName(),
-                            Map.Entry::getValue,
-                            (fieldWithSameKey1, fieldWithSameKey2) -> fieldWithSameKey1,
-                            LinkedHashMap::new
-                    ));
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields =
+                    apiRequest.getDimensionFields();
 
             responseContext.put(API_METRIC_COLUMN_NAMES.getName(), apiMetricColumnNames);
             responseContext.put(HEADERS.getName(), headers);

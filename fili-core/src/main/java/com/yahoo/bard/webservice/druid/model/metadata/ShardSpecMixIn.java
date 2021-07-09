@@ -5,7 +5,7 @@ package com.yahoo.bard.webservice.druid.model.metadata;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import io.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.NoneShardSpec;
 
 /**
  * Defines a mix-in that is used to deserialize shard spec from json.

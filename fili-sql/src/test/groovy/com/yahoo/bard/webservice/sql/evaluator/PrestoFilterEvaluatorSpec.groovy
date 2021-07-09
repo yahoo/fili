@@ -40,7 +40,7 @@ class PrestoFilterEvaluatorSpec extends Specification {
         builder.filter(rexnode)
 
         expect:
-        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
+        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitRoot(builder.build()).
                 asSelect().
                 toString()
         sql.endsWith(filterString)
@@ -59,14 +59,14 @@ class PrestoFilterEvaluatorSpec extends Specification {
                 search(API + IS_ROBOT),
                 search(API + IS_NEW, "the"),
                 or(search(API + IS_ROBOT), search(API + METRO_CODE))
-        )                                                  | "WHERE CAST(`isRobot` AS VARCHAR) LIKE '' AND (CAST(`isNew` AS VARCHAR) LIKE '%the%' AND (CAST(`isRobot` AS VARCHAR) LIKE '' OR CAST(`metroCode` AS VARCHAR) LIKE ''))"
+        )                                                  | "WHERE CAST(`isRobot` AS VARCHAR) LIKE '' AND CAST(`isNew` AS VARCHAR) LIKE '%the%' AND (CAST(`isRobot` AS VARCHAR) LIKE '' OR CAST(`metroCode` AS VARCHAR) LIKE '')"
         not(
                 and(
                         search(API + IS_ROBOT),
                         search(API + IS_NEW),
                         or(search(API + IS_ROBOT), search(API + METRO_CODE))
                 )
-        )                                                  | "WHERE CAST(`isRobot` AS VARCHAR) NOT LIKE '' OR (CAST(`isNew` AS VARCHAR) NOT LIKE '' OR CAST(`isRobot` AS VARCHAR) NOT LIKE '' AND CAST(`metroCode` AS VARCHAR) NOT LIKE '')"
+        )                                                  | "WHERE CAST(`isRobot` AS VARCHAR) NOT LIKE '' OR CAST(`isNew` AS VARCHAR) NOT LIKE '' OR CAST(`isRobot` AS VARCHAR) NOT LIKE '' AND CAST(`metroCode` AS VARCHAR) NOT LIKE ''"
     }
 
     def "Test null input"() {

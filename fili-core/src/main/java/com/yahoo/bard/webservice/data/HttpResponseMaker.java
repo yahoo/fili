@@ -23,6 +23,7 @@ import com.yahoo.bard.webservice.web.ResponseData;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.ResponseWriter;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.util.ResponseUtils;
@@ -32,7 +33,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -131,6 +131,7 @@ public class HttpResponseMaker {
      *
      * @return Build response with requested format and associated meta data info.
      */
+    @SuppressWarnings("unchecked")
     protected ResponseBuilder createResponseBuilder(
             ResultSet resultSet,
             ResponseContext responseContext,
@@ -153,14 +154,20 @@ public class HttpResponseMaker {
             responseFormatType = DefaultResponseFormatType.JSON;
         }
 
-        @SuppressWarnings("unchecked")
-        LinkedHashMap<String, LinkedHashSet<DimensionField>> dimensionToDimensionFieldMap =
-                (LinkedHashMap<String, LinkedHashSet<DimensionField>>) responseContext.get(
-                        REQUESTED_API_DIMENSION_FIELDS.getName());
 
+        LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
 
+        if (apiRequest instanceof DataApiRequest) {
+            requestedApiDimensionFields = ((DataApiRequest) apiRequest).getDimensionFields();
+        } else {
+            requestedApiDimensionFields =
+                    (LinkedHashMap<Dimension, LinkedHashSet<DimensionField>>) responseContext.get(
+                            REQUESTED_API_DIMENSION_FIELDS.getName()
+                    );
+        }
+/*
         LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields =
-                dimensionToDimensionFieldMap
+                dimensionNameToDimensionFieldMap
                         .entrySet()
                         .stream()
                         .collect(Collectors.toMap(
@@ -170,7 +177,7 @@ public class HttpResponseMaker {
                                 // We won't have any collisions, so just take the first value
                                 LinkedHashMap::new
                         ));
-
+*/
         @SuppressWarnings("unchecked")
         ResponseData responseData = buildResponseData(
                 resultSet,

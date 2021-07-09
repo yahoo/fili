@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -172,7 +173,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
             keyValueStore.put(allValuesKey, dimRows);
         } catch (IOException e) {
             LOG.error("Exception while adding dimension entry in KeyValueStore : {}", e.toString());
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -244,7 +245,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
             }
         } catch (IOException e) {
             LOG.error("Exception while adding dimension description entry in key value store : {}", e.toString());
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -427,7 +428,7 @@ public class ScanSearchProvider implements SearchProvider, FilterDimensionRows {
             return objectMapper.readValue(value, typeReference);
         } catch (IOException e) {
             LOG.error("Exception while reading dimension rows", e);
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

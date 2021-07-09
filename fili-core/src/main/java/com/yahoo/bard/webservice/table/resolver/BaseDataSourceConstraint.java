@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.table.resolver;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
+import com.yahoo.bard.webservice.data.dimension.VirtualDimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
@@ -257,9 +258,10 @@ public class BaseDataSourceConstraint implements DataSourceConstraint {
      */
     private Set<String> generateAllDimensionNames() {
         return allDimensions.stream()
-                        .map(Dimension::getApiName)
-                        .filter(Objects::nonNull)
-                        .collect(ImmutableSet.toImmutableSet());
+                .filter(dim -> ! (dim instanceof VirtualDimension))
+                .map(Dimension::getApiName)
+                .filter(Objects::nonNull)
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     /**

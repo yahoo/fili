@@ -5,7 +5,7 @@
 
     <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
-    <version>0.12-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Fili: parent pom</name>
@@ -97,7 +97,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
-        <version.fili>0.12-SNAPSHOT</version.fili>
+        <version.fili>1.0-SNAPSHOT</version.fili>
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
@@ -117,7 +117,7 @@
 
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
-        <version.druid.api>0.12.1</version.druid.api>
+        <version.druid.api>0.20.2</version.druid.api>
 
         <profiles.active>test</profiles.active>
 
@@ -376,10 +376,22 @@
 
             <!-- Druid -->
             <dependency>
-                <groupId>io.druid</groupId>
-                <artifactId>druid-api</artifactId>
+                <groupId>org.apache.druid</groupId>
+                <artifactId>druid-core</artifactId>
                 <version>${version.druid.api}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-slf4j-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty</artifactId>
@@ -845,10 +857,12 @@
                 <executions>
                     <execution>
                         <id>add-groovy-sources</id>
+                        <!--
                         <goals>
                             <goal>addSources</goal>
                             <goal>addTestSources</goal>
                         </goals>
+                        -->
                     </execution>
                     <execution>
                         <id>compile-groovy</id>
@@ -858,9 +872,11 @@
                     </execution>
                     <execution>
                         <id>test-compile-groovy</id>
+                        <!--
                         <goals>
                             <goal>compileTests</goal>
                         </goals>
+                        -->
                     </execution>
                 </executions>
             </plugin>
@@ -1049,7 +1065,7 @@
                         <configuration>
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
+import com.yahoo.bard.webservice.data.dimension.VirtualDimension;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
@@ -40,8 +41,10 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -144,13 +147,17 @@ public class DruidQueryBuilder {
 
         Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
+        Set<Dimension> nonVirtualGroupingDimensions = tableFilteredRequest.getAllGroupingDimensions().stream()
+                .filter(dim -> ! (dim instanceof VirtualDimension))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         return druidTopNMetric != null ?
             buildTopNQuery(
                     template,
                     table,
                     tableFilteredRequest.getGranularity(),
                     tableFilteredRequest.getTimeZone(),
-                    tableFilteredRequest.getAllGroupingDimensions(),
+                    nonVirtualGroupingDimensions,
                     filter,
                     tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
@@ -170,7 +177,7 @@ public class DruidQueryBuilder {
                         table,
                         tableFilteredRequest.getGranularity(),
                         tableFilteredRequest.getTimeZone(),
-                        tableFilteredRequest.getAllGroupingDimensions(),
+                        nonVirtualGroupingDimensions,
                         filter,
                         druidHavingBuilder.buildHavings(tableFilteredRequest.getHavings()),
                         tableFilteredRequest.getIntervals(),

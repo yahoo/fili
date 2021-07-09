@@ -6,14 +6,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
 
 import org.apache.commons.lang3.NotImplementedException;
-
-import io.druid.data.input.InputRow;
-import io.druid.timeline.partition.NoneShardSpec;
-import io.druid.timeline.partition.PartitionChunk;
-import io.druid.timeline.partition.ShardSpec;
-import io.druid.timeline.partition.ShardSpecLookup;
+import org.apache.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.PartitionChunk;
+import org.apache.druid.timeline.partition.ShardSpec;
+import org.apache.druid.timeline.partition.ShardSpecLookup;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,11 +73,6 @@ public class NumberedShardSpec implements ShardSpec {
         throw new NotImplementedException("createChunk method is not implemented");
     }
 
-    @Override
-    public boolean isInChunk(long timestamp, InputRow inputRow) {
-        throw new NotImplementedException("isInChunk method is not implemented");
-    }
-
     /**
      * Getter for partition number.
      *
@@ -90,7 +84,22 @@ public class NumberedShardSpec implements ShardSpec {
     }
 
     @Override
-    public ShardSpecLookup getLookup(List<ShardSpec> shardSpecs) {
+    public int getNumCorePartitions() {
+        return 0;
+    }
+
+    @Override
+    public List<String> getDomainDimensions() {
+        return null;
+    }
+
+    @Override
+    public boolean possibleInDomain(final Map<String, RangeSet<String>> map) {
+        return false;
+    }
+
+    @Override
+    public ShardSpecLookup getLookup(final List<? extends ShardSpec> list) {
         throw new NotImplementedException("getLookup method is not implemented");
     }
 

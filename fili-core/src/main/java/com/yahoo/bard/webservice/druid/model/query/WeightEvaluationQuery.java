@@ -107,7 +107,8 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 query.getIntervals(),
                 query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
                 query.getContext(),
-                false
+                false,
+                null
         );
     }
 

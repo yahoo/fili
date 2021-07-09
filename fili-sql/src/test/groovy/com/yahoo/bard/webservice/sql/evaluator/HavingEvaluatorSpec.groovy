@@ -75,7 +75,7 @@ class HavingEvaluatorSpec extends Specification {
         builder.filter(havingFilter)
 
         expect:
-        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
+        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitRoot(builder.build()).
                 asSelect().
                 toString();
         sql.contains(expectedHavingSql)
