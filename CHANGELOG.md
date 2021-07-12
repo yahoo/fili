@@ -13,7 +13,7 @@ Current
 ### Added:
 
 ### Changed:
-- [Enhance Rate Limiting Capability](https://github.com/yahoo/fili/issues/1187)
+- [Enhance Rate Limiting Capability](https://github.com/yahoo/fili/issues/1188)
    * Add UI and non-UI user count capability to rate limiter
    
 - [Make LookBackQuery Extensible](https://github.com/yahoo/fili/issues/1182)
