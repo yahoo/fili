@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
 public class MetricType {
 
     private final String type;
@@ -22,7 +24,7 @@ public class MetricType {
      * @param subType A subtype
      * @param typeMetadata metadata attached to this instance of type.
      */
-    public MetricType(final String type, final String subType, final Map<String, String> typeMetadata) {
+    public MetricType(@NotNull String type, String subType, Map<String, String> typeMetadata) {
         this.type = type;
         this.subType = subType;
         Map<String, String> metadata = new HashMap<>();

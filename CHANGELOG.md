@@ -57,6 +57,11 @@ Current
    * Made `LookbackQuery` support withDimensions in cases where the inner datasource supports withDimensions.
    * Made `GroupByQuery` devolve limitspec and having support to parent abstract class.
       
+- [Add MetricType subType and metadata](https://github.com/yahoo/fili/issues/1189)
+   * Elaborated type into a class in `LogicalMetricInfo` supporting subtype and metadata
+   * Updated metric makers to support type overrides
+   * Updated ProtocolMetric generator to support modifying types
+   * Updated `ThetaSketchMaker` to demonstrate having a type generated on the Maker that captured sketch precision as metadata.
 
 ### Removed:
 
