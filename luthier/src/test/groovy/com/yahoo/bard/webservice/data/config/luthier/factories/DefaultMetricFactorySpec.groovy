@@ -23,6 +23,6 @@ class DefaultMetricFactorySpec extends Specification {
             logicalMetric.name == "longSumCO"
             logicalMetric.description == "longSumCO"
             logicalMetric.category == "GENERAL"
-            logicalMetric.type == "number"
+            logicalMetric.type.type == "number"
     }
 }

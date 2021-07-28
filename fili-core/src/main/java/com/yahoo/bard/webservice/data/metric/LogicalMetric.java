@@ -66,7 +66,7 @@ public interface LogicalMetric {
      *
      * @return A string defining the type of the metric.
      */
-    String getType();
+    MetricType getType();
 
     /**
      * The collected metadata of this metric.
