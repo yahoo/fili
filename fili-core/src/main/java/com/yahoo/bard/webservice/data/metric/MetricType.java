@@ -21,10 +21,11 @@ public class MetricType {
      * Constructor.
      *
      * @param type The name of the type
-     * @param subType A subtype
+     * @param subType A subtype name
      * @param typeMetadata metadata attached to this instance of type.
      */
     public MetricType(@NotNull String type, String subType, Map<String, String> typeMetadata) {
+        assert type != null;
         this.type = type;
         this.subType = subType;
         Map<String, String> metadata = new HashMap<>();
@@ -34,11 +35,11 @@ public class MetricType {
         this.typeMetadata = Collections.unmodifiableMap(metadata);
     }
 
-    public MetricType(final String type) {
+    public MetricType(@NotNull String type) {
         this(type, null, null);
     }
 
-    public MetricType(final String type, final String subType) {
+    public MetricType(@NotNull  String type, String subType) {
         this(type, subType, null);
     }
 
