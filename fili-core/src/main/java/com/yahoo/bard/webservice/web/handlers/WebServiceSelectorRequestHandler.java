@@ -115,7 +115,12 @@ public class WebServiceSelectorRequestHandler extends BaseDataRequestHandler {
         QueryContext qc = originalQc;
         Integer configuredTimeout = handler.getWebService().getTimeout();
         if (configuredTimeout != null) {
-            int timeLeft = timeoutTransform.apply(configuredTimeout);
+            Integer originalTimeout = originalQc != null ?
+                            originalQc.getTimeout() != null
+                                    ? originalQc.getTimeout()
+                                    : Integer.MAX_VALUE
+                            : Integer.MAX_VALUE;
+            int timeLeft = timeoutTransform.apply(Math.min(configuredTimeout, originalTimeout));
             qc = qc.withTimeout(timeLeft);
         }
         if (priority != null) {

@@ -95,6 +95,57 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
         5        |  1         | true            | 1
     }
 
+    @Unroll
+    def "Test lower query timeout is preserved client timeout: #timeout queryTimeout: #originalTimeout expected: #expected"() {
+        setup:
+        QueryContext originalContext = new QueryContext([:])
+
+        if (originalTimeout != null) {
+            originalContext = originalContext.withTimeout(originalTimeout)
+        }
+
+        QueryContext expectedContext
+        if (expected != null) {
+            expectedContext = new QueryContext([(QueryContext.Param.TIMEOUT): expected])
+        } else {
+            expectedContext = new QueryContext([:])
+        }
+
+        int valueChanging = (timeout != null ? 1: 0)
+        int valueNotChanging = (timeout == null ? 1: 0)
+
+        DruidWebService onWebService = webService
+        DataRequestHandler nextHandler = webServiceNext
+
+        ContainerRequestContext crc = Mock(ContainerRequestContext)
+        crc.getHeaders() >> headerMap
+
+        headerMap.add(DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME, DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
+        headerMap.add("referer", "http://somewhere")
+        rc = new RequestContext(crc, true)
+
+        when:
+        handler.handleRequest(rc, request, groupByQuery, response)
+
+        then:
+        onWebService.getServiceConfig() >> serviceConfig
+        serviceConfig.getPriority() >> null
+        onWebService.getTimeout() >> timeout
+        groupByQuery.getContext() >> originalContext
+        (valueChanging) * groupByQuery.withContext(_) >> modifiedGroupByQuery
+        (valueChanging) * nextHandler.handleRequest(rc, request, modifiedGroupByQuery, response)
+        (valueNotChanging) * nextHandler.handleRequest(rc, request, groupByQuery, response)
+
+        where:
+        timeout  |  originalTimeout | expected
+        5        |  10              | 5
+        5        |  1               | 1
+        5        |  null            | 5
+        null     |  10              | 10
+        null     |  1               | 1
+        null     |  null            | null
+    }
+
     def "Test time function counts down based on total timing"() {
         setup:
 
