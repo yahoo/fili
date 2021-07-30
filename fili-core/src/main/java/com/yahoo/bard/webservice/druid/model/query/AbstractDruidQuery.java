@@ -20,7 +20,8 @@ import java.util.Collections;
 public abstract class AbstractDruidQuery<Q extends AbstractDruidQuery<? super Q>> implements DruidQuery<Q> {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
-    private final static String DEFAULT_TIMEOUT_KEY = SYSTEM_CONFIG.getPackageVariableName("default_query_timeout");
+
+    private static final String DEFAULT_TIMEOUT_KEY = SYSTEM_CONFIG.getPackageVariableName("default_query_timeout");
 
     protected final QueryType queryType;
 

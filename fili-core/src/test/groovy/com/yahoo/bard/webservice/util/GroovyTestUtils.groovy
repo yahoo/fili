@@ -219,7 +219,7 @@ abstract class GroovyTestUtils extends Specification {
 
         // Using for loops for better error messages.
         for (item in errorBodyJson) {
-            def value = item.key == "druidQuery" ? stripQueryId(item.value as Map) : item.value
+            def value = item.key == "druidQuery" ? stripQueryIdAndTimeout(item.value as Map) : item.value
             assert value == expectedBodyJson[item.key] || (item.key == "requestId" && item.value)
         }
         for (item in expectedBodyJson) {
@@ -230,19 +230,19 @@ abstract class GroovyTestUtils extends Specification {
 
     /**
      * Given a map representing a (possibly nested) Druid query, strips the (random, unique, and untestable) queryId
-     * out of the query's context, and out of the context of every nested query.
+     * and timeout value out of the query's context, and out of the context of every nested query.
      *
      * @param map  The druid query with query id's that need to be stripped
      *
      * @return  A copy of the math with all query ids stripped.
      */
-    static Map stripQueryId(Map query) {
+    static Map stripQueryIdAndTimeout(Map query) {
         return query?.collectEntries {
             if (it.key == "context") {
-                [(it.key): it.value.findAll { entry -> entry.key != "queryId"}]
+                [(it.key): it.value.findAll { entry -> entry.key != "queryId" && entry.key != "timeout"}]
             } else if (it.key == "dataSource" && it.value.type == "query") {
                 Map newDataSource = new LinkedHashMap(it.value as Map)
-                newDataSource.query = stripQueryId(newDataSource.query as Map)
+                newDataSource.query = stripQueryIdAndTimeout(newDataSource.query as Map)
                 [(it.key): newDataSource]
             } else {
                 [(it.key): it.value]
