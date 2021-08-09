@@ -50,7 +50,7 @@ public class MetricMetadataFormatter {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("type", logicalMetric.getType());
+        resultRow.put("type", logicalMetric.getType().getType());
         resultRow.put("uri", MetricsServlet.getLogicalMetricUrl(logicalMetric, uriInfo));
         return resultRow;
     }
@@ -73,7 +73,7 @@ public class MetricMetadataFormatter {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("type", logicalMetric.getType());
+        resultRow.put("type", logicalMetric.getType().getType());
         resultRow.put("description", logicalMetric.getDescription());
         resultRow.put(
                 "tables",

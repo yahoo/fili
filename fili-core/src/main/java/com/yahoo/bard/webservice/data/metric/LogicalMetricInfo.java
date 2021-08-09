@@ -12,13 +12,30 @@ import java.util.Objects;
  * logical metric construction.
  */
 public class LogicalMetricInfo {
-    private static final String TYPE_DEFAULT = "number";
+    private static final MetricType TYPE_DEFAULT = DefaultMetricTypes.NUMBER;
 
     private final String name;
     private final String longName;
     private final String category;
     private final String description;
-    private final String type;
+    private final MetricType type;
+
+    /**
+     * Constructor. Builds a fully specified Logical Metric Info.
+     *
+     * @param name  Name of the metric
+     * @param longName  Long name of the metric
+     * @param category  Category of the metric
+     * @param description  Description of the metric
+     * @param type  Type of metric
+     */
+    public LogicalMetricInfo(String name, String longName, String category, String description, MetricType type) {
+        this.name = name;
+        this.longName = longName;
+        this.category = category;
+        this.description = description;
+        this.type = type;
+    }
 
     /**
      * Constructor. Builds a fully specified Logical Metric Info.
@@ -30,11 +47,7 @@ public class LogicalMetricInfo {
      * @param type  Type of metric
      */
     public LogicalMetricInfo(String name, String longName, String category, String description, String type) {
-        this.name = name;
-        this.longName = longName;
-        this.category = category;
-        this.description = description;
-        this.type = type;
+        this(name, longName, category, description, new MetricType(type));
     }
 
     /**
@@ -123,8 +136,19 @@ public class LogicalMetricInfo {
      *
      * @return the type of the metric
      */
-    public String getType() {
+    public MetricType getType() {
         return type;
+    }
+
+    /**
+     * Copy this metric info with a modified type.
+     *
+     * @param metricType  the metric type to replace with.
+     *
+     * @return A logical metric info with a modified type.
+     */
+    public LogicalMetricInfo withType(MetricType metricType) {
+        return new LogicalMetricInfo(name, longName, category, description, metricType);
     }
 
     @Override

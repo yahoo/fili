@@ -180,7 +180,7 @@ public class TableFullViewFormatter extends TableMetadataFormatter {
         resultRow.put("category", logicalMetric.getCategory());
         resultRow.put("name", logicalMetric.getName());
         resultRow.put("longName", logicalMetric.getLongName());
-        resultRow.put("type", logicalMetric.getType());
+        resultRow.put("type", logicalMetric.getType().getType());
         return resultRow;
     }
 }

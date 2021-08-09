@@ -82,9 +82,9 @@ class TableFullViewFormatterSpec extends Specification {
         "longName:${capitalName}, " +
         // Metrics
         "metrics:[" +
-        "[category:General, name:${m1.name}, longName:${m1.longName}, type:${m1.type}], " +
-        "[category:General, name:${m2.name}, longName:${m2.longName}, type:${m2.type}], " +
-        "[category:General, name:${m3.name}, longName:${m3.longName}, type:${m3.type}]" +
+        "[category:General, name:${m1.name}, longName:${m1.longName}, type:${m1.type.type}], " +
+        "[category:General, name:${m2.name}, longName:${m2.longName}, type:${m2.type.type}], " +
+        "[category:General, name:${m3.name}, longName:${m3.longName}, type:${m3.type.type}]" +
         "], " +
         "name:${table.granularity}, retention:]"
 
@@ -144,6 +144,6 @@ class TableFullViewFormatterSpec extends Specification {
         metricObject["category"] == resources.m1.category
         metricObject["name"] == resources.m1.name
         metricObject["longName"] == resources.m1.longName
-        metricObject["type"] == resources.m1.type
+        metricObject["type"] == resources.m1.type.type
     }
 }

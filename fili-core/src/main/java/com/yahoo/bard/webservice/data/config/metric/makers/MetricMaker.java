@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricType;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -120,8 +122,13 @@ public abstract class MetricMaker {
         // Check that we have the right number of metrics
         assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
+        Optional<MetricType> metricType = makeType(logicalMetricInfo, dependentMetrics);
+
         // Have the subclass actually build the metric
-        return this.makeInner(logicalMetricInfo, dependentMetrics);
+        return this.makeInner(
+                metricType.map(type -> logicalMetricInfo.withType(type)).orElse(logicalMetricInfo),
+                dependentMetrics
+        );
     }
 
     /**
@@ -369,5 +376,19 @@ public abstract class MetricMaker {
         return field instanceof Aggregation ?
                 new FieldAccessorPostAggregation((Aggregation) field) :
                 (PostAggregation) field;
+    }
+
+    /**
+     * Create a new metric type for this metric if necessary.
+     *
+     * @param logicalMetricInfo  The identity metadata for the metric
+     * @param dependentMetrics  The metrics this metric depends on
+     *
+     * @return  An optional whose value, if any, is a new metric type for this metric.
+     */
+    protected Optional<MetricType> makeType(
+            final LogicalMetricInfo logicalMetricInfo, final List<String> dependentMetrics
+    ) {
+        return Optional.empty();
     }
 }

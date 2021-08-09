@@ -40,7 +40,7 @@ class MetricMetadataFormattingSpec extends Specification {
         object["name"] == m1.name
         object["longName"] == m1.longName
         object["uri"] == uri.toASCIIString()
-        object["type"] == m1.type
+        object["type"] == m1.type.type
     }
 
     def "Detailed view has table joined and all expected fields"() {
@@ -58,7 +58,7 @@ class MetricMetadataFormattingSpec extends Specification {
         object.keySet() == (fields as Set)
         object["name"] == m1.name
         object["longName"] == m1.longName
-        object["type"] == m1.type
+        object["type"] == m1.type.type
         object["tables"]  == ([ tableFormatter.formatTableSummary(t1, uriInfo),
                                tableFormatter.formatTableSummary(t2, uriInfo),
                                 tableFormatter.formatTableSummary(t3, uriInfo)
@@ -79,6 +79,6 @@ class MetricMetadataFormattingSpec extends Specification {
         object["name"] == m1.name
         object["longName"] == m1.longName
         object["uri"] == uri.toASCIIString()
-        object["type"] == m1.type
+        object["type"] == m1.type.type
     }
 }
