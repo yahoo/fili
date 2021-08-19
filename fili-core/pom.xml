@@ -142,6 +142,15 @@
             <artifactId>joda-time</artifactId>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/org.dmfs/lib-recur -->
+        <dependency>
+            <groupId>org.dmfs</groupId>
+            <artifactId>lib-recur</artifactId>
+            <version>0.12.2</version>
+        </dependency>
+
+
         <!-- Async HTTP Client -->
         <dependency>
             <groupId>org.asynchttpclient</groupId>

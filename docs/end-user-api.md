@@ -1,3 +1,4 @@
+
 Fili API Guide
 ==================
 
@@ -797,6 +798,10 @@ We have followed the ISO 8601 standards as closely as possible in the API. Wikip
 Date Periods have been implemented in accordance with the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). Briefly, a period is specified by the letter `P`, followed by a number and then a timegrain (M=month,W=week,D=day,etc).  For example, if you wanted 30 days of data, you would specify `P30D`.  The number and period may be repeated, so `P1Y2M` is an interval of one year and two months. 
 
 This period can take the place of either the start or end date in the query.
+
+#### Recurrence Rule  (RFC 2445) ####
+
+If the first term is a date, the second one can be an iCalendar recurrence rule.  (https://www.ietf.org/rfc/rfc2445.txt)
 
 #### Date Macros ####
 

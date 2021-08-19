@@ -22,7 +22,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalTableGen
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.intervals.UtcBasedIntervalGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;

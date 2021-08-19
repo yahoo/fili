@@ -36,6 +36,7 @@ import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.apirequest.generator.intervals.UtcBasedIntervalGenerator
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -659,6 +660,32 @@ class ErrorDataServletSpec extends Specification {
     def "Zero length interval fails"() {
         String interval = "2014-09-01/2014-09-01"
         String message = INTERVAL_ZERO_LENGTH.format(interval)
+
+        String jsonFailure =
+                """{"status":400,
+    "statusName": "Bad Request",
+    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "description":"${message}",
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
+"""
+        when:
+        Response r = jtb.getHarness().target("data/shapes/day/color")
+                .queryParam("metrics","depth")
+                .queryParam("dateTime", interval)
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+
+    def "Double period interval fails"() {
+        String interval = "P1D/P2D"
+
+        String message = INTERVAL_INVALID.format(interval, UtcBasedIntervalGenerator.AT_LEAST_ONE_DATE)
 
         String jsonFailure =
                 """{"status":400,

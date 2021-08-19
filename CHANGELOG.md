@@ -11,6 +11,13 @@ Current
 ### Fixed:
 
 ### Added:
+- [Support recurance rules in dateTime expression](https://github.com/yahoo/fili/issues/1195)
+   * Added explicit type parsing to dateTime Elements
+   * Added library to parse RRules from the dateTime elements
+   * Enhanced switches for various combinations of dateTimeElements
+   * Additional testing on new and old paths
+   * Created a limit parameter to prevent infinite recurrance rules from generating infinite reporting intervals.
+   
 
 ### Changed:
 - [Enhance Rate Limiting Capability](https://github.com/yahoo/fili/issues/1188)
