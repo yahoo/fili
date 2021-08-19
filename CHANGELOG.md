@@ -13,6 +13,9 @@ Current
 ### Added:
 
 ### Changed:
+- [Update GeneratedMetricInfo to avoid StackOverflow](https://github.com/yahoo/fili/issues/1194)
+   * Update getType() tp avoid recursion leading to stack overflow.
+   
 - [Enhance Rate Limiting Capability](https://github.com/yahoo/fili/issues/1188)
    * Add UI and non-UI user count capability to rate limiter
    
