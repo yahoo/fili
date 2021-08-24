@@ -288,7 +288,8 @@ class DataApiRequestIntervalsSpec extends Specification {
         )
 
         then:
-        thrown reason
+        def e = thrown(Exception)
+        e instanceof BadApiRequestException
 
         where:
         interval1                                 | interval2                                 | reason
