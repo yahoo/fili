@@ -55,7 +55,7 @@ public class GeneratedMetricInfo extends LogicalMetricInfo {
      * @return the type of the metric
      */
     public MetricType getType() {
-        return modifiedType == null ? getType() : modifiedType;
+        return modifiedType == null ? super.getType() : modifiedType;
     }
 
     /**
