@@ -4,17 +4,22 @@ package com.yahoo.bard.webservice.web;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
+import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
+import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import org.joda.time.Interval;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An wrapper for JsonResponseWriter and JsonApiResponseWriter. Hosts functions and variables that are frequently used
@@ -41,6 +46,7 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
      * Builds the meta object for the JSON response. The meta object is only built if there were missing intervals, or
      * the results are being paginated.
      *
+     * @param request  ApiRequest object with all the associated info in it
      * @param generator  The JsonGenerator used to build the JSON response.
      * @param missingIntervals  The set of intervals that do not contain data.
      * @param volatileIntervals  The set of intervals that have volatile data.
@@ -49,6 +55,7 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
      * @throws IOException if the generator throws an IOException.
      */
     public void writeMetaObject(
+            ApiRequest request,
             JsonGenerator generator,
             Collection<Interval> missingIntervals,
             SimplifiedIntervalList volatileIntervals,
@@ -67,6 +74,30 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
 
         if (!paginating && !haveMissingIntervals && !haveVolatileIntervals) {
             return;
+        }
+
+        if (request instanceof DataApiRequest) {
+            DataApiRequest dataApiRequest = (DataApiRequest) request;
+            Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
+            for (LogicalMetric lm : logicalMetricSet) {
+                LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
+                if (lmi != null) {
+                    generator.writeObjectFieldStart(lmi.getName());
+
+                    if (lmi.getType() != null) {
+                        generator.writeStringField("type/subtype",
+                                String.format("%1$s/%2$s", lmi.getType().getType(), lmi.getType().getSubType()));
+                    }
+
+                    if (lmi.getType().getTypeMetadata() != null) {
+                        for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
+                            generator.writeObjectField(entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    generator.writeEndObject();
+                }
+            }
         }
 
         generator.writeObjectFieldStart("meta");
