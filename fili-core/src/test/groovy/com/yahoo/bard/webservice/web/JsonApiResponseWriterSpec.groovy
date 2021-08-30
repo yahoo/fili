@@ -21,6 +21,12 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
                             "currentPage": $PAGE,
                             "rowsPerPage": $PER_PAGE,
                             "numberOfResults": 6
+                        },
+                        "pageViews": {
+                            "type/subtype": "number/null"
+                        },
+                        "timeSpent": {
+                            "type/subtype": "number/null"
                         }
                     }"""
 

@@ -76,6 +76,8 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
             return;
         }
 
+        generator.writeObjectFieldStart("meta");
+
         if (request instanceof DataApiRequest) {
             DataApiRequest dataApiRequest = (DataApiRequest) request;
             Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
@@ -89,7 +91,7 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                                 String.format("%1$s/%2$s", lmi.getType().getType(), lmi.getType().getSubType()));
                     }
 
-                    if (lmi.getType().getTypeMetadata() != null) {
+                    if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
                         for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
                             generator.writeObjectField(entry.getKey(), entry.getValue());
                         }
@@ -99,8 +101,6 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                 }
             }
         }
-
-        generator.writeObjectFieldStart("meta");
 
         // Add partial data info into the metadata block if needed.
         if (haveMissingIntervals) {
