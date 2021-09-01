@@ -22,11 +22,13 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
                             "rowsPerPage": $PER_PAGE,
                             "numberOfResults": 6
                         },
-                        "pageViews": {
-                            "type/subtype": "number/null"
-                        },
-                        "timeSpent": {
-                            "type/subtype": "number/null"
+                        "schema": {
+                            "pageViews": {
+                                "type":"number"
+                            },
+                            "timeSpent": {
+                                "type":"number"
+                            }
                         }
                     }"""
 

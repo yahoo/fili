@@ -133,8 +133,10 @@ class VolatilityTableSelectionSpec extends BaseDataServletComponentSpec {
                 }
             ],
             "meta": {
-                "limbs": {
-                    "type/subtype": "number/null"
+                "schema": {
+                    "limbs": {
+                        "type":"number"
+                    }
                 },
                 "missingIntervals": [
                     "2016-08-01 00:00:00.000/2016-09-01 00:00:00.000"

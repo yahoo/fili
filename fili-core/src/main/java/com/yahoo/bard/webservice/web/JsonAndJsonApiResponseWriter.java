@@ -81,14 +81,18 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
         if (request instanceof DataApiRequest) {
             DataApiRequest dataApiRequest = (DataApiRequest) request;
             Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
+            generator.writeObjectFieldStart("schema");
             for (LogicalMetric lm : logicalMetricSet) {
                 LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
                 if (lmi != null) {
                     generator.writeObjectFieldStart(lmi.getName());
 
                     if (lmi.getType() != null) {
-                        generator.writeStringField("type/subtype",
-                                String.format("%1$s/%2$s", lmi.getType().getType(), lmi.getType().getSubType()));
+                        generator.writeStringField("type", String.format("%1$s", lmi.getType().getType()));
+                        if (lmi.getType().getSubType() != null) {
+                            generator.writeStringField("subtype",
+                                    String.format("%1$s", lmi.getType().getSubType()));
+                        }
                     }
 
                     if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
@@ -100,6 +104,7 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                     generator.writeEndObject();
                 }
             }
+            generator.writeEndObject();
         }
 
         // Add partial data info into the metadata block if needed.

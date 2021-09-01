@@ -41,11 +41,13 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                             "rowsPerPage": $PER_PAGE,
                             "numberOfResults": 6
                         },
-                        "pageViews": {
-                            "type/subtype": "number/null"
-                        },
-                        "timeSpent": {
-                            "type/subtype": "number/null"
+                        "schema": {
+                            "pageViews": {
+                                "type":"number"
+                            },
+                            "timeSpent": {
+                                "type":"number"
+                            }
                         }
                     }"""
         String expectedJson = withMetaObject(defaultJsonFormat, metaBlock)
@@ -78,11 +80,13 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                         "numberOfResults": 6
                     }"""
         GString metaBlock = """{
-                "pageViews": {
-                    "type/subtype": "number/null"
-                },
-                "timeSpent": {
-                    "type/subtype": "number/null"
+                "schema": {
+                    "pageViews": {
+                        "type":"number"
+                     },
+                    "timeSpent": {
+                        "type":"number"
+                     }
                 },
                 "missingIntervals" : [
                     "2014-07-01 00:00:00.000/2014-07-08 00:00:00.000",
