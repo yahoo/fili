@@ -78,35 +78,9 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
 
         generator.writeObjectFieldStart("meta");
 
-        if (request instanceof DataApiRequest) {
-            DataApiRequest dataApiRequest = (DataApiRequest) request;
-            Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
-            generator.writeObjectFieldStart("schema");
-            for (LogicalMetric lm : logicalMetricSet) {
-                LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
-                if (lmi != null) {
-                    generator.writeObjectFieldStart(lmi.getName());
-
-                    if (lmi.getType() != null) {
-                        generator.writeStringField("type", String.format("%1$s", lmi.getType().getType()));
-                        if (lmi.getType().getSubType() != null) {
-                            generator.writeStringField("subtype",
-                                    String.format("%1$s", lmi.getType().getSubType()));
-                        }
-                    }
-
-                    if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
-                        for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
-                            generator.writeObjectField(entry.getKey(), entry.getValue());
-                        }
-                    }
-
-                    generator.writeEndObject();
-                }
-            }
-            generator.writeEndObject();
+        if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn()) {
+            writeMetricTypeMetaObject(request, generator);
         }
-
         // Add partial data info into the metadata block if needed.
         if (haveMissingIntervals) {
             generator.writeObjectField(
@@ -139,5 +113,47 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
         }
 
         generator.writeEndObject();
+    }
+
+    /**
+     * Builds the meta object for the metric column types.
+     *
+     * @param request  ApiRequest object with all the associated info in it
+     * @param generator  The JsonGenerator used to build the JSON response.
+     *
+     * @throws IOException if the generator throws an IOException.
+     */
+    public void writeMetricTypeMetaObject(
+            ApiRequest request,
+            JsonGenerator generator
+    ) throws IOException {
+        if (request instanceof DataApiRequest) {
+            DataApiRequest dataApiRequest = (DataApiRequest) request;
+            Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
+            generator.writeObjectFieldStart("schema");
+            for (LogicalMetric lm : logicalMetricSet) {
+                LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
+                if (lmi != null) {
+                    generator.writeObjectFieldStart(lmi.getName());
+
+                    if (lmi.getType() != null) {
+                        generator.writeStringField("type", String.format("%1$s", lmi.getType().getType()));
+                        if (lmi.getType().getSubType() != null) {
+                            generator.writeStringField("subtype",
+                                    String.format("%1$s", lmi.getType().getSubType()));
+                        }
+                    }
+
+                    if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
+                        for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
+                            generator.writeStringField(entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    generator.writeEndObject();
+                }
+            }
+            generator.writeEndObject();
+        }
     }
 }

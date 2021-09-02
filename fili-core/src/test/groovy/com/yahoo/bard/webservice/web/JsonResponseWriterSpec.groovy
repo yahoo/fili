@@ -43,10 +43,16 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                         },
                         "schema": {
                             "pageViews": {
-                                "type":"number"
+                                "meta1": "value1",
+                                "meta2": "value2",
+                                "subtype": "metricSubtype",
+                                "type": "metricType"
                             },
                             "timeSpent": {
-                                "type":"number"
+                                "meta1": "value1",
+                                "meta2": "value2",
+                                "subtype": "metricSubtype",
+                                "type": "metricType"
                             }
                         }
                     }"""
@@ -82,11 +88,17 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
         GString metaBlock = """{
                 "schema": {
                     "pageViews": {
-                        "type":"number"
-                     },
+                        "meta1": "value1",
+                        "meta2": "value2",
+                        "subtype": "metricSubtype",
+                        "type": "metricType"
+                    },
                     "timeSpent": {
-                        "type":"number"
-                     }
+                        "meta1": "value1",
+                        "meta2": "value2",
+                        "subtype": "metricSubtype",
+                        "type": "metricType"
+                    }
                 },
                 "missingIntervals" : [
                     "2014-07-01 00:00:00.000/2014-07-08 00:00:00.000",

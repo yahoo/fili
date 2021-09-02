@@ -24,10 +24,16 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
                         },
                         "schema": {
                             "pageViews": {
-                                "type":"number"
+                                "meta1": "value1",
+                                "meta2": "value2",
+                                "subtype": "metricSubtype",
+                                "type": "metricType"
                             },
                             "timeSpent": {
-                                "type":"number"
+                                "meta1": "value1",
+                                "meta2": "value2",
+                                "subtype": "metricSubtype",
+                                "type": "metricType"
                             }
                         }
                     }"""
