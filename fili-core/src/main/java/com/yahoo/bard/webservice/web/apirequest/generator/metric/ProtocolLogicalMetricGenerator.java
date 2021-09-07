@@ -125,7 +125,8 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
 
             GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
                     metric.getRawName(),
-                    metric.getBaseApiMetricId()
+                    metric.getBaseApiMetricId(),
+                    baseLogicalMetric.getType()
             );
 
             LogicalMetric result = baseLogicalMetric;

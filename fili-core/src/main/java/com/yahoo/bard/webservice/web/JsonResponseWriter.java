@@ -81,7 +81,7 @@ public class JsonResponseWriter extends JsonAndJsonApiResponseWriter {
             }
             g.writeEndArray();
 
-            super.writeMetaObject(g, responseData.getMissingIntervals(),
+            super.writeMetaObject(request, g, responseData.getMissingIntervals(),
                     responseData.getVolatileIntervals(), responseData
             );
 

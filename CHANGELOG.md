@@ -11,6 +11,9 @@ Current
 ### Fixed:
 
 ### Added:
+- [Add metric type to meta block](https://github.com/yahoo/fili/issues/1197)
+   * Added metric columns part of data query with their type details to meta block
+    
 - [Support recurance rules in dateTime expression](https://github.com/yahoo/fili/issues/1195)
    * Added explicit type parsing to dateTime Elements
    * Added library to parse RRules from the dateTime elements

@@ -1,4 +1,4 @@
-// Copyright 2017 Oath Inc.
+// Copyright 2021 Oath Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
@@ -7,7 +7,7 @@ import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import spock.lang.Unroll
 
-class JsonApiResponseWriterSpec extends ResponseWriterSpec {
+class JsonApiResponseWriterNoSubtypeSpec extends ResponseWriterNoSubtypeSpec {
 
     @Unroll
     def "JSONApi response is correct for a known result set with link names #linkNames"() {
@@ -25,13 +25,11 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
                             "pageViews": {
                                 "meta1": "value1",
                                 "meta2": "value2",
-                                "subtype": "metricSubtype",
                                 "type": "metricType"
                             },
                             "timeSpent": {
                                 "meta1": "value1",
                                 "meta2": "value2",
-                                "subtype": "metricSubtype",
                                 "type": "metricType"
                             }
                         }
