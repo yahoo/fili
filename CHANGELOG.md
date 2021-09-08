@@ -11,6 +11,9 @@ Current
 ### Fixed:
 
 ### Added:
+- [Add Meta Flag to Properties](https://github.com/yahoo/fili/issues/1199)
+   * Added feature flag as part of properties to activate type information in meta block
+   
 - [Add metric type to meta block](https://github.com/yahoo/fili/issues/1197)
    * Added metric columns part of data query with their type details to meta block
     
