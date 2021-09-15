@@ -34,6 +34,7 @@ public class PartialDataHandler {
      * <p>
      * Any requested subinterval bucket that is partially unavailable is collected and returned in a simplified form.
      *
+     * @param name Name of the table whose intervals are sought
      * @param availableIntervals  The intervals available in the tables
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
@@ -42,6 +43,7 @@ public class PartialDataHandler {
      * @return bucket-rounded subintervals of the requested intervals which have incomplete data
      */
     public SimplifiedIntervalList findMissingTimeGrainIntervals(
+            String name,
             @NotNull SimplifiedIntervalList availableIntervals,
             @NotNull SimplifiedIntervalList requestedIntervals,
             Granularity granularity,

@@ -111,6 +111,7 @@ public class StrictPhysicalTable extends SingleDataSourcePhysicalTable {
 
     @Override
     public String toString() {
-        return super.toString() + " datasourceName: " + getDataSourceName();
+        return super.toString() + " datasourceName: " + getDataSourceName() + " intervals "
+                + getAvailability().getAvailableIntervals();
     }
 }

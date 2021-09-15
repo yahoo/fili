@@ -80,6 +80,12 @@ public abstract class BasePhysicalTable implements ConfigPhysicalTable {
 
     @Override
     public Availability getAvailability() {
+        LOG.debug(
+                "MLM: Getting availability {} {} for table name {} ",
+                availability.getClass(),
+                availability.getAvailableIntervals(),
+                getName()
+        );
         return availability;
     }
 

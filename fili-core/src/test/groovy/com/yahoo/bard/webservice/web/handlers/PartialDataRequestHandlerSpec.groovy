@@ -51,6 +51,7 @@ class PartialDataRequestHandlerSpec extends Specification {
     def setup() {
         availableIntervals = new SimplifiedIntervalList([new Interval(0, 15), new Interval(30, 1000)])
         physicalTable.getAvailableIntervals() >> availableIntervals
+        physicalTable.getName() >> "name"
         apiRequest.getDimensions() >> Collections.emptySet()
         apiRequest.getFilterDimensions() >> Collections.emptySet()
         apiRequest.getApiFilters() >> Collections.emptyMap()
@@ -79,6 +80,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
+                "name",
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity,
@@ -111,6 +113,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
+                "name",
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity,
@@ -156,6 +159,7 @@ class PartialDataRequestHandlerSpec extends Specification {
         then:
         success
         1 * partialDataHandler.findMissingTimeGrainIntervals(
+                "name",
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
                 apiRequest.granularity,

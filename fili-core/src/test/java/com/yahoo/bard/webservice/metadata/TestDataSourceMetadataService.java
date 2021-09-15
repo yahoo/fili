@@ -37,6 +37,12 @@ public class TestDataSourceMetadataService extends DataSourceMetadataService {
         this(Collections.emptyMap());
     }
 
+
+    @Override
+    public boolean hasAvailableDatasource(DataSourceName dataSourceName) {
+        return true;
+    }
+
     @Override
     public Map<String, SimplifiedIntervalList> getAvailableIntervalsByDataSource(DataSourceName dataSourceName) {
         return testAvailableIntervals.entrySet().stream()

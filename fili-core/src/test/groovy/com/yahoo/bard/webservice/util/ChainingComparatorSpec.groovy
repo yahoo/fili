@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util
 
+import com.yahoo.bard.webservice.table.PhysicalTable
+
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -25,9 +27,11 @@ class ChainingComparatorSpec extends Specification {
     def "Test chain comparator with #comparatorList returns #expected"() {
         setup:
         ChainingComparator<Integer> chainingComparator = new ChainingComparator<>(comparatorList)
+        PhysicalTable one = Mock(PhysicalTable)
+        PhysicalTable two = Mock(PhysicalTable)
 
         expect:
-        chainingComparator.compare(1, 2) == expected
+        chainingComparator.compare(one, two) == expected
 
         where:
         comparatorList      | expected

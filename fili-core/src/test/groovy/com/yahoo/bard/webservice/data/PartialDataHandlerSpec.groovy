@@ -100,6 +100,7 @@ class PartialDataHandlerSpec extends Specification {
 
         expect:
         expectedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
+                "basefact_network",
                 table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity(),
@@ -115,6 +116,7 @@ class PartialDataHandlerSpec extends Specification {
 
         expect:
         requestedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
+                "basefact_network",
                 table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
                 dataSourceConstraint.getRequestGranularity(),

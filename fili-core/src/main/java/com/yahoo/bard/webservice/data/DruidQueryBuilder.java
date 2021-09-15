@@ -34,6 +34,7 @@ import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.table.resolver.PhysicalTableResolver;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ExtensibleDataApiRequestImpl;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
 import org.joda.time.DateTimeZone;
@@ -141,6 +142,12 @@ public class DruidQueryBuilder {
         );
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
+        boolean debugResolution = false;
+        ExtensibleDataApiRequestImpl extensibleDataApiRequest = request instanceof ExtensibleDataApiRequestImpl ?
+                ((ExtensibleDataApiRequestImpl) request) : null;
+        if (extensibleDataApiRequest != null) {
+            debugResolution = extensibleDataApiRequest.getQueryParameters().containsMapping("debug", "true");
+        }
         QueryPlanningConstraint constraint = new QueryPlanningConstraint(tableFilteredRequest, template);
         ConstrainedTable table = resolver.resolve(group.getPhysicalTables(), constraint).withConstraint(constraint);
 

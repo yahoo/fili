@@ -131,6 +131,7 @@ import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogic
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.orderBy.DefaultOrderByGenerator;
 import com.yahoo.bard.webservice.web.apirequest.metrics.ApiMetricAnnotater;
+import com.yahoo.bard.webservice.web.endpoints.SlicesServlet;
 import com.yahoo.bard.webservice.web.handlers.workflow.DruidWorkflow;
 import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
@@ -272,12 +273,6 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(druidWebService).to(DruidWebService.class);
 
-                // A separate web service for metadata
-                DruidWebService metadataDruidWebService = null;
-                if (DRUID_COORDINATOR_METADATA.isOn()) {
-                    metadataDruidWebService = buildMetadataDruidWebService(getMappers().getMapper());
-                    bind(metadataDruidWebService).named("metadataDruidWebService").to(DruidWebService.class);
-                }
 
                 // Bind the timeGrain
                 bind(getGranularityDictionary()).to(GranularityDictionary.class);
@@ -332,6 +327,10 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                         loader.getPhysicalTableDictionary(),
                         dataSourceMetadataService
                 );
+
+                // A separate web service for metadata
+                DruidWebService metadataDruidWebService = buildMetadataDruidWebService(getMappers().getMapper());
+                bind(metadataDruidWebService).named(SlicesServlet.METADATA_DRUID_WEB_SERVICE).to(DruidWebService.class);
 
                 if (DRUID_COORDINATOR_METADATA.isOn()) {
                     DataSourceMetadataLoadTask dataSourceMetadataLoader = buildDataSourceMetadataLoader(

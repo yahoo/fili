@@ -66,7 +66,8 @@ public class PartialDataRequestHandler implements DataRequestHandler {
         ConstrainedTable table =  druidQuery.getInnermostQuery().getDataSource().getPhysicalTable();
         // Gather the missing intervals
         SimplifiedIntervalList missingIntervals = partialDataHandler.findMissingTimeGrainIntervals(
-                druidQuery.getInnermostQuery().getDataSource().getPhysicalTable().getAvailableIntervals(),
+                table.getName(),
+                table.getAvailableIntervals(),
                 new SimplifiedIntervalList(request.getIntervals()),
                 request.getGranularity(),
                 table.getName()

@@ -419,6 +419,8 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     @Unroll
     def "select table with least missing data from group #table1.name #table2.name #grain #interval"() {
         setup:
+        // t4h1 - has availability for three weeks starting 6/23 to 7/14 (three weeks, two in month 7)
+        // t4h2 - has availability for two weeks from 7/7 to 7/21 (two weeks, two in month 7)
         BardFeatureFlag.PARTIAL_DATA.setOn(true)
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
@@ -437,38 +439,41 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         cleanup:
         BardFeatureFlag.PARTIAL_DATA.reset()
 
+        // For Which: Zero means that they are equal and the first table in order is chosen
+        // One means that table 1 has stronger availability, Two means that table2 does
+        // t4h2 has two internal weeks of the month, t4h1 has three weeks, two of which are internal to the month
         where:
         interval                | table1         | table2         | which | grain
-        "2014-07/2014-08"       | resources.t4h1 | resources.t4h2 | 0     | MONTH
-        "2014-07/2014-08"       | resources.t4h1 | resources.t4h2 | 0     | all
+        "2014-07/2014-08"       | resources.t4h1 | resources.t4h2 | 0     | MONTH   // Both are incomplete for a single month bucket
+        "2014-07/2014-08"       | resources.t4h1 | resources.t4h2 | 0     | all     // Both are incomplete for a single all bucket
 
-        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4h2 | 1     | HOUR
-        "2014-07-02/2014-07-20" | resources.t4h1 | resources.t4h2 | 2     | HOUR
-        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4h2 | 0     | HOUR
+        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4h2 | 1     | HOUR    // Table 1 overlaps by 13 days (24 * 13 buckets), 2 by 7
+        "2014-07-02/2014-07-20" | resources.t4h1 | resources.t4h2 | 2     | HOUR    // Table 1 overlaps by 13 days, 2 by 13
+        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4h2 | 0     | HOUR    // Both overlap by 7 days
 
-        "2014-07-02/2014-07-14" | resources.t4d1 | resources.t4d2 | 1     | DAY
-        "2014-07-02/2014-07-21" | resources.t4d1 | resources.t4d2 | 2     | DAY
-        "2014-07-07/2014-07-14" | resources.t4d1 | resources.t4d2 | 0     | DAY
+        "2014-07-02/2014-07-14" | resources.t4d1 | resources.t4d2 | 1     | DAY     // Table 1 overlaps by 13 days, 2 by 7
+        "2014-07-02/2014-07-21" | resources.t4d1 | resources.t4d2 | 2     | DAY     // Table 2 overlaps by 14 days, 1 by 6
+        "2014-07-07/2014-07-14" | resources.t4d1 | resources.t4d2 | 0     | DAY     // Both overlap by 7 days
 
-        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4d2 | 1     | DAY
-        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | DAY
-        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | MONTH
-        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | all
-        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | DAY
-        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | MONTH
-        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | all
+        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4d2 | 1     | DAY     // Table 1 overlaps by 13 days, 2 by 7
+        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | DAY     // Table 2 overlaps by 14 days, 1 by 6
+        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | MONTH   // Table 2 overlaps by 14 days but zero buckets, 1 by 6 (illegal interval for grain)
+        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d2 | 2     | all     // Table 2 overlaps by 14 days, 1 by 6
+        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | DAY     // Both overlap by 7 days, t2 has lower row cardinality on time
+        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | MONTH   // Both overlap by 7 days, but zero buckets, t2 has lower row cardinality on time
+        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d2 | 2     | all     // Both overlap by 7 days, t2 has lower row cardinality on time
 
-        "2014-07-02/2014-07-14" | resources.t4h2 | resources.t4d1 | 2     | DAY
-        "2014-07-02/2014-07-21" | resources.t4h2 | resources.t4d1 | 1     | DAY
-        "2014-07-07/2014-07-14" | resources.t4h2 | resources.t4d1 | 2     | DAY
+        "2014-07-02/2014-07-14" | resources.t4h2 | resources.t4d1 | 2     | DAY     // Table 2 overlaps by 13 days, 1 by 7
+        "2014-07-02/2014-07-21" | resources.t4h2 | resources.t4d1 | 1     | DAY     // Table 1 overlaps by 14 days, 2 by 6
+        "2014-07-07/2014-07-14" | resources.t4h2 | resources.t4d1 | 2     | DAY     // Both overlap by 7 days, t2 has lower row cardinality on time
 
-        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4d1 | 2     | DAY
-        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d1 | 2     | DAY
-        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d1 | 2     | DAY
+        "2014-07-02/2014-07-14" | resources.t4h1 | resources.t4d1 | 2     | DAY     // Both overlap by 13 days, t2 has lower row cardinality
+        "2014-07-02/2014-07-21" | resources.t4h1 | resources.t4d1 | 2     | DAY     // Both overlap by 13 days, t2 has lower row cardinality
+        "2014-07-07/2014-07-14" | resources.t4h1 | resources.t4d1 | 2     | DAY     //Both overlap by 7 days, t2 has lower row cardinality
 
-        "2014-07-02/2014-07-14" | resources.t4h2 | resources.t4d2 | 2     | DAY
-        "2014-07-02/2014-07-21" | resources.t4h2 | resources.t4d2 | 2     | DAY
-        "2014-07-07/2014-07-14" | resources.t4h2 | resources.t4d2 | 2     | DAY
+        "2014-07-02/2014-07-14" | resources.t4h2 | resources.t4d2 | 2     | DAY     // Both overlap by 7 days, t2 has lower row cardinality
+        "2014-07-02/2014-07-21" | resources.t4h2 | resources.t4d2 | 2     | DAY     // Both overlap by 14 days, t2 has lower row cardinality
+        "2014-07-07/2014-07-14" | resources.t4h2 | resources.t4d2 | 2     | DAY     // Both overlap by 7 days, t2 has lower row cardinality
     }
 
     @Unroll

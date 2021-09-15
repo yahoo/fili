@@ -4,11 +4,18 @@ package com.yahoo.bard.webservice.util;
 
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.QueryPlanningConstraint;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -19,6 +26,8 @@ import java.util.stream.Stream;
  * Methods to support table operations and table resolution.
  */
 public class TableUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TableUtils.class);
 
     /**
      * Get the fact store column names from the dimensions and metrics.
@@ -84,6 +93,47 @@ public class TableUtils {
      *
      * @param logicalTable  The constrained logical table
      * @param queryPlanningConstraint  The constraint
+     * @param debug Whether to debug the constrained planning
+     *
+     * @return the union of constrained availabilities of constrained logical table
+     */
+    public static SimplifiedIntervalList getConstrainedLogicalTableAvailability(
+            LogicalTable logicalTable,
+            QueryPlanningConstraint queryPlanningConstraint,
+            boolean debug
+    ) {
+        if (debug) {
+            String nonRawFormat = "Constrained: Name:  %s, dataSources %s, Intervals: %s";
+
+            LinkedHashSet<PhysicalTable> tables = logicalTable.getTableGroup().getPhysicalTables();
+            List<String> summaries = new ArrayList<>();
+            for (PhysicalTable table: tables) {
+                ConfigPhysicalTable configPhysicalTable = (ConfigPhysicalTable) table;
+                String name = configPhysicalTable.getName();
+
+                PhysicalTable nonRaw = table.withConstraint(queryPlanningConstraint);
+                String log = String.format(
+                        nonRawFormat,
+                        name,
+                        nonRaw.getDataSourceNames(),
+                        nonRaw.getAvailableIntervals()
+                );
+                LOG.debug("MLM1 Physical table planning: {}", log);
+            }
+            LOG.debug("MLM1 Physical table info: {}", summaries.toString());
+        }
+
+        return logicalTable.getTableGroup().getPhysicalTables().stream()
+                .map(physicalTable -> physicalTable.withConstraint(queryPlanningConstraint))
+                .map(PhysicalTable::getAvailableIntervals)
+                .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
+    }
+
+    /**
+     * Returns union of constrained availabilities of constrained logical table.
+     *
+     * @param logicalTable  The constrained logical table
+     * @param queryPlanningConstraint  The constraint
      *
      * @return the union of constrained availabilities of constrained logical table
      */
@@ -91,10 +141,7 @@ public class TableUtils {
             LogicalTable logicalTable,
             QueryPlanningConstraint queryPlanningConstraint
     ) {
-        return logicalTable.getTableGroup().getPhysicalTables().stream()
-                .map(physicalTable -> physicalTable.withConstraint(queryPlanningConstraint))
-                .map(PhysicalTable::getAvailableIntervals)
-                .reduce(new SimplifiedIntervalList(), SimplifiedIntervalList::union);
+        return getConstrainedLogicalTableAvailability(logicalTable, queryPlanningConstraint, false);
     }
 
     /**

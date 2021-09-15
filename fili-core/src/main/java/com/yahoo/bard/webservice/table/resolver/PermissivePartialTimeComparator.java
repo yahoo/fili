@@ -10,18 +10,12 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
-
 /**
  * Comparator to prefer less partial data duration within the query.
  */
-public class PartialTimeComparator implements Comparator<PhysicalTable> {
+public class PermissivePartialTimeComparator extends PartialTimeComparator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PartialTimeComparator.class);
-
-    protected final PartialDataHandler partialDataHandler;
-    protected final QueryPlanningConstraint requestConstraint;
-    protected final SimplifiedIntervalList requestedIntervals;
+    private static final Logger LOG = LoggerFactory.getLogger(PermissivePartialTimeComparator.class);
 
     /**
      * Constructor.
@@ -29,14 +23,12 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
      * @param requestConstraint contains the request constraints extracted from DataApiRequest and TemplateDruidQuery
      * @param handler  Handler for Partial Data
      */
-    public PartialTimeComparator(QueryPlanningConstraint requestConstraint, PartialDataHandler handler) {
-        this.requestConstraint = requestConstraint;
-        requestedIntervals = new SimplifiedIntervalList(requestConstraint.getIntervals());
-        this.partialDataHandler = handler;
+    public PermissivePartialTimeComparator(QueryPlanningConstraint requestConstraint, PartialDataHandler handler) {
+        super(requestConstraint, handler);
     }
 
     /**
-     * Compare two Physical Tables based on how much missing time they have.
+     * Compare two Physical Tables based on how much missing time they have.  Explicitly ignores request constraints.
      *
      * @param left The first table
      * @param right The second table
@@ -47,24 +39,22 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
     public int compare(PhysicalTable left, PhysicalTable right) {
         // choose table with most data available for given columns
 
-        SimplifiedIntervalList leftAvailable = left.getAvailableIntervals(requestConstraint);
+        SimplifiedIntervalList leftAvailable = left.getAvailableIntervals();
         long missingDurationLeft = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
                         left.getName(),
                         leftAvailable.intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
-                        requestConstraint.getRequestGranularity(),
-                        left.getName()
+                        requestConstraint.getRequestGranularity()
                 )
         );
-        SimplifiedIntervalList rightAvailable = right.getAvailableIntervals(requestConstraint);
+        SimplifiedIntervalList rightAvailable = right.getAvailableIntervals();
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
                         right.getName(),
                         rightAvailable.intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
-                        requestConstraint.getRequestGranularity(),
-                        right.getName()
+                        requestConstraint.getRequestGranularity()
                 )
         );
         long difference = missingDurationLeft - missingDurationRight;

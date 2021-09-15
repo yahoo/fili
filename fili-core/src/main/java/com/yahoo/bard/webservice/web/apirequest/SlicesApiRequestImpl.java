@@ -9,8 +9,9 @@ import com.yahoo.bard.webservice.data.dimension.DimensionColumn;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
 import com.yahoo.bard.webservice.metadata.SegmentInfo;
 import com.yahoo.bard.webservice.table.Column;
-import com.yahoo.bard.webservice.table.PhysicalTable;
+import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.table.availability.BaseMetadataAvailability;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
@@ -23,8 +24,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
@@ -179,8 +182,9 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
             DataSourceMetadataService dataSourceMetadataService,
             UriInfo uriInfo
     ) throws BadApiRequestException {
-        PhysicalTable table = tableDictionary.get(sliceName);
+        ConfigPhysicalTable table = tableDictionary.get(sliceName);
 
+        LOG.debug("");
         if (table == null) {
             String msg = SLICE_UNDEFINED.logFormat(sliceName);
             LOG.error(msg);
@@ -188,6 +192,28 @@ public class SlicesApiRequestImpl extends ApiRequestImpl implements SlicesApiReq
         }
 
         Map<Column, SimplifiedIntervalList> columnCache = table.getAllAvailableIntervals();
+
+        if (LOG.isDebugEnabled()) {
+
+            List<Map.Entry<Column, SimplifiedIntervalList>> firstTwo = columnCache.entrySet()
+                    .stream()
+                    .limit(2)
+                    .collect(Collectors.toList());
+            if (table.getAvailability() instanceof BaseMetadataAvailability) {
+                Set<SortedMap<DateTime, Map<String, SegmentInfo>>> segmentMapSet =
+                        ((BaseMetadataAvailability) table.getAvailability())
+                                .getDataSourceMetadataService()
+                                .getSegments(table.getDataSourceNames());
+
+                Optional<SortedMap<DateTime, Map<String, SegmentInfo>>> foo = segmentMapSet.stream().findFirst();
+                if (foo.isPresent()) {
+                    LOG.debug("Underlying segment info: {}", foo.get());
+                }
+                ;
+            }
+        }
+
+
         Set<Map<String, Object>> dimensionsResult = new LinkedHashSet<>();
         Set<Map<String, Object>> metricsResult = new LinkedHashSet<>();
 

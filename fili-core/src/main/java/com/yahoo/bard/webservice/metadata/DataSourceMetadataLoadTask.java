@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,7 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -183,7 +186,44 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     protected SuccessCallback buildDataSourceMetadataSuccessCallback(DataSourceName dataSourceName) {
         return rootNode -> {
             try {
+                String traceTable = "fact_revn_traf_onevideo_aunz_monthly";
+                if (dataSourceName.asName().equals(traceTable)) {
+                    Exception e = new Exception("Trace generating exception");
+                    LOG.error("Stack trace for " + traceTable + " load:", e);
+                    if (metadataService.hasAvailableDatasource(dataSourceName)) {
+                        Map<String, SimplifiedIntervalList> intervalListMap =
+                                metadataService.getAvailableIntervalsByDataSource(dataSourceName);
+                        LOG.debug("Columns before update: {} ", intervalListMap.keySet().toString());
+                        Map.Entry<String, SimplifiedIntervalList> firstColumn = intervalListMap.entrySet()
+                                .stream()
+                                .findFirst()
+                                .get();
+                        LOG.debug(
+                                "First column before update: {}, {} ",
+                                firstColumn.getKey(),
+                                firstColumn.getValue().toString()
+                        );
+                    }
+                }
                 metadataService.update(dataSourceName, mapper.treeToValue(rootNode, DataSourceMetadata.class));
+
+                Map<String, SimplifiedIntervalList> intervalListMap = metadataService.hasAvailableDatasource(
+                        dataSourceName) ?
+                        metadataService.getAvailableIntervalsByDataSource(dataSourceName)
+                        : Collections.emptyMap();
+                if (intervalListMap.isEmpty()) {
+                    LOG.debug("Updated datasource: {} with empty intervals", dataSourceName.asName());
+                } else {
+                    SimplifiedIntervalList merged = intervalListMap.values()
+                            .stream()
+                            .flatMap(Collection::stream)
+                            .collect(SimplifiedIntervalList.getCollector());
+                    LOG.debug(
+                            "Updated datasource: {} with merged intervals {}",
+                            dataSourceName.asName(),
+                            merged.toString()
+                    );
+                }
             } catch (IOException e) {
                 LOG.error(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);
                 throw new UnsupportedOperationException(DRUID_METADATA_READ_ERROR.format(dataSourceName.asName()), e);

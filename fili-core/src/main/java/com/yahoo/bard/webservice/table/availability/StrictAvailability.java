@@ -104,6 +104,13 @@ public class StrictAvailability extends BaseMetadataAvailability {
 
     @Override
     public String toString() {
-        return "Concrete " + super.toString();
+        String startAndEnd = expectedStartDate == null ?
+                expectedEndDate == null ?
+                        " No expected start nor end"
+                        : String.format(" expected end date: (%s)", expectedEndDate.toString())
+                : expectedEndDate == null ?
+                        String.format(" expected start date (%s)", expectedStartDate)
+                        : String.format(" expected start (%s) expected end (%s)", expectedStartDate, expectedEndDate);
+        return "Concrete " + super.toString() + startAndEnd + " available: " + getAvailableIntervals();
     }
 }

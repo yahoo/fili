@@ -49,9 +49,12 @@ public class SlicesServlet extends EndpointServlet {
 
     private final DataSourceMetadataService dataSourceMetadataService;
     private final PhysicalTableDictionary physicalTableDictionary;
-    private final RequestMapper requestMapper;
+    private final RequestMapper<SlicesApiRequest> requestMapper;
     private final ResponseFormatResolver formatResolver;
     private final MetadataExceptionHandler exceptionHandler;
+
+    public static final String METADATA_DRUID_WEB_SERVICE = "metadataDruidWebService";
+
 
     /**
      * Constructor.
@@ -74,7 +77,7 @@ public class SlicesServlet extends EndpointServlet {
     ) {
         super(objectMappers);
         this.physicalTableDictionary = physicalTableDictionary;
-        this.requestMapper = requestMapper;
+        this.requestMapper = (RequestMapper<SlicesApiRequest>) requestMapper;
         this.dataSourceMetadataService = dataSourceMetadataService;
         this.formatResolver = formatResolver;
         this.exceptionHandler = exceptionHandler;

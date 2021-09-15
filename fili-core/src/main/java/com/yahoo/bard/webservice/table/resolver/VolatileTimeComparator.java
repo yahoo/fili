@@ -9,12 +9,17 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Comparator;
 
 /**
  * Comparator that prefers tables that contain more data in volatile requested intervals.
  */
 public class VolatileTimeComparator implements Comparator<PhysicalTable> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(VolatileTimeComparator.class);
 
     private final QueryPlanningConstraint requestConstraint;
     private final PartialDataHandler partialDataHandler;
@@ -55,6 +60,14 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
 
         // A saturated cast that allows us to turn a long into an int such that any long within the range of valid
         // integers is preserved, but anything outside the range is rounded to Integer.MIN_VALUE or Integer.MAX_VALUE.
+        LOG.debug(
+                "MLM: Comparing left {} with volatile {} and right {} with volatile {}, most complete: {}",
+                left.getName(),
+                leftVolatileDataDuration,
+                right.getName(),
+                rightVolatileDataDuration,
+                mostCompleteVolatile
+        );
         return (int) Math.max(Math.min(Integer.MAX_VALUE, mostCompleteVolatile), Integer.MIN_VALUE);
     }
 
@@ -83,6 +96,7 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         Granularity apiRequestGranularity = requestConstraint.getRequestGranularity();
         // First, find the volatile intervals that are also partial at the request grain.
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
+                table.getName(),
                 table.getAvailableIntervals(requestConstraint),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
                 apiRequestGranularity,

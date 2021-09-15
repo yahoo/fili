@@ -172,7 +172,12 @@ public class AbstractBinderFactorySpec extends Specification {
 
         then:
         binder != null
-        2 * dc.bind({ it.advertisedContracts.contains("com.yahoo.bard.webservice.druid.client.DruidWebService") }, _)
+        1 * dc.bind({ it.advertisedContracts.contains("com.yahoo.bard.webservice.druid.client.DruidWebService") \
+                && it.qualifiers.contains("javax.inject.Named") \
+                && it.name.equals("metadataDruidWebService")}, _)
+        1 * dc.bind({ it.advertisedContracts.contains("com.yahoo.bard.webservice.druid.client.DruidWebService")  \
+                && it.qualifiers.empty}, _)
+
         1 * dc.bind({ it.implementation.contains(PhysicalTableDictionary.canonicalName) }, _)
         1 * dc.bind({ it.implementation.contains(LogicalTableDictionary.canonicalName) }, _)
         1 * dc.bind({ it.implementation.contains(MetricDictionary.canonicalName) }, _)

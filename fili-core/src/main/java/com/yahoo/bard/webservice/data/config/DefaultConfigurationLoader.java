@@ -77,7 +77,9 @@ public class DefaultConfigurationLoader implements ConfigurationLoader {
         tableLoader.loadTableDictionary(dictionaries);
 
         LOG.info("Initialized ConfigurationLoader");
-        LOG.trace(dictionaries.toString());
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(dictionaries.toString());
+        }
     }
 
     @Override

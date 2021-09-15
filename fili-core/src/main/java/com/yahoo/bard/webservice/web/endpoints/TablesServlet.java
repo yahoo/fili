@@ -535,7 +535,10 @@ public class TablesServlet extends EndpointServlet implements BardConfigResource
                         Collections.unmodifiableSet(tablesApiRequest.getLogicalMetrics()),
                         tablesApiRequest.getGranularity(),
                         tablesApiRequest.getGranularity()
-                )
+                ),
+                uriInfo.getQueryParameters().containsKey("debug") && uriInfo.getQueryParameters()
+                        .getFirst("debug")
+                        .equals("true")
         );
         details.put("availableIntervals", available);
         return details;

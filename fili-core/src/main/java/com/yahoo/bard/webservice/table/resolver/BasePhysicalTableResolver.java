@@ -87,13 +87,6 @@ public abstract class BasePhysicalTableResolver implements PhysicalTableResolver
             QueryPlanningConstraint requestConstraint
     ) throws NoMatchFoundException {
 
-        // Minimum grain at which the request can be aggregated from
-        LOG.trace(
-                "Resolving Table using TimeGrain: {}, dimension API names: {} and TableGroup: {}",
-                requestConstraint.getMinimumGranularity(),
-                requestConstraint.getAllColumnNames(),
-                candidateTables
-        );
 
         try {
             PhysicalTable bestTable = filter(candidateTables, requestConstraint).stream()

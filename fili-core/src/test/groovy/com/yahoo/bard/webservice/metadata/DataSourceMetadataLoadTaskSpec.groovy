@@ -188,6 +188,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 druidWS,
                 MAPPERS.metadataMapper
         )
+        localMetadataService.getAvailableIntervalsByDataSource(_) >> [:]
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         StrictPhysicalTable table = Mock(StrictPhysicalTable)
         table.dataSourceName >> DataSourceName.of("test")

@@ -71,6 +71,18 @@ public class DataSourceMetadataService {
                 .collect(Collectors.toSet());
     }
 
+
+    /**
+     * Check if the datasource has available metadata.
+     *
+     * @param dataSourceName  The data source to check
+     *
+     * @return true if the datasource is initialized
+     */
+    public boolean hasAvailableDatasource(DataSourceName dataSourceName) {
+        return allSegmentsByColumn.containsKey(dataSourceName);
+    }
+
     /**
      * Get a set of intervals available for each column in the data source.
      *

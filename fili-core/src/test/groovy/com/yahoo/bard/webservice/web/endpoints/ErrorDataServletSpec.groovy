@@ -984,7 +984,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     @Unroll
-    def "Test undefined #servlet results in 404 result"() {
+    def "Test undefined #servlet.name results in 404 result"() {
         setup:
         JerseyTestBinder testBinder = new JerseyTestBinder(servlet)
         testWebService = jtb.druidWebService as TestDruidWebService
