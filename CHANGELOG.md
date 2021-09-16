@@ -21,6 +21,8 @@ Current
    * Additional testing on new and old paths
    * Created a limit parameter to prevent infinite recurrance rules from generating infinite reporting intervals.
    
+- [Added long name contract to DimensionField](https://github.com/yahoo/fili/issues/1200)
+   * `DimensionField` contains optionally serialized longName field.
 
 ### Changed:
 - [Update GeneratedMetricInfo to avoid StackOverflow](https://github.com/yahoo/fili/issues/1194)
