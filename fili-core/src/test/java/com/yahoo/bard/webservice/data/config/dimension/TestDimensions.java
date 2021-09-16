@@ -49,16 +49,16 @@ public class TestDimensions {
      */
     public TestDimensions() {
         dimensionNameConfigs = new LinkedHashMap<>();
-        dimensionNameConfigs.put(SIZE, TestDimensions.buildStandardDimensionConfig(SIZE));
-        dimensionNameConfigs.put(SHAPE, TestDimensions.buildStandardDimensionConfig(SHAPE));
-        dimensionNameConfigs.put(COLOR, TestDimensions.buildNonLoadedDimensionConfig(COLOR));
+        dimensionNameConfigs.put(SIZE, buildStandardDimensionConfig(SIZE));
+        dimensionNameConfigs.put(SHAPE, buildStandardDimensionConfig(SHAPE));
+        dimensionNameConfigs.put(COLOR, buildNonLoadedDimensionConfig(COLOR));
         dimensionNameConfigs.put(OTHER,
             new TestDimensionConfig(
                 OTHER,
                 "misc",
                 getDefaultKeyValueStore(OTHER),
                 NoOpSearchProviderManager.getInstance(OTHER.asName()),
-                getDefaultFields(),
+                getDefaultFieldsPlus(),
                 getDefaultFields()
                 )
         );
@@ -71,19 +71,18 @@ public class TestDimensions {
                 TestDimensionField.GREEN_PIGMENT
         );
 
-        dimensionNameConfigs.put(MODEL, TestDimensions.buildStandardLuceneDimensionConfig(MODEL));
+        dimensionNameConfigs.put(MODEL, buildStandardLuceneDimensionConfig(MODEL));
 
         dimensionNameConfigs.put(
                 BREED,
-                TestDimensions.buildStandardLookupDimensionConfig(BREED, Arrays.asList("NAMESPACE1", "NAMESPACE2"))
+                buildStandardLookupDimensionConfig(BREED, Arrays.asList("NAMESPACE1", "NAMESPACE2"))
         );
         dimensionNameConfigs.put(
                 SPECIES,
-                TestDimensions.buildStandardLookupDimensionConfig(SPECIES, Arrays.asList("NAMESPACE1"))
+                buildStandardLookupDimensionConfig(SPECIES, Collections.singletonList("NAMESPACE1"))
                         .withPhysicalName("class")
         );
-        dimensionNameConfigs.put(SEX,
-                TestDimensions.buildStandardLookupDimensionConfig(SEX, Collections.emptyList()));
+        dimensionNameConfigs.put(SEX, buildStandardLookupDimensionConfig(SEX, Collections.emptyList()));
 
         tableDimensions = new HashMap<>();
         tableDimensions.put(SHAPES, Utils.asLinkedHashSet(SIZE, SHAPE, COLOR, OTHER));
@@ -197,6 +196,17 @@ public class TestDimensions {
     }
 
     /**
+     * Get the default fields for the test dimensions.
+     *
+     * @return the default fields
+     */
+    private static LinkedHashSet<DimensionField> getDefaultFieldsPlus() {
+        LinkedHashSet<DimensionField> fields = getDefaultFields();
+        fields.add(TestDimensionField.ALIASED);
+        return fields;
+    }
+
+    /**
      * Get all of the dimension configurations.
      *
      * @return all of the dimension configurations
@@ -226,10 +236,12 @@ public class TestDimensions {
     enum TestDimensionField implements DimensionField {
         ID("Dimension ID"),
         DESC("Dimension Description"),
+        ALIASED("actual description", "aliasedName"),
         RED_PIGMENT("Red pigment"),
         BLUE_PIGMENT("Blue pigment"),
         GREEN_PIGMENT("Green pigment");
 
+        private String longName;
         private String description;
         private String camelName;
 
@@ -239,10 +251,23 @@ public class TestDimensions {
          * @param description  Description of the dimension field
          */
         TestDimensionField(String description) {
+            this(description, null);
             this.description = description;
             this.camelName = EnumUtils.camelCase(name());
         }
 
+
+        /**
+         * Constructor.
+         *
+         * @param description  Description of the dimension field
+         * @param longName The alias for the dimension name if present
+         */
+        TestDimensionField(String description, String longName) {
+            this.description = description;
+            this.longName = longName;
+            this.camelName = EnumUtils.camelCase(name());
+        }
         @Override
         public String getName() {
             return camelName;
@@ -251,6 +276,11 @@ public class TestDimensions {
         @Override
         public String getDescription() {
             return description;
+        }
+
+        @Override
+        public String getLongName() {
+            return longName;
         }
 
         @Override
