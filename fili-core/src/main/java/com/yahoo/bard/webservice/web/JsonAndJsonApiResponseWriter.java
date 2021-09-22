@@ -72,15 +72,15 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                 !missingIntervals.isEmpty();
         boolean haveVolatileIntervals = volatileIntervals != null && ! volatileIntervals.isEmpty();
 
-        if (!paginating && !haveMissingIntervals && !haveVolatileIntervals) {
-            return;
-        }
-
         generator.writeObjectFieldStart("meta");
 
         if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn()) {
             writeMetricTypeMetaObject(request, generator);
         }
+
+//        if (!paginating && !haveMissingIntervals && !haveVolatileIntervals) {
+//            return;
+//        }
         // Add partial data info into the metadata block if needed.
         if (haveMissingIntervals) {
             generator.writeObjectField(
@@ -131,26 +131,28 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
             DataApiRequest dataApiRequest = (DataApiRequest) request;
             Set<LogicalMetric> logicalMetricSet = dataApiRequest.getLogicalMetrics();
             generator.writeObjectFieldStart("schema");
-            for (LogicalMetric lm : logicalMetricSet) {
-                LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
-                if (lmi != null) {
-                    generator.writeObjectFieldStart(lmi.getName());
+            if (logicalMetricSet != null && logicalMetricSet.size() != 0) {
+                for (LogicalMetric lm : logicalMetricSet) {
+                    LogicalMetricInfo lmi = lm.getLogicalMetricInfo();
+                    if (lmi != null) {
+                        generator.writeObjectFieldStart(lmi.getName());
 
-                    if (lmi.getType() != null) {
-                        generator.writeStringField("type", String.format("%1$s", lmi.getType().getType()));
-                        if (lmi.getType().getSubType() != null) {
-                            generator.writeStringField("subtype",
-                                    String.format("%1$s", lmi.getType().getSubType()));
+                        if (lmi.getType() != null) {
+                            generator.writeStringField("type", String.format("%1$s", lmi.getType().getType()));
+                            if (lmi.getType().getSubType() != null) {
+                                generator.writeStringField("subtype",
+                                        String.format("%1$s", lmi.getType().getSubType()));
+                            }
                         }
-                    }
 
-                    if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
-                        for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
-                            generator.writeStringField(entry.getKey(), entry.getValue());
+                        if (lmi.getType().getTypeMetadata() != null && lmi.getType().getTypeMetadata().size() != 0) {
+                            for (Map.Entry<String, String> entry : lmi.getType().getTypeMetadata().entrySet()) {
+                                generator.writeStringField(entry.getKey(), entry.getValue());
+                            }
                         }
-                    }
 
-                    generator.writeEndObject();
+                        generator.writeEndObject();
+                    }
                 }
             }
             generator.writeEndObject();
