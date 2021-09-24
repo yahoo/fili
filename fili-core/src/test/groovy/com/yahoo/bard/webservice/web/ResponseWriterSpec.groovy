@@ -2,7 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
-import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricType
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
@@ -109,9 +108,6 @@ abstract class ResponseWriterSpec extends Specification {
 
     Set<Column> columns
     LinkedHashSet<LogicalMetric> testLogicalMetrics
-    MetricType mt
-    Boolean isMetricSubtypeNull
-    Boolean isMetricMetadataNull
     ResponseData response
     CsvResponseWriter csvResponseWriter
     JsonResponseWriter jsonResponseWriter
@@ -215,36 +211,10 @@ abstract class ResponseWriterSpec extends Specification {
             List<DateTime> dateTimes
     ) {
         // Setup logical metrics for the API request mock
-        Map<String, String> metaMap = new HashMap<>()
-        metaMap.put("meta1", "value1")
-        metaMap.put("meta2", "value2")
+        testLogicalMetrics = requestedMetrics.collect {
+            new LogicalMetricImpl(null, null, it.name)
+        } as Set
 
-
-        if (isMetricSubtypeNull == null) {
-            isMetricSubtypeNull = false
-        }
-        if (isMetricMetadataNull == null) {
-            isMetricMetadataNull = false
-        }
-
-        // Subtype null
-        if (isMetricSubtypeNull) {
-            mt = new MetricType("metricType", null, metaMap)
-            testLogicalMetrics = requestedMetrics.collect {
-                new LogicalMetricImpl(new LogicalMetricInfo(it.name, it.name, LogicalMetric.DEFAULT_CATEGORY, it.name, mt), null, null)
-            } as Set
-        } else if (isMetricMetadataNull) {
-            // Type Metadata null
-            mt = new MetricType("metricType", "metricSubtype", null)
-            testLogicalMetrics = requestedMetrics.collect {
-                new LogicalMetricImpl(new LogicalMetricInfo(it.name, it.name, LogicalMetric.DEFAULT_CATEGORY, it.name, mt), null, null)
-            } as Set
-        } else {
-            mt = new MetricType("metricType", "metricSubtype", metaMap)
-            testLogicalMetrics = requestedMetrics.collect {
-                new LogicalMetricImpl(new LogicalMetricInfo(it.name, it.name, LogicalMetric.DEFAULT_CATEGORY, it.name, mt), null, null)
-            } as Set
-        }
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }
 
         LinkedHashSet<DimensionField> dimensionFields = new LinkedHashSet<>()

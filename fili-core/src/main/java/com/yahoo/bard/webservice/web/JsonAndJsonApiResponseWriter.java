@@ -72,15 +72,26 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                 !missingIntervals.isEmpty();
         boolean haveVolatileIntervals = volatileIntervals != null && ! volatileIntervals.isEmpty();
 
-        generator.writeObjectFieldStart("meta");
-
-        if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn()) {
-            writeMetricTypeMetaObject(request, generator);
+        if (!BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && !paginating && !haveMissingIntervals
+                && !haveVolatileIntervals) {
+            return;
         }
 
-//        if (!paginating && !haveMissingIntervals && !haveVolatileIntervals) {
-//            return;
-//        }
+        if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && !paginating && !haveMissingIntervals
+                && !haveVolatileIntervals) {
+            generator.writeObjectFieldStart("meta");
+            writeMetricTypeMetaObject(request, generator);
+            generator.writeEndObject();
+            return;
+        } else if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && (paginating || haveMissingIntervals
+                || haveVolatileIntervals)) {
+            generator.writeObjectFieldStart("meta");
+            writeMetricTypeMetaObject(request, generator);
+        } else if (!BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && (paginating || haveMissingIntervals
+                || haveVolatileIntervals)) {
+            generator.writeObjectFieldStart("meta");
+        }
+
         // Add partial data info into the metadata block if needed.
         if (haveMissingIntervals) {
             generator.writeObjectField(
@@ -111,8 +122,6 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
 
             generator.writeEndObject();
         }
-
-        generator.writeEndObject();
     }
 
     /**
