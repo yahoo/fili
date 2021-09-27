@@ -305,11 +305,6 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
         String links = [first, last, next, previous].findAll { it }.join(',')
         if (paginating) {
             metaBlock = /"meta": {
-                "schema": {
-                    "height": {
-                        "type":"number"
-                    }
-                },
                 "pagination": {
                      ${links ? links + ',' : ''}
                      "currentPage": $page,

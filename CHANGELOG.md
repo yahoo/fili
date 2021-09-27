@@ -25,6 +25,8 @@ Current
    * `DimensionField` contains optionally serialized longName field.
 
 ### Changed:
+- [Turning on metadata support ensures metablock in response](https://github.com/yahoo/fili/issues/1204)
+
 - [Update GeneratedMetricInfo to avoid StackOverflow](https://github.com/yahoo/fili/issues/1194)
    * Update getType() tp avoid recursion leading to stack overflow.
    

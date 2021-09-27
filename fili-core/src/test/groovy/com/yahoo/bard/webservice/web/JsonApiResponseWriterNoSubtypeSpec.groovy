@@ -2,12 +2,21 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import spock.lang.Unroll
 
 class JsonApiResponseWriterNoSubtypeSpec extends ResponseWriterNoSubtypeSpec {
+
+    def setup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.setOn(true)
+    }
+
+    def cleanup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.reset()
+    }
 
     @Unroll
     def "JSONApi response is correct for a known result set with link names #linkNames"() {

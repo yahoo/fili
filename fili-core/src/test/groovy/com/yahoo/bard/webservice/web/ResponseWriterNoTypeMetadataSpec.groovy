@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricType
 
@@ -181,6 +182,7 @@ abstract class ResponseWriterNoTypeMetadataSpec extends Specification {
                                 }"""
 
     def setup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.setOn(true)
         DateTimeZone.setDefault(DateTimeZone.UTC)
 
         defaultRequestedMetrics = ["pageViews", "timeSpent"].collect {
@@ -200,6 +202,7 @@ abstract class ResponseWriterNoTypeMetadataSpec extends Specification {
     }
 
     def cleanup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.reset()
         DateTimeZone.setDefault(originalTimeZone)
     }
 
