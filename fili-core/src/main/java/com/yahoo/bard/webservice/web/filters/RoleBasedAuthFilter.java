@@ -70,7 +70,9 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
      * @return true if request is authorized, false otherwise
      */
     private boolean isAuthorized(ContainerRequestContext containerRequestContext) {
-        return isBypassMethod(containerRequestContext) || isUserInRole(getAllowedUserRoles(), containerRequestContext);
+        return isBypassMethod(containerRequestContext) ||
+                isByPassURL(getAllowedURLs(), containerRequestContext) ||
+                isUserInRole(getAllowedUserRoles(), containerRequestContext);
     }
 
     /**
@@ -95,6 +97,19 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
     protected boolean isUserInRole (List<String> allowedUserRoles, ContainerRequestContext containerRequestContext) {
         SecurityContext securityContext = containerRequestContext.getSecurityContext();
         return allowedUserRoles.isEmpty() || allowedUserRoles.stream().anyMatch(securityContext::isUserInRole);
+    }
+
+    /**
+     * Checks if an URL matches to the any of the allowed/bypassed URL in the list.
+     *
+     * @param allowedUrls List of allowed URLs
+     * @param containerRequestContext Request context contains the user role information
+     *
+     * @return boolean based on the request URL
+     */
+    protected boolean isByPassURL(List<String> allowedUrls, ContainerRequestContext containerRequestContext) {
+        String url = containerRequestContext.getUriInfo().getAbsolutePath().getPath();
+        return allowedUrls.stream().anyMatch(path -> path.startsWith(url));
     }
 
     /**
@@ -125,6 +140,21 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
     }
 
     /**
+     * Gets the list of allowed URLs.
+     *
+     * @return List of allowed/bypassed URLs
+     */
+    private List<String> getAllowedURLs() {
+        try {
+            return SYSTEM_CONFIG.getListProperty(
+                    SYSTEM_CONFIG.getPackageVariableName("allowed_urls"), Collections.emptyList()
+            );
+        } catch (SystemConfigException ignored) {
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * Gets the list of allowed user roles.
      *
      * @return List of allowed user roles
@@ -132,7 +162,7 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
     private List<String> getAllowedUserRoles() {
         try {
             return SYSTEM_CONFIG.getListProperty(
-                SYSTEM_CONFIG.getPackageVariableName("user_roles")
+                SYSTEM_CONFIG.getPackageVariableName("user_roles"), Collections.emptyList()
             );
         } catch (SystemConfigException ignored) {
             return Collections.emptyList();
