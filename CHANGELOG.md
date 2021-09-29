@@ -25,6 +25,10 @@ Current
    * `DimensionField` contains optionally serialized longName field.
 
 ### Changed:
+- [Capability to bypass URL in Role based authentication filter](https://github.com/yahoo/fili/pull/1205)
+  * Added capability to bypass URL in `RoleBasedAuthFilter` even when user is not part of allowed user roles.
+  * Added a config variable bard__allowed_urls to specify list of bypassed URLs. 
+  
 - [Turning on metadata support ensures metablock in response](https://github.com/yahoo/fili/issues/1204)
 
 - [Update GeneratedMetricInfo to avoid StackOverflow](https://github.com/yahoo/fili/issues/1194)

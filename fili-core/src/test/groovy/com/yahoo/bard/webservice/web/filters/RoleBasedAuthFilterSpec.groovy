@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.config.SystemConfigException
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 
 import com.fasterxml.jackson.databind.ObjectMapper
+
 import spock.lang.Specification
 import spock.lang.Timeout
 
