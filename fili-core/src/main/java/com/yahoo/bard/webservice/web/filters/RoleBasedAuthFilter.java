@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.annotation.Priority;
 import javax.inject.Inject;
@@ -109,7 +110,7 @@ public class RoleBasedAuthFilter implements ContainerRequestFilter {
      */
     protected boolean isByPassURL(List<String> allowedUrls, ContainerRequestContext containerRequestContext) {
         String url = containerRequestContext.getUriInfo().getAbsolutePath().getPath();
-        return allowedUrls.stream().anyMatch(path -> path.startsWith(url));
+        return allowedUrls.stream().anyMatch(path -> Pattern.matches(path, url));
     }
 
     /**
