@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
@@ -68,5 +69,21 @@ public interface ApiRequestLogicalMetricBinder extends LegacyGenerator<LinkedHas
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
-    void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table);
+    default void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table) {
+        validateMetrics(logicalMetrics, table, null);
+    }
+
+    /**
+     * Validate that all metrics are part of the logical table.
+     *
+     * This method is meant for backwards compatibility. If you do not need to use this method for that reason please
+     * prefer using a generator instance instead.
+     *
+     * @param logicalMetrics  The set of metrics being validated
+     * @param table  The logical table for the request
+     * @param dictionary  The logical table dictionary (Used for error messaging)
+     *
+     * @throws BadApiRequestException if the requested metrics are not in the logical table
+     */
+    void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table, LogicalTableDictionary dictionary);
 }

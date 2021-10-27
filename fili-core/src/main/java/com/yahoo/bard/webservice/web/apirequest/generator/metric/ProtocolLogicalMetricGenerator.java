@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
@@ -14,6 +15,7 @@ import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
@@ -26,8 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -161,8 +166,11 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
     @Override
-    public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
-            throws BadApiRequestException {
+    public void validateMetrics(
+            Set<LogicalMetric> logicalMetrics,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
         //get metric names from the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()
                 .map(LogicalMetric::getLogicalMetricInfo)
@@ -176,12 +184,40 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
                 .filter(it -> !validMetricNames.contains(it))
                 .collect(Collectors.toSet());
 
+        //get metric names from logicalMetrics and remove all the valid metrics
+        Set<LogicalMetric> invalidMetrics = logicalMetrics.stream()
+                .filter(it -> !validMetricNames.contains(it.getName()))
+                .collect(Collectors.toSet());
+
+        Map<LogicalMetric, Set<String>> invaldMetricGrainMap = new HashMap<>();
+
+        if (logicalTableDictionary != null) {
+            for (LogicalMetric invalidMetric : invalidMetrics) {
+                invaldMetricGrainMap.put(invalidMetric,
+                        logicalTableDictionary.findByLogicalMetric(invalidMetric).stream()
+                                .map(val -> val.getGranularity().getName()).collect(Collectors.toSet()));
+            }
+        }
+
         //requested metrics names are not present in the logical table metric names set
         if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
-            throw new BadApiRequestException(
-                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
-            );
+            if (logicalTableDictionary != null) {
+                Set<String> grainSet = new HashSet<>();
+                for (Set<String> set : invaldMetricGrainMap.values()) {
+                    grainSet.addAll(set);
+                }
+                LOG.debug(METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.logFormat(invalidMetricNames, table.getName(),
+                        table.getGranularity(), grainSet));
+                throw new BadApiRequestException(
+                        METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format(invalidMetricNames, table.getName(),
+                                table.getGranularity(), grainSet)
+                );
+            } else {
+                LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
+                throw new BadApiRequestException(
+                        METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
+                );
+            }
         }
     }
 

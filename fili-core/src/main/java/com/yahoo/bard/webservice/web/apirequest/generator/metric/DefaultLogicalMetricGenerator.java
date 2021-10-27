@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_METRICS;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.LOGICAL_TABLE;
 
@@ -11,6 +12,7 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
@@ -25,8 +27,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -79,7 +84,8 @@ public class DefaultLogicalMetricGenerator
         }
 
         validateMetrics(entity, builder.getLogicalTableIfInitialized()
-                .orElseThrow(() -> new BadApiRequestException("A logical table is required for all data queries")));
+                .orElseThrow(() -> new BadApiRequestException("A logical table is required for all data queries")),
+                resources.getLogicalTableDictionary());
     }
 
 
@@ -186,25 +192,53 @@ public class DefaultLogicalMetricGenerator
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
     @Override
-    public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
-            throws BadApiRequestException {
+    public void validateMetrics(
+            Set<LogicalMetric> logicalMetrics,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
         //get metric names from the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()
                 .map(LogicalMetric::getName)
                 .collect(Collectors.toSet());
 
         //get metric names from logicalMetrics and remove all the valid metrics
-        Set<String> invalidMetricNames = logicalMetrics.stream()
-                .map(LogicalMetric::getName)
-                .filter(it -> !validMetricNames.contains(it))
+        Set<LogicalMetric> invalidMetrics = logicalMetrics.stream()
+                .filter(it -> !validMetricNames.contains(it.getName()))
                 .collect(Collectors.toSet());
 
+        Map<LogicalMetric, Set<String>> invaldMetricGrainMap = new HashMap<>();
+
+        if (logicalTableDictionary != null) {
+            for (LogicalMetric invalidMetric : invalidMetrics) {
+                invaldMetricGrainMap.put(invalidMetric,
+                        logicalTableDictionary.findByLogicalMetric(invalidMetric).stream()
+                                .map(val -> val.getGranularity().getName()).collect(Collectors.toSet()));
+            }
+        }
+
         //requested metrics names are not present in the logical table metric names set
-        if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
-            throw new BadApiRequestException(
-                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
-            );
+        if (!invalidMetrics.isEmpty()) {
+            Set<String> invalidMetricNames = invalidMetrics.stream()
+                    .map(LogicalMetric::getName)
+                    .collect(Collectors.toSet());
+            if (logicalTableDictionary != null) {
+                Set<String> grainSet = new HashSet<>();
+                for (Set<String> set : invaldMetricGrainMap.values()) {
+                    grainSet.addAll(set);
+                }
+                LOG.debug(METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.logFormat(invalidMetricNames, table.getName(),
+                        table.getGranularity(), grainSet));
+                throw new BadApiRequestException(
+                        METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format(invalidMetricNames, table.getName(),
+                                table.getGranularity(), grainSet)
+                );
+            } else {
+                LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
+                throw new BadApiRequestException(
+                        METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
+                );
+            }
         }
     }
 }

@@ -15,6 +15,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT
@@ -221,7 +222,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Metric not in logical table fails"() {
-        String message = METRICS_NOT_IN_TABLE.format("[limbs]", "shapes", "day")
+        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[limbs]", "shapes", "day", "[]")
 
         String jsonFailure =
             """{

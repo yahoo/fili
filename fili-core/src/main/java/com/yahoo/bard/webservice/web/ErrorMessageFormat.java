@@ -53,6 +53,8 @@ public enum ErrorMessageFormat implements MessageFormatter {
     ),
     METRICS_UNDEFINED("Metric(s) '%s' do not exist."),
     METRICS_NOT_IN_TABLE("Requested metric(s) '%s' are not supported by the table '%s' with grain '%s'."),
+    METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS("Requested metric(s) '%s' are not supported by the table '%s' with" +
+            "grain '%s' Valid grains are '%s'."),
     DUPLICATE_METRICS_IN_API_REQUEST(
             "Duplicate metric(s) are not allowed in the API request even if one is filtered and the other is " +
                     "unfiltered. Duplicate metric(s) are '%s'."

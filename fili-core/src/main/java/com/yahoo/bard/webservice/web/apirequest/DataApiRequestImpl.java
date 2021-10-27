@@ -516,7 +516,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
         this.metricBinder = metricBinder;
         this.logicalMetrics = bindLogicalMetrics(logicalMetricsRequest, table, metricDictionary, dimensionDictionary);
-        validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary);
+        validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary, logicalTableDictionary);
 
         this.intervals = bindIntervals(intervalsRequest, granularity, timeZone);
         validateIntervals(intervalsRequest, intervals, granularity, timeZone);
@@ -1089,6 +1089,27 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LinkedHashSet<LogicalMetric> metrics,
             LogicalTable logicalTable,
             MetricDictionary metricDictionary
+    ) throws BadApiRequestException {
+        validateMetrics(metrics, logicalTable);
+    }
+
+    /**
+     * Validated bound api filter objects.
+     *
+     * @param apiMetricExpression  URL query string containing the metrics separated by ','.
+     * @param metrics The bound logical metrics
+     * @param logicalTable  The logical table for the data request
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
+     * @param logicalTableDictionary The logical table dictionary
+     *
+     * @throws BadApiRequestException if invalid
+     */
+    protected void validateLogicalMetrics(
+            String apiMetricExpression,
+            LinkedHashSet<LogicalMetric> metrics,
+            LogicalTable logicalTable,
+            MetricDictionary metricDictionary,
+            LogicalTableDictionary logicalTableDictionary
     ) throws BadApiRequestException {
         validateMetrics(metrics, logicalTable);
     }
