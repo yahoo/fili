@@ -2,9 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS;
-
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -28,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -189,35 +184,12 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
                 .filter(it -> !validMetricNames.contains(it.getName()))
                 .collect(Collectors.toSet());
 
-        Map<LogicalMetric, Set<String>> invaldMetricGrainMap = new HashMap<>();
-
-        if (logicalTableDictionary != null) {
-            for (LogicalMetric invalidMetric : invalidMetrics) {
-                invaldMetricGrainMap.put(invalidMetric,
-                        logicalTableDictionary.findByLogicalMetric(invalidMetric).stream()
-                                .map(val -> val.getGranularity().getName()).collect(Collectors.toSet()));
-            }
-        }
+        Map<LogicalMetric, Set<String>> invaldMetricGrainMap =
+                createValidGrainMap(invalidMetrics, logicalTableDictionary);
 
         //requested metrics names are not present in the logical table metric names set
         if (!invalidMetricNames.isEmpty()) {
-            if (logicalTableDictionary != null) {
-                Set<String> grainSet = new HashSet<>();
-                for (Set<String> set : invaldMetricGrainMap.values()) {
-                    grainSet.addAll(set);
-                }
-                LOG.debug(METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.logFormat(invalidMetricNames, table.getName(),
-                        table.getGranularity(), grainSet));
-                throw new BadApiRequestException(
-                        METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format(invalidMetricNames, table.getName(),
-                                table.getGranularity(), grainSet)
-                );
-            } else {
-                LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
-                throw new BadApiRequestException(
-                        METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
-                );
-            }
+            errorMessagingForInvalidGrain(invalidMetricNames, invaldMetricGrainMap, table, logicalTableDictionary);
         }
     }
 

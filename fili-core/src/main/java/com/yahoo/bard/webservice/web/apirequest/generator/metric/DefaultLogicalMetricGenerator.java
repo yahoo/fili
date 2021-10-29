@@ -189,7 +189,6 @@ public class DefaultLogicalMetricGenerator
      * @param logicalMetrics  The set of metrics being validated
      * @param table  The logical table for the request
      *
-     * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
     @Override
     public void validateMetrics(
@@ -207,38 +206,80 @@ public class DefaultLogicalMetricGenerator
                 .filter(it -> !validMetricNames.contains(it.getName()))
                 .collect(Collectors.toSet());
 
-        Map<LogicalMetric, Set<String>> invaldMetricGrainMap = new HashMap<>();
-
-        if (logicalTableDictionary != null) {
-            for (LogicalMetric invalidMetric : invalidMetrics) {
-                invaldMetricGrainMap.put(invalidMetric,
-                        logicalTableDictionary.findByLogicalMetric(invalidMetric).stream()
-                                .map(val -> val.getGranularity().getName()).collect(Collectors.toSet()));
-            }
-        }
+        Map<LogicalMetric, Set<String>> invaldMetricGrainMap =
+                createValidGrainMap(invalidMetrics, logicalTableDictionary);
 
         //requested metrics names are not present in the logical table metric names set
         if (!invalidMetrics.isEmpty()) {
             Set<String> invalidMetricNames = invalidMetrics.stream()
                     .map(LogicalMetric::getName)
                     .collect(Collectors.toSet());
-            if (logicalTableDictionary != null) {
-                Set<String> grainSet = new HashSet<>();
-                for (Set<String> set : invaldMetricGrainMap.values()) {
-                    grainSet.addAll(set);
-                }
-                LOG.debug(METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.logFormat(invalidMetricNames, table.getName(),
-                        table.getGranularity(), grainSet));
-                throw new BadApiRequestException(
-                        METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format(invalidMetricNames, table.getName(),
-                                table.getGranularity(), grainSet)
-                );
-            } else {
-                LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
-                throw new BadApiRequestException(
-                        METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
-                );
+            errorMessagingForInvalidGrain(invalidMetricNames, invaldMetricGrainMap, table, logicalTableDictionary);
+        }
+    }
+
+    /**
+     * Create a map of metrics with their corresponding valid grains.
+     *
+     * @param invalidMetrics  The set of metrics for which valid grain map is being generated
+     * @param logicalTableDictionary  The logical table dictionary
+     *
+     *
+     * @return map of metrics and their valid grains
+     */
+    public Map<LogicalMetric, Set<String>> createValidGrainMap(
+            Set<LogicalMetric> invalidMetrics,
+            LogicalTableDictionary logicalTableDictionary
+    ) {
+        Map<LogicalMetric, Set<String>> invaldMetricGrainMap = new HashMap<>();
+        if (logicalTableDictionary != null) {
+            for (LogicalMetric invalidMetric : invalidMetrics) {
+                Set<LogicalTable> validLogicalTables = logicalTableDictionary
+                        .findByLogicalMetricName(invalidMetric.getName());
+                Set<String> validGrainsSet = validLogicalTables.stream()
+                        .map(val -> val.getGranularity().getName())
+                        .collect(Collectors.toSet());
+                invaldMetricGrainMap.put(invalidMetric, validGrainsSet);
             }
+        }
+        return invaldMetricGrainMap;
+    }
+
+    /**
+     * Error messaging for invalid grain on requested metrics.
+     *
+     * @param invalidMetricNames  The set of metrics that have invalid grains
+     * @param invaldMetricGrainMap  The map of invalid metrics and their corresponding valid grains
+     * @param table  The logical table for the request
+     * @param logicalTableDictionary  The logical table dictionary
+     *
+     *
+     * @throws BadApiRequestException if the requested metrics are not in the logical table
+     */
+    public void errorMessagingForInvalidGrain(
+            Set<String> invalidMetricNames,
+            Map<LogicalMetric, Set<String>> invaldMetricGrainMap,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
+        if (logicalTableDictionary != null) {
+            Set<String> grainSet = new HashSet<>();
+            for (Set<String> set : invaldMetricGrainMap.values()) {
+                grainSet.addAll(set);
+            }
+            List<String> grainList = new ArrayList<>(grainSet);
+            Collections.sort(grainList);
+            LOG.debug(METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.logFormat(invalidMetricNames, table.getName(),
+                    table.getGranularity(), grainList));
+            throw new BadApiRequestException(
+                    METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format(invalidMetricNames, table.getName(),
+                            table.getGranularity(), grainList)
+            );
+        } else {
+            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
+            throw new BadApiRequestException(
+                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
+            );
         }
     }
 }

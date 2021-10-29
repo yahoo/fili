@@ -222,7 +222,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Metric not in logical table fails"() {
-        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[limbs]", "shapes", "day", "[]")
+        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[limbs]", "shapes", "day", "[all, day, hour, month, week]")
 
         String jsonFailure =
             """{
