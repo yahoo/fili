@@ -11,6 +11,9 @@ Current
 ### Fixed:
 
 ### Added:
+- [Add better error messaging for invalid grain on base metrics](https://github.com/yahoo/fili/issues/1207)
+   * Add better error message for base metrics with invalid grains by including the valid grains on the metrics
+   
 - [Add metric type to meta block](https://github.com/yahoo/fili/issues/1197)
    * Added metric columns part of data query with their type details to meta block
     
