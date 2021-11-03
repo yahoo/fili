@@ -1083,7 +1083,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
      *
      * @throws BadApiRequestException if invalid
+     *
+     * @deprecated use {@link #validateLogicalMetrics(String, LinkedHashSet, LogicalTable, MetricDictionary,
+     *                  LogicalTableDictionary)} instead
      */
+    @Deprecated
     protected void validateLogicalMetrics(
             String apiMetricExpression,
             LinkedHashSet<LogicalMetric> metrics,
@@ -1111,7 +1115,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             MetricDictionary metricDictionary,
             LogicalTableDictionary logicalTableDictionary
     ) throws BadApiRequestException {
-        validateMetrics(metrics, logicalTable);
+        validateMetrics(metrics, logicalTable, logicalTableDictionary);
     }
 
     /**

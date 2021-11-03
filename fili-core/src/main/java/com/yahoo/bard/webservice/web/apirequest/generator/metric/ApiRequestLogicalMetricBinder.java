@@ -68,6 +68,8 @@ public interface ApiRequestLogicalMetricBinder extends LegacyGenerator<LinkedHas
      * @param table  The logical table for the request
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
+     *
+     * @deprecated Use {@link #validateMetrics(Set, LogicalTable, LogicalTableDictionary)} instead
      */
     default void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table) {
         validateMetrics(logicalMetrics, table, null);

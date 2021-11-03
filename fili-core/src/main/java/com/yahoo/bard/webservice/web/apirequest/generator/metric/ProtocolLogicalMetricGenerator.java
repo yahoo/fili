@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -179,18 +178,7 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
                 .filter(it -> !validMetricNames.contains(it))
                 .collect(Collectors.toSet());
 
-        //get metric names from logicalMetrics and remove all the valid metrics
-        Set<LogicalMetric> invalidMetrics = logicalMetrics.stream()
-                .filter(it -> !validMetricNames.contains(it.getName()))
-                .collect(Collectors.toSet());
-
-        Map<LogicalMetric, Set<String>> invaldMetricGrainMap =
-                createValidGrainMap(invalidMetrics, logicalTableDictionary);
-
-        //requested metrics names are not present in the logical table metric names set
-        if (!invalidMetricNames.isEmpty()) {
-            errorMessagingForInvalidGrain(invalidMetricNames, invaldMetricGrainMap, table, logicalTableDictionary);
-        }
+        processExceptions(invalidMetricNames, table, logicalTableDictionary);
     }
 
     private String getBaseName(LogicalMetricInfo metricInfo) {

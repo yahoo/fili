@@ -27,6 +27,8 @@ public class LogicalTableDictionary extends LinkedHashMap<TableIdentifier, Logic
      *
      * @return The list of logical tables that have the logical metric
      */
+    // TODO Determine if this is useful.  Object equality on LogicalMetric
+    // seems like it might make it useless
     public List<LogicalTable> findByLogicalMetric(LogicalMetric logicalMetric) {
         return values()
                 .stream()

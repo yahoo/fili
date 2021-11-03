@@ -222,7 +222,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Metric not in logical table fails"() {
-        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[limbs]", "shapes", "day", "[all, day, hour, month, week]")
+        String message = METRICS_NOT_IN_TABLE.format("[dayAvgLimbs]", "shapes", "day")
 
         String jsonFailure =
             """{
@@ -236,7 +236,57 @@ class ErrorDataServletSpec extends Specification {
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/")
-                .queryParam("metrics","limbs")
+                .queryParam("metrics","dayAvgLimbs")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+
+    def "Metric not in logical table because of grain but on table group fails"() {
+        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[dayAvgLimbs]", "pets", "day", "[all, month, week]")
+
+        String jsonFailure =
+                """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "description":"${message}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
+
+        when:
+        Response r = jtb.getHarness().target("data/pets/day/")
+                .queryParam("metrics","dayAvgLimbs")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+    def "Metrics both not in logical table and also not in grain fails"() {
+        String message1 = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[dayAvgLimbs]", "pets", "day", "[all, month, week]")
+        String message2 = METRICS_NOT_IN_TABLE.format("[height]", "pets", "day")
+
+        String jsonFailure =
+                """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "description":"[${message1}, ${message2}]",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
+
+        when:
+        Response r = jtb.getHarness().target("data/pets/day/")
+                .queryParam("metrics","dayAvgLimbs,height")
                 .queryParam("dateTime","2014-09-01%2F2014-09-10")
                 .request().get()
 

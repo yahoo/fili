@@ -271,7 +271,7 @@ public class TablesApiRequestImpl extends ApiRequestImpl implements TablesApiReq
                 metrics,
                 bardConfigResources.getMetricDictionary().getScope(Collections.singletonList(tableName))
         );
-        validateMetrics(this.logicalMetrics, this.table);
+        validateMetrics(this.logicalMetrics, this.table, bardConfigResources.getLogicalTableDictionary());
 
         // parse interval
         this.intervals = generateIntervals(
