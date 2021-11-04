@@ -16,11 +16,11 @@ import java.util.Locale;
  */
 public enum DefaultTimeMacro implements TimeMacro {
 
-    NEXT_DAY("nextDay", new BoundGrainMacroCalculation(DefaultTimeGrain.DAY)),
-    NEXT_WEEK("nextWeek", new BoundGrainMacroCalculation(DefaultTimeGrain.WEEK)),
-    NEXT_MONTH("nextMonth", new BoundGrainMacroCalculation(DefaultTimeGrain.MONTH)),
-    NEXT_QUARTER("nextQuarter", new BoundGrainMacroCalculation(DefaultTimeGrain.QUARTER)),
-    NEXT_YEAR("nextYear", new BoundGrainMacroCalculation(DefaultTimeGrain.YEAR)),
+    CURRENT_DAY("currentDay", new BoundGrainMacroCalculation(DefaultTimeGrain.DAY)),
+    CURRENT_WEEK("currentWeek", new BoundGrainMacroCalculation(DefaultTimeGrain.WEEK)),
+    CURRENT_MONTH("currentMonth", new BoundGrainMacroCalculation(DefaultTimeGrain.MONTH)),
+    CURRENT_QUARTER("currentQuarter", new BoundGrainMacroCalculation(DefaultTimeGrain.QUARTER)),
+    CURRENT_YEAR("currentYear", new BoundGrainMacroCalculation(DefaultTimeGrain.YEAR)),
     CURRENT("current", new CurrentMacroCalculation()),
     NEXT("next", new NextMacroCalculation());
 
