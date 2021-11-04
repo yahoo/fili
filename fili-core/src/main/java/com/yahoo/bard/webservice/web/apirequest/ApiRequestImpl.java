@@ -306,10 +306,32 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param table  The logical table for the request
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
+     *
+     * @deprecated Use {@link #validateMetrics(Set, LogicalTable, LogicalTableDictionary)} instead
      */
+    @Deprecated
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
         metricBinder.validateMetrics(logicalMetrics, table);
+    }
+
+
+    /**
+     * Validate that all metrics are part of the logical table.
+     *
+     * @param logicalMetrics  The set of metrics being validated
+     * @param table  The logical table for the request
+     * @param logicalTableDictionary Logical table dictionary used for error validation messages.
+     *
+     * @throws BadApiRequestException if the requested metrics are not in the logical table
+     */
+    protected void validateMetrics(
+            Set<LogicalMetric> logicalMetrics,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    )
+            throws BadApiRequestException {
+        metricBinder.validateMetrics(logicalMetrics, table, logicalTableDictionary);
     }
 
     /**

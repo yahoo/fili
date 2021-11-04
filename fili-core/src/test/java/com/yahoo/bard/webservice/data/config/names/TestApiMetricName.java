@@ -32,7 +32,7 @@ public enum TestApiMetricName implements ApiMetricName {
     A_DAY_AVG_OTHER_USERS(WEEK, MONTH),
     A_ROW_NUM,
     A_LIMBS(HOUR),
-    A_DAY_AVG_LIMBS,
+    A_DAY_AVG_LIMBS(WEEK, MONTH),
     //Stubby test metrics for non-numeric metrics: strings, booleans, null, and arbitrary JSON nodes.
     A_STRING_METRIC,
     A_BOOLEAN_METRIC,

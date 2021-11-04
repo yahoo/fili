@@ -15,6 +15,7 @@ import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ApiHaving;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
@@ -267,6 +268,26 @@ public class ProtocolMetricDataApiReqestImpl extends ExtensibleDataApiRequestImp
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
         metricBinder.validateMetrics(metrics, logicalTable);
+    }
+
+    /**
+     * Validated bound api filter objects.
+     *
+     * @param apiMetricExpression  URL query string containing the metrics separated by ','.
+     * @param metrics The bound logical metrics
+     * @param logicalTable  The logical table for the data request
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
+     * @param logicalTableDictionary The logical table dictionary
+     * @throws BadApiRequestException if invalid
+     */
+    protected void validateLogicalMetrics(
+            String apiMetricExpression,
+            LinkedHashSet<LogicalMetric> metrics,
+            LogicalTable logicalTable,
+            MetricDictionary metricDictionary,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
+        metricBinder.validateMetrics(metrics, logicalTable, logicalTableDictionary);
     }
 
 
