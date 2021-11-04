@@ -3,7 +3,7 @@
 package com.yahoo.bard.webservice.web.time;
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import org.joda.time.DateTime;
 
@@ -48,15 +48,8 @@ public enum DefaultTimeMacro implements TimeMacro {
         return getName().toUpperCase(Locale.ENGLISH);
     }
 
-    /**
-     * Calculate the macro-adjusted DateTime under the TimeGrain.
-     *
-     * @param dateTime  DateTime to adjust
-     * @param timeGrain  TimeGrain to adjust the DateTime for
-     *
-     * @return the macro-adjusted DateTime
-     */
-    public DateTime getDateTime(DateTime dateTime, TimeGrain timeGrain) {
-        return calculation.getDateTime(dateTime, timeGrain);
+    @Override
+    public DateTime getDateTime(DateTime dateTime, Granularity granularity) {
+        return calculation.getDateTime(dateTime, granularity);
     }
 }

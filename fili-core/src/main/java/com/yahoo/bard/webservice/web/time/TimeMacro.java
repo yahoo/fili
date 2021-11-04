@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.time;
 
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import org.joda.time.DateTime;
 
@@ -44,10 +44,10 @@ public interface TimeMacro {
      * Calculate the macro-adjusted DateTime under the TimeGrain.
      *
      * @param dateTime  DateTime to adjust
-     * @param timeGrain  TimeGrain to adjust the DateTime for
+     * @param granularity  Granularitys to adjust the DateTime for
      *
      * @return the macro-adjusted DateTime
      */
-    DateTime getDateTime(DateTime dateTime, TimeGrain timeGrain);
+    DateTime getDateTime(DateTime dateTime, Granularity granularity);
 
 }

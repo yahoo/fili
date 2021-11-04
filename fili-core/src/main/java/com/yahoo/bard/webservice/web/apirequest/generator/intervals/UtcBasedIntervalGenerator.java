@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.apirequest.generator.intervals;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_INVALID;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH;
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INVALID_INTERVAL_GRANULARITY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TIME_ALIGNMENT;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.GRANULARITY;
 import static com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder.RequestResource.INTERVALS;
@@ -15,7 +14,6 @@ import static com.yahoo.bard.webservice.web.apirequest.generator.intervals.Inter
 
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
-import com.yahoo.bard.webservice.data.time.AllGranularity;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -320,11 +318,7 @@ public class UtcBasedIntervalGenerator implements Generator<List<Interval>> {
         //If granularity is all and dateText is macro, then throw an exception
         TimeMacro macro = TimeMacro.forName(dateText);
         if (macro != null) {
-            if (granularity instanceof AllGranularity) {
-                LOG.debug(INVALID_INTERVAL_GRANULARITY.logFormat(macro, dateText));
-                throw new BadApiRequestException(INVALID_INTERVAL_GRANULARITY.format(macro, dateText));
-            }
-            return macro.getDateTime(now, (TimeGrain) granularity);
+            return macro.getDateTime(now, granularity);
         }
         return DateTime.parse(dateText, timeFormatter);
     }

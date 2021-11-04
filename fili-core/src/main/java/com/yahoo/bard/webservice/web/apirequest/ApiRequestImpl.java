@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -48,6 +49,7 @@ import javax.ws.rs.core.PathSegment;
  * API Request. Abstract class offering default implementations for the common components of API request objects.
  */
 public abstract class ApiRequestImpl implements ApiRequest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
@@ -67,6 +69,8 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final PaginationParameters paginationParameters;
     protected final long asyncAfter;
     protected final String downloadFilename;
+
+    protected static Supplier<DateTime> timeSource = DateTime::new;
 
     // hardcoding this for now to the old behavior so injection can be based on the protocol binder without changing
     // this code.
@@ -350,7 +354,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
         return UtcBasedIntervalGenerator.generateIntervals(
-                new DateTime(),
+                timeSource.get(),
                 apiIntervalQuery,
                 granularity,
                 dateTimeFormatter
