@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.time;
 
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.TimeGrain;
 
 import org.joda.time.DateTime;
@@ -15,6 +16,11 @@ import java.util.Locale;
  */
 public enum DefaultTimeMacro implements TimeMacro {
 
+    NEXT_DAY("nextDay", new BoundGrainMacroCalculation(DefaultTimeGrain.DAY)),
+    NEXT_WEEK("nextWeek", new BoundGrainMacroCalculation(DefaultTimeGrain.WEEK)),
+    NEXT_MONTH("nextMonth", new BoundGrainMacroCalculation(DefaultTimeGrain.MONTH)),
+    NEXT_QUARTER("nextQuarter", new BoundGrainMacroCalculation(DefaultTimeGrain.QUARTER)),
+    NEXT_YEAR("nextYear", new BoundGrainMacroCalculation(DefaultTimeGrain.YEAR)),
     CURRENT("current", new CurrentMacroCalculation()),
     NEXT("next", new NextMacroCalculation());
 
