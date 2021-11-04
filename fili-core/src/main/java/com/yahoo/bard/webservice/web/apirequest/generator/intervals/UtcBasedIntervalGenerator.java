@@ -21,12 +21,12 @@ import com.yahoo.bard.webservice.data.time.TimeGrain;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.logging.TimedPhase;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
-import com.yahoo.bard.webservice.web.TimeMacro;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestBuilder;
 import com.yahoo.bard.webservice.web.apirequest.RequestParameters;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
 import com.yahoo.bard.webservice.web.apirequest.generator.UnsatisfiedApiRequestConstraintsException;
+import com.yahoo.bard.webservice.web.time.TimeMacro;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
 import org.dmfs.rfc5545.recur.RecurrenceRule;

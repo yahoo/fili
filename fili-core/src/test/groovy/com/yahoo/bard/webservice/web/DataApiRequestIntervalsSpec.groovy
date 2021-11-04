@@ -234,6 +234,7 @@ class DataApiRequestIntervalsSpec extends Specification {
         "current/P3M"                   | "month"   | dateParser.apply(MONTH)                 | dateParser.apply(MONTH).plusMonths(3)
         "P3M/next"                      | "month"   | dateParser.apply(MONTH).minusMonths(2)   | dateParser.apply(MONTH).plusMonths(1)
         "current/next"                  | "month"   | dateParser.apply(MONTH)                 | dateParser.apply(MONTH).plusMonths(1)
+
     }
 
     @Unroll
