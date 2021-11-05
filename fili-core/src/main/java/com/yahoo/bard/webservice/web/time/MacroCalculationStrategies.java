@@ -1,8 +1,8 @@
 // Copyright 2016 Yahoo Inc.
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
-package com.yahoo.bard.webservice.web;
+package com.yahoo.bard.webservice.web.time;
 
-import com.yahoo.bard.webservice.data.time.TimeGrain;
+import com.yahoo.bard.webservice.data.time.Granularity;
 
 import org.joda.time.DateTime;
 
@@ -16,9 +16,9 @@ public interface MacroCalculationStrategies {
      * Get the DateTime for the macro given the DateTime to base from and the timeGrain to determine how far to move.
      *
      * @param dateTime  Base instant
-     * @param timeGrain  Grain to round to
+     * @param granularity  Grain to round to
      *
      * @return the macro-rounded instant
      */
-    DateTime getDateTime(DateTime dateTime, TimeGrain timeGrain);
+    DateTime getDateTime(DateTime dateTime, Granularity granularity);
 }

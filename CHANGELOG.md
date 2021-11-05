@@ -20,15 +20,19 @@ Current
 - [Add metric type to meta block](https://github.com/yahoo/fili/issues/1197)
    * Added metric columns part of data query with their type details to meta block
     
-- [Support recurance rules in dateTime expression](https://github.com/yahoo/fili/issues/1195)
+- [Support recurrence rules in dateTime expression](https://github.com/yahoo/fili/issues/1195)
    * Added explicit type parsing to dateTime Elements
    * Added library to parse RRules from the dateTime elements
    * Enhanced switches for various combinations of dateTimeElements
    * Additional testing on new and old paths
-   * Created a limit parameter to prevent infinite recurrance rules from generating infinite reporting intervals.
+   * Created a limit parameter to prevent infinite recurrence rules from generating infinite reporting intervals.
    
 - [Added long name contract to DimensionField](https://github.com/yahoo/fili/issues/1200)
    * `DimensionField` contains optionally serialized longName field.
+
+- [Support macros on all granularity](https://github.com/yahoo/fili/issues/1208)
+   * Support `current` and `next` on `all` granularity
+   * Added `currentDay`, `currentWeek`, `currentMonth`, `currentQuarter`, `currentYear` 
 
 ### Changed:
 - [Capability to bypass URL in Role based authentication filter](https://github.com/yahoo/fili/pull/1205)
