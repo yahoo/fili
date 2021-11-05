@@ -11,6 +11,9 @@ Current
 ### Fixed:
 
 ### Added:
+- [Fili-sql minute timestampFormat support](https://github.com/yahoo/fili/issues/1210)
+  * Add minute timestampFormat
+
 - [Add better error messaging for invalid grain on base metrics](https://github.com/yahoo/fili/issues/1207)
    * Add better error message for base metrics with invalid grains by including the valid grains on the metrics
    
