@@ -21,6 +21,13 @@ public enum DefaultTimeMacro implements TimeMacro {
     CURRENT_MONTH("currentMonth", new BoundGrainMacroCalculation(DefaultTimeGrain.MONTH)),
     CURRENT_QUARTER("currentQuarter", new BoundGrainMacroCalculation(DefaultTimeGrain.QUARTER)),
     CURRENT_YEAR("currentYear", new BoundGrainMacroCalculation(DefaultTimeGrain.YEAR)),
+
+    NEXT_DAY("nextDay", new BoundGrainMacroNextCalculation(DefaultTimeGrain.DAY)),
+    NEXT_WEEK("nextWeek", new BoundGrainMacroNextCalculation(DefaultTimeGrain.WEEK)),
+    NEXT_MONTH("nextMonth", new BoundGrainMacroNextCalculation(DefaultTimeGrain.MONTH)),
+    NEXT_QUARTER("nextQuarter", new BoundGrainMacroNextCalculation(DefaultTimeGrain.QUARTER)),
+    NEXT_YEAR("nextYear", new BoundGrainMacroNextCalculation(DefaultTimeGrain.YEAR)),
+
     CURRENT("current", new CurrentMacroCalculation()),
     NEXT("next", new NextMacroCalculation());
 

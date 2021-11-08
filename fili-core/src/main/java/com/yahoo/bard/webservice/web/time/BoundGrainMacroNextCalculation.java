@@ -12,16 +12,14 @@ import org.joda.time.DateTime;
  *
  * In the case of the AllGranularity, simply don't round.
  */
-public class BoundGrainMacroCalculation implements MacroCalculationStrategies {
+public class BoundGrainMacroNextCalculation extends BoundGrainMacroCalculation {
 
-    protected TimeGrain timeGrain;
-
-    public BoundGrainMacroCalculation(TimeGrain timeGrain) {
-        this.timeGrain = timeGrain;
+    public BoundGrainMacroNextCalculation(TimeGrain timeGrain) {
+        super(timeGrain);
     }
 
     @Override
     public DateTime getDateTime(DateTime dateTime, Granularity granularity) {
-        return timeGrain.roundFloor(dateTime);
+        return super.getDateTime(dateTime, granularity).plus(timeGrain.getPeriod());
     }
 }

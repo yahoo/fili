@@ -265,6 +265,24 @@ class DataApiRequestIntervalsSpec extends Specification {
         "currentQuarter/next"   | "day" | dateParser.apply(QUARTER) | dateParser.apply(DAY).plusDays(1)
         "currentYear/next"      | "day" | dateParser.apply(YEAR)    | dateParser.apply(DAY).plusDays(1)
 
+        "currentDay/nextDay"       | "all" | dateParser.apply(DAY)     | dateParser.apply(DAY).plusDays(1)
+        "currentWeek/nextWeek"     | "all" | dateParser.apply(WEEK)    | dateParser.apply(WEEK).plusWeeks(1)
+        "currentMonth/nextWeek"    | "all" | dateParser.apply(MONTH)   | dateParser.apply(WEEK).plusWeeks(1)
+        "currentQuarter/nextMonth" | "all" | dateParser.apply(QUARTER) | dateParser.apply(MONTH).plusMonths(1)
+        "currentYear/nextYear"     | "all" | dateParser.apply(YEAR)    | dateParser.apply(YEAR).plusYears(1)
+
+        "currentDay/next"       | "day" | dateParser.apply(DAY)     | dateParser.apply(DAY).plusDays(1)
+        "currentWeek/next"      | "day" | dateParser.apply(WEEK)    | dateParser.apply(DAY).plusDays(1)
+        "currentMonth/next"     | "day" | dateParser.apply(MONTH)   | dateParser.apply(DAY).plusDays(1)
+        "currentQuarter/next"   | "day" | dateParser.apply(QUARTER) | dateParser.apply(DAY).plusDays(1)
+        "currentYear/next"      | "day" | dateParser.apply(YEAR)    | dateParser.apply(DAY).plusDays(1)
+
+        "currentDay/nextMonth"       | "day" | dateParser.apply(DAY)     | dateParser.apply(MONTH).plusMonths(1)
+        "currentWeek/nextMonth"      | "day" | dateParser.apply(WEEK)    | dateParser.apply(MONTH).plusMonths(1)
+        "currentMonth/nextWeek"      | "day" | dateParser.apply(MONTH)   | dateParser.apply(WEEK).plusWeeks(1)
+        "currentQuarter/nextQuarter" | "day" | dateParser.apply(QUARTER) | dateParser.apply(QUARTER).plusMonths(3)
+        "currentYear/nextYear"       | "day" | dateParser.apply(YEAR)    | dateParser.apply(YEAR).plusYears(1)
+
     }
 
     @Unroll

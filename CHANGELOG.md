@@ -32,7 +32,8 @@ Current
 
 - [Support macros on all granularity](https://github.com/yahoo/fili/issues/1208)
    * Support `current` and `next` on `all` granularity
-   * Added `currentDay`, `currentWeek`, `currentMonth`, `currentQuarter`, `currentYear` 
+   * Added `currentDay`, `currentWeek`, `currentMonth`, `currentQuarter`, `currentYear`
+   * Added `nextDay`, `nextWeek`, `nextMonth`, `nextQuarter`, `nextYear`
 
 ### Changed:
 - [Capability to bypass URL in Role based authentication filter](https://github.com/yahoo/fili/pull/1205)
