@@ -106,15 +106,15 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         } catch (RuntimeException warnThenIgnore) {
             LOG.warn("get failed for key {} with cksum {} , {}",
                     key,
-                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
                     warnThenIgnore.getMessage(),
                     warnThenIgnore);
             BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
                     new BardCacheInfo(
                             QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
                             key.length(),
-                            CacheV2ResponseProcessor.getMD5Cksum(key),
+                            CacheV2ResponseProcessor.getMD5Checksum(key),
                             null,
                             0
                     )
@@ -170,18 +170,18 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
                 CACHE_SET_TIMEOUT_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetTimeoutFailures();
                 BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                        CacheV2ResponseProcessor.getMD5Cksum(key),
+                        CacheV2ResponseProcessor.getMD5Checksum(key),
                         new BardCacheInfo(
                                 LOG_CACHE_SET_TIMEOUT,
                                 key.length(),
-                                CacheV2ResponseProcessor.getMD5Cksum(key),
+                                CacheV2ResponseProcessor.getMD5Checksum(key),
                                 null,
                                 value.toString().length()
                         )
                 );
             }
             LOG.warn("set failed for key: {} ,cksum: {} {}",
-                    key, CacheV2ResponseProcessor.getMD5Cksum(key), e.toString());
+                    key, CacheV2ResponseProcessor.getMD5Checksum(key), e.toString());
             throw new IllegalStateException(e);
         }
     }
