@@ -196,4 +196,10 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
         return DatatypeConverter.printHexBinary(hash)
                 .toLowerCase(Locale.ENGLISH);
     }
+
+    /**
+     * Path for cacheStore implementation.
+     */
+    protected void afterCache() {
+    }
 }
