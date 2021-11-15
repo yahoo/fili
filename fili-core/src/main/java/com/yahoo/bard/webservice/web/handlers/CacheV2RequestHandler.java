@@ -71,10 +71,16 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
     ) {
         ResponseProcessor nextResponse = response;
 
-        String cacheKey = null;
+        String cacheKey;
+
         try {
             cacheKey = getKey(druidQuery);
+        } catch (JsonProcessingException e) {
+            LOG.warn("Cache key cannot be built: ", e);
+            return next.handleRequest(context, request, druidQuery, response);
+        }
 
+        try {
             if (context.isReadCache()) {
                 String cacheResponse = querySignedCacheService.readCache(context, druidQuery);
                 if (cacheResponse != null) {
@@ -88,19 +94,13 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
                 }
             }
         } catch (JsonProcessingException e) {
-            LOG.warn("Cache key cannot be built: ", e);
+            LOG.warn("Cache response cannot be read: ", e);
         } catch (Exception e) {
-            LOG.warn("Error processing cache read: ", e);
+            LOG.warn("Unknown Error processing cache read: ", e);
         }
 
         // Cached value either doesn't exist or is invalid
-        nextResponse = new CacheV2ResponseProcessor(
-                response,
-                cacheKey,
-                dataCache,
-                querySigningService,
-                mapper
-        );
+        nextResponse = new CacheV2ResponseProcessor(response, cacheKey, dataCache, querySigningService, mapper);
 
         return next.handleRequest(context, request, druidQuery, nextResponse);
     }

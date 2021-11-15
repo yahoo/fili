@@ -16,7 +16,6 @@ import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
 import com.codahale.metrics.Meter;
@@ -195,12 +194,11 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
      * @return whether request can be cached
      */
     protected boolean isCacheable() {
-
-        SimplifiedIntervalList missingIntervals = getPartialIntervalsWithDefault(getResponseContext());
-        SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(getResponseContext());
-
+        ResponseContext responseContext = getResponseContext();
         // Moved from external check to inside this method
-        return missingIntervals.isEmpty() && volatileIntervals.isEmpty() || CACHE_PARTIAL_DATA.isOn();
+        return CACHE_PARTIAL_DATA.isOn() ||
+                getPartialIntervalsWithDefault(responseContext).isEmpty() &&
+                        getVolatileIntervalsWithDefault(responseContext).isEmpty();
     }
 
     /**
