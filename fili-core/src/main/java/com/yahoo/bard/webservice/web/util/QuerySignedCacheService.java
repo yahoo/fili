@@ -113,13 +113,13 @@ public class QuerySignedCacheService implements CacheService {
                     CACHE_HITS.mark(1);
                     BardQueryInfo.getBardQueryInfo().incrementCountCacheHits();
                     BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                             new BardCacheInfo(
                                     LOG_CACHE_GET_HIT,
                                     getKey(druidQuery).length(),
-                                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                                     querySignatureHash != null
-                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
                                             : null,
                                     cacheEntry.getValue().length()
                             )
@@ -129,16 +129,16 @@ public class QuerySignedCacheService implements CacheService {
                 } catch (Exception e) {
                     LOG.warn("Error processing cached value for key {} with cksum {}",
                             getKey(druidQuery),
-                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                             e);
                     BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                             new BardCacheInfo(
                                     LOG_CACHE_READ_FAILURES,
                                     getKey(druidQuery).length(),
-                                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                    CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                                     querySignatureHash != null
-                                            ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                            ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
                                             : null,
                                     0
                             )
@@ -149,13 +149,13 @@ public class QuerySignedCacheService implements CacheService {
                 CACHE_POTENTIAL_HITS.mark(1);
                 CACHE_MISSES.mark(1);
                 BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                        CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                        CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                         new BardCacheInfo(
                                 LOG_CACHE_SIGNATURE_MISMATCH,
                                 getKey(druidQuery).length(),
-                                CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                                CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                                 querySignatureHash != null
-                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
                                         : null,
                                 0
                         )
@@ -164,13 +164,13 @@ public class QuerySignedCacheService implements CacheService {
         } else {
             CACHE_MISSES.mark(1);
             BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                    CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                    CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                     new BardCacheInfo(
                             LOG_CACHE_GET_MISS,
                             getKey(druidQuery).length(),
-                            CacheV2ResponseProcessor.getMD5Cksum(getKey(druidQuery)),
+                            CacheV2ResponseProcessor.getMD5Checksum(getKey(druidQuery)),
                             querySignatureHash != null
-                                    ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                    ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
                                     : null,
                             0
                     )
@@ -214,13 +214,13 @@ public class QuerySignedCacheService implements CacheService {
                 CACHE_SET_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetFailures();
                 BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                        CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                        CacheV2ResponseProcessor.getMD5Checksum(cacheKey),
                         new BardCacheInfo(
                                 LOG_CACHE_SET_FAILURES,
                                 cacheKey.length(),
-                                CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                                CacheV2ResponseProcessor.getMD5Checksum(cacheKey),
                                 querySignatureHash != null
-                                        ? CacheV2ResponseProcessor.getMD5Cksum(querySignatureHash)
+                                        ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
                                         : null,
                                 valueString != null ? valueString.length() : 0
                         )
@@ -229,7 +229,7 @@ public class QuerySignedCacheService implements CacheService {
                         "Unable to cache {}value of size: {} with cksum: {}",
                         valueString == null ? "null " : "",
                         valueString == null ? "N/A" : valueString.length(),
-                        CacheV2ResponseProcessor.getMD5Cksum(cacheKey),
+                        CacheV2ResponseProcessor.getMD5Checksum(cacheKey),
                         e
                 );
             }

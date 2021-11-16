@@ -245,7 +245,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         1 * handler.getKey(_) >> { throw new JsonProcessingException("TestException") }
 
         then: "Delegate to the next request handler with a CacheV2ResponseProcessor"
-        1 * next.handleRequest(requestContext, apiRequest, groupByQuery, _ as CacheV2ResponseProcessor) >> true
+        1 * next.handleRequest(requestContext, apiRequest, groupByQuery, response) >> true
 
         and: "Request is flagged as processed"
         requestProcessed
