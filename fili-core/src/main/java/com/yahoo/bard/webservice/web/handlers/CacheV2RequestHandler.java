@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.web.handlers;
 import com.yahoo.bard.webservice.data.cache.DataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.logging.RequestLog;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.util.Utils;
@@ -100,7 +101,7 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
         }
 
         // Cached value either doesn't exist or is invalid
-        nextResponse = buildResponseProcessor(response, cacheKey);
+        nextResponse = buildResponseProcessor(context, request, druidQuery, response, cacheKey);
 
         return next.handleRequest(context, request, druidQuery, nextResponse);
     }
@@ -108,12 +109,21 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
     /**
      * Extended to allow overriding.
      *
-     * @param response The response callback for the request
-     * @param cacheKey  The cache key for the request
+     * @param context The request context
+     * @param request The DataApiRequest object
+     * @param query The Druid query
+     * @param response The Response processor chain
+     * @param cacheKey  The calculated cache key
      *
      * @return the response processor to handle caching.
      */
-    protected ResponseProcessor buildResponseProcessor(final ResponseProcessor response, final String cacheKey) {
+    protected ResponseProcessor buildResponseProcessor(
+            RequestContext context,
+            DataApiRequest request,
+            DruidQuery query,
+            ResponseProcessor response,
+            final String cacheKey
+    ) {
         return new CacheV2ResponseProcessor(response, cacheKey, dataCache, querySigningService, mapper);
     }
 
