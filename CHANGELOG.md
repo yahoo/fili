@@ -39,6 +39,7 @@ Current
 - [Added afterCache behavior to CacheV2ResponseProcessor](https://github.com/yahoo/fili/issues/1214)
   * Added afterCache() method
   * Refactored `CacheV2ResponseProcessor` to make it more extensible (broke up component tasks into overridable methods)
+  * Updated to add response context to after method and make the response construction extensible.
 
 - [Capability to bypass URL in Role based authentication filter](https://github.com/yahoo/fili/pull/1205)
   * Added capability to bypass URL in `RoleBasedAuthFilter` even when user is not part of allowed user roles.

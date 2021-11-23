@@ -100,9 +100,21 @@ public class CacheV2RequestHandler extends BaseDataRequestHandler {
         }
 
         // Cached value either doesn't exist or is invalid
-        nextResponse = new CacheV2ResponseProcessor(response, cacheKey, dataCache, querySigningService, mapper);
+        nextResponse = buildResponseProcessor(response, cacheKey);
 
         return next.handleRequest(context, request, druidQuery, nextResponse);
+    }
+
+    /**
+     * Extended to allow overriding.
+     *
+     * @param response The response callback for the request
+     * @param cacheKey  The cache key for the request
+     *
+     * @return the response processor to handle caching.
+     */
+    protected ResponseProcessor buildResponseProcessor(final ResponseProcessor response, final String cacheKey) {
+        return new CacheV2ResponseProcessor(response, cacheKey, dataCache, querySigningService, mapper);
     }
 
     /**
