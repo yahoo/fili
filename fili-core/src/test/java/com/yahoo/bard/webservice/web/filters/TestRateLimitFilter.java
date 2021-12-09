@@ -46,7 +46,14 @@ public class TestRateLimitFilter extends RateLimitFilter {
      */
     public TestRateLimitFilter() throws SystemConfigException {
         super();
-        instance = this;
+        if (instance == null) {
+            instance = this;
+        }
+    }
+
+    public void reset() {
+        instance = null;
+        new TestRateLimitFilter();
     }
 
     @Override
