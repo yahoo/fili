@@ -103,6 +103,9 @@ Current
 
 ### Fixed:
 
+- [Address zero day bug on log4j by removing dependencies] (https://github.com/yahoo/fili/issues/1219)
+   * Exclude all transitive dependencies on log4j version 1.
+
 ### Deprecated:
 
 ### Known Issues:
