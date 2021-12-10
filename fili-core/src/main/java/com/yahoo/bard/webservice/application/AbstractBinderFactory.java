@@ -1060,7 +1060,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return the instance of local signature cache
      */
-    private DataCache<?> buildLocalSignatureCache() {
+    protected DataCache<?> buildLocalSignatureCache() {
         if (BardFeatureFlag.DRUID_CACHE_V2.isSet()) {
             LOG.warn("Cache V2 feature flag is deprecated, " +
                     "use the new configuration parameter to set desired caching strategy"
