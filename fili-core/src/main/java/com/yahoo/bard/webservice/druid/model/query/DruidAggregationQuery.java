@@ -84,8 +84,11 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
     Collection<VirtualColumn> getVirtualColumns();
 
     /**
-     * Returns the timezone of the underlying datasource
+     * Returns the timezone of the underlying datasource.
+     *
+     * @return The time zone of the underlying time grain
      */
+    @JsonIgnore
     default DateTimeZone getTimeZone() {
         return getDataSource()
                 .getPhysicalTable()

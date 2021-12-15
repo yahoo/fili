@@ -214,7 +214,8 @@ public class SqlTimeConverter {
             throw new UnsupportedOperationException("Can't parse dateTime for if no times were grouped on.");
         }
 
-        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, 7, 0, 0, 0, 0, timeZone);
+        int startDay = (DefaultTimeGrain.WEEK.equals(druidQuery.getGranularity())) ? 7 : 1;
+        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, startDay, 0, 0, 0, 0, timeZone);
 
 
         for (int i = 0; i < times.size(); i++) {
