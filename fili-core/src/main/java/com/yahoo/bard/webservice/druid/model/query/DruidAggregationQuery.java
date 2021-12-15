@@ -12,6 +12,8 @@ import com.yahoo.bard.webservice.table.Column;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.joda.time.DateTimeZone;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -80,6 +82,17 @@ public interface DruidAggregationQuery<Q extends DruidAggregationQuery<? super Q
      * @return the query virtual columns
      */
     Collection<VirtualColumn> getVirtualColumns();
+
+    /**
+     * Returns the timezone of the underlying datasource
+     */
+    default DateTimeZone getTimeZone() {
+        return getDataSource()
+                .getPhysicalTable()
+                .getSchema()
+                .getTimeGrain()
+                .getTimeZone();
+    }
 
     /**
      * Returns a copy of this query with the specified aggregations.
