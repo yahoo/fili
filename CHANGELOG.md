@@ -107,6 +107,13 @@ Current
 
 ### Fixed:
 
+- [Fixed error where weekOfWeekYear moved backwards on sql set on years after 53 week years](https://github.com/yahoo/fili/issues/1221)
+   * setWeekOfWeekYear behaves unexpectedly when the 53rd week of the prior is on the first of the year.
+   * Added test
+   * set default day of year to th 7th to guarantee correct calendar year resolution
+   * added utility to `DruidAggregationQuery` to simplify mocking
+
+
 - [Made unstable rate limit test more stable](https://github.com/yahoo/fili/issues/1217)
    * Made sure shared state was cleared more accurately between runs.
 
