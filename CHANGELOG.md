@@ -36,6 +36,9 @@ Current
    * Added `nextDay`, `nextWeek`, `nextMonth`, `nextQuarter`, `nextYear`
 
 ### Changed:
+- [Make the default search results something more reasonable for a UI](https://github.com/yahoo/fili/issues/1223)
+  * Gave the DimensionSearchServlet it's own default pagination that can be controlled via config, but defaulted to 50.
+
 - [Added afterCache behavior to CacheV2ResponseProcessor](https://github.com/yahoo/fili/issues/1214)
   * Added afterCache() method
   * Refactored `CacheV2ResponseProcessor` to make it more extensible (broke up component tasks into overridable methods)
