@@ -13,11 +13,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -31,7 +31,7 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     /**
      * Maps a Class (type of query) to the Function that should be used to compute requestedIntervals for a given query.
      */
-    private final Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions;
+    private final Map<Class<?>, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions;
 
     /**
      * A Service to get information about segment metadata.
@@ -47,7 +47,7 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
      */
     public SegmentIntervalsHashIdGenerator(
             DataSourceMetadataService dataSourceMetadataService,
-            Map<Class, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
+            Map<Class<?>, RequestedIntervalsFunction> requestedIntervalsQueryExtractionFunctions
     ) {
         this.dataSourceMetadataService = dataSourceMetadataService;
         this.requestedIntervalsQueryExtractionFunctions = requestedIntervalsQueryExtractionFunctions;
@@ -71,12 +71,12 @@ public class SegmentIntervalsHashIdGenerator implements QuerySigningService<Long
     @Override
     public Optional<Long> getSegmentSetId(DruidAggregationQuery<?> query) {
         // Gather the data source names backing the query
-        Set<DataSourceName> dataSourceNames = query.getInnermostQuery()
+        Set<DataSourceName> dataSourceNames = new HashSet<>(
+                query.getInnermostQuery()
                 .getDataSource()
                 .getPhysicalTable()
                 .getDataSourceNames()
-                .stream()
-                .collect(Collectors.toSet());
+        );
 
         // Get all the segments for the data sources of the query's physical tables
         Set<SortedMap<DateTime, Map<String, SegmentInfo>>> tableSegments = dataSourceMetadataService.getSegments(

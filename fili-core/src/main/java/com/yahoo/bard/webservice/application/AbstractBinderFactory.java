@@ -41,11 +41,11 @@ import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.PartialDataHandler;
 import com.yahoo.bard.webservice.data.PreResponseDeserializer;
 import com.yahoo.bard.webservice.data.cache.DataCache;
-import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
+import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
@@ -136,7 +136,10 @@ import com.yahoo.bard.webservice.web.handlers.workflow.RequestWorkflowProvider;
 import com.yahoo.bard.webservice.web.ratelimit.DefaultRateLimiter;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessorFactory;
 import com.yahoo.bard.webservice.web.responseprocessors.ResultSetResponseProcessorFactory;
-import com.yahoo.bard.webservice.web.util.*;
+import com.yahoo.bard.webservice.web.util.CacheService;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
+import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
+import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
@@ -154,7 +157,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
 import org.joda.time.format.DateTimeParser;
-import org.joda.time.format.DateTimePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -525,8 +527,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @param binder  The binder being used to bind the request mappers.
      */
+    @SuppressWarnings("rawtypes")
     private void bindRequestMappers(AbstractBinder binder) {
-        Map<String, RequestMapper> requestMappers = getRequestMappers(loader.getDictionaries());
+        Map<String, RequestMapper<?>> requestMappers = getRequestMappers(loader.getDictionaries());
         binder.bind(requestMappers.getOrDefault(
                 DimensionsApiRequest.REQUEST_MAPPER_NAMESPACE,
                 new DimensionApiRequestMapper(loader.getDictionaries())
@@ -900,9 +903,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      * @return A Map that maps Class to a function that computes the requested intervals for a Druid query of
      * that particular Class
      */
-    protected Map<Class, RequestedIntervalsFunction> buildSigningFunctions() {
+    protected Map<Class<?>, RequestedIntervalsFunction> buildSigningFunctions() {
 
-        DefaultingDictionary<Class, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>(
+        DefaultingDictionary<Class<?>, RequestedIntervalsFunction> signingFunctions = new DefaultingDictionary<>(
                 druidAggregationQuery -> new SimplifiedIntervalList(druidAggregationQuery.getIntervals())
         );
 
@@ -1071,7 +1074,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             LOG.info("MemcachedClient Version 2 started {}", cache);
             return cache;
         } catch (IOException e) {
-            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            LOG.error("MemcachedClient Version 2 failed to start.", e);
             throw new IllegalStateException(e);
         }
     }
@@ -1088,11 +1091,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             );
         }
         try {
-            DataCache<String> cache = new HashDataCache<>(new MemDataCache<HashDataCache.Pair<String, String>>());
+            DataCache<String> cache = new HashDataCache<>(new MemDataCache<>());
             LOG.info("MemcachedClient started {}", cache);
             return cache;
         } catch (IOException e) {
-            LOG.error("MemcachedClient failed to start {}", e);
+            LOG.error("MemcachedClient failed to start.", e);
             throw new IllegalStateException(e);
         }
     }
@@ -1108,7 +1111,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             LOG.info("MemcachedClient Version 2 started {}", cache);
             return cache;
         } catch (IOException e) {
-            LOG.error("MemcachedClient Version 2 failed to start {}", e);
+            LOG.error("MemcachedClient Version 2 failed to start.", e);
             throw new IllegalStateException(e);
         }
     }
@@ -1303,7 +1306,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      *
      * @return A map where the key is the name of the requestMapper for binding, and value is the requestMapper
      */
-    protected @NotNull Map<String, RequestMapper> getRequestMappers(ResourceDictionaries resourceDictionaries) {
+    protected @NotNull Map<String, RequestMapper<?>> getRequestMappers(ResourceDictionaries resourceDictionaries) {
         return new HashMap<>(0);
     }
 
@@ -1422,7 +1425,7 @@ public abstract class AbstractBinderFactory implements BinderFactory {
     protected DateTimeFormatter buildDateTimeFormatter() {
         return new DateTimeFormatterBuilder()
                 .append(
-                        (DateTimePrinter) null,
+                        null,
                         new DateTimeParser[] {
                                 DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").getParser(),
                                 DateTimeFormat.forPattern("yyyy-MM-dd' 'HH:mm:ss.SSS").getParser(),

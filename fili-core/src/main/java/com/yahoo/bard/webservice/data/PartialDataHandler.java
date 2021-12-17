@@ -56,7 +56,9 @@ public class PartialDataHandler {
             missingIntervals = requestedIntervals;
         }
 
-        LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
+        if (!missingIntervals.isEmpty()) {
+            LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
+        }
         return missingIntervals;
     }
 
