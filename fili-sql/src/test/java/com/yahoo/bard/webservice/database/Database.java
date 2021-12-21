@@ -120,7 +120,7 @@ public class Database {
                 IS_ANONYMOUS + "\" BOOLEAN, \"" +
                 REGION_ISO_CODE + "\" VARCHAR(256), \"" +
                 CHANNEL + "\" VARCHAR(256), \"" +
-                REGION_NAME + "\" VARCHAR(256), " +
+                REGION_NAME + "\" VARCHAR(256) " +
                 ")"
         );
 
