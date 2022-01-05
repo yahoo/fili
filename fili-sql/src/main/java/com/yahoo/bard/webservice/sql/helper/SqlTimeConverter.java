@@ -11,11 +11,11 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
@@ -214,7 +214,7 @@ public class SqlTimeConverter {
             throw new UnsupportedOperationException("Can't parse dateTime for if no times were grouped on.");
         }
 
-        int startDay = (DefaultTimeGrain.WEEK.equals(druidQuery.getGranularity())) ? 7 : 1;
+        int startDay = (druidQuery.getGranularity().satisfiedBy(DefaultTimeGrain.WEEK)) ? 7 : 1;
         MutableDateTime mutableDateTime = new MutableDateTime(0, 1, startDay, 0, 0, 0, 0, timeZone);
 
 
