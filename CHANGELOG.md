@@ -113,6 +113,8 @@ Current
    * set default day of year to th 7th to guarantee correct calendar year resolution
    * added utility to `DruidAggregationQuery` to simplify mocking
 
+- [Update to fix for weekly rounding time grain on sql](https://github.com/yahoo/fili/issues/1221)
+  *  Moved from equality to acceptance.
 
 - [Made unstable rate limit test more stable](https://github.com/yahoo/fili/issues/1217)
    * Made sure shared state was cleared more accurately between runs.
