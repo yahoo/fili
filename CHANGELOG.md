@@ -107,6 +107,10 @@ Current
 
 ### Fixed:
 
+- [Memcached client default size was smaller than expected](https://github.com/yahoo/fili/issues/1231)
+    * Made timeout configurable on `TimeoutConfigureBinaryConnectionFactory`
+    * Removed error generating error handling where response already submitted before attempting to write to session
+
 - [Fixed error where weekOfWeekYear moved backwards on sql set on years after 53 week years](https://github.com/yahoo/fili/issues/1221)
    * setWeekOfWeekYear behaves unexpectedly when the 53rd week of the prior is on the first of the year.
    * Added test
