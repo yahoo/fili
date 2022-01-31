@@ -181,7 +181,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         String max_druid_response_length_to_cache_key = SYSTEM_CONFIG.getPackageVariableName(
                 "druid_max_response_length_to_cache"
         )
-        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key)
+        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key, Integer.MAX_VALUE)
 
         and: "A very small max-length-to-cache"
         long smallMaxLength = 1L

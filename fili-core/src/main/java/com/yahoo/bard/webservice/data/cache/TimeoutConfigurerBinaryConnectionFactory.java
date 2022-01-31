@@ -2,12 +2,23 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.cache;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
+
 import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.transcoders.SerializingTranscoder;
+import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * A binary connection factory with a configurable timeout.
  */
 public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFactory {
+
+    public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    public final int maxCachedValueSize = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("druid_max_response_length_to_cache"), Integer.MAX_VALUE
+    );
 
     long operationTimeout;
 
@@ -40,6 +51,11 @@ public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFa
     TimeoutConfigurerBinaryConnectionFactory(int len, int bufSize, Long operationTimeout) {
         super(len, bufSize);
         this.operationTimeout = operationTimeout;
+    }
+
+    @Override
+    public Transcoder<Object> getDefaultTranscoder() {
+        return new SerializingTranscoder(maxCachedValueSize);
     }
 
     @Override

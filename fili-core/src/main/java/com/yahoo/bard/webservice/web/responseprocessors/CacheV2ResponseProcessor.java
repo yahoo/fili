@@ -167,25 +167,20 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
         String querySignatureHash = String.valueOf(querySignature);
 
         CACHE_SET_FAILURES.mark(1);
-        BardQueryInfo.incrementCountCacheSetFailures();
-        BardQueryInfo.addCacheInfo(cacheKeyChecksum,
-                new BardCacheInfo(
-                        QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
-                        cacheKey.length(),
-                        cacheKeyChecksum,
-                        querySignature != null
-                                ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
-                                : null,
-                        valueString != null ? valueString.length() : 0
-                )
-        );
-        LOG.warn(
-                "Unable to cache {} value of size: {} and key checksum: {} ",
+        String message = String.format(
+                "Unable to cache %s value of size: %s and key checksum: %s. Message: %s ",
                 valueString == null ? "null " : "",
                 valueString == null ? "N/A" : valueString.length(),
                 getMD5Checksum(cacheKey),
-                e
+                e.getMessage()
         );
+
+
+        if (e instanceof IllegalArgumentException) {
+            LOG.error(message, e);
+        } else {
+            LOG.warn(message, e);
+        }
     }
 
     /**
