@@ -22,7 +22,7 @@ class RowNumMakerSpec extends Specification {
         LogicalMetricInfo logicalMetricInfo = new LogicalMetricInfo(METRIC_NAME, METRIC_NAME, DESCRIPTION);
 
         given: "A logical metric that generates row numbers"
-        LogicalMetric metric = new ProtocolMetricImpl(logicalMetricInfo, null, new RowNumMapper())
+        LogicalMetric metric = new ProtocolMetricImpl(logicalMetricInfo, null, new RowNumMapper(), [])
 
         expect:
         //RowSumMaker does not rely on the metric dictionary.

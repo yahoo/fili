@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
+import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
@@ -22,13 +23,14 @@ class LongSumMakerSpec extends Specification{
     def "A long sum logical metric is made correctly"(){
         given: "The name of the metric the maker depends on, and the maker itself"
         //LongSum is a RawAggregationQuery, so it does not depend on a MetricDictionary.
-        MetricMaker maker = new LongSumMaker(null)
+        MetricDictionary metricDictionary = new MetricDictionary()
+        MetricMaker maker = new LongSumMaker(metricDictionary)
 
         and: "The expected metric"
         Aggregation sumAggregation = new LongSumAggregation(METRIC_NAME, DEPENDENT_METRIC_NAME)
         Set<Aggregation> aggregations = [sumAggregation] as Set
         TemplateDruidQuery query = new TemplateDruidQuery(aggregations, [] as Set)
-        LogicalMetric expectedMetric = new ProtocolMetricImpl(info, query, new NoOpResultSetMapper())
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(info, query, new NoOpResultSetMapper(), [])
 
         expect:
         maker.make(info, [DEPENDENT_METRIC_NAME]) == expectedMetric

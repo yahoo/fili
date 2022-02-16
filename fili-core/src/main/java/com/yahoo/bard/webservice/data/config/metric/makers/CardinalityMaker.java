@@ -80,7 +80,8 @@ public class CardinalityMaker extends MetricMaker {
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
                 new TemplateDruidQuery(aggs, Collections.emptySet()),
-                NO_OP_MAPPER
+                NO_OP_MAPPER,
+                Collections.emptyList()
         );
     }
 

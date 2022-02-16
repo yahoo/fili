@@ -76,7 +76,8 @@ public class FilteredAggregationMaker extends MetricMaker {
                             Collections.emptySet(),
                             (ZonelessTimeGrain) null
                     ),
-                    sourceMetric.getCalculation()
+                    sourceMetric.getCalculation(),
+                    Collections.singletonList(sourceMetric)
             );
         }
 
@@ -87,7 +88,8 @@ public class FilteredAggregationMaker extends MetricMaker {
                         Collections.emptySet(),
                         nestedQuery
                 ),
-                sourceMetric.getCalculation()
+                sourceMetric.getCalculation(),
+                Collections.singletonList(sourceMetric)
         );
     }
 

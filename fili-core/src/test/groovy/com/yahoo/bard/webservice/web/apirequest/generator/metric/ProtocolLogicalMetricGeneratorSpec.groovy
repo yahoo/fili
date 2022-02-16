@@ -141,6 +141,7 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
                 testTdq,
                 TEST_RSM,
                 new ProtocolSupport([testProtocol]),
+                []
         )
         metricDictionary = new MetricDictionary()
         metricDictionary.add(baseMetric)
@@ -162,27 +163,31 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
         validProtocolMetricPreTransform = new ProtocolMetricImpl(
                 new LogicalMetricInfo(validProtocolMetricBaseName),
                 testTdq,
-                TEST_RSM
+                TEST_RSM,
+                []
         )
         metricDictionary.add(validProtocolMetricPreTransform)
 
         validProtocolMetricPostTransform = new ProtocolMetricImpl(
                 new GeneratedMetricInfo(validProtocolMetricRawName, validProtocolMetricBaseName),
                 testTdq.renameMetricField(validProtocolMetricBaseName, validProtocolMetricRawName),
-                TEST_RSM
+                TEST_RSM,
+                []
         )
 
         invalidProtocolMetricPreTransform = new ProtocolMetricImpl(
                 new LogicalMetricInfo(invalidProtocolMetricBaseName),
                 testTdq,
-                TEST_RSM
+                TEST_RSM,
+                []
         )
         metricDictionary.add(invalidProtocolMetricPreTransform)
 
         invalidProtocolMetricPostTransform = new ProtocolMetricImpl(
                 new GeneratedMetricInfo(invalidProtocolMetricRawName, invalidProtocolMetricBaseName),
                 testTdq.renameMetricField(invalidProtocolMetricBaseName, invalidProtocolMetricRawName),
-                TEST_RSM
+                TEST_RSM,
+                []
         )
 
         // Prepare test physical table
@@ -327,6 +332,7 @@ class ProtocolLogicalMetricGeneratorSpec extends Specification {
                 new TemplateDruidQuery([], []),
                 TEST_RSM,
                 new ProtocolSupport([grainExpecting]),
+                []
         )
         MetricDictionary metricDictionary1 = new MetricDictionary()
         metricDictionary1.add(protocolMetric)

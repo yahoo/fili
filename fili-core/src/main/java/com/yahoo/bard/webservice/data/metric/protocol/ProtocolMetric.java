@@ -39,7 +39,7 @@ import java.util.Map;
  * <p>{@link ProtocolMetricImpl} is the default implementation of this contract, and should be a sufficient
  * implementation for most use cases.
  */
-public interface ProtocolMetric extends LogicalMetric {
+public interface ProtocolMetric extends LogicalMetric, ExtendedMetricDependencies {
 
     /**
      * Tests whether this metric is transformable under the provided metric contract. This method must return false if

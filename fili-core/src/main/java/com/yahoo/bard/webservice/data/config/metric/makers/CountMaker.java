@@ -38,7 +38,8 @@ public class CountMaker extends MetricMaker {
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
                 query,
-                NO_OP_MAPPER
+                NO_OP_MAPPER,
+                Collections.emptyList()
         );
     }
 
