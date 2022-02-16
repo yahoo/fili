@@ -44,7 +44,7 @@ class RequestQueryGranularityResolverSpec extends Specification {
 
         queryPrototype = [
                 filteredMetricDimensions: [] as Set,
-                dependantFieldNames: metricNamesSet,
+                dependentFieldNames: metricNamesSet,
                 timeGrain: null
         ]
     }
@@ -52,7 +52,7 @@ class RequestQueryGranularityResolverSpec extends Specification {
     TemplateDruidQuery buildQuery(Map<String, Object> prototype) {
         TemplateDruidQuery query = Mock(TemplateDruidQuery)
         query.innermostQuery >> query
-        query.dependentFieldNames >> prototype['dependantFieldNames']
+        query.dependentFieldNames >> prototype['dependentFieldNames']
         query.metricDimensions >> prototype['filteredMetricDimensions']
         query.timeGrain >> prototype['timeGrain']
         return query

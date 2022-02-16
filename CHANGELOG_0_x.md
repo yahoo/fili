@@ -1068,7 +1068,7 @@ select filters)
     * Constructor using filter query string is restored and calls the `ApiFilterGenerator.build()` to construct itself from the string.
 
 - [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
-    * ThetaSketchIntersection had a bug where it wasn't collecting dependant metrics from InFilters
+    * ThetaSketchIntersection had a bug where it wasn't collecting dependent metrics from InFilters
 
 - [Fix equality on Filtered Metrics](https://github.com/yahoo/fili/issues/780)
     * Filtered metrics should take filter values into account for equals and hashcode
@@ -1537,7 +1537,7 @@ Thanks to everyone who contributed to this release!
     * This externalizes the state via a getter for serialization.
 
 - [Fix intermittent class scanner error on DataSourceConstraint equal](https://github.com/yahoo/fili/pull/573)
-   * Class Scanner Spec was injecting an improper dependant field due to type erasure.  Made field type explicit.
+   * Class Scanner Spec was injecting an improper dependent field due to type erasure.  Made field type explicit.
 
 - [Fix tests with wrong time offset calculation](https://github.com/yahoo/fili/pull/567)
     * Time-checking based tests setup time offset in a wrong way. `timeZoneId.getOffset` is fixed to take the right

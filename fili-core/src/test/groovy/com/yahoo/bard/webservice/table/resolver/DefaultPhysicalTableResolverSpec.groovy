@@ -117,7 +117,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         queryPrototype = [
                 filteredMetricDimensions: [] as Set,
-                dependantFieldNames: metricNamesSet0,
+                dependentFieldNames: metricNamesSet0,
                 timeGrain: null
         ]
     }
@@ -145,7 +145,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     TemplateDruidQuery buildQuery(Map<String, Object> prototype) {
         TemplateDruidQuery query = Mock(TemplateDruidQuery)
         query.innermostQuery >> query
-        query.dependentFieldNames >> prototype['dependantFieldNames']
+        query.dependentFieldNames >> prototype['dependentFieldNames']
         query.metricDimensions >> prototype['filteredMetricDimensions']
         query.timeGrain >> prototype['timeGrain']
         return query
@@ -158,7 +158,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -190,7 +190,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = granularity
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -221,7 +221,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         when:
@@ -242,7 +242,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     def "#table.name matches #dimensions containing non-agg dimensions"() {
         setup:
         Granularity granularity = all
-        queryPrototype['dependantFieldNames'] = [] as Set
+        queryPrototype['dependentFieldNames'] = [] as Set
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['table'] = resources.ltna
@@ -266,7 +266,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     def "#table.name throws exception wth #dimensions containing non-agg dimensions"() {
         setup:
         Granularity granularity = all
-        queryPrototype['dependantFieldNames'] = [] as Set
+        queryPrototype['dependentFieldNames'] = [] as Set
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['table'] = resources.ltna
@@ -292,12 +292,12 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     @Unroll
     def "#table.name matches with #metrics"() {
         setup:
-        queryPrototype['dependantFieldNames'] = metrics
+        queryPrototype['dependentFieldNames'] = metrics
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -318,12 +318,12 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
     @Unroll
     def "#table.name throws exception when matching with #grain, #metrics"() {
-        queryPrototype['dependantFieldNames'] = metrics
+        queryPrototype['dependentFieldNames'] = metrics
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         when:
@@ -343,12 +343,12 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     @Unroll
     def "#table.name matches with #grain, #metrics"() {
         setup:
-        queryPrototype['dependantFieldNames'] = metrics
+        queryPrototype['dependentFieldNames'] = metrics
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -370,12 +370,12 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
     @Unroll
     def "#table.name throws exception with #grain, #metrics"() {
         setup:
-        queryPrototype['dependantFieldNames'] = metrics
+        queryPrototype['dependentFieldNames'] = metrics
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         when:
@@ -399,7 +399,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         BinaryOperator betterTable = resolver.getBetterTableOperator(new QueryPlanningConstraint(apiRequest, query))
@@ -425,7 +425,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['intervals'] = [new Interval(interval)]
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         BinaryOperator betterTable = resolver.getBetterTableOperator(new QueryPlanningConstraint(apiRequest, query))
@@ -477,13 +477,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         BardFeatureFlag.PARTIAL_DATA.setOn(true)
 
         List<Interval> intervalList = intervals.collect { new Interval(it) }
-        queryPrototype['dependantFieldNames'] = metricNamesSet123
+        queryPrototype['dependentFieldNames'] = metricNamesSet123
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['intervals'] = intervalList
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -511,13 +511,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         setup:
         BardFeatureFlag.PARTIAL_DATA.setOn(true)
 
-        queryPrototype['dependantFieldNames'] = metricNamesSet123
+        queryPrototype['dependentFieldNames'] = metricNamesSet123
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimSet1
         apiRequestPrototype['intervals'] = [new Interval(interval)]
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -554,13 +554,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         )
 
         and: "The query information needed to resolve tables"
-        queryPrototype['dependantFieldNames'] = [resources.m1.name]
+        queryPrototype['dependentFieldNames'] = [resources.m1.name]
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = [resources.d1]
         apiRequestPrototype['intervals'] = [new Interval("2015/2017")]
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect: "The table with more data available is preferred"
@@ -599,13 +599,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         )
 
         and: "The query information needed to resolve tables"
-        queryPrototype['dependantFieldNames'] = [resources.m1.name]
+        queryPrototype['dependentFieldNames'] = [resources.m1.name]
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = [resources.d1]
         apiRequestPrototype['intervals'] = [new Interval("2015/2017")]
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect: "The table with more data available is preferred"
@@ -654,13 +654,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
         )
 
         and: "The query information needed to resolve tables"
-        queryPrototype['dependantFieldNames'] = [resources.m1.name]
+        queryPrototype['dependentFieldNames'] = [resources.m1.name]
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = [resources.d1]
         apiRequestPrototype['intervals'] = [new Interval("2015/2017")]
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect: "The table with more data available is preferred"
@@ -687,12 +687,12 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
     @Unroll
     def "With grain #grain expected #expected.name for #tablegroup under dimensions #dimensions and metrics #metrics"() {
-        queryPrototype['dependantFieldNames'] = metrics as Set
+        queryPrototype['dependentFieldNames'] = metrics as Set
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
@@ -714,13 +714,13 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
     @Unroll
     def "Test select table from bad group "() {
-        queryPrototype['dependantFieldNames'] = metricNamesSet123
+        queryPrototype['dependentFieldNames'] = metricNamesSet123
         queryPrototype['filteredMetricDimensions'] = filteredDimensions
         TemplateDruidQuery query = buildQuery(queryPrototype);
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         when:
@@ -745,7 +745,7 @@ class DefaultPhysicalTableResolverSpec  extends Specification {
 
         apiRequestPrototype['dimensions'] = dimensions
         apiRequestPrototype['granularity'] = grain
-        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependantFieldNames'] as Set)
+        apiRequestPrototype['logicalMetrics'] = metricsForNameSet(queryPrototype['dependentFieldNames'] as Set)
         DataApiRequest apiRequest = buildDataApiRequest(apiRequestPrototype)
 
         expect:
