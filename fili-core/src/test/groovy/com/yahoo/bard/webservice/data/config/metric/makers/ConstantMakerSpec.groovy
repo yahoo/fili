@@ -28,7 +28,8 @@ class ConstantMakerSpec extends Specification {
         LogicalMetric expectedMetric = new ProtocolMetricImpl(
             new LogicalMetricInfo(AGGREGATION_NAME),
             constantQuery,
-            new NoOpResultSetMapper()
+            new NoOpResultSetMapper(),
+            []
         )
 
         and:

@@ -53,10 +53,12 @@ public abstract class RawAggregationMetricMaker extends MetricMaker {
     protected LogicalMetric makeInner(LogicalMetricInfo logicalMetricInfo, List<String> dependentMetrics) {
         String metricName = logicalMetricInfo.getName();
         Aggregation aggregation = aggregationFactory.apply(metricName, dependentMetrics.get(0));
+
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                getResultSetMapper(metricName)
+                getResultSetMapper(metricName),
+                Collections.emptyList() // Raw aggs don't have dependent metrics but instead dependent schema columns
         );
     }
 

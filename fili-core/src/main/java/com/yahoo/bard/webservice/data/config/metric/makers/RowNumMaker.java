@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.data.metric.MetricDictionary;
 import com.yahoo.bard.webservice.data.metric.mappers.RowNumMapper;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,7 +34,8 @@ public class RowNumMaker extends MetricMaker {
         return new ProtocolMetricImpl(
                 logicalMetricInfo,
                 null,
-                ROW_NUM_MAPPER
+                ROW_NUM_MAPPER,
+                Collections.emptyList()
         );
     }
 

@@ -41,7 +41,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
     private final Set<TableName> dependentTableNames;
     private final Set<String> dependentTableNameString;
 
-    public static final String MISSING_DEPENDANT_TABLE_FORMAT = "Dependent able %s does not exist.";
+    public static final String MISSING_DEPENDENT_TABLE_FORMAT = "Dependent able %s does not exist.";
     public static final String MISSING_METRIC_FORMAT = "Required metric %s doesn't appear on any dependent table";
     public static final String DUPLICATE_METRIC_FORMAT = "Required metric(s) %s appears on more " +
             "than one dependent table";
@@ -140,7 +140,7 @@ public class MetricUnionCompositeTableDefinition extends PhysicalTableDefinition
                 .collect(Collectors.toSet());
 
         if (!missingTableNames.isEmpty()) {
-            String message = String.format(MISSING_DEPENDANT_TABLE_FORMAT, missingTableNames);
+            String message = String.format(MISSING_DEPENDENT_TABLE_FORMAT, missingTableNames);
             throw new IllegalArgumentException(message);
         }
         return tableNames.stream()

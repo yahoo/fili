@@ -34,7 +34,7 @@ class WithPostAggregationsSpec extends Specification {
         );
     }
 
-    def "Test dependant dimensions resolve from fields"() {
+    def "Test dependent dimensions resolve from fields"() {
         expect:
         postAggregation.dependentDimensions == ([dimension1, dimension2] as Set)
     }

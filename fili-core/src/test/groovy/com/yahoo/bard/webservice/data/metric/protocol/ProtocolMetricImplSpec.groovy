@@ -22,10 +22,34 @@ class ProtocolMetricImplSpec extends Specification {
         ResultSetMapper resultSetMapper = new NoOpResultSetMapper()
         GeneratedMetricInfo logicalMetricInfo = new GeneratedMetricInfo("name", "baseName")
         TemplateDruidQuery templateDruidQuery = Mock(TemplateDruidQuery)
-        protocolMetric = new ProtocolMetricImpl(logicalMetricInfo, templateDruidQuery, resultSetMapper, protocolSupport)
+        protocolMetric = new ProtocolMetricImpl(
+                logicalMetricInfo,
+                templateDruidQuery,
+                resultSetMapper,
+                protocolSupport,
+                []
+        )
     }
 
     def "Accept invokes the protocol support and applies the attached transformer"() {
+        setup:
+        LogicalMetric expected = Mock(LogicalMetric)
+        GeneratedMetricInfo outLmi = Mock(GeneratedMetricInfo)
+        MetricTransformer metricTransformer = Mock(MetricTransformer)
+        protocolSupport.getProtocol(protocolName) >> protocol
+        protocol.getMetricTransformer() >> metricTransformer
+
+        Map values = [:]
+
+        when:
+        LogicalMetric result = protocolMetric.accept(outLmi, protocolName, values)
+
+        then:
+        1* metricTransformer.apply(outLmi, protocolMetric, protocol, values) >> expected
+        result == expected
+    }
+
+    def "ExtendedMetricDependencies use default values"() {
         setup:
         LogicalMetric expected = Mock(LogicalMetric)
         GeneratedMetricInfo outLmi = Mock(GeneratedMetricInfo)

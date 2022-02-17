@@ -165,7 +165,7 @@ class FilteredAggregationSpec extends Specification{
                 withFieldName("NEW_FIELD_NAME")
     }
 
-    def "Test dependant metric"() {
+    def "Test dependent metric"() {
         expect:
         filteredAgg.dependentDimensions == [ageDimension] as Set
         filteredAgg2.dependentDimensions == [genderDimension, ageDimension] as Set

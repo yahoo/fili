@@ -55,7 +55,8 @@ public class ConstantMaker extends MetricMaker {
             return new ProtocolMetricImpl(
                     logicalMetricInfo,
                     new TemplateDruidQuery(Collections.emptySet(), postAggregations),
-                    NO_OP_MAPPER
+                    NO_OP_MAPPER,
+                    Collections.emptyList()
             );
         } catch (NumberFormatException nfe) {
             String message = String.format(

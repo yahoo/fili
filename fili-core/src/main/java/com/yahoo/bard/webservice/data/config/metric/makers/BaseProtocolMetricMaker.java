@@ -81,7 +81,7 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
                 .map(logicalMetricInfo::withType)
                 .orElse(logicalMetricInfo);
 
-        return new ProtocolMetricImpl(revisedInfo, partialQuery, calculation, protocolSupport);
+        return new ProtocolMetricImpl(revisedInfo, partialQuery, calculation, protocolSupport, dependentMetrics);
     }
 
     /**

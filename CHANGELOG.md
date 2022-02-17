@@ -11,6 +11,10 @@ Current
 ### Fixed:
 
 ### Added:
+- [Support protocol metrics reporting on dependent metrics](https://github.com/yahoo/fili/issues/1234)
+  * Implemented `ExtendedMetricDependencies` on ProtocolMetricImpl
+  * Updated all existing constructors to capture dependent metrics
+
 - [Fili-sql minute timestampFormat support](https://github.com/yahoo/fili/issues/1210)
   * Add minute timestampFormat
 

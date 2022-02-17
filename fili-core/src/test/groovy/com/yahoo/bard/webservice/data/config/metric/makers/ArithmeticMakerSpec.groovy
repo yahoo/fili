@@ -136,7 +136,8 @@ class ArithmeticMakerSpec extends Specification {
         LogicalMetric expectedMetric = new ProtocolMetricImpl(
                 new LogicalMetricInfo(metricName),
                 expectedQuery,
-                MetricMaker.NO_OP_MAPPER
+                MetricMaker.NO_OP_MAPPER,
+                operands
         )
 
         and: "a populated metric dictionary for the maker"

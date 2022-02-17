@@ -68,6 +68,7 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
                 info,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
                 MetricMaker.NO_OP_MAPPER,
+                []
         );
     }
 
@@ -75,7 +76,8 @@ class RawAggregationMetricMakerImplsSpec extends Specification {
         new ProtocolMetricImpl(
                 info,
                 new TemplateDruidQuery(Collections.singleton(aggregation), Collections.emptySet()),
-                new SketchRoundUpMapper(aggregation.getName())
+                new SketchRoundUpMapper(aggregation.getName()),
+                []
         );
     }
 }

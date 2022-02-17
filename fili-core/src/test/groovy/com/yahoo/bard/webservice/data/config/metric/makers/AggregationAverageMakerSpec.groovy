@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.config.metric.makers
 
+import static com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols.standardProtocolSupport
+
 import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.protocol.GeneratedMetricInfo
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
@@ -80,11 +82,11 @@ class AggregationAverageMakerSpec extends Specification{
                 ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(userSketchCountRenamed)
         )
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate, sketchCountMetric)
         LogicalMetric actual = maker.make(NAME, NAME)
 
         expect:
-        actual.equals(expectedMetric)
+        actual == (expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed a sketch merge and sketch estimate"(){
@@ -110,10 +112,10 @@ class AggregationAverageMakerSpec extends Specification{
 
         and: """The expected metric. Identical to the expected metric from the previous test, except that the
             sketchEstimate post aggregation is accessing a sketch merge, rather than a sketch count aggregation."""
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimateRenamed)
+        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimateRenamed, sketchMergeAndEstimateMetric)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        maker.make(NAME, NAME) == (expectedMetric)
     }
 
     def "Build a correct LogicalMetric when passed only a sketch merge."(){
@@ -136,10 +138,10 @@ class AggregationAverageMakerSpec extends Specification{
                 ESTIMATE_NAME_RENAMED,
                 new FieldAccessorPostAggregation(sketchMergeRenamed)
         )
-        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate)
+        LogicalMetric expectedMetric = buildExpectedMetric(sketchEstimate, sketchEstimateMetric)
 
         expect:
-        maker.make(NAME, NAME).equals(expectedMetric)
+        maker.make(NAME, NAME) == (expectedMetric)
     }
 
     def "When output name collides with dependent metric name, dependent metric must be renamed"() {
@@ -171,7 +173,8 @@ class AggregationAverageMakerSpec extends Specification{
                 new LogicalMetricInfo(NAME, DESCRIPTION),
                 dependentQuery,
                 new NoOpResultSetMapper(),
-                DefaultSystemMetricProtocols.getStandardProtocolSupport()
+                getStandardProtocolSupport(),
+                []
         )
     }
     /**
@@ -198,9 +201,10 @@ class AggregationAverageMakerSpec extends Specification{
      * PostAggregation has to use a sketch count as its field in order to pass the equality test.
      *
      * @param innerPostAggregation The test-specific post aggregation to be added to the inner query.
+     * @param dependent metric which is the depenpend metric for the averager
      * @return The LogicalMetric expected by the tests
      */
-    LogicalMetric buildExpectedMetric(PostAggregation innerPostAggregation){
+    LogicalMetric buildExpectedMetric(PostAggregation innerPostAggregation, LogicalMetric dependent){
         Set<Aggregation> innerAggregations = [sketchMergeRenamed] as LinkedHashSet
         Set<PostAggregation> innerPostAggregations = [innerPostAggregation, AggregationAverageMaker.COUNT_INNER]
         TemplateDruidQuery innerQueryTemplate = new TemplateDruidQuery(
@@ -226,7 +230,8 @@ class AggregationAverageMakerSpec extends Specification{
                 new LogicalMetricInfo(NAME, DESCRIPTION),
                 outerQuery,
                 new NoOpResultSetMapper(),
-                DefaultSystemMetricProtocols.getStandardProtocolSupport().blacklistProtocol(REAGGREGATION_CONTRACT_NAME)
+                getStandardProtocolSupport().blacklistProtocol(REAGGREGATION_CONTRACT_NAME),
+                [dependent]
         )
     }
 }

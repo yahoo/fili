@@ -20,7 +20,7 @@ class FieldAccessorPostAggregationSpec extends Specification {
         fieldPostAggregation = new FieldAccessorPostAggregation(aggregation)
     }
 
-   def  "Test get dependant dimensions pulls dimensions from aggregation"() {
+   def  "Test get dependent dimensions pulls dimensions from aggregation"() {
         setup:
         aggregation.dependentDimensions >> [dimension]
 

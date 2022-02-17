@@ -33,7 +33,8 @@ public class MetadataApplyTransformer implements MetricTransformer {
                 resultMetadata,
                 renamedTdq,
                 logicalMetric.getCalculation(),
-                newSupport
+                newSupport,
+                Collections.singletonList(logicalMetric)
         );
     }
 }
