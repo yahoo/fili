@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -160,10 +161,22 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
         }
         if (!super.equals(o)) { return false; }
         final ProtocolMetric that = (ProtocolMetric) o;
-        if (!Objects.equals(this.dependentMetrics, that.getDependentMetrics())) {
+
+        // Dependent metric comparison is a little too finicky, let's just make sure they have the same names
+        List<String> theseNames = this.getDependentMetrics()
+                .stream()
+                .map(LogicalMetric::getName)
+                .collect(Collectors.toList());
+
+        List<String> thoseNames = that.getDependentMetrics()
+                .stream()
+                .map(LogicalMetric::getName)
+                .collect(Collectors.toList());
+
+        if (!Objects.equals(theseNames, thoseNames)) {
             return false;
         }
-        return Objects.equals(protocolSupport, that.getProtocolSupport());
+        return Objects.equals(getProtocolSupport(), that.getProtocolSupport());
     }
 
     @Override
