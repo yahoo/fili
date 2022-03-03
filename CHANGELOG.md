@@ -12,6 +12,7 @@ Current
 - [New Dependent metric equality was too brittle](https://github.com/yahoo/fili/issues/1236)
    * Use dependent metric name equality instead of complete dependent metric equality.
    * Use getter to pull both this and that dependent metrics to correctly utilize dynamic method dispatch.
+   * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
 ### Added:
 - [Support protocol metrics reporting on dependent metrics](https://github.com/yahoo/fili/issues/1234)

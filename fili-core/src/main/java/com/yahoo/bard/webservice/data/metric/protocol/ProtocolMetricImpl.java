@@ -7,6 +7,8 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
 import java.util.Collections;
 import java.util.List;
@@ -136,6 +138,22 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
     public List<LogicalMetric> getDependentMetrics() {
         return dependentMetrics;
     }
+
+
+    @Override
+    public SimplifiedIntervalList getDependentInterval(
+            SimplifiedIntervalList requestInterval,
+            Granularity requestGrain
+    ) {
+        List<SimplifiedIntervalList> intervals = getTransitiveDependencies().distinct()
+                .filter(dep -> dep instanceof ExtendedMetricDependencies)
+                .map(dep -> (ExtendedMetricDependencies) dep)
+                .map(e -> e.getDependentInterval(requestInterval, requestGrain))
+                .collect(Collectors.toList());
+        intervals.add(requestInterval);
+        return new SimplifiedIntervalList(intervals.toArray(new SimplifiedIntervalList[] {}));
+    }
+
     /**
      * All subclasses of {@code ProtocolMetricImpl} MUST override this method and return an instance of the subclassed
      * type. Inheriting this implementation on subclasses will cause the subclass typing to be lost!
