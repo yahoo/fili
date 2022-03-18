@@ -9,12 +9,11 @@ import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -128,8 +127,10 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                     JsonNode row = jsonResult.get(0);
                     // If the weight limit query is empty or reports acceptable rows, run the full query
                     if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
-
+                        long rowCount = row.get("event").get("count").asLong();
+                        long rowLines = row.get("event").get("lines").asLong();
+                        BardQueryInfo.accumulateWeightCheckRawSketches(rowCount);
+                        BardQueryInfo.accumulateWeightCheckRawLines(rowCount);
                         if (rowCount > queryRowLimit) {
                             dispatchInsufficientStorage(response, druidQuery, rowCount, queryRowLimit);
                             return;
@@ -156,7 +157,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
     protected static void dispatchInsufficientStorage(
             ResponseProcessor response,
             DruidAggregationQuery<?> druidQuery,
-            int rowCount,
+            long rowCount,
             long queryRowLimit
     ) {
         String reason = String.format(

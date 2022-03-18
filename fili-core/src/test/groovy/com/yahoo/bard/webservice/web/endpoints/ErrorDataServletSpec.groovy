@@ -869,7 +869,7 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000}}]"""
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000, "lines":100}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -910,7 +910,7 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820}}]"""
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820, "lines": 100}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate

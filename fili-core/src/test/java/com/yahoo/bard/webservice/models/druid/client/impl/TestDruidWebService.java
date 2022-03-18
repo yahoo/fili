@@ -55,7 +55,7 @@ public class TestDruidWebService implements DruidWebService {
     public String lastUrl = null;
     public String jsonQuery = "";
     public Integer timeout = null;
-    public String weightResponse = "[ { \"event\" : { \"count\" : 19 } } ]";
+    public String weightResponse = "[ { \"event\" : { \"count\" : 19, \"lines\" : 1  } } ]";
     public DruidServiceConfig serviceConfig;
 
     /**
