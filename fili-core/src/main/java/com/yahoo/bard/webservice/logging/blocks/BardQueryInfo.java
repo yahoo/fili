@@ -7,7 +7,6 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
-import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
@@ -30,9 +29,6 @@ public class BardQueryInfo implements LogInfo {
     public static final String WEIGHT_CHECK_RAW_SKETCHES = "weightCheckRawSketches";
     public static final String WEIGHT_CHECK_RAW_LINES = "weightCheckRawLines";
 
-    public static final BigDecimal ONE = new BigDecimal(1);
-
-
     private final String type;
     private final AtomicLong weightCheckCount = new AtomicLong();
     private final AtomicLong factQueryCount = new AtomicLong();
@@ -43,7 +39,6 @@ public class BardQueryInfo implements LogInfo {
 
     private final AtomicLong rawSketches = new AtomicLong();
     private final AtomicLong rawLines = new AtomicLong();
-
 
     /**
      * Constructor.
