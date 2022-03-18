@@ -15,6 +15,12 @@ Current
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
 ### Added:
+
+-[Log weight evaluation results in LogBlock](https://github.com/yahoo/fili/issues/1239)
+  * Added logging for raw lines and raw sketches to Bard single log line.
+  * Added test data utilizing expanded WeightEvaluationQuery.
+  * Provided a QueryWeightUtilsAlwaysRun as a helper implementation.
+
 - [Support protocol metrics reporting on dependent metrics](https://github.com/yahoo/fili/issues/1234)
   * Implemented `ExtendedMetricDependencies` on ProtocolMetricImpl
   * Updated all existing constructors to capture dependent metrics

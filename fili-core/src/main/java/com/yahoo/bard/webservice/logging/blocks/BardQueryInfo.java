@@ -7,11 +7,12 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,13 +27,23 @@ public class BardQueryInfo implements LogInfo {
     public static final String FACT_PUT_ERRORS = "factCachePutErrors";
     public static final String FACT_PUT_TIMEOUTS = "factCachePutTimeouts";
 
+    public static final String WEIGHT_CHECK_RAW_SKETCHES = "weightCheckRawSketches";
+    public static final String WEIGHT_CHECK_RAW_LINES = "weightCheckRawLines";
+
+    public static final BigDecimal ONE = new BigDecimal(1);
+
+
     private final String type;
-    private final AtomicInteger weightCheckCount = new AtomicInteger();
-    private final AtomicInteger factQueryCount = new AtomicInteger();
-    private final AtomicInteger factCacheHitCount = new AtomicInteger();
-    private final AtomicInteger factPutErrorsCount = new AtomicInteger();
-    private final AtomicInteger factPutTimeoutsCount = new AtomicInteger();
-    private Map<String, BardCacheInfo> cacheStatsMap = new HashMap<>();
+    private final AtomicLong weightCheckCount = new AtomicLong();
+    private final AtomicLong factQueryCount = new AtomicLong();
+    private final AtomicLong factCacheHitCount = new AtomicLong();
+    private final AtomicLong factPutErrorsCount = new AtomicLong();
+    private final AtomicLong factPutTimeoutsCount = new AtomicLong();
+    private final Map<String, BardCacheInfo> cacheStatsMap = new TreeMap<>();
+
+    private final AtomicLong rawSketches = new AtomicLong();
+    private final AtomicLong rawLines = new AtomicLong();
+
 
     /**
      * Constructor.
@@ -47,8 +58,9 @@ public class BardQueryInfo implements LogInfo {
         return type;
     }
 
-    public Map<String, AtomicInteger> getQueryCounter() {
-        return Stream.of(
+    public Map<String, AtomicLong> getQueryCounter() {
+
+        Map<String, AtomicLong> counters = new TreeMap<>(Stream.of(
                 new AbstractMap.SimpleImmutableEntry<>(WEIGHT_CHECK, weightCheckCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, factQueryCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount),
@@ -57,7 +69,12 @@ public class BardQueryInfo implements LogInfo {
         ).collect(Collectors.toMap(
                 AbstractMap.SimpleImmutableEntry::getKey,
                 AbstractMap.SimpleImmutableEntry::getValue
-        ));
+        )));
+        if (weightCheckCount.get() > 0) {
+            counters.put(WEIGHT_CHECK_RAW_SKETCHES, rawSketches);
+            counters.put(WEIGHT_CHECK_RAW_LINES, rawLines);
+        }
+        return counters;
     }
 
     /**
@@ -100,10 +117,29 @@ public class BardQueryInfo implements LogInfo {
     }
 
     /**
+     * Increments the count of raw sketches.
+     *
+     * @param addend  Amount of raw sketches to add.
+     */
+    public static void accumulateWeightCheckRawSketches(long addend) {
+        getBardQueryInfo().rawSketches.getAndAdd(addend);
+    }
+
+    /**
+     * Increments the count of raw lines aggregated over.
+     *
+     * @param addend  Amount of raw sketches to add.
+     */
+    public static void accumulateWeightCheckRawLines(long addend) {
+        getBardQueryInfo().rawLines.getAndAdd(addend);
+    }
+
+    /**
      * Increments the number of cache set timeout failure count.
      */
     public static void incrementCountCacheSetTimeoutFailures() {
-        getBardQueryInfo().factPutTimeoutsCount.incrementAndGet();
+        getBardQueryInfo().factPutTimeoutsCount.getAndIncrement()
+        ;
     }
 
     /**

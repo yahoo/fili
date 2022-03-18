@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -48,7 +49,7 @@ import java.util.List;
  *        ],
  *        "aggregations": [
  *          {
- *            "name": "ignored",
+ *            "name": "lines",
  *            "type": "count"
  *          }
  *        ],
@@ -75,8 +76,13 @@ import java.util.List;
  *        "name": "count",
  *        "fieldName": "count",
  *        "type": "longSum"
+ *      },
+ *      {
+ *        "name": "lines",
+ *        "fieldName": "lines",
+ *        "type": "longSum"
  *      }
- *    ],
+ *     ],
  *    "postAggregations": [],
  *    "intervals": [
  *      "2014-09-01T00:00:00.000Z/2014-09-30T00:00:00.000Z"
@@ -88,6 +94,8 @@ import java.util.List;
 public class WeightEvaluationQuery extends GroupByQuery {
     private static final Logger LOG = LoggerFactory.getLogger(WeightEvaluationQuery.class);
     public static final long DEFAULT_DRUID_TOP_N_THRESHOLD = 1000;
+    public static final String RAW_COUNT = "lines";
+    public static final String SKETCHES = "count";
 
     /**
      * Generate a query that calculates the even weight of the response cardinality of the given query.
@@ -102,7 +110,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Dimension>emptyList(),
                 (Filter) null,
                 (Having) null,
-                Collections.<Aggregation>singletonList(new LongSumAggregation("count", "count")),
+                Arrays.asList(new LongSumAggregation(SKETCHES, SKETCHES), new LongSumAggregation(RAW_COUNT, RAW_COUNT)),
                 Collections.<PostAggregation>emptyList(),
                 query.getIntervals(),
                 query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
@@ -188,11 +196,11 @@ public class WeightEvaluationQuery extends GroupByQuery {
         DruidAggregationQuery<?> innerQuery = query.getInnermostQuery();
 
         List<Aggregation> aggregations;
-        aggregations = Collections.singletonList(new CountAggregation("ignored"));
+        aggregations = Collections.singletonList(new CountAggregation(RAW_COUNT));
 
         // Get the inner post aggregation
         List<PostAggregation> postAggregations;
-        postAggregations = Collections.singletonList(new ConstantPostAggregation("count", weight));
+        postAggregations = Collections.singletonList(new ConstantPostAggregation(SKETCHES, weight));
 
         if (!(innerQuery.getQueryType() instanceof DefaultQueryType)) {
             return null;

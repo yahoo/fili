@@ -198,7 +198,8 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "count" : "$expectedCount"
+                "count" : "$expectedCount",
+                "lines" : 100
             }
         } ]
         """
@@ -234,7 +235,8 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "count" : "$expectedCount"
+                "count" : "$expectedCount",
+                "lines":    100
             }
         } ]
         """
