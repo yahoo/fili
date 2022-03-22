@@ -121,7 +121,7 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         new LongSumAggregation(RESULT_SKETCHES, RAW_SKETCHES),
                         new LongSumAggregation(LINE_COUNT, LINE_COUNT)
                 ),
-                Collections.<PostAggregation>singletonList(new ConstantPostAggregation(RESULT_SKETCHES, weight)),
+                Collections.<PostAggregation>singletonList(new ConstantPostAggregation(RAW_SKETCHES, weight)),
                 query.getIntervals(),
                 query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
                 query.getContext(),
