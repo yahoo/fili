@@ -20,7 +20,6 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
@@ -109,7 +108,7 @@ class ErrorDataServletSpec extends Specification {
             systemConfig.setProperty(DRUID_URL_SETTING, "http://localhost:9998/druid")
         }
 
-        topNStatus = TOP_N.isOn();
+        topNStatus = TOP_N.isOn()
         TOP_N.setOn(true)
     }
 
@@ -125,7 +124,7 @@ class ErrorDataServletSpec extends Specification {
 
     def setup() {
         // Create the test web container to test the resources
-        testWebService = jtb.druidWebService
+        testWebService = jtb.druidWebService as TestDruidWebService
     }
 
     def cleanup() {
@@ -808,7 +807,7 @@ class ErrorDataServletSpec extends Specification {
 
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check apiRequest property
         map.remove("druidQuery")
         map.remove("requestId")
@@ -830,7 +829,7 @@ class ErrorDataServletSpec extends Specification {
 
         r.getStatus() == Response.Status.NOT_ACCEPTABLE.getStatusCode()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery property
         map.remove("druidQuery")
         map.remove("requestId")
@@ -850,7 +849,7 @@ class ErrorDataServletSpec extends Specification {
                 .queryParam("dateTime","2014-09-01%2F2014-09-08")
                 .request().get()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
 
         // do not check druidQuery or description
         map.remove("druidQuery")
@@ -869,7 +868,7 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000, "lines":100}}]"""
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"resultSketches":30000, "rawSketches": 300, "lines":100}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -896,7 +895,7 @@ class ErrorDataServletSpec extends Specification {
         then: "Return 507"
         r.getStatus() == statusCode
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery or description
         map.remove("druidQuery")
         map.remove("requestId")
@@ -909,8 +908,8 @@ class ErrorDataServletSpec extends Specification {
         String reason = ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(429820, 100000)
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
-        String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820, "lines": 100}}]"""
+        String expectedJson = buildFailureJson(statusCode, statusName, reason, description)
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"resultSketches":429820, "lines": 42982, "rawSketches":10}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -937,7 +936,7 @@ class ErrorDataServletSpec extends Specification {
         then: "Return 507"
         r.getStatus() == statusCode
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery or description
         map.remove("druidQuery")
         map.remove("requestId")
@@ -977,7 +976,7 @@ class ErrorDataServletSpec extends Specification {
     def "Test undefined #servlet results in 404 result"() {
         setup:
         JerseyTestBinder testBinder = new JerseyTestBinder(servlet)
-        testWebService = jtb.druidWebService
+        testWebService = jtb.druidWebService as TestDruidWebService
 
         testWebService.jsonResponse = {"[]"}
         testWebService.weightResponse = "[]"

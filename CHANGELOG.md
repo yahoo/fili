@@ -16,6 +16,10 @@ Current
 
 ### Added:
 
+-[Total sketches and correct total lines in LogBlock](https://github.com/yahoo/fili/issues/1239)
+  * Fixed total lines calculation
+  * Added total sketch calculation
+
 -[Log weight evaluation results in LogBlock](https://github.com/yahoo/fili/issues/1239)
   * Added logging for raw lines and raw sketches to Bard single log line.
   * Added test data utilizing expanded WeightEvaluationQuery.

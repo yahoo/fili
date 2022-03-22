@@ -56,7 +56,7 @@ import java.util.List;
  *        "postAggregations": [
  *          {
  *            "type": "constant",
- *            "name": "count",
+ *            "name": "rawSketches",
  *            "value": 2
  *          }
  *        ],
@@ -73,8 +73,8 @@ import java.util.List;
  *    "dimensions": [],
  *    "aggregations": [
  *      {
- *        "name": "count",
- *        "fieldName": "count",
+ *        "name": "resultSketches",
+ *        "fieldName": "rawSketches",
  *        "type": "longSum"
  *      },
  *      {
@@ -83,7 +83,13 @@ import java.util.List;
  *        "type": "longSum"
  *      }
  *     ],
- *    "postAggregations": [],
+ *    "postAggregations": [
+ *      {
+ *        "type": "constant",
+ *        "name": "rawSketches",
+ *        "value": 2
+ *      }
+ *    ],
  *    "intervals": [
  *      "2014-09-01T00:00:00.000Z/2014-09-30T00:00:00.000Z"
  *    ],
@@ -94,8 +100,9 @@ import java.util.List;
 public class WeightEvaluationQuery extends GroupByQuery {
     private static final Logger LOG = LoggerFactory.getLogger(WeightEvaluationQuery.class);
     public static final long DEFAULT_DRUID_TOP_N_THRESHOLD = 1000;
-    public static final String RAW_COUNT = "lines";
-    public static final String SKETCHES = "count";
+    public static final String LINE_COUNT = "lines";
+    public static final String RESULT_SKETCHES = "resultSketches";
+    public static final String RAW_SKETCHES = "rawSketches";
 
     /**
      * Generate a query that calculates the even weight of the response cardinality of the given query.
@@ -110,8 +117,11 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Dimension>emptyList(),
                 (Filter) null,
                 (Having) null,
-                Arrays.asList(new LongSumAggregation(SKETCHES, SKETCHES), new LongSumAggregation(RAW_COUNT, RAW_COUNT)),
-                Collections.<PostAggregation>emptyList(),
+                Arrays.asList(
+                        new LongSumAggregation(RESULT_SKETCHES, RAW_SKETCHES),
+                        new LongSumAggregation(LINE_COUNT, LINE_COUNT)
+                ),
+                Collections.<PostAggregation>singletonList(new ConstantPostAggregation(RESULT_SKETCHES, weight)),
                 query.getIntervals(),
                 query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
                 query.getContext(),
@@ -196,11 +206,11 @@ public class WeightEvaluationQuery extends GroupByQuery {
         DruidAggregationQuery<?> innerQuery = query.getInnermostQuery();
 
         List<Aggregation> aggregations;
-        aggregations = Collections.singletonList(new CountAggregation(RAW_COUNT));
+        aggregations = Collections.singletonList(new CountAggregation(LINE_COUNT));
 
         // Get the inner post aggregation
         List<PostAggregation> postAggregations;
-        postAggregations = Collections.singletonList(new ConstantPostAggregation(SKETCHES, weight));
+        postAggregations = Collections.singletonList(new ConstantPostAggregation(RAW_SKETCHES, weight));
 
         if (!(innerQuery.getQueryType() instanceof DefaultQueryType)) {
             return null;

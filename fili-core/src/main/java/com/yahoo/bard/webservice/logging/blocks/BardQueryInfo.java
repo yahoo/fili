@@ -28,6 +28,7 @@ public class BardQueryInfo implements LogInfo {
 
     public static final String WEIGHT_CHECK_RAW_SKETCHES = "weightCheckRawSketches";
     public static final String WEIGHT_CHECK_RAW_LINES = "weightCheckRawLines";
+    public static final String WEIGHT_CHECK_TOTAL_SKETCHES = "weightCheckTotalSketches";
 
     private final String type;
     private final AtomicLong weightCheckCount = new AtomicLong();
@@ -39,6 +40,7 @@ public class BardQueryInfo implements LogInfo {
 
     private final AtomicLong rawSketches = new AtomicLong();
     private final AtomicLong rawLines = new AtomicLong();
+    private final AtomicLong totalSketches = new AtomicLong();
 
     /**
      * Constructor.
@@ -68,6 +70,7 @@ public class BardQueryInfo implements LogInfo {
         if (weightCheckCount.get() > 0) {
             counters.put(WEIGHT_CHECK_RAW_SKETCHES, rawSketches);
             counters.put(WEIGHT_CHECK_RAW_LINES, rawLines);
+            counters.put(WEIGHT_CHECK_TOTAL_SKETCHES, totalSketches);
         }
         return counters;
     }
@@ -118,6 +121,15 @@ public class BardQueryInfo implements LogInfo {
      */
     public static void accumulateWeightCheckRawSketches(long addend) {
         getBardQueryInfo().rawSketches.getAndAdd(addend);
+    }
+
+    /**
+     * Increments the count of total sketches.
+     *
+     * @param addend  Amount of raw sketches to add.
+     */
+    public static void accumulateWeightCheckTotalSketches(long addend) {
+        getBardQueryInfo().totalSketches.getAndAdd(addend);
     }
 
     /**
