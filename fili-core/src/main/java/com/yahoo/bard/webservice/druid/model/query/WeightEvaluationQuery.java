@@ -56,7 +56,7 @@ import java.util.List;
  *        "postAggregations": [
  *          {
  *            "type": "constant",
- *            "name": "count",
+ *            "name": "rawSketches",
  *            "value": 2
  *          }
  *        ],
@@ -73,8 +73,8 @@ import java.util.List;
  *    "dimensions": [],
  *    "aggregations": [
  *      {
- *        "name": "count",
- *        "fieldName": "count",
+ *        "name": "resultSketches",
+ *        "fieldName": "rawSketches",
  *        "type": "longSum"
  *      },
  *      {
@@ -83,7 +83,13 @@ import java.util.List;
  *        "type": "longSum"
  *      }
  *     ],
- *    "postAggregations": [],
+ *    "postAggregations": [
+ *      {
+ *        "type": "constant",
+ *        "name": "rawSketches",
+ *        "value": 2
+ *      }
+ *    ],
  *    "intervals": [
  *      "2014-09-01T00:00:00.000Z/2014-09-30T00:00:00.000Z"
  *    ],
@@ -94,8 +100,9 @@ import java.util.List;
 public class WeightEvaluationQuery extends GroupByQuery {
     private static final Logger LOG = LoggerFactory.getLogger(WeightEvaluationQuery.class);
     public static final long DEFAULT_DRUID_TOP_N_THRESHOLD = 1000;
-    public static final String RAW_COUNT = "lines";
-    public static final String SKETCHES = "count";
+    public static final String LINE_COUNT = "lines";
+    public static final String RESULT_SKETCHES = "resultSketches";
+    public static final String RAW_SKETCHES = "rawSketches";
 
     /**
      * Generate a query that calculates the even weight of the response cardinality of the given query.
@@ -110,8 +117,11 @@ public class WeightEvaluationQuery extends GroupByQuery {
                 Collections.<Dimension>emptyList(),
                 (Filter) null,
                 (Having) null,
-                Arrays.asList(new LongSumAggregation(SKETCHES, SKETCHES), new LongSumAggregation(RAW_COUNT, RAW_COUNT)),
-                Collections.<PostAggregation>emptyList(),
+                Arrays.asList(
+                        new LongSumAggregation(RESULT_SKETCHES, RAW_SKETCHES),
+                        new LongSumAggregation(LINE_COUNT, LINE_COUNT)
+                ),
+                Collections.<PostAggregation>singletonList(new ConstantPostAggregation(RAW_SKETCHES, weight)),
                 query.getIntervals(),
                 query.getQueryType() == DefaultQueryType.GROUP_BY ? stripColumnsFromLimitSpec(query) : null,
                 query.getContext(),
@@ -196,20 +206,21 @@ public class WeightEvaluationQuery extends GroupByQuery {
         DruidAggregationQuery<?> innerQuery = query.getInnermostQuery();
 
         List<Aggregation> aggregations;
-        aggregations = Collections.singletonList(new CountAggregation(RAW_COUNT));
+        aggregations = Collections.singletonList(new CountAggregation(LINE_COUNT));
 
         // Get the inner post aggregation
         List<PostAggregation> postAggregations;
-        postAggregations = Collections.singletonList(new ConstantPostAggregation(SKETCHES, weight));
+        postAggregations = Collections.singletonList(new ConstantPostAggregation(RAW_SKETCHES, weight));
 
         if (!(innerQuery.getQueryType() instanceof DefaultQueryType)) {
             return null;
         }
 
         DefaultQueryType innerQueryType = (DefaultQueryType) innerQuery.getQueryType();
+        GroupByQuery transformed;
         switch (innerQueryType) {
             case GROUP_BY:
-                GroupByQuery inner = new GroupByQuery(
+                transformed = new GroupByQuery(
                         innerQuery.getDataSource(),
                         innerQuery.getGranularity(),
                         innerQuery.getDimensions(),
@@ -221,10 +232,10 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         stripColumnsFromLimitSpec(innerQuery),
                         innerQuery.getVirtualColumns()
                 );
-                return new QueryDataSource(inner);
+                return new QueryDataSource(transformed);
             case TOP_N:
                 TopNQuery topNQuery = (TopNQuery) innerQuery;
-                GroupByQuery transformed = new GroupByQuery(
+                transformed = new GroupByQuery(
                         new UnionDataSource(topNQuery.getDataSource().getPhysicalTable()),
                         topNQuery.getGranularity(),
                         topNQuery.getDimensions(),
@@ -237,8 +248,23 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         topNQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(transformed);
+            case TIMESERIES:
+                TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) innerQuery;
+                transformed = new GroupByQuery(
+                        timeSeriesQuery.getDataSource(),
+                        timeSeriesQuery.getGranularity(),
+                        timeSeriesQuery.getDimensions(),
+                        timeSeriesQuery.getFilter(),
+                        (Having) null,
+                        aggregations,
+                        postAggregations,
+                        timeSeriesQuery.getIntervals(),
+                        stripColumnsFromLimitSpec(timeSeriesQuery),
+                        timeSeriesQuery.getVirtualColumns()
+                );
+                return new QueryDataSource(transformed);
             default:
-                return null;
+                return new QueryDataSource(innerQuery);
         }
     }
 
@@ -250,8 +276,14 @@ public class WeightEvaluationQuery extends GroupByQuery {
      * @return the cleaned LimitSpec if there is one
      */
     private static LimitSpec stripColumnsFromLimitSpec(DruidFactQuery query) {
-        return ((GroupByQuery) query).getLimitSpec() == null ?
-                null :
-                ((GroupByQuery) query).getLimitSpec().withColumns(new LinkedHashSet<>());
+        LimitSpec result;
+        if (query instanceof GroupByQuery) {
+            GroupByQuery groupByQuery = ((GroupByQuery) query);
+            result = ((GroupByQuery) query).getLimitSpec() == null ? null :
+                    groupByQuery.getLimitSpec().withColumns(new LinkedHashSet<>());
+        } else {
+            result = null;
+        }
+        return result;
     }
 }

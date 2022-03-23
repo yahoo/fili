@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
@@ -127,12 +128,14 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                     JsonNode row = jsonResult.get(0);
                     // If the weight limit query is empty or reports acceptable rows, run the full query
                     if (row != null) {
-                        long rowCount = row.get("event").get("count").asLong();
-                        long rowLines = row.get("event").get("lines").asLong();
-                        BardQueryInfo.accumulateWeightCheckRawSketches(rowCount);
-                        BardQueryInfo.accumulateWeightCheckRawLines(rowCount);
-                        if (rowCount > queryRowLimit) {
-                            dispatchInsufficientStorage(response, druidQuery, rowCount, queryRowLimit);
+                        long rawSketchCount = row.get("event").get(WeightEvaluationQuery.RAW_SKETCHES).asLong();
+                        long rawLines = row.get("event").get(WeightEvaluationQuery.LINE_COUNT).asLong();
+                        long sketches = row.get("event").get(WeightEvaluationQuery.RESULT_SKETCHES).asLong();
+                        BardQueryInfo.accumulateWeightCheckRawSketches(rawSketchCount);
+                        BardQueryInfo.accumulateWeightCheckRawLines(rawLines);
+                        BardQueryInfo.accumulateWeightCheckTotalSketches(rawLines * rawSketchCount);
+                        if (sketches > queryRowLimit) {
+                            dispatchInsufficientStorage(response, druidQuery, sketches, queryRowLimit);
                             return;
                         }
                     }

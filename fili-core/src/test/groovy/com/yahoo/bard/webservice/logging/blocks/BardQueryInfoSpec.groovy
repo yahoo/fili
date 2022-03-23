@@ -40,14 +40,15 @@ class BardQueryInfoSpec extends Specification {
     def "BardQueryInfo with weight check is serialized correctly"() {
         when:
         BardQueryInfo.incrementCountWeightCheck()
-        BardQueryInfo.accumulateWeightCheckRawSketches(10000L)
+        BardQueryInfo.accumulateWeightCheckRawSketches(500L)
         BardQueryInfo.accumulateWeightCheckRawLines(5000L)
+        BardQueryInfo.accumulateWeightCheckTotalSketches(5000L * 5)
 
         then:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(
                 bardQueryInfo
         ) == """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
-            """"weightCheckQueries":1,"weightCheckRawLines":5000,"weightCheckRawSketches":10000},"cacheStats":[]}"""
+            """"weightCheckQueries":1,"weightCheckRawLines":5000,"weightCheckRawSketches":500,"weightCheckTotalSketches":25000},"cacheStats":[]}"""
     }
 
     @Ignore
