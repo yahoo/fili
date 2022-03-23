@@ -279,12 +279,12 @@ class ExtensibleDataApiRequstImplSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        REQUEST.generateGranularity(name, granularityParser) == expected
+        REQUEST.generateGranularity(name, granularityParser) == expectedGrain
 
         where:
-        name    | expected
-        "day"   | DAY
-        "all"   | AllGranularity.INSTANCE
+        name    || expectedGrain
+        "day"   || DAY
+        "all"   || AllGranularity.INSTANCE
     }
 
     def "check invalid granularity creates error"() {

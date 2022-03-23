@@ -123,7 +123,7 @@ class LookbackQuerySpec extends Specification {
     }
 
     LookbackQuery defaultQuery(Map vars) {
-        vars.dataSource = vars.dataSource ?: new QueryDataSource<>(timeSeriesQuery)
+        vars.dataSource = vars.dataSource ?: new QueryDataSource(timeSeriesQuery)
         vars.postAggregations = vars.postAggregations ?: new ArrayList<PostAggregation>()
         QueryContext initial = new QueryContext([(QueryContext.Param.QUERY_ID): "dummy100"], null)
         QueryContext context = vars.context != null ?
@@ -225,7 +225,7 @@ class LookbackQuerySpec extends Specification {
     }
 
     def "check Lookback query with Groupby datasource serialization"() {
-        LookbackQuery dq1 = defaultQuery(dataSource: new QueryDataSource<>(groupByQuery))
+        LookbackQuery dq1 = defaultQuery(dataSource: new QueryDataSource(groupByQuery))
         String actualString = MAPPER.writeValueAsString(dq1)
 
         String dataSrc = """
@@ -290,7 +290,7 @@ class LookbackQuerySpec extends Specification {
     def "check that inner query with getDimensions updated when using wither"() {
         LookbackQuery result
         LookbackQuery lookbackQuery = defaultQuery(
-                dataSource: new QueryDataSource<>(groupByQuery),
+                dataSource: new QueryDataSource(groupByQuery),
                 postAggregations: postAggregation,
                 lookbackPrefixes: ["lookback_days_","lookback_weeks_"],
                 lookbackOffsets: [Period.days(-1), Period.weeks(-1)]

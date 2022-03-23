@@ -84,7 +84,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
 
         then: "Check the cache and return valid json"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 1234L, "[]")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 1234L, "[]")
 
         then: "Process the Json response"
         1 * response.processResponse(json, groupByQuery, _)
@@ -104,7 +104,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, topNQuery, response)
 
         then: "Check the cache and return valid json"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 1234L, "[]")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 1234L, "[]")
 
         then: "Process the Json response"
         1 * response.processResponse(json, topNQuery, _)
@@ -124,7 +124,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, timeseriesQuery, response)
 
         then: "Check the cache and return valid json"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 1234L, "[]")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 1234L, "[]")
 
         then: "Process the Json response"
         1 * response.processResponse(json, timeseriesQuery, _)
@@ -167,7 +167,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
 
         then: "Check the cache and return a stale entry"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 5678L, "[]")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 5678L, "[]")
 
         then: "We delegate to the next handler, wrapping in a CacheV2ResponseProcessor"
         1 * next.handleRequest(requestContext, apiRequest, groupByQuery, _ as CacheV2ResponseProcessor) >> true
@@ -216,7 +216,7 @@ class CacheV2RequestHandlerSpec extends Specification {
         boolean requestProcessed = handler.handleRequest(requestContext, apiRequest, groupByQuery, response)
 
         then: "The cache returns an invalid cache hit"
-        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String>("key1", 1234L, "...NOT VALID JSON")
+        1 * dataCache.get(_) >> new MemTupleDataCache.DataEntry<String,String>("key1", 1234L, "...NOT VALID JSON")
 
         then: "Continue the request to the next handler with a CacheV2ResponseProcessor"
         1 * next.handleRequest(requestContext, apiRequest, groupByQuery, _ as CacheV2ResponseProcessor) >> true

@@ -20,7 +20,8 @@ import spock.lang.Specification
 
 import java.util.concurrent.atomic.AtomicInteger
 
-public class SplitQueryResponseProcessorSpec extends Specification {
+@SuppressWarnings("GroovyAccessibility")
+class SplitQueryResponseProcessorSpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
 
     SplitQueryResponseProcessor sqrp
@@ -30,7 +31,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
     GroupByQuery groupByQuery1 = Mock(GroupByQuery)
     GroupByQuery groupByQuery2 = Mock(GroupByQuery)
 
-    Map<Interval, Integer> expectedIntervals = new LinkedHashMap<>()
+    Map<Interval, AtomicInteger> expectedIntervals = new LinkedHashMap<>()
     List<Pair<JsonNode, LoggingContext>> completedIntervals = new ArrayList<>()
 
     String json1 = """ [ {"cow": 1}, {"dog": 2} ]"""
@@ -118,7 +119,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         Pair<JsonNode, LoggingContext> result = sqrp.mergeResponses(completedIntervals)
 
         then:
-        result.getKey().equals(nodeExpected)
+        result.getKey() == nodeExpected
     }
 
     def "Test process response with good Data"() {
@@ -158,8 +159,8 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         sqrp.completedIntervals.size() == 2
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
-        1 * nextFail.invoke() { it -> captureT = it }
-        captureT.getMessage() == expectedError
+        1 * nextFail.invoke(_) >> { it -> captureT = it }
+        captureT.getMessage().contains(expectedError)
 
         when:
         sqrp.processResponse(node1, groupByQuery2, null)
@@ -185,7 +186,7 @@ public class SplitQueryResponseProcessorSpec extends Specification {
         sqrp.completedIntervals.size() == 2
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
-        1 * nextFail.invoke() { it -> captureT = it }
-        captureT.getMessage() == expectedError
+        1 * nextFail.invoke(_) >> { it -> captureT = it }
+        captureT.getMessage().contains(expectedError)
     }
 }

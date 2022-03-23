@@ -54,6 +54,9 @@ Current
    * Added `nextDay`, `nextWeek`, `nextMonth`, `nextQuarter`, `nextYear`
 
 ### Changed:
+
+- [Bump to Groovy 2.5](https://github.com/yahoo/fili/issues/1245)
+
 - [Make the default search results something more reasonable for a UI](https://github.com/yahoo/fili/issues/1223)
   * Gave the DimensionSearchServlet it's own default pagination that can be controlled via config, but defaulted to 50.
 
