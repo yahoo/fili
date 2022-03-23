@@ -217,9 +217,10 @@ public class WeightEvaluationQuery extends GroupByQuery {
         }
 
         DefaultQueryType innerQueryType = (DefaultQueryType) innerQuery.getQueryType();
+        GroupByQuery transformed;
         switch (innerQueryType) {
             case GROUP_BY:
-                GroupByQuery inner = new GroupByQuery(
+                transformed = new GroupByQuery(
                         innerQuery.getDataSource(),
                         innerQuery.getGranularity(),
                         innerQuery.getDimensions(),
@@ -231,10 +232,10 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         stripColumnsFromLimitSpec(innerQuery),
                         innerQuery.getVirtualColumns()
                 );
-                return new QueryDataSource(inner);
+                return new QueryDataSource(transformed);
             case TOP_N:
                 TopNQuery topNQuery = (TopNQuery) innerQuery;
-                GroupByQuery transformed = new GroupByQuery(
+                transformed = new GroupByQuery(
                         new UnionDataSource(topNQuery.getDataSource().getPhysicalTable()),
                         topNQuery.getGranularity(),
                         topNQuery.getDimensions(),
@@ -247,8 +248,23 @@ public class WeightEvaluationQuery extends GroupByQuery {
                         topNQuery.getVirtualColumns()
                 );
                 return new QueryDataSource(transformed);
+            case TIMESERIES:
+                TimeSeriesQuery timeSeriesQuery = (TimeSeriesQuery) innerQuery;
+                transformed = new GroupByQuery(
+                        timeSeriesQuery.getDataSource(),
+                        timeSeriesQuery.getGranularity(),
+                        timeSeriesQuery.getDimensions(),
+                        timeSeriesQuery.getFilter(),
+                        (Having) null,
+                        aggregations,
+                        postAggregations,
+                        timeSeriesQuery.getIntervals(),
+                        stripColumnsFromLimitSpec(timeSeriesQuery),
+                        timeSeriesQuery.getVirtualColumns()
+                );
+                return new QueryDataSource(transformed);
             default:
-                return null;
+                return new QueryDataSource(innerQuery);
         }
     }
 
@@ -260,8 +276,14 @@ public class WeightEvaluationQuery extends GroupByQuery {
      * @return the cleaned LimitSpec if there is one
      */
     private static LimitSpec stripColumnsFromLimitSpec(DruidFactQuery query) {
-        return ((GroupByQuery) query).getLimitSpec() == null ?
-                null :
-                ((GroupByQuery) query).getLimitSpec().withColumns(new LinkedHashSet<>());
+        LimitSpec result;
+        if (query instanceof GroupByQuery) {
+            GroupByQuery groupByQuery = ((GroupByQuery) query);
+            result = ((GroupByQuery) query).getLimitSpec() == null ? null :
+                    groupByQuery.getLimitSpec().withColumns(new LinkedHashSet<>());
+        } else {
+            result = null;
+        }
+        return result;
     }
 }
