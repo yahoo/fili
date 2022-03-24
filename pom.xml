@@ -246,25 +246,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <version>${version.groovy}</version>
-                <type>pom</type>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-test-junit5</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-testng</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-
             <dependency><!-- Mandatory dependency for using Spock -->
                 <groupId>org.spockframework</groupId>
                 <artifactId>spock-core</artifactId>
@@ -597,12 +578,6 @@
         </dependency>
 
         <!-- Groovy -->
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
 
         <!-- Lucene -->
         <dependency>
@@ -769,11 +744,12 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <!-- disabled below -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>codenarc-maven-plugin</artifactId>
                     <version>0.22-1</version>
                     <configuration>
-                        <groovyVersion>${version.groovy}</groovyVersion>
+                        <groovyVersion>{version.groovy}</groovyVersion>
                         <maxPriority1Violations>0</maxPriority1Violations>
                         <maxPriority2Violations>0</maxPriority2Violations>
                         <maxPriority3Violations>0</maxPriority3Violations>
@@ -1046,10 +1022,13 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>codenarc-maven-plugin</artifactId>
-            </plugin>
+            <!-- Codenarc plugin is not being maintained and is not compatible with later versions of groovy 2.5
+                because the groovy-all jar became a pom.  There is a fix involving the codenarc ant task
+                which could be explored -->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>codenarc-maven-plugin</artifactId>-->
+<!--            </plugin>-->
         </plugins>
     </reporting>
 

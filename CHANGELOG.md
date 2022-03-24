@@ -56,6 +56,8 @@ Current
 ### Changed:
 
 - [Bump to Groovy 2.5](https://github.com/yahoo/fili/issues/1245)
+  * Lost the use of the codenarc-maven-plugin because it's not compatible with groovy 2.5 and isn't supported.
+  * Possible solution: https://stackoverflow.com/questions/57576796/how-to-use-codenarc-maven-plugin-with-groovy-2-5
 
 - [Make the default search results something more reasonable for a UI](https://github.com/yahoo/fili/issues/1223)
   * Gave the DimensionSearchServlet it's own default pagination that can be controlled via config, but defaulted to 50.
