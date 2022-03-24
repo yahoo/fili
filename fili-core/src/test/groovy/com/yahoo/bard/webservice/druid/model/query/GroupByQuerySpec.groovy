@@ -539,8 +539,8 @@ class GroupByQuerySpec extends Specification {
         and: "A nested query"
         TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
-        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
-        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)
+        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource(inner), intervals: startingIntervals)
+        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource(middle), intervals: startingIntervals)
 
         when: "We set all intervals"
         GroupByQuery converted = outer.withAllIntervals(endingIntervals)
@@ -567,9 +567,8 @@ class GroupByQuerySpec extends Specification {
 
     def "Default context respects configured timeouts"() {
         setup:
-        SystemConfig config = SystemConfigProvider.getInstance();
-        String defaultTimeoutKey = config.getPackageVariableName("default_query_timeout");
-        Integer defaultTimeout = config.getIntProperty(defaultTimeoutKey, -1);
+        SystemConfig config = SystemConfigProvider.getInstance()
+        String defaultTimeoutKey = config.getPackageVariableName("default_query_timeout")
 
         config.setProperty(defaultTimeoutKey, "123")
 
