@@ -246,6 +246,25 @@
                 <scope>test</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${version.groovy}</version>
+                <type>pom</type>
+                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-test-junit5</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.groovy</groupId>
+                        <artifactId>groovy-testng</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
             <dependency><!-- Mandatory dependency for using Spock -->
                 <groupId>org.spockframework</groupId>
                 <artifactId>spock-core</artifactId>
@@ -581,19 +600,8 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>${version.groovy}</version>
             <type>pom</type>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-test-junit5</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.groovy</groupId>
-                    <artifactId>groovy-testng</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Lucene -->
