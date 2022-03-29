@@ -128,14 +128,21 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                     JsonNode row = jsonResult.get(0);
                     // If the weight limit query is empty or reports acceptable rows, run the full query
                     if (row != null) {
-                        long rawSketchCount = row.get("event").get(WeightEvaluationQuery.RAW_SKETCHES).asLong();
-                        long rawLines = row.get("event").get(WeightEvaluationQuery.LINE_COUNT).asLong();
-                        long sketches = row.get("event").get(WeightEvaluationQuery.RESULT_SKETCHES).asLong();
-                        BardQueryInfo.accumulateWeightCheckRawSketches(rawSketchCount);
-                        BardQueryInfo.accumulateWeightCheckRawLines(rawLines);
-                        BardQueryInfo.accumulateWeightCheckTotalSketches(rawLines * rawSketchCount);
-                        if (sketches > queryRowLimit) {
-                            dispatchInsufficientStorage(response, druidQuery, sketches, queryRowLimit);
+                        long linesScanned = row.get("event").get(WeightEvaluationQuery.SCANNED_LINES).asLong();
+                        BardQueryInfo.accumulateLinesScanned(linesScanned);
+
+                        long resultSketchCount = row.get("event").get(WeightEvaluationQuery.OUTPUT_SKETCHES).asLong();
+                        BardQueryInfo.accumulateSketchesOutput(resultSketchCount);
+
+                        long linesOutput = row.get("event").get(WeightEvaluationQuery.OUTPUT_LINE_COUNT).asLong();
+                        BardQueryInfo.accumulateLinesOutput(linesOutput);
+
+                        int sketchesPerLine = row.get("event").get(WeightEvaluationQuery.SKETCHES_PER_ROW).asInt();
+
+                        BardQueryInfo.accumulateSketchesScanned(sketchesPerLine * linesScanned);
+
+                        if (resultSketchCount > queryRowLimit) {
+                            dispatchInsufficientStorage(response, druidQuery, resultSketchCount, queryRowLimit);
                             return;
                         }
                     }

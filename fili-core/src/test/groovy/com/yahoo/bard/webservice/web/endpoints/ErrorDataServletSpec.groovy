@@ -32,6 +32,7 @@ import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
+import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -868,7 +869,12 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"resultSketches":30000, "rawSketches": 300, "lines":100}}]"""
+        testWebService.
+                weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z",
+                "event":{"${WeightEvaluationQuery.OUTPUT_SKETCHES}":30000,
+                "${WeightEvaluationQuery.SCANNED_LINES}": 1000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}": 300,
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}":100}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -909,7 +915,12 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson(statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"resultSketches":429820, "lines": 42982, "rawSketches":10}}]"""
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z",
+                "event":{"${WeightEvaluationQuery.OUTPUT_SKETCHES}":429820,
+                "${WeightEvaluationQuery.SCANNED_LINES}": 1000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}": 10,
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}":42982}}]"""
+
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
