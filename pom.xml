@@ -112,7 +112,7 @@
 
         <version.spring>5.3.18</version.spring>
         <version.groovy>2.5.15</version.groovy>
-        <version.jackson>2.10.5</version.jackson>
+        <version.jackson>2.12.6</version.jackson>
         <version.jackson-databind>2.12.6.1</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
