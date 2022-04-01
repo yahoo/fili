@@ -198,9 +198,10 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "resultSketches" : "$expectedCount",
-                "lines" : 100,
-                "rawSketches" : 100
+                "${WeightEvaluationQuery.OUTPUT_SKETCHES}" : "$expectedCount",
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}" : 100,
+                "${WeightEvaluationQuery.SCANNED_LINES}" : 10000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}" : 100
             }
         } ]
         """
@@ -236,9 +237,10 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "resultSketches" : "$expectedCount",
-                "rawSketches":    10,
-                "lines":    100
+                "${WeightEvaluationQuery.OUTPUT_SKETCHES}" : "$expectedCount",
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}" : 100,
+                "${WeightEvaluationQuery.SCANNED_LINES}" : 10000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}" : 10
             }
         } ]
         """

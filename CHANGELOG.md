@@ -16,6 +16,8 @@ Current
 
 ### Added:
 
+-[Cleaner weight check fields and names](https://github.com/yahoo/fili/issues/1239)
+
 -[Total sketches and correct total lines in LogBlock](https://github.com/yahoo/fili/issues/1239)
   * Fixed total lines calculation
   * Added total sketch calculation

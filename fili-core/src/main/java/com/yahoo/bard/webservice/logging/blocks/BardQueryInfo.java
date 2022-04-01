@@ -26,9 +26,10 @@ public class BardQueryInfo implements LogInfo {
     public static final String FACT_PUT_ERRORS = "factCachePutErrors";
     public static final String FACT_PUT_TIMEOUTS = "factCachePutTimeouts";
 
-    public static final String WEIGHT_CHECK_RAW_SKETCHES = "weightCheckRawSketches";
-    public static final String WEIGHT_CHECK_RAW_LINES = "weightCheckRawLines";
-    public static final String WEIGHT_CHECK_TOTAL_SKETCHES = "weightCheckTotalSketches";
+    public static final String WEIGHT_CHECK_LINES_OUTPUT = "weightCheckLinesOutput";
+    public static final String WEIGHT_CHECK_SKETCHES_OUTPUT = "weightCheckSketchesOutput";
+    public static final String WEIGHT_CHECK_SCANNED_LINES = "weightCheckLinesScanned";
+    public static final String WEIGHT_CHECK_SKETCHES_SCANNED = "weightCheckSketchesScanned";
 
     private final String type;
     private final AtomicLong weightCheckCount = new AtomicLong();
@@ -38,9 +39,10 @@ public class BardQueryInfo implements LogInfo {
     private final AtomicLong factPutTimeoutsCount = new AtomicLong();
     private final Map<String, BardCacheInfo> cacheStatsMap = new TreeMap<>();
 
-    private final AtomicLong rawSketches = new AtomicLong();
-    private final AtomicLong rawLines = new AtomicLong();
-    private final AtomicLong totalSketches = new AtomicLong();
+    private final AtomicLong sketchesScanned = new AtomicLong();
+    private final AtomicLong linesScanned = new AtomicLong();
+    private final AtomicLong sketchesOutput = new AtomicLong();
+    private final AtomicLong linesOutput = new AtomicLong();
 
     /**
      * Constructor.
@@ -68,9 +70,10 @@ public class BardQueryInfo implements LogInfo {
                 AbstractMap.SimpleImmutableEntry::getValue
         )));
         if (weightCheckCount.get() > 0) {
-            counters.put(WEIGHT_CHECK_RAW_SKETCHES, rawSketches);
-            counters.put(WEIGHT_CHECK_RAW_LINES, rawLines);
-            counters.put(WEIGHT_CHECK_TOTAL_SKETCHES, totalSketches);
+            counters.put(WEIGHT_CHECK_LINES_OUTPUT, linesOutput);
+            counters.put(WEIGHT_CHECK_SKETCHES_OUTPUT, sketchesOutput);
+            counters.put(WEIGHT_CHECK_SCANNED_LINES, linesScanned);
+            counters.put(WEIGHT_CHECK_SKETCHES_SCANNED, sketchesScanned);
         }
         return counters;
     }
@@ -115,30 +118,38 @@ public class BardQueryInfo implements LogInfo {
     }
 
     /**
-     * Increments the count of raw sketches.
+     * Increments the count of scanned sketches.
      *
      * @param addend  Amount of raw sketches to add.
      */
-    public static void accumulateWeightCheckRawSketches(long addend) {
-        getBardQueryInfo().rawSketches.getAndAdd(addend);
+    public static void accumulateSketchesScanned(long addend) {
+        getBardQueryInfo().sketchesScanned.getAndAdd(addend);
     }
 
     /**
-     * Increments the count of total sketches.
+     * Increments the count of scanned lines.
      *
      * @param addend  Amount of raw sketches to add.
      */
-    public static void accumulateWeightCheckTotalSketches(long addend) {
-        getBardQueryInfo().totalSketches.getAndAdd(addend);
+    public static void accumulateLinesScanned(long addend) {
+        getBardQueryInfo().linesScanned.getAndAdd(addend);
+    }
+    /**
+     * Increments the count of output sketches.
+     *
+     * @param addend  Amount of raw sketches to add.
+     */
+    public static void accumulateSketchesOutput(long addend) {
+        getBardQueryInfo().sketchesOutput.getAndAdd(addend);
     }
 
     /**
-     * Increments the count of raw lines aggregated over.
+     * Increments the count of output lines.
      *
      * @param addend  Amount of raw sketches to add.
      */
-    public static void accumulateWeightCheckRawLines(long addend) {
-        getBardQueryInfo().rawLines.getAndAdd(addend);
+    public static void accumulateLinesOutput(long addend) {
+        getBardQueryInfo().linesOutput.getAndAdd(addend);
     }
 
     /**
