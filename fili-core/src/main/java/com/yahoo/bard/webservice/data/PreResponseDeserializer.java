@@ -11,6 +11,7 @@ import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.RESULTS
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_DIM_COLUMNS;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_GRANULARITY;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_KEY;
+import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_METRIC_COLUMNS;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_METRIC_COLUMNS_TYPE;
 import static com.yahoo.bard.webservice.data.ResultSetSerializationProxy.SCHEMA_TIMEZONE;
 
@@ -35,6 +36,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Streams;
 
 import org.joda.time.DateTime;
@@ -43,11 +45,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -238,7 +242,34 @@ public class PreResponseDeserializer {
                         .map(entry -> new MetricColumnWithValueType(entry.getKey(), entry.getValue().asText()))
         ).collect(Collectors.toCollection(LinkedHashSet::new));
 
-        return new ResultSetSchema(generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone), columns);
+        List<String> existingKeys = Arrays.asList(
+                SCHEMA_DIM_COLUMNS,
+                SCHEMA_METRIC_COLUMNS,
+                SCHEMA_METRIC_COLUMNS_TYPE,
+                SCHEMA_GRANULARITY,
+                SCHEMA_TIMEZONE
+        );
+
+        Map<String, JsonNode> kitchenSink = Streams.stream(schemaNode.fields())
+                .filter(it -> !existingKeys.contains(it.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, List<String>> additionalProperties = new TreeMap<>();
+        for (String key: kitchenSink.keySet()) {
+            System.out.println("Testing");
+            assert kitchenSink.get(key) instanceof ArrayNode;
+            ArrayNode array = (ArrayNode) kitchenSink.get(key);
+            List<String> values = Streams.stream(array.elements())
+                    .map(JsonNode::asText)
+                    .collect(Collectors.toList());
+            additionalProperties.put(key, values);
+        }
+
+        return new ExtensibleResultSetSchema(
+                generateGranularity(schemaNode.get(SCHEMA_GRANULARITY).asText(), timezone),
+                columns,
+                additionalProperties
+        );
     }
 
     /**

@@ -15,6 +15,8 @@ Current
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
 ### Added:
+-[ResultSet can carry messages to the response](https://github.com/yahoo/fili/issues/1250)
+  * Added `ExtensibleResultSetSchema` and integrated it into `ResultSetSerializationProxy` and `ResultSetResponseProcessor`
 
 -[Cleaner weight check fields and names](https://github.com/yahoo/fili/issues/1239)
 
