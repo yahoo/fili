@@ -116,9 +116,8 @@ public class ExtensibleResultSetSchema extends ResultSetSchema {
     public boolean equals(final Object o) {
         if (this == o) { return true; }
         if (!(o instanceof ExtensibleResultSetSchema)) { return false; }
-        if (!super.equals(o)) { return false; }
         final ExtensibleResultSetSchema that = (ExtensibleResultSetSchema) o;
-        return Objects.equals(getAdditionalProperties(), that.getAdditionalProperties());
+        return super.equals(o) && Objects.equals(getAdditionalProperties(), that.getAdditionalProperties());
     }
 
     @Override
