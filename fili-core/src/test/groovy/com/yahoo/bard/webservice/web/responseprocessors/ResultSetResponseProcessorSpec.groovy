@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.druid.model.DefaultQueryType.GROUP_BY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.data.DruidResponseParser
+import com.yahoo.bard.webservice.data.ExtensibleResultSetSchema
 import com.yahoo.bard.webservice.data.HttpResponseChannel
 import com.yahoo.bard.webservice.data.HttpResponseMaker
 import com.yahoo.bard.webservice.data.ResultSet
@@ -356,7 +357,7 @@ class ResultSetResponseProcessorSpec extends Specification {
         ResultSet actual = processor.buildResultSet(MAPPER.readTree("[]"), query, dateTimeZone)
 
         expect:
-        actual.schema == new ResultSetSchema(
+        actual.schema == new ExtensibleResultSetSchema(
                 granularity,
                 [new DimensionColumn(dim), new MetricColumn(metric1Name), new MetricColumn(metric2Name)]
         )

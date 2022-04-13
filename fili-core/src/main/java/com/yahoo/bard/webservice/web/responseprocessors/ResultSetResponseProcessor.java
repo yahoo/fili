@@ -10,6 +10,7 @@ import static com.yahoo.bard.webservice.web.responseprocessors.ResponseContextKe
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
 import com.yahoo.bard.webservice.async.ResponseException;
 import com.yahoo.bard.webservice.data.DruidResponseParser;
+import com.yahoo.bard.webservice.data.ExtensibleResultSetSchema;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
@@ -146,7 +147,7 @@ public class ResultSetResponseProcessor extends MappingResponseProcessor impleme
         LinkedHashSet<Column> columns = druidResponseParser.buildSchemaColumns(druidQuery)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        ResultSetSchema resultSetSchema = new ResultSetSchema(granularity, columns);
+        ResultSetSchema resultSetSchema = new ExtensibleResultSetSchema(granularity, columns);
 
         return druidResponseParser.parse(json, resultSetSchema, druidQuery.getQueryType(), dateTimeZone);
     }

@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -98,7 +99,7 @@ public class ResultSetSerializationProxy {
      * @return Schema components.
      */
     private Map<String, Object> getSchemaComponents(ResultSetSchema schema) {
-        Map<String, Object> schemaComponents = new HashMap<>();
+        Map<String, Object> schemaComponents = new TreeMap<>();
 
         schemaComponents.put(SCHEMA_TIMEZONE, DateTimeUtils.getTimeZone(schema.getGranularity()).getID());
         schemaComponents.put(SCHEMA_GRANULARITY, schema.getGranularity().getName());
@@ -113,7 +114,9 @@ public class ResultSetSerializationProxy {
                 SCHEMA_METRIC_COLUMNS,
                 getMetricColumnNames(schema)
         );
-
+        if (schema instanceof ExtensibleResultSetSchema) {
+            schemaComponents.putAll(((ExtensibleResultSetSchema) schema).getAdditionalProperties());
+        }
         return schemaComponents;
     }
 
