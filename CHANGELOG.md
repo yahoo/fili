@@ -10,7 +10,7 @@ Current
 
 ### Fixed:
 
-- [Incompatbile jakson-joda and joda resulted in runtime error on deploy]()
+- [Incompatbile jakson-joda and joda resulted in runtime error on deploy](https://github.com/yahoo/fili/pull/1252)
    * removed explicit joda depdendency to allow for implicit versioning from jackson.
 
 - [New Dependent metric equality was too brittle](https://github.com/yahoo/fili/issues/1236)
