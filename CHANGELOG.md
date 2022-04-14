@@ -9,6 +9,10 @@ Current
 -------
 
 ### Fixed:
+
+- [Incompatbile jakson-joda and joda resulted in runtime error on deploy]()
+   * removed explicit joda depdendency to allow for implicit versioning from jackson.
+
 - [New Dependent metric equality was too brittle](https://github.com/yahoo/fili/issues/1236)
    * Use dependent metric name equality instead of complete dependent metric equality.
    * Use getter to pull both this and that dependent metrics to correctly utilize dynamic method dispatch.
