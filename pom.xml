@@ -466,13 +466,6 @@
                 <version>${version.jackson}</version>
             </dependency>
 
-            <!-- JodaTime -->
-            <dependency>
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>2.9.6</version>
-            </dependency>
-
             <!-- HTTP Client -->
             <dependency>
                 <groupId>org.asynchttpclient</groupId>

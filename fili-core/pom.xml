@@ -136,13 +136,6 @@
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
 
-        <!-- JodaTime -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-
-
         <!-- https://mvnrepository.com/artifact/org.dmfs/lib-recur -->
         <dependency>
             <groupId>org.dmfs</groupId>
