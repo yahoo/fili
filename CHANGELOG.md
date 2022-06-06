@@ -19,6 +19,9 @@ Current
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
 ### Added:
+-[Support user configured messages for authorization failures](https://github.com/yahoo/fili/issues/1255)
+  * Changed `AuthorizationStatus` from an enum to a class collecting constants.  Make the description for failures be user configurable.
+
 -[ResultSet can carry messages to the response](https://github.com/yahoo/fili/issues/1250)
   * Added `ExtensibleResultSetSchema` and integrated it into `ResultSetSerializationProxy` and `ResultSetResponseProcessor`
 
