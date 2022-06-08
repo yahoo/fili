@@ -7,12 +7,12 @@ import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidTableName
 import com.yahoo.bard.webservice.druid.model.metadata.NumberedShardSpec
 
+import org.apache.druid.timeline.DataSegment
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 import org.joda.time.format.DateTimeFormat
 
-import io.druid.timeline.DataSegment
 import spock.lang.Shared
 import spock.lang.Specification
 

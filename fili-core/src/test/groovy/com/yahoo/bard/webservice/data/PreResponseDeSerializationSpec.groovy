@@ -34,7 +34,7 @@ class PreResponseDeSerializationSpec extends Specification {
         ObjectMappersSuite MapperSuite = new ObjectMappersSuite()
         typePreservingMapper = MapperSuite.getMapper()
         typePreservingMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+                .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL)
         preResponseDeSerializer = new PreResponseDeserializer(
                 resources.dimensionDictionary,
                 objectMappers.mapper,
@@ -80,9 +80,11 @@ class PreResponseDeSerializationSpec extends Specification {
         ResultSetSchema zonedSchema = preResponseDeSerializer.getResultSetSchema(
                 objectMappers.getMapper().readTree(getSerializedZonedSchema())
         )
+        ExtensibleResultSetSchema e = new ExtensibleResultSetSchema(resources.schema)
+        e = e.withAppendProperty("messages", "testMessage")
 
         expect:
-        GroovyTestUtils.compareObjects(resources.schema,  zonedSchema)
+        GroovyTestUtils.compareObjects(e,  zonedSchema)
     }
 
     def "Dimension's extraction from serialized Dimension rows validation"() {
@@ -167,6 +169,7 @@ class PreResponseDeSerializationSpec extends Specification {
                  "retentionPageViews": "java.math.BigDecimal",
                  "simplePageViews": "java.math.BigDecimal"
               },
+              "messages": ["testMessage"],
               "timeZone": "UTC"
         }
         """

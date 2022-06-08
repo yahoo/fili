@@ -143,11 +143,11 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
 
     def "getTableToMetricsMap groups #metrics to #expected"() {
         given:
-        Set<TableName> dependantTables = tables.collectEntries{
+        Set<TableName> dependentTables = tables.collectEntries{
             [TableName.of(it)]
         }.keySet().toSet()
 
-        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependantTables, [dimensionConfig] as Set)
+        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependentTables, [dimensionConfig] as Set)
 
         Map<ConfigPhysicalTable, Set<String>> expectedTableToMetricsMap = expected.collectEntries {
             [physicalTableDictionary.get(it.key), new HashSet<String>(it.value)]
@@ -187,7 +187,7 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
 
     def "build produces expected metric union"() {
         given:
-        Set<TableName> dependantTables = tables.collectEntries{
+        Set<TableName> dependentTables = tables.collectEntries{
             [TableName.of(it)]
         }.keySet().toSet()
 
@@ -206,7 +206,7 @@ class MetricUnionCompositeTableDefinitionSpec extends Specification {
                 logicalToPhysicalNames,
                 MetricUnionAvailability.build([table1, table2] as Set, availabilitiesToMetricNames)
         )
-        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependantTables, [dimensionConfig] as Set)
+        MetricUnionCompositeTableDefinition metricUnionCompositeTableDefinition = new MetricUnionCompositeTableDefinition(name, timeGrain, [apiMetricName1, apiMetricName2] as Set, dependentTables, [dimensionConfig] as Set)
 
         when:
         ConfigPhysicalTable physicalTable = metricUnionCompositeTableDefinition.build(resourceDictionaries,metadataService)

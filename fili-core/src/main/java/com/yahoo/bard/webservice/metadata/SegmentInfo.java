@@ -4,11 +4,12 @@ package com.yahoo.bard.webservice.metadata;
 
 import com.yahoo.bard.webservice.druid.model.metadata.NumberedShardSpec;
 
+import org.apache.druid.timeline.SegmentId;
 import org.joda.time.Interval;
 
-import io.druid.timeline.DataSegment;
-import io.druid.timeline.partition.NoneShardSpec;
-import io.druid.timeline.partition.ShardSpec;
+import org.apache.druid.timeline.DataSegment;
+import org.apache.druid.timeline.partition.NoneShardSpec;
+import org.apache.druid.timeline.partition.ShardSpec;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class SegmentInfo {
     private final String version;
     private final NumberedShardSpec shardSpec;
     private final long size;
-    private final String identifier;
+    private final SegmentId identifier;
 
     /**
      * Given a druid data segment constructs an object to hold the information of this partition.
@@ -44,7 +45,7 @@ public class SegmentInfo {
                 (NumberedShardSpec) spec :
                 new NumberedShardSpec((NoneShardSpec) spec);
         this.size = segment.getSize();
-        this.identifier = segment.getIdentifier();
+        this.identifier = segment.getId();
     }
 
     /**
@@ -128,7 +129,7 @@ public class SegmentInfo {
      * @return The identifier.
      */
     public String getIdentifier() {
-        return identifier;
+        return identifier.toString();
     }
 
     @Override

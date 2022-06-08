@@ -10,6 +10,7 @@ import org.joda.time.Interval;
 import org.joda.time.ReadablePeriod;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,6 +51,16 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
     public SimplifiedIntervalList(Collection<Interval> intervals) {
         super(simplifyIntervals(intervals));
     }
+
+    /**
+     * Simplify then build a list.
+     *
+     * @param intervalLists  An array of SimplifiedIntervalLists
+     */
+    public SimplifiedIntervalList(SimplifiedIntervalList... intervalLists) {
+        super(simplifyIntervals(Arrays.stream(intervalLists).flatMap(List::stream).collect(Collectors.toList())));
+    }
+
 
     /**
      * Method to convert SimplifiedIntervalList as regular list to address the deserialization issues.
@@ -303,6 +314,18 @@ public class SimplifiedIntervalList extends LinkedList<Interval> {
             }
         }
         return new SimplifiedIntervalList(collected);
+    }
+
+    /**
+     * Test interval list for being subintervals.
+     *
+     * @param that the list for comparison.
+     *
+     * @return True if the intervals of the tested list are all subintervals of intervals of this list.
+     */
+    public boolean contains(SimplifiedIntervalList that) {
+        SimplifiedIntervalList intersect = intersect(that);
+        return intersect.equals(this);
     }
 
     /**

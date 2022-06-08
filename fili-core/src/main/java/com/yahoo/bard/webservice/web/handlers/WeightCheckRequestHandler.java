@@ -8,13 +8,13 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
+import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor;
 import com.yahoo.bard.webservice.web.responseprocessors.WeightCheckResponseProcessor;
 import com.yahoo.bard.webservice.web.util.QueryWeightUtil;
-import com.yahoo.bard.webservice.web.ErrorMessageFormat;
-
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -128,10 +128,21 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                     JsonNode row = jsonResult.get(0);
                     // If the weight limit query is empty or reports acceptable rows, run the full query
                     if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
+                        long linesScanned = row.get("event").get(WeightEvaluationQuery.SCANNED_LINES).asLong();
+                        BardQueryInfo.accumulateLinesScanned(linesScanned);
 
-                        if (rowCount > queryRowLimit) {
-                            dispatchInsufficientStorage(response, druidQuery, rowCount, queryRowLimit);
+                        long resultSketchCount = row.get("event").get(WeightEvaluationQuery.OUTPUT_SKETCHES).asLong();
+                        BardQueryInfo.accumulateSketchesOutput(resultSketchCount);
+
+                        long linesOutput = row.get("event").get(WeightEvaluationQuery.OUTPUT_LINE_COUNT).asLong();
+                        BardQueryInfo.accumulateLinesOutput(linesOutput);
+
+                        int sketchesPerLine = row.get("event").get(WeightEvaluationQuery.SKETCHES_PER_ROW).asInt();
+
+                        BardQueryInfo.accumulateSketchesScanned(sketchesPerLine * linesScanned);
+
+                        if (resultSketchCount > queryRowLimit) {
+                            dispatchInsufficientStorage(response, druidQuery, resultSketchCount, queryRowLimit);
                             return;
                         }
                     }
@@ -156,7 +167,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
     protected static void dispatchInsufficientStorage(
             ResponseProcessor response,
             DruidAggregationQuery<?> druidQuery,
-            int rowCount,
+            long rowCount,
             long queryRowLimit
     ) {
         String reason = String.format(

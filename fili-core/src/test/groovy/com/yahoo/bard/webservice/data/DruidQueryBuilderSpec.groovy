@@ -343,11 +343,11 @@ class DruidQueryBuilderSpec extends Specification {
         initDefault(apiRequest)
 
         when:
-        def DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
+        DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllGroupingDimensions()
+        1 * apiRequest.getAllGroupingDimensions() >> ([] as Set)
     }
 
     @Unroll
@@ -391,7 +391,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.getQueryType() == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllGroupingDimensions()
+        1 * apiRequest.getAllGroupingDimensions() >> ([] as Set)
     }
 
     def "Test top level buildQuery with single dimension/multiple sorts top N query"() {
@@ -410,7 +410,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllGroupingDimensions()
+        1 * apiRequest.getAllGroupingDimensions() >> ([] as Set)
     }
 
     def "Test top level buildQuery with multiple dimension/multiple sorts top N query"() {
@@ -430,7 +430,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         then:
         dq?.queryType == DefaultQueryType.GROUP_BY
-        1 * apiRequest.getAllGroupingDimensions()
+        1 * apiRequest.getAllGroupingDimensions() >> ([] as Set)
     }
 
     @Unroll

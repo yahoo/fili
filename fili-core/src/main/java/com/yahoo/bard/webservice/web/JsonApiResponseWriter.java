@@ -144,6 +144,7 @@ public class JsonApiResponseWriter extends JsonAndJsonApiResponseWriter {
             }
 
             super.writeMetaObject(
+                    request,
                     generator,
                     responseData.getMissingIntervals(),
                     responseData.getVolatileIntervals(),

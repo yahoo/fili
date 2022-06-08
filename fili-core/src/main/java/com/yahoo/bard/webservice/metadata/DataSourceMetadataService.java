@@ -12,7 +12,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.druid.timeline.DataSegment;
+import org.apache.druid.timeline.DataSegment;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;

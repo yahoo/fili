@@ -109,6 +109,10 @@ class DimensionsServletComponentSpec extends Specification {
                                             }, {
                                                 "description": "Dimension Description",
                                                 "name": "desc"
+                                            }, {
+                                                "description": "actual description",
+                                                "longName": "aliasedName",
+                                                "name": "aliased"
                                             }
                                         ],
                                         "longName": "other",

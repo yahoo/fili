@@ -49,6 +49,10 @@ public class RequestContext {
         return containerRequestContext.getSecurityContext();
     }
 
+    public ContainerRequestContext getContainerRequestContext() {
+        return containerRequestContext;
+    }
+
     /**
      * Get a container property from the RequestContext.
      *

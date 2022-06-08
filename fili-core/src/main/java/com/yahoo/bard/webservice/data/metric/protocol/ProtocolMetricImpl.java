@@ -7,9 +7,14 @@ import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
+import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,13 +25,18 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
 
     protected final ProtocolSupport protocolSupport;
 
+    protected List<LogicalMetric> dependentMetrics;
+
     /**
      * Constructor.
      *
      * @param logicalMetricInfo  The metadata for the metric
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
+     *
+     * @deprecated User {@link #ProtocolMetricImpl(LogicalMetricInfo, TemplateDruidQuery, ResultSetMapper, List)}
      */
+    @Deprecated
     public ProtocolMetricImpl(
             @NotNull LogicalMetricInfo logicalMetricInfo,
             @NotNull TemplateDruidQuery templateDruidQuery,
@@ -36,7 +46,8 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
                 logicalMetricInfo,
                 templateDruidQuery,
                 calculation,
-                DefaultSystemMetricProtocols.getStandardProtocolSupport()
+                DefaultSystemMetricProtocols.getStandardProtocolSupport(),
+                Collections.emptyList()
         );
     }
 
@@ -47,16 +58,64 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
      * @param templateDruidQuery  Query the metric needs
      * @param calculation  Mapper for the metric
      * @param protocolSupport  A identify and return protocols supported for this metric.
+     *
+     * @deprecated Use
+     * {@link #ProtocolMetricImpl(LogicalMetricInfo, TemplateDruidQuery, ResultSetMapper, ProtocolSupport, List)}
      */
+    @Deprecated
     public ProtocolMetricImpl(
             @NotNull LogicalMetricInfo logicalMetricInfo,
             @NotNull TemplateDruidQuery templateDruidQuery,
             ResultSetMapper calculation,
             ProtocolSupport protocolSupport
     ) {
+        this(logicalMetricInfo, templateDruidQuery, calculation, protocolSupport, Collections.emptyList());
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param logicalMetricInfo  The metadata for the metric
+     * @param templateDruidQuery  Query the metric needs
+     * @param calculation  Mapper for the metric
+     * @param dependentMetrics Metrics from which this metric depend
+     */
+    public ProtocolMetricImpl(
+            @NotNull LogicalMetricInfo logicalMetricInfo,
+            @NotNull TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            List<LogicalMetric> dependentMetrics
+    ) {
+        this(
+                logicalMetricInfo,
+                templateDruidQuery,
+                calculation,
+                DefaultSystemMetricProtocols.getStandardProtocolSupport(),
+                dependentMetrics
+        );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param logicalMetricInfo  The metadata for the metric
+     * @param templateDruidQuery  Query the metric needs
+     * @param calculation  Mapper for the metric
+     * @param protocolSupport  A identify and return protocols supported for this metric.
+     * @param dependentMetrics Metrics which were used to create this metric.
+     */
+    public ProtocolMetricImpl(
+            @NotNull LogicalMetricInfo logicalMetricInfo,
+            @NotNull TemplateDruidQuery templateDruidQuery,
+            ResultSetMapper calculation,
+            ProtocolSupport protocolSupport,
+            List<LogicalMetric> dependentMetrics
+    ) {
         super(logicalMetricInfo, templateDruidQuery, calculation);
         this.protocolSupport = protocolSupport;
+        this.dependentMetrics = dependentMetrics;
     }
+
 
     @Override
     public boolean accepts(String protocolName) {
@@ -75,6 +134,26 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
         return protocolSupport;
     }
 
+    @Override
+    public List<LogicalMetric> getDependentMetrics() {
+        return dependentMetrics;
+    }
+
+
+    @Override
+    public SimplifiedIntervalList getDependentInterval(
+            SimplifiedIntervalList requestInterval,
+            Granularity requestGrain
+    ) {
+        List<SimplifiedIntervalList> intervals = getTransitiveDependencies().distinct()
+                .filter(dep -> dep instanceof ExtendedMetricDependencies)
+                .map(dep -> (ExtendedMetricDependencies) dep)
+                .map(e -> e.getDependentInterval(requestInterval, requestGrain))
+                .collect(Collectors.toList());
+        intervals.add(requestInterval);
+        return new SimplifiedIntervalList(intervals.toArray(new SimplifiedIntervalList[] {}));
+    }
+
     /**
      * All subclasses of {@code ProtocolMetricImpl} MUST override this method and return an instance of the subclassed
      * type. Inheriting this implementation on subclasses will cause the subclass typing to be lost!
@@ -87,22 +166,40 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
                 info,
                 renameTemplateDruidQuery(info.getName()),
                 renameResultSetMapper(info.getName()),
-                getProtocolSupport()
+                getProtocolSupport(),
+                getDependentMetrics()
         );
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!(o instanceof ProtocolMetric)) {
+            return false;
+        }
         if (!super.equals(o)) { return false; }
-        final ProtocolMetricImpl that = (ProtocolMetricImpl) o;
-        return Objects.equals(protocolSupport, that.protocolSupport);
+        final ProtocolMetric that = (ProtocolMetric) o;
+
+        // Dependent metric comparison is a little too finicky, let's just make sure they have the same names
+        List<String> theseNames = this.getDependentMetrics()
+                .stream()
+                .map(LogicalMetric::getName)
+                .collect(Collectors.toList());
+
+        List<String> thoseNames = that.getDependentMetrics()
+                .stream()
+                .map(LogicalMetric::getName)
+                .collect(Collectors.toList());
+
+        if (!Objects.equals(theseNames, thoseNames)) {
+            return false;
+        }
+        return Objects.equals(getProtocolSupport(), that.getProtocolSupport());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), protocolSupport);
+        return Objects.hash(super.hashCode(), protocolSupport, dependentMetrics);
     }
 
     @Override
@@ -110,6 +207,7 @@ public class ProtocolMetricImpl extends LogicalMetricImpl implements ProtocolMet
         return "ProtocolMetricImpl{" +
                 super.toString() +
                 ", protocolSupport=" + protocolSupport +
+                ", dependentMetrics=" + dependentMetrics +
                 '}';
     }
 }

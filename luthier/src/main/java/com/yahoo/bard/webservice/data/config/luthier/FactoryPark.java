@@ -51,7 +51,7 @@ public class FactoryPark<T> {
      * Fetch the appropriate factory and construct an instance using the configSource and the factory dictionary.
      *
      * @param entityName  The name of the entity in the configSource
-     * @param industrialPark  The dependency system for dependant entities.
+     * @param industrialPark  The dependency system for dependent entities.
      * @param conceptType  The concept we're building an entity for
      *
      * @return  An instance of T corresponding to this name.

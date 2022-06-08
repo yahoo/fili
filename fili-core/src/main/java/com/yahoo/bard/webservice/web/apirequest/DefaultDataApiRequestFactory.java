@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.web.apirequest;
 import com.yahoo.bard.webservice.web.apirequest.generator.metric.ProtocolLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.util.BardConfigResources;
 
+import org.apache.commons.collections4.MultiValuedMap;
+
 import java.util.List;
 
 import javax.ws.rs.core.PathSegment;
@@ -72,6 +74,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
             String asyncAfter,
             String perPage,
             String page,
+            MultiValuedMap<String, String> queryParams,
             BardConfigResources bardConfigResources
     ) {
         if (bardConfigResources.getMetricBinder() instanceof ProtocolLogicalMetricGenerator) {
@@ -92,10 +95,11 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                     asyncAfter,
                     perPage,
                     page,
+                    queryParams,
                     bardConfigResources
             );
         }
-        return new DataApiRequestImpl(
+        return new ExtensibleDataApiRequestImpl(
                 tableName,
                 granularity,
                 dimensions,
@@ -112,6 +116,7 @@ public class DefaultDataApiRequestFactory implements DataApiRequestFactory {
                 asyncAfter,
                 perPage,
                 page,
+                queryParams,
                 bardConfigResources
         );
     }

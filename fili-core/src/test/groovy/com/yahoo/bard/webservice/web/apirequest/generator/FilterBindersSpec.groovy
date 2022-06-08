@@ -115,13 +115,13 @@ class FilterBindersSpec extends Specification {
     def "Bad filter #filter throws #exception.simpleName because #reason"() {
 
         when:
-        filterBinders.generateApiFilter(filter, dimStore)
+        filterBinders.generateApiFilter(filterString, dimStore)
 
         then:
         thrown exception
 
         where:
-        filter                              | exception          | reason
+        filterString                        | exception          | reason
         'unknown|id-in[foo]'                | BadFilterException | 'Unknown Dimension'
         'dimension1|unknown-in[foo]'        | BadFilterException | 'Unknown Field'
         'dimension1|id-unknown[foo]'        | BadFilterException | 'Unknown Operation'

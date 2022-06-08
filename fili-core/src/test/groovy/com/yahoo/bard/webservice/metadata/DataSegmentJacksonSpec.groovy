@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.Interval
 
-import io.druid.timeline.DataSegment
+import org.apache.druid.timeline.DataSegment
 import spock.lang.Specification
 
 class DataSegmentJacksonSpec extends Specification {
@@ -31,10 +31,10 @@ class DataSegmentJacksonSpec extends Specification {
             "partitions":1
         },
     "binaryVersion": null,
-    "size": 1,
-    "identifier": "dataSource_2016-03-22T14:00:00.000Z_2016-03-22T15:00:00.000Z_v0"
+    "size": 1
 }
 """
+
     // NOTE: This code is very volatile as druid versions change.  Future changes may not be backwards compatible.
     def "Test deserialization of data segments"() {
         setup:
@@ -46,7 +46,7 @@ class DataSegmentJacksonSpec extends Specification {
         expect:
         DataSegment dataSegment = mapper.readValue(dataSegmentJson, DataSegment.class)
         dataSegment.binaryVersion == null
-        dataSegment.identifier == "dataSource_2016-03-22T14:00:00.000Z_2016-03-22T15:00:00.000Z_v0"
+        dataSegment.id.toString() == "dataSource_2016-03-22T14:00:00.000Z_2016-03-22T15:00:00.000Z_v0"
         dataSegment.size == 1
         dataSegment.dataSource == "dataSource"
         dataSegment.interval == expectedInterval

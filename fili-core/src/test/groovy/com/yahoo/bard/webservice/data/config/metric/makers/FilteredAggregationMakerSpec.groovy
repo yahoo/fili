@@ -8,7 +8,6 @@ import com.yahoo.bard.webservice.data.dimension.KeyValueStore
 import com.yahoo.bard.webservice.data.dimension.SearchProvider
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
-import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
@@ -22,13 +21,13 @@ import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
 
 import spock.lang.Specification
 
-public class FilteredAggregationMakerSpec extends Specification{
+class FilteredAggregationMakerSpec extends Specification{
 
     private static final String DEPENDENT_METRIC_NAME = "totalPageViews"
     private static final String FILT_METRIC_NAME = "filteredPageViews"
     private static final LogicalMetricInfo FILTER_METRIC_INFO = new LogicalMetricInfo(FILT_METRIC_NAME)
 
-    MetricDictionary metricDictionary = new MetricDictionary();
+    MetricDictionary metricDictionary = new MetricDictionary()
     LongSumMaker longSumMaker = new LongSumMaker(metricDictionary)
 
     def "A filtered aggregation logical metric is made correctly"(){
@@ -39,11 +38,11 @@ public class FilteredAggregationMakerSpec extends Specification{
 
         MetricMaker maker = new FilteredAggregationMaker(metricDictionary, filter)
         LogicalMetric metric = longSumMaker.make("longSum", DEPENDENT_METRIC_NAME)
-        metricDictionary.put("longSum", metric);
+        metricDictionary.put("longSum", metric)
 
         and: "The expected metric"
-        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter);
-        LogicalMetric expectedMetric = new ProtocolMetricImpl(FILTER_METRIC_INFO, new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper())
+        Aggregation expectedAgg = new FilteredAggregation(FILT_METRIC_NAME, new LongSumAggregation("longSum", DEPENDENT_METRIC_NAME), filter)
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(FILTER_METRIC_INFO, new TemplateDruidQuery([expectedAgg], [] as Set), new NoOpResultSetMapper(), [metric])
 
         expect:
         maker.make(FILTER_METRIC_INFO, ["longSum"]) == expectedMetric

@@ -92,23 +92,23 @@ import javax.ws.rs.core.Response;
 public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest {
     private static final Logger LOG = LoggerFactory.getLogger(DataApiRequestImpl.class);
 
-    private final LogicalTable table;
+    protected final LogicalTable table;
 
-    private final Granularity granularity;
+    protected final Granularity granularity;
 
-    private final LinkedHashSet<Dimension> dimensions;
-    private final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
-    private final LinkedHashSet<LogicalMetric> logicalMetrics;
-    private final List<Interval> intervals;
-    private final ApiFilters apiFilters;
-    private final Map<LogicalMetric, Set<ApiHaving>> havings;
-    private final LinkedHashSet<OrderByColumn> sorts;
-    private final OrderByColumn dateTimeSort;
+    protected final LinkedHashSet<Dimension> dimensions;
+    protected final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> perDimensionFields;
+    protected final LinkedHashSet<LogicalMetric> logicalMetrics;
+    protected final List<Interval> intervals;
+    protected final ApiFilters apiFilters;
+    protected final Map<LogicalMetric, Set<ApiHaving>> havings;
+    protected final LinkedHashSet<OrderByColumn> sorts;
+    protected final OrderByColumn dateTimeSort;
 
-    private final int count;
-    private final int topN;
-    private final DateTimeZone timeZone;
-    private final boolean optimizable;
+    protected final int count;
+    protected final int topN;
+    protected final DateTimeZone timeZone;
+    protected final boolean optimizable;
 
     protected FilterGenerator filterGenerator = FilterBinders.getInstance()::generateFilters;
 
@@ -516,7 +516,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
 
         this.metricBinder = metricBinder;
         this.logicalMetrics = bindLogicalMetrics(logicalMetricsRequest, table, metricDictionary, dimensionDictionary);
-        validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary);
+        validateLogicalMetrics(logicalMetricsRequest, logicalMetrics, table, metricDictionary, logicalTableDictionary);
 
         this.intervals = bindIntervals(intervalsRequest, granularity, timeZone);
         validateIntervals(intervalsRequest, intervals, granularity, timeZone);
@@ -1028,7 +1028,7 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             LogicalTable logicalTable,
             DimensionDictionary dimensionDictionary
     ) {
-        return generateDimensionFields(apiDimensionPathSegments, dimensionDictionary);
+        return generateDimensionFields(apiDimensionPathSegments, dimensions);
     }
 
     /**
@@ -1083,7 +1083,11 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
      *
      * @throws BadApiRequestException if invalid
+     *
+     * @deprecated use {@link #validateLogicalMetrics(String, LinkedHashSet, LogicalTable, MetricDictionary,
+     *                  LogicalTableDictionary)} instead
      */
+    @Deprecated
     protected void validateLogicalMetrics(
             String apiMetricExpression,
             LinkedHashSet<LogicalMetric> metrics,
@@ -1091,6 +1095,27 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
             MetricDictionary metricDictionary
     ) throws BadApiRequestException {
         validateMetrics(metrics, logicalTable);
+    }
+
+    /**
+     * Validated bound api filter objects.
+     *
+     * @param apiMetricExpression  URL query string containing the metrics separated by ','.
+     * @param metrics The bound logical metrics
+     * @param logicalTable  The logical table for the data request
+     * @param metricDictionary  Metric dictionary contains the map of valid metric names and logical metric objects.
+     * @param logicalTableDictionary The logical table dictionary
+     *
+     * @throws BadApiRequestException if invalid
+     */
+    protected void validateLogicalMetrics(
+            String apiMetricExpression,
+            LinkedHashSet<LogicalMetric> metrics,
+            LogicalTable logicalTable,
+            MetricDictionary metricDictionary,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
+        validateMetrics(metrics, logicalTable, logicalTableDictionary);
     }
 
     /**
@@ -1126,13 +1151,13 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
         DateTimeFormatter dateTimeFormatter = generateDateTimeFormatter(timeZone);
         List<Interval> result;
 
-        SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
         DateTime adjustedNow = new DateTime();
 
         if (BardFeatureFlag.CURRENT_TIME_ZONE_ADJUSTMENT.isOn()) {
             adjustedNow = IntervalBinders.getAdjustedTime(adjustedNow);
             result = generateIntervals(adjustedNow, intervalsName, granularity, dateTimeFormatter);
         } else if (BardFeatureFlag.CURRENT_MACRO_USES_LATEST.isOn()) {
+            SimplifiedIntervalList availability = TableUtils.logicalTableAvailability(getTable());
             if (! availability.isEmpty()) {
                 DateTime firstUnavailable =  availability.getLast().getEnd();
                 if (firstUnavailable.isBeforeNow()) {
@@ -1300,24 +1325,30 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * If no "show" matrix param has been set, it returns the default dimension fields configured for the dimension.
      *
      * @param apiDimensionPathSegments  Path segments for the dimensions
-     * @param dimensionDictionary  Dimension dictionary to look the dimensions up in
+     * @param dimensions  Set of bound dimensions to bind fields against
      *
      * @return A map of dimension to requested dimension fields
      */
     protected LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> generateDimensionFields(
             @NotNull List<PathSegment> apiDimensionPathSegments,
-            @NotNull DimensionDictionary dimensionDictionary
+            Set<Dimension> dimensions
     ) {
         try (TimedPhase timer = RequestLog.startTiming("GeneratingDimensionFields")) {
-            return apiDimensionPathSegments.stream()
-                    .filter(pathSegment -> !pathSegment.getPath().isEmpty())
-                    .collect(Collectors.toMap(
-                            pathSegment -> dimensionDictionary.findByApiName(pathSegment.getPath()),
-                            pathSegment -> bindShowClause(pathSegment, dimensionDictionary),
-                            (LinkedHashSet<DimensionField> e, LinkedHashSet<DimensionField> i) ->
-                                    StreamUtils.orderedSetMerge(e, i),
-                            LinkedHashMap::new
-                    ));
+            LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> result = new LinkedHashMap<>();
+
+            for (PathSegment p: apiDimensionPathSegments) {
+                String apiName = p.getPath();
+                Dimension d = dimensions.stream()
+                        .filter(dim -> dim.getApiName().equals(apiName))
+                        .findAny()
+                        .orElse(null);
+                if (d == null) {
+                    continue;
+                }
+                LinkedHashSet<DimensionField> shows = bindShowClause(p, d);
+                result.putIfAbsent(d, shows);
+            }
+            return result;
         }
     }
 
@@ -1326,17 +1357,16 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * the path segment's path.
      *
      * @param pathSegment  Path segment to bind from
-     * @param dimensionDictionary  Dimension dictionary to look the dimension up in
+     * @param dimension  Dimension to bind the show clause against
      *
      * @return the set of bound DimensionFields specified in the show clause
      * @throws BadApiRequestException if any of the specified fields are not valid for the dimension
      */
     private LinkedHashSet<DimensionField> bindShowClause(
             PathSegment pathSegment,
-            DimensionDictionary dimensionDictionary
-    )
-            throws BadApiRequestException {
-        Dimension dimension = dimensionDictionary.findByApiName(pathSegment.getPath());
+            Dimension dimension
+    ) throws BadApiRequestException {
+
         List<String> showFields = pathSegment.getMatrixParameters().entrySet().stream()
                 .filter(entry -> entry.getKey().equals("show"))
                 .flatMap(entry -> entry.getValue().stream())

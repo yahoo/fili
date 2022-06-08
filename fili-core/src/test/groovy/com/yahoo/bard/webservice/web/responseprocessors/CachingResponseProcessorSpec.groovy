@@ -33,6 +33,10 @@ class CachingResponseProcessorSpec extends Specification {
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.instance
 
+    final String max_druid_response_length_to_cache_key = SYSTEM_CONFIG.getPackageVariableName(
+            "druid_max_response_length_to_cache"
+    )
+
     ResponseProcessor next = Mock(ResponseProcessor)
     String cacheKey = "SampleKey"
     DataCache<String> dataCache = Mock(DataCache)
@@ -149,14 +153,11 @@ class CachingResponseProcessorSpec extends Specification {
 
     def "Overly long data doesn't cache and then continues"() {
         setup: "Save the old max-length-to-cache so we can restore it later"
-        String max_druid_response_length_to_cache_key = SYSTEM_CONFIG.getPackageVariableName(
-                "druid_max_response_length_to_cache"
-        )
-        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key)
+        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key, -1)
 
         and: "A very small max-length-to-cache"
         long smallMaxLength = 1L
-        SYSTEM_CONFIG.resetProperty(max_druid_response_length_to_cache_key, smallMaxLength.toString())
+        SYSTEM_CONFIG.setProperty(max_druid_response_length_to_cache_key, smallMaxLength.toString())
 
         and: "A workable response context"
         next.getResponseContext() >> responseContext
@@ -175,7 +176,7 @@ class CachingResponseProcessorSpec extends Specification {
         0 * dataCache.set(*_)
 
         cleanup: "Restore the original setting for max-length-to-cache"
-        SYSTEM_CONFIG.resetProperty(max_druid_response_length_to_cache_key, oldMaxLength.toString())
+        SYSTEM_CONFIG.clearProperty(max_druid_response_length_to_cache_key)
     }
 
     def "Test proxy calls"() {

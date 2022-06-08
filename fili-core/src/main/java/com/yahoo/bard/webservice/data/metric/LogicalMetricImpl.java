@@ -166,7 +166,7 @@ public class LogicalMetricImpl implements LogicalMetric {
     }
 
     @Override
-    public String getType() {
+    public MetricType getType() {
         return logicalMetricInfo.getType();
     }
 

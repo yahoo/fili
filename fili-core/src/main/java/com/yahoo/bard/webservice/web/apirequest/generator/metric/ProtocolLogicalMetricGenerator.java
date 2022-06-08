@@ -2,8 +2,6 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest.generator.metric;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE;
-
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
@@ -14,6 +12,7 @@ import com.yahoo.bard.webservice.data.metric.protocol.ProtocolDictionary;
 import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetric;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.Generator;
@@ -125,7 +124,8 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
 
             GeneratedMetricInfo generatedMetricInfo = new GeneratedMetricInfo(
                     metric.getRawName(),
-                    metric.getBaseApiMetricId()
+                    metric.getBaseApiMetricId(),
+                    baseLogicalMetric.getType()
             );
 
             LogicalMetric result = baseLogicalMetric;
@@ -160,8 +160,11 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
      * @throws BadApiRequestException if the requested metrics are not in the logical table
      */
     @Override
-    public void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
-            throws BadApiRequestException {
+    public void validateMetrics(
+            Set<LogicalMetric> logicalMetrics,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    ) throws BadApiRequestException {
         //get metric names from the logical table
         Set<String> validMetricNames = table.getLogicalMetrics().stream()
                 .map(LogicalMetric::getLogicalMetricInfo)
@@ -175,13 +178,7 @@ public class ProtocolLogicalMetricGenerator extends DefaultLogicalMetricGenerato
                 .filter(it -> !validMetricNames.contains(it))
                 .collect(Collectors.toSet());
 
-        //requested metrics names are not present in the logical table metric names set
-        if (!invalidMetricNames.isEmpty()) {
-            LOG.debug(METRICS_NOT_IN_TABLE.logFormat(invalidMetricNames, table.getName(), table.getGranularity()));
-            throw new BadApiRequestException(
-                    METRICS_NOT_IN_TABLE.format(invalidMetricNames, table.getName(), table.getGranularity())
-            );
-        }
+        processExceptions(invalidMetricNames, table, logicalTableDictionary);
     }
 
     private String getBaseName(LogicalMetricInfo metricInfo) {

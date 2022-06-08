@@ -76,10 +76,10 @@ class SegmentIntervalsHashIdGeneratorSpec extends BaseDataSourceMetadataSpec {
         segmentInfoMap2 = [:] as LinkedHashMap
         segmentInfoMap3 = [:] as LinkedHashMap
 
-        segmentInfoMap1[segments.segment1.identifier] = new SegmentInfo(segments.segment1)
-        segmentInfoMap1[segments.segment2.identifier] = new SegmentInfo(segments.segment2)
+        segmentInfoMap1[segments.segment1.id] = new SegmentInfo(segments.segment1)
+        segmentInfoMap1[segments.segment2.id] = new SegmentInfo(segments.segment2)
 
-        segmentInfoMap2[segments.segment3.identifier] = new SegmentInfo(segments.segment3)
+        segmentInfoMap2[segments.segment3.id] = new SegmentInfo(segments.segment3)
 
         jtb = new JerseyTestBinder()
         tableDict = jtb.configurationLoader.physicalTableDictionary

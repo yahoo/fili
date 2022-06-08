@@ -53,7 +53,7 @@ class TableMetadataFormattingSpec extends Specification {
         metric["name"]  == m1.name
         metric["category"]  == m1.category
         metric["longName"]  == m1.longName
-        metric["type"]  == m1.type
+        metric["type"]  == m1.type.type
     }
 
     def "Summary view has expected fields"() {

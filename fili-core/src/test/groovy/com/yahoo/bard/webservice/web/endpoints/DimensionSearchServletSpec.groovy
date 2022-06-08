@@ -54,6 +54,7 @@ class DimensionSearchServletSpec extends Specification {
         Dimension dim = Spy(jtb.configurationLoader.dimensionDictionary.findAll().iterator().next())
         dim.getSearchProvider() >> searchQuerySearchProvider
         jtb.configurationLoader.dimensionDictionary.@apiNameToDimension.put(dim.getApiName(), dim)
+        PaginationParameters paginationParameters = new PaginationParameters(50, 1);
 
         when:
         makeRequest("/dimensions/${dim.getApiName()}/search", ["query" : ["queryString"]] as Map)
@@ -63,7 +64,7 @@ class DimensionSearchServletSpec extends Specification {
             However, the test will fail if null is returned. Instead of silently catching the error we prefer to
             return a simple response and let the call finish gracefully.
         */
-        1 * searchQuerySearchProvider.findSearchRowsPaged("queryString", _ as PaginationParameters) >> new SinglePagePagination<>([], PaginationParameters.EVERYTHING_IN_ONE_PAGE, 0)
+        1 * searchQuerySearchProvider.findSearchRowsPaged("queryString", paginationParameters) >> new SinglePagePagination<>([], PaginationParameters.EVERYTHING_IN_ONE_PAGE, 0)
     }
 
     def "making a search request against a dimension that does NOT use SearchQuerySearchProvider will throw an error indicating search is not supported on the provided dimension"() {

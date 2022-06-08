@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.table.availability
 
+import com.yahoo.bard.webservice.config.BardFeatureFlag
+
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.HOURLY
 import static com.yahoo.bard.webservice.data.config.names.TestDruidTableName.MONTHLY
 
@@ -22,6 +24,14 @@ import org.joda.time.Interval
  * {@link com.yahoo.bard.webservice.application.TestBinderFactory#getVolatileIntervalsService}.
  */
 class VolatilityTableSelectionSpec extends BaseDataServletComponentSpec {
+
+    def setup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.setOn(true)
+    }
+
+    def cleanup() {
+        BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.reset()
+    }
 
     @Override
     Class<?>[] getResourceClasses() {
@@ -133,6 +143,11 @@ class VolatilityTableSelectionSpec extends BaseDataServletComponentSpec {
                 }
             ],
             "meta": {
+                "schema": {
+                    "limbs": {
+                        "type":"number"
+                    }
+                },
                 "missingIntervals": [
                     "2016-08-01 00:00:00.000/2016-09-01 00:00:00.000"
                 ],

@@ -41,26 +41,30 @@ public class NonNumericMetrics {
     public static List<LogicalMetric> getLogicalMetrics() {
         return Arrays.asList(
                 new LogicalMetricImpl(
-                    new TemplateDruidQuery(
-                            /*
-                             * Placeholder so that missing intervals behaves nicely. Also, giving the aggregation
-                             * the same name as the complex metric so that the correct metric is extracted from the
-                             * injected query.
-                             */
-                            Collections.singleton(new LongMinAggregation(
-                                    A_STRING_METRIC.asName(),
-                                    A_HEIGHT.getApiName()
-                            )),
-                            Collections.emptySet()
-                    ),
-                    new StringMetricMapper(),
-                    new LogicalMetricInfo(
-                            A_STRING_METRIC.getApiName(),
-                            A_STRING_METRIC.getApiName(),
-                            "ImAStringISwear"
-                    )
-            ),
+                        new LogicalMetricInfo(
+                                A_STRING_METRIC.getApiName(),
+                                A_STRING_METRIC.getApiName(),
+                                "ImAStringISwear"
+                        ),
+                        new TemplateDruidQuery(
+                                /*
+                                 * Placeholder so that missing intervals behaves nicely. Also, giving the aggregation
+                                 * the same name as the complex metric so that the correct metric is extracted from the
+                                 * injected query.
+                                 */
+                                Collections.singleton(new LongMinAggregation(
+                                        A_STRING_METRIC.asName(),
+                                        A_HEIGHT.getApiName()
+                                )),
+                                Collections.emptySet()
+                        ),
+                        new StringMetricMapper()
+                ),
             new LogicalMetricImpl(
+                    new LogicalMetricInfo(
+                            A_BOOLEAN_METRIC.getApiName(),
+                            A_BOOLEAN_METRIC.getApiName(),
+                            "ImBooleanISwear"),
                     new TemplateDruidQuery(
                             Collections.singleton(new LongMinAggregation(
                                     A_BOOLEAN_METRIC.asName(),
@@ -68,27 +72,28 @@ public class NonNumericMetrics {
                             )),
                             Collections.emptySet()
                     ),
-                    new BooleanMetricMapper(),
-                    new LogicalMetricInfo(
-                            A_BOOLEAN_METRIC.getApiName(),
-                            A_BOOLEAN_METRIC.getApiName(),
-                            "ImBooleanISwear")
+                    new BooleanMetricMapper()
             ),
             new LogicalMetricImpl(
+                    new LogicalMetricInfo(
+                            A_JSON_NODE_METRIC.getApiName(),
+                            A_JSON_NODE_METRIC.getApiName(),
+                            "ImAJsonNodeISwear"
+                    ),
                     new TemplateDruidQuery(
                             Collections.singleton(
                                     new LongMinAggregation(A_JSON_NODE_METRIC.asName(), A_HEIGHT.getApiName())
                             ),
                             Collections.emptySet()
                     ),
-                    new JsonNodeMetricMapper(),
-                    new LogicalMetricInfo(
-                            A_JSON_NODE_METRIC.getApiName(),
-                            A_JSON_NODE_METRIC.getApiName(),
-                            "ImAJsonNodeISwear"
-                    )
+                    new JsonNodeMetricMapper()
             ),
             new LogicalMetricImpl(
+                    new LogicalMetricInfo(
+                            A_NULL_METRIC.getApiName(),
+                            A_NULL_METRIC.getApiName(),
+                            "ImNullISwear"
+                    ),
                     new TemplateDruidQuery(
                             Collections.singleton(new LongMinAggregation(
                                     A_NULL_METRIC.asName(),
@@ -96,12 +101,7 @@ public class NonNumericMetrics {
                             )),
                             Collections.emptySet()
                     ),
-                    new NullMetricMapper(),
-                    new LogicalMetricInfo(
-                            A_NULL_METRIC.getApiName(),
-                            A_NULL_METRIC.getApiName(),
-                            "ImNullISwear"
-                    )
+                    new NullMetricMapper()
             )
         );
     }

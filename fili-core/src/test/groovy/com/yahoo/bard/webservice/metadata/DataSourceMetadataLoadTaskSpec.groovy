@@ -23,10 +23,11 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.StrictPhysicalTable
 
 import com.fasterxml.jackson.databind.InjectableValues
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.joda.time.Interval
 
-import io.druid.timeline.DataSegment
+import org.apache.druid.timeline.DataSegment
 
 class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
 
@@ -78,8 +79,9 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
         childSetupSpec()
 
         InjectableValues injectableValues = new InjectableValues.Std()
-        MAPPERS.mapper.setInjectableValues(injectableValues)
-        injectableValues.addValue(DataSegment.PruneLoadSpecHolder.name, DataSegment.PruneLoadSpecHolder.DEFAULT)
+        ObjectMapper mapper = MAPPERS.getMapper()
+        mapper.setInjectableValues(injectableValues)
+        injectableValues.addValue(DataSegment.PruneSpecsHolder.name, DataSegment.PruneSpecsHolder.DEFAULT)
 
         dimensions13 = [
                 dimensions.(TestApiDimensionName.BREED.asName()).asName(),
@@ -159,7 +161,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 tableDict,
                 metadataService,
                 druidWS,
-                MAPPERS.mapper
+                MAPPERS.metadataMapper
         )
         DataSource dataSource = Mock(DataSource)
         dataSource.physicalTable >> Mock(ConstrainedTable) {
@@ -184,7 +186,7 @@ class DataSourceMetadataLoadTaskSpec extends BaseDataSourceMetadataSpec {
                 tableDict,
                 localMetadataService,
                 druidWS,
-                MAPPERS.mapper
+                MAPPERS.metadataMapper
         )
         druidWS.jsonResponse = {gappyDataSourceMetadataJson}
         StrictPhysicalTable table = Mock(StrictPhysicalTable)

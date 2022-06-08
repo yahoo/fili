@@ -193,7 +193,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 fooNoBarAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+                TestingDataApiRequestImpl.buildDataApiRequestValue()
         )
         fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,
@@ -206,7 +206,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 regFoosAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+                TestingDataApiRequestImpl.buildDataApiRequestValue()
         )
         fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,

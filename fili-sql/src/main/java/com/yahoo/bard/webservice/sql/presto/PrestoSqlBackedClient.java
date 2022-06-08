@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.sql.presto;
 
 
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -13,6 +14,7 @@ import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlResultSetProcessor;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +43,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
     private final CalciteHelper calciteHelper;
     private final static String TIMESTAMP_FORMAT_HOUR = "%Y%m%d%H";
     private final static String TIMESTAMP_FORMAT_DAY = "%Y%m%d";
+    private final static String TIMESTAMP_FORMAT_MINUTE = "%Y%m%d%H%i";
 
     /**
      * Creates a sql converter using the given database and datasource.
@@ -106,9 +109,12 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
 
         LOG.info("Input raw sql query: {}", sqlQuery);
         String timestampFormat;
-        if (druidQuery.getDataSource().getPhysicalTable()
-                .getSchema().getTimeGrain().getBaseTimeGrain().equals(HOUR)) {
+        ZonelessTimeGrain tableTimeGrain = druidQuery.getDataSource().getPhysicalTable()
+                .getSchema().getTimeGrain().getBaseTimeGrain();
+        if (tableTimeGrain.equals(HOUR)) {
             timestampFormat = TIMESTAMP_FORMAT_HOUR;
+        } else if (tableTimeGrain.equals(MINUTE)) {
+            timestampFormat = TIMESTAMP_FORMAT_MINUTE;
         } else {
             timestampFormat = TIMESTAMP_FORMAT_DAY;
         }

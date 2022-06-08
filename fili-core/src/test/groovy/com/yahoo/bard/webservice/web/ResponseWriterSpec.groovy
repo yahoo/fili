@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.data.metric.MetricType
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -105,7 +107,7 @@ abstract class ResponseWriterSpec extends Specification {
     ]
 
     Set<Column> columns
-    Set<LogicalMetric> testLogicalMetrics
+    LinkedHashSet<LogicalMetric> testLogicalMetrics
     ResponseData response
     CsvResponseWriter csvResponseWriter
     JsonResponseWriter jsonResponseWriter
@@ -200,6 +202,14 @@ abstract class ResponseWriterSpec extends Specification {
     }
 
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
+        return buildTestResultSet(metricValues, requestedMetrics, [dateTime, dateTime])
+    }
+
+    ResultSet buildTestResultSet(
+            Map<MetricColumn, Object> metricValues,
+            Set<MetricColumn> requestedMetrics,
+            List<DateTime> dateTimes
+    ) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
             new LogicalMetricImpl(null, null, it.name)
@@ -279,8 +289,8 @@ abstract class ResponseWriterSpec extends Specification {
 
         apiRequest.getDimensionFields() >> { return defaultDimensionFieldsToShow }
 
-        Result result1 = new Result(dimensionRows1, metricValues, dateTime)
-        Result result2 = new Result(dimensionRows2, metricValues, dateTime)
+        Result result1 = new Result(dimensionRows1, metricValues, dateTimes[0])
+        Result result2 = new Result(dimensionRows2, metricValues, dateTimes[1])
 
         resultSet = new ResultSet(schema, [result1, result2])
 

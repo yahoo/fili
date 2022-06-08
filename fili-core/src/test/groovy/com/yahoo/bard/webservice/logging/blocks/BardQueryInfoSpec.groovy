@@ -6,13 +6,11 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 
 import org.junit.Ignore
 
-import spock.lang.Retry
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
-@Ignore
 class BardQueryInfoSpec extends Specification {
     BardQueryInfo bardQueryInfo
 
@@ -29,7 +27,7 @@ class BardQueryInfoSpec extends Specification {
         BardQueryInfo.getBardQueryInfo() == bardQueryInfo
     }
 
-    def "BardCacheInfo is serialized correctly"() {
+    def "BardCacheInfo with no weight check is serialized correctly"() {
         when:
         BardCacheInfo bardCacheInfo = new BardCacheInfo("testsetFailureSerialization", 10, "test", null,100)
 
@@ -39,6 +37,21 @@ class BardQueryInfoSpec extends Specification {
         ) == """{"opType":"testsetFailureSerialization","cacheKeyCksum":"test","signatureCksum":null,"cacheKeyLen":10,"cacheValLen":100}"""
     }
 
+    def "BardQueryInfo with weight check is serialized correctly"() {
+        when:
+        BardQueryInfo.incrementCountWeightCheck()
+        BardQueryInfo.accumulateSketchesScanned( 5000 * 5)
+        BardQueryInfo.accumulateLinesScanned(5000L)
+        BardQueryInfo.accumulateLinesOutput(100)
+        BardQueryInfo.accumulateSketchesOutput(500L )
+
+        then:
+        new ObjectMappersSuite().jsonMapper.writeValueAsString(
+                bardQueryInfo
+        ) == """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
+            """"weightCheckLinesOutput":100,"weightCheckLinesScanned":5000,"weightCheckQueries":1,"weightCheckSketchesOutput":500,"weightCheckSketchesScanned":25000},"cacheStats":[]}"""
+    }
+
     @Ignore
     @Unroll
     def "Validate cachePutFailures LogInfo is serialized correctly"() {
@@ -46,15 +59,17 @@ class BardQueryInfoSpec extends Specification {
         bardQueryInfo.addCacheInfo("test", new BardCacheInfo("setFailure", 10, "test", "testSignature",100))
 
         then:
-        new ObjectMappersSuite().jsonMapper.writeValueAsString(
-                bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cacheStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}]}"""
+        String serialized = new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo)
+        serialized == """{"type":"test",""" +
+                """"queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0}""" +
+                        ""","cacheStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}]""" +
+                    """}"""
     }
 
     @Unroll
     def "increment Count For #queryType increments counter by 1"() {
         setup:
-        AtomicInteger counter = BardQueryInfo.bardQueryInfo.queryCounter.get(queryType);
+        AtomicLong counter = BardQueryInfo.bardQueryInfo.queryCounter.get(queryType);
 
         expect: "count for #queryType is 0"
         counter.get() == 0
@@ -63,7 +78,7 @@ class BardQueryInfoSpec extends Specification {
         incrementor()
 
         then: "count of #queryType is incremented by 1"
-        counter.get() == 1
+        counter.get().longValue() == 1
 
         where:
         queryType                          | incrementor
@@ -79,6 +94,6 @@ class BardQueryInfoSpec extends Specification {
         expect:
         new ObjectMappersSuite().jsonMapper.writeValueAsString(
                 bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factQueryCount":0,"weightCheckQueries":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factCacheHits":0},"cacheStats":[]}"""
+        ) == """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0},"cacheStats":[]}"""
     }
 }

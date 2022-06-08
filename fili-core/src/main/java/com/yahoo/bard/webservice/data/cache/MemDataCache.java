@@ -47,10 +47,16 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             "memcached_operation_timeout"
     );
 
+    public static final String MAX_CACHE_LENGTH_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "druid_max_response_length_to_cache"
+    );
+
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     public static final Meter CACHE_SET_TIMEOUT_FAILURES = REGISTRY.meter("queries.meter.cache.put.timeout.failures");
     public static final String LOG_CACHE_SET_TIMEOUT = "cacheSetTimedOut";
+
+    protected final long maxCache = SYSTEM_CONFIG.getLongProperty(MAX_CACHE_LENGTH_CONFIG_KEY, -1);
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
@@ -106,15 +112,15 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         } catch (RuntimeException warnThenIgnore) {
             LOG.warn("get failed for key {} with cksum {} , {}",
                     key,
-                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
                     warnThenIgnore.getMessage(),
                     warnThenIgnore);
             BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                    CacheV2ResponseProcessor.getMD5Cksum(key),
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
                     new BardCacheInfo(
                             QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
                             key.length(),
-                            CacheV2ResponseProcessor.getMD5Cksum(key),
+                            CacheV2ResponseProcessor.getMD5Checksum(key),
                             null,
                             0
                     )
@@ -150,7 +156,6 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      * consider it to be real Unix time value rather than an offset from
      * current time.
      *
-     * (Deprecate this return type to be void)
      * @return a boolean representing success of this operation
      * @throws IllegalStateException if we fail to add the key-value to the cache because of an error
      */
@@ -167,21 +172,23 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             Throwable exception = e.getClass() == RuntimeException.class ? e.getCause() : e;
             if (exception instanceof TimeoutException) {
                 //mark and log the timeout errors on cache set
+
                 CACHE_SET_TIMEOUT_FAILURES.mark(1);
                 BardQueryInfo.getBardQueryInfo().incrementCountCacheSetTimeoutFailures();
                 BardQueryInfo.getBardQueryInfo().addCacheInfo(
-                        CacheV2ResponseProcessor.getMD5Cksum(key),
+                        CacheV2ResponseProcessor.getMD5Checksum(key),
                         new BardCacheInfo(
                                 LOG_CACHE_SET_TIMEOUT,
                                 key.length(),
-                                CacheV2ResponseProcessor.getMD5Cksum(key),
+                                CacheV2ResponseProcessor.getMD5Checksum(key),
                                 null,
                                 value.toString().length()
                         )
                 );
+
             }
             LOG.warn("set failed for key: {} ,cksum: {} {}",
-                    key, CacheV2ResponseProcessor.getMD5Cksum(key), e.toString());
+                    key, CacheV2ResponseProcessor.getMD5Checksum(key), e.toString());
             throw new IllegalStateException(e);
         }
     }

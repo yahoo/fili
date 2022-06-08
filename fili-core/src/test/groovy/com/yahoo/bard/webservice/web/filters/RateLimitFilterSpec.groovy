@@ -59,9 +59,13 @@ class RateLimitFilterSpec extends Specification {
 
         // reset metrics to 0
         TestRateLimitFilter.instance.rateLimiter.with {
-            [requestGlobalCounter, usersCounter].each { it.dec(it.count) }
+            [requestGlobalCounter, usersCounter].each {
+                it.dec(it.count)
+                assert it.count == 0
+            }
             [requestBypassMeter, requestUiMeter, requestUserMeter, rejectUiMeter, rejectUserMeter].each {
                 it.mark(-it.count)
+                assert it.count == 0
             }
         }
     }

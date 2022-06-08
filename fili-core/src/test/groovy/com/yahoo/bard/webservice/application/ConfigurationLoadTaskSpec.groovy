@@ -2,34 +2,36 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.application
 
-import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
-
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MONTH
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.WEEK
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
+import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig
 import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
 import com.yahoo.bard.webservice.data.config.dimension.TypeAwareDimensionLoader
 import com.yahoo.bard.webservice.data.config.metric.TestMetricLoader
+import com.yahoo.bard.webservice.data.config.metric.makers.ThetaSketchMaker
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidTableName
 import com.yahoo.bard.webservice.data.config.table.TestTableLoader
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
+import com.yahoo.bard.webservice.data.metric.DefaultMetricTypes
+import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.Granularity
-import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
+import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
-import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation.ArithmeticPostAggregationFunction
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
 import com.yahoo.bard.webservice.druid.util.FieldConverters
 import com.yahoo.bard.webservice.druid.util.ThetaSketchFieldConverter
@@ -108,7 +110,12 @@ class ConfigurationLoadTaskSpec extends Specification {
         String metricName = TestApiMetricName.A_USERS.asName()
 
         expect: "The aggregations for the TDQ of that named metric are what we expect"
-        metricDictionary.get(metricName).templateDruidQuery.aggregations == expected
+        LogicalMetric metric = metricDictionary.get(metricName)
+        metric.templateDruidQuery.aggregations == expected
+        LogicalMetricInfo logicalMetricInfo = metric.getLogicalMetricInfo()
+        logicalMetricInfo.type.type == DefaultMetricTypes.SKETCH.type
+        logicalMetricInfo.type.subType == DefaultMetricTypes.SKETCH_DEFAULT_SUBTYPE
+        logicalMetricInfo.type.getTypeMetadata().get(ThetaSketchMaker.SIZE_PARAM) == "16384"
     }
 
     def "test longsum metric"() {
@@ -121,6 +128,7 @@ class ConfigurationLoadTaskSpec extends Specification {
 
         expect: "The aggregations for the TDQ of that named metric are what we expect"
         metricDictionary.get(metricName).templateDruidQuery.aggregations == expected
+        metricDictionary.get(metricName).type == DefaultMetricTypes.NUMBER
     }
 
     def "test arithmetic metric"() {

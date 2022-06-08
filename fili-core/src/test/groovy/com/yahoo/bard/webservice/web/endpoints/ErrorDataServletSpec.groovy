@@ -15,11 +15,11 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_MISSING
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.INTERVAL_ZERO_LENGTH
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_MISSING
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE
+import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_DIRECTION_INVALID
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_IN_QUERY_FORMAT
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_NOT_SORTABLE_FORMAT
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.SORT_METRICS_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_SCHEMA_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TABLE_UNDEFINED
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.UNKNOWN_GRANULARITY
@@ -32,10 +32,12 @@ import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.data.time.TimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
+import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery
 import com.yahoo.bard.webservice.models.druid.client.impl.TestDruidWebService
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.util.JsonSlurper
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.apirequest.generator.intervals.UtcBasedIntervalGenerator
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -107,7 +109,7 @@ class ErrorDataServletSpec extends Specification {
             systemConfig.setProperty(DRUID_URL_SETTING, "http://localhost:9998/druid")
         }
 
-        topNStatus = TOP_N.isOn();
+        topNStatus = TOP_N.isOn()
         TOP_N.setOn(true)
     }
 
@@ -123,7 +125,7 @@ class ErrorDataServletSpec extends Specification {
 
     def setup() {
         // Create the test web container to test the resources
-        testWebService = jtb.druidWebService
+        testWebService = jtb.druidWebService as TestDruidWebService
     }
 
     def cleanup() {
@@ -220,7 +222,7 @@ class ErrorDataServletSpec extends Specification {
     }
 
     def "Metric not in logical table fails"() {
-        String message = METRICS_NOT_IN_TABLE.format("[limbs]", "shapes", "day")
+        String message = METRICS_NOT_IN_TABLE.format("[dayAvgLimbs]", "shapes", "day")
 
         String jsonFailure =
             """{
@@ -234,7 +236,57 @@ class ErrorDataServletSpec extends Specification {
 
         when:
         Response r = jtb.getHarness().target("data/shapes/day/")
-                .queryParam("metrics","limbs")
+                .queryParam("metrics","dayAvgLimbs")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+
+    def "Metric not in logical table because of grain but on table group fails"() {
+        String message = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[dayAvgLimbs]", "pets", "day", "[all, month, week]")
+
+        String jsonFailure =
+                """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "description":"${message}",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
+
+        when:
+        Response r = jtb.getHarness().target("data/pets/day/")
+                .queryParam("metrics","dayAvgLimbs")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
+    def "Metrics both not in logical table and also not in grain fails"() {
+        String message1 = METRICS_NOT_IN_TABLE_WITH_VALID_GRAINS.format("[dayAvgLimbs]", "pets", "day", "[all, month, week]")
+        String message2 = METRICS_NOT_IN_TABLE.format("[height]", "pets", "day")
+
+        String jsonFailure =
+                """{
+                    "status":400,
+                    "statusName": "Bad Request",
+                    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+                    "description":"[${message1}, ${message2}]",
+                    "druidQuery":null,
+                    "requestId": "SOME UUID"
+            }"""
+
+        when:
+        Response r = jtb.getHarness().target("data/pets/day/")
+                .queryParam("metrics","dayAvgLimbs,height")
                 .queryParam("dateTime","2014-09-01%2F2014-09-10")
                 .request().get()
 
@@ -680,6 +732,32 @@ class ErrorDataServletSpec extends Specification {
         GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
     }
 
+
+    def "Double period interval fails"() {
+        String interval = "P1D/P2D"
+
+        String message = INTERVAL_INVALID.format(interval, UtcBasedIntervalGenerator.AT_LEAST_ONE_DATE)
+
+        String jsonFailure =
+                """{"status":400,
+    "statusName": "Bad Request",
+    "reason":"com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException",
+    "description":"${message}",
+    "druidQuery":null,
+    "requestId": "SOME UUID"
+    }
+"""
+        when:
+        Response r = jtb.getHarness().target("data/shapes/day/color")
+                .queryParam("metrics","depth")
+                .queryParam("dateTime", interval)
+                .request().get()
+
+        then:
+        r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
+        GroovyTestUtils.compareErrorPayload(r.readEntity(String.class), jsonFailure)
+    }
+
     def "No matching physical table due to misconfiguration fails"() {
         List dimensions = []
         List metrics = ["dayAvgLimbs"]
@@ -730,7 +808,7 @@ class ErrorDataServletSpec extends Specification {
 
         r.getStatus() == Response.Status.BAD_REQUEST.getStatusCode()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check apiRequest property
         map.remove("druidQuery")
         map.remove("requestId")
@@ -752,7 +830,7 @@ class ErrorDataServletSpec extends Specification {
 
         r.getStatus() == Response.Status.NOT_ACCEPTABLE.getStatusCode()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery property
         map.remove("druidQuery")
         map.remove("requestId")
@@ -772,7 +850,7 @@ class ErrorDataServletSpec extends Specification {
                 .queryParam("dateTime","2014-09-01%2F2014-09-08")
                 .request().get()
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
 
         // do not check druidQuery or description
         map.remove("druidQuery")
@@ -791,7 +869,12 @@ class ErrorDataServletSpec extends Specification {
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
         String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":30000}}]"""
+        testWebService.
+                weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z",
+                "event":{"${WeightEvaluationQuery.OUTPUT_SKETCHES}":30000,
+                "${WeightEvaluationQuery.SCANNED_LINES}": 1000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}": 300,
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}":100}}]"""
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -818,7 +901,7 @@ class ErrorDataServletSpec extends Specification {
         then: "Return 507"
         r.getStatus() == statusCode
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery or description
         map.remove("druidQuery")
         map.remove("requestId")
@@ -831,8 +914,13 @@ class ErrorDataServletSpec extends Specification {
         String reason = ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(429820, 100000)
         String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format()
         String statusName = "507"
-        String expectedJson = buildFailureJson( statusCode, statusName, reason, description)
-        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z","event":{"count":429820}}]"""
+        String expectedJson = buildFailureJson(statusCode, statusName, reason, description)
+        testWebService.weightResponse = """[{"version":"v1","timestamp":"2014-09-01T00:00:00.000Z",
+                "event":{"${WeightEvaluationQuery.OUTPUT_SKETCHES}":429820,
+                "${WeightEvaluationQuery.SCANNED_LINES}": 1000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}": 10,
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}":42982}}]"""
+
         testWebService.setFailure(statusCode, statusName, reason, description)
 
         // create 10 dimensionRows per dimension to get past worst case estimate
@@ -859,7 +947,7 @@ class ErrorDataServletSpec extends Specification {
         then: "Return 507"
         r.getStatus() == statusCode
 
-        Map map = jsonSlurper.parseText(r.readEntity(String.class))
+        Map map = jsonSlurper.parseText(r.readEntity(String.class)) as Map
         // do not check druidQuery or description
         map.remove("druidQuery")
         map.remove("requestId")
@@ -899,7 +987,7 @@ class ErrorDataServletSpec extends Specification {
     def "Test undefined #servlet results in 404 result"() {
         setup:
         JerseyTestBinder testBinder = new JerseyTestBinder(servlet)
-        testWebService = jtb.druidWebService
+        testWebService = jtb.druidWebService as TestDruidWebService
 
         testWebService.jsonResponse = {"[]"}
         testWebService.weightResponse = "[]"

@@ -94,13 +94,13 @@ class ApiHavingSpec extends Specification {
     def "Bad having query #having throws #exception.simpleName because #reason"() {
 
         when:
-        new ApiHaving(having, metricStore)
+        new ApiHaving(havingString, metricStore)
 
         then:
         thrown exception
 
         where:
-        having                        | exception          | reason
+        havingString                  | exception          | reason
         'unknown-eq[123]'             | BadHavingException | 'Unknown Metric'
         'metric1-unknown[123]'        | BadHavingException | 'Unknown Operation'
         'metric1eq[123]'              | BadHavingException | 'Missing Dash'

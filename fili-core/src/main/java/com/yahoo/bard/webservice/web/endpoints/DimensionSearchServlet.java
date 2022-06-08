@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.web.endpoints;
 import static com.yahoo.bard.webservice.config.BardFeatureFlag.UPDATED_METADATA_COLLECTION_NAMES;
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.data.dimension.SearchProvider;
@@ -16,7 +18,6 @@ import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.util.StreamUtils;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
-import com.yahoo.bard.webservice.web.apirequest.ApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DimensionsApiRequestImpl;
 import com.yahoo.bard.webservice.web.apirequest.ResponsePaginator;
@@ -57,6 +58,19 @@ import javax.ws.rs.core.UriInfo;
 @Path("dimensions/{dimensionName}/search")
 public class DimensionSearchServlet extends EndpointServlet {
     private static final Logger LOG = LoggerFactory.getLogger(DimensionSearchServlet.class);
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    private static final int DEFAULT_PER_PAGE = SYSTEM_CONFIG.getIntProperty(
+            SYSTEM_CONFIG.getPackageVariableName("search_default_per_page"),
+            50
+    );
+
+    private static final int DEFAULT_PAGE = 1;
+    public static final PaginationParameters DEFAULT_PAGINATION = new PaginationParameters(
+            DEFAULT_PER_PAGE,
+            DEFAULT_PAGE
+    );
+
 
     private final DimensionDictionary dimensionDictionary;
     private final RequestMapper requestMapper;
@@ -135,7 +149,7 @@ public class DimensionSearchServlet extends EndpointServlet {
 
             PaginationParameters paginationParameters = apiRequest
                     .getPaginationParameters()
-                    .orElse(ApiRequestImpl.DEFAULT_PAGINATION);
+                    .orElse(DEFAULT_PAGINATION);
 
             Pagination<DimensionRow> pagedRows;
 

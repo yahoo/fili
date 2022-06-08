@@ -35,11 +35,25 @@ class ResultSetSerializationProxySpec extends Specification {
         setup:
         Set dimensionColumns = ["ageBracket","gender","country"] as Set
         Set metricColumns = ["simplePageViews","lookbackPageViews", "retentionPageViews"] as Set
-        Map schema = ["granularity":"day", "timeZone":"UTC"]
+        Map<String, ?> schema = ["granularity":"day", "timeZone":"UTC"]
         schema.put("dimensionColumns",dimensionColumns)
         schema.put("metricColumns", metricColumns)
 
         expect:
         GroovyTestUtils.compareObjects(serializeResultSet.getSchemaComponents(resources.schema),  schema)
+    }
+
+    def "Schema object custom serialization produces the expected json output with extended schema"(){
+        setup:
+        Set dimensionColumns = ["ageBracket","gender","country"] as Set
+        Set metricColumns = ["simplePageViews","lookbackPageViews", "retentionPageViews"] as Set
+        Map schema = ["granularity":"day", "timeZone":"UTC", "test" : ["foo","bar"] ]
+        schema.put("dimensionColumns",dimensionColumns)
+        schema.put("metricColumns", metricColumns)
+        ExtensibleResultSetSchema extensibleResultSetSchema = new ExtensibleResultSetSchema(resources.schema)
+        extensibleResultSetSchema = extensibleResultSetSchema.withAdditionalProperties(["test": ["foo", "bar"]])
+
+        expect:
+        GroovyTestUtils.compareObjects(serializeResultSet.getSchemaComponents(extensibleResultSetSchema),  schema)
     }
 }

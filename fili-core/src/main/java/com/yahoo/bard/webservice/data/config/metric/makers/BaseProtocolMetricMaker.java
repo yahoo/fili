@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricType;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.protocol.DefaultSystemMetricProtocols;
@@ -17,6 +18,7 @@ import com.yahoo.bard.webservice.druid.model.MetricField;
 import java.util.Collections;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,7 +77,11 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
         ResultSetMapper calculation = makeCalculation(logicalMetricInfo, renamedDependentMetrics);
         ProtocolSupport protocolSupport = makeProtocolSupport(logicalMetricInfo, renamedDependentMetrics);
 
-        return new ProtocolMetricImpl(logicalMetricInfo, partialQuery, calculation, protocolSupport);
+        LogicalMetricInfo revisedInfo = makeGeneratedType(logicalMetricInfo, renamedDependentMetrics)
+                .map(logicalMetricInfo::withType)
+                .orElse(logicalMetricInfo);
+
+        return new ProtocolMetricImpl(revisedInfo, partialQuery, calculation, protocolSupport, dependentMetrics);
     }
 
     /**
@@ -149,6 +155,21 @@ public abstract class BaseProtocolMetricMaker extends MetricMaker implements Mak
     ) {
         return NO_OP_MAPPER;
     }
+
+    /**
+     * Create a new metric type for this metric if necessary.
+     *
+     * @param logicalMetricInfo  The identity metadata for the metric
+     * @param dependentMetrics  The metrics this metric depends on
+     *
+     * @return  An optional whose value, if any, is a new metric type for this metric.
+     */
+    protected Optional<MetricType> makeGeneratedType(
+            final LogicalMetricInfo logicalMetricInfo, final List<LogicalMetric> dependentMetrics
+    ) {
+        return Optional.empty();
+    }
+
     /**
      * Create the partial query for this LogicalMetric.
      *

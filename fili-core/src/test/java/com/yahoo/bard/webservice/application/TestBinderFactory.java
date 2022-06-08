@@ -102,11 +102,8 @@ public class TestBinderFactory extends AbstractBinderFactory {
                 // Empty
             }
         };
-        tableLoader = new TableLoader() {
-            @Override
-            public void loadTableDictionary(ResourceDictionaries dictionaries) {
-                // Empty
-            }
+        tableLoader = dictionaries -> {
+            // Empty
         };
         state = new ApplicationState();
         state.webService = new TestDruidWebService("default");

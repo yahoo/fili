@@ -147,11 +147,12 @@ class DateTimeUtilsSpec extends Specification {
 
     @Unroll
     def "sliceIntervals slices #interval into #expected of the timeGrain #timeGrain"() {
+
         expect:
-        DateTimeUtils.sliceIntervals(new Interval(interval), timeGrain)  == (buildIntervalSet(expected) as List)
+        DateTimeUtils.sliceIntervals(new Interval(intervalString), timeGrain)  == (buildIntervalSet(expected) as List)
 
         where:
-        interval                                          | timeGrain | expected
+        intervalString                                    | timeGrain | expected
         "2014-07-01T00:00:00.000/2014-07-01T00:02:00.000" | MINUTE    | ["2014-07-01T00:00:00.000/2014-07-01T00:01:00.000", "2014-07-01T00:01:00.000/2014-07-01T00:02:00.000"]
         "2014-07-01T00:00:00.000/2014-07-01T02:00:00.000" | HOUR      | ["2014-07-01T00:00:00.000/2014-07-01T01:00:00.000", "2014-07-01T01:00:00.000/2014-07-01T02:00:00.000"]
         "2014-07-01T00:00:00.000/2014-07-03T00:00:00.000" | DAY       | ["2014-07-01T00:00:00.000/2014-07-02T00:00:00.000", "2014-07-02T00:00:00.000/2014-07-03T00:00:00.000"]
@@ -198,7 +199,7 @@ class DateTimeUtilsSpec extends Specification {
         DateTimeUtils.getTimeZone(DefaultTimeGrain.HOUR) == DateTimeZone.default
     }
 
-    def buildIntervalSet(List<String> intervalStrList) {
+    def buildIntervalSet(Collection<String> intervalStrList) {
         Set<Interval> intervals = new TreeSet<>(new IntervalStartComparator())
 
         intervalStrList.each {

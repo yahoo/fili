@@ -5,6 +5,8 @@ package com.yahoo.bard.webservice.druid.model.query
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.impl.SimpleVirtualDimension
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
 import com.yahoo.bard.webservice.druid.model.datasource.QueryDataSource
@@ -269,5 +271,39 @@ class LookbackQuerySpec extends Specification {
         singleIntervalMultipleLookbackOffset.getContext().getQueryId() == "dummy100_2"
         multipleIntervalMultipleLookbackOffset.getContext().getQueryId() == "dummy100_3"
 
+    }
+
+
+    def "check that inner query without getDimensions blows up on wither"() {
+        LookbackQuery lookbackQuery = defaultQuery(
+                postAggregations: postAggregation,
+                lookbackPrefixes: ["lookback_days_","lookback_weeks_"],
+                lookbackOffsets: [Period.days(-1), Period.weeks(-1)]
+        )
+        when:
+        lookbackQuery.withDimensions(Collections.emptySet())
+
+        then:
+        thrown(UnsupportedOperationException)
+    }
+
+    def "check that inner query with getDimensions updated when using wither"() {
+        LookbackQuery result
+        LookbackQuery lookbackQuery = defaultQuery(
+                dataSource: new QueryDataSource(groupByQuery),
+                postAggregations: postAggregation,
+                lookbackPrefixes: ["lookback_days_","lookback_weeks_"],
+                lookbackOffsets: [Period.days(-1), Period.weeks(-1)]
+        )
+        Dimension d = new SimpleVirtualDimension("foo")
+
+        expect:
+        lookbackQuery.getDimensions().isEmpty()
+
+        when:
+        result = lookbackQuery.withDimensions(Collections.singleton(d))
+
+        then:
+        result.getDimensions().contains(d)
     }
 }

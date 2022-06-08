@@ -2,18 +2,51 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.filters;
 
-import com.yahoo.bard.webservice.util.EnumUtils;
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Authorization status code.
  */
-public enum AuthorizationStatus {
-    ACCESS_DENIED(-1, "Access Denied", "Request access denied."),
-    ACCESS_ALLOWED(1, "Access Allowed", "Good to go!");
+public class AuthorizationStatus {
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    public static final String REQUEST_ACCESS_DENIED = "Request access denied.";
+    public static final String GOOD_TO_GO = "Good to go!";
+    private static final Map<Integer, AuthorizationStatus> CODE_TO_STATUS = new LinkedHashMap<>();
+
+    public static final String FAILURE_MESSAGE = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("authorization_status_failure_message"),
+            REQUEST_ACCESS_DENIED
+    );
+
+    public static final String SUCCESS_MESSAGE = SYSTEM_CONFIG.getStringProperty(
+            SYSTEM_CONFIG.getPackageVariableName("authorization_status_success_message"),
+            GOOD_TO_GO
+    );
+
+    public static final AuthorizationStatus ACCESS_DENIED = new AuthorizationStatus(
+            -1,
+            "Access Denied",
+            FAILURE_MESSAGE
+    );
+
+    public static final AuthorizationStatus ACCESS_ALLOWED = new AuthorizationStatus(
+            1,
+            "Access Allowed",
+            SUCCESS_MESSAGE
+    );
+
+    public static Set<AuthorizationStatus> values = new HashSet<>();
+    // Hold the mapping to speed up lookup
 
     private final String name;
     private final String description;
@@ -26,10 +59,11 @@ public enum AuthorizationStatus {
      * @param name  Name of the status
      * @param description  Human-readable description of the status
      */
-    AuthorizationStatus(int statusCode, String name, String description) {
+    AuthorizationStatus(int statusCode, @NotNull String name, @NotNull  String description) {
         this.name = name;
         this.statusCode = statusCode;
         this.description = description;
+        CODE_TO_STATUS.put(statusCode, this);
     }
 
     public String getName() {
@@ -44,16 +78,6 @@ public enum AuthorizationStatus {
         return statusCode;
     }
 
-    // Hold the mapping to speed up lookup
-    private static final Map<Integer, AuthorizationStatus> CODE_TO_STATUS = new LinkedHashMap<>();
-
-    // Initialize the lookup mapping when the class is loaded
-    static {
-        for (AuthorizationStatus value : EnumSet.allOf(AuthorizationStatus.class)) {
-            CODE_TO_STATUS.put(value.getStatusCode(), value);
-        }
-    }
-
     /**
      * Get the value for the given status code value.
      *
@@ -64,6 +88,6 @@ public enum AuthorizationStatus {
      * @throws IllegalArgumentException if this enum type has no constant with the specified status code value
      */
     public static AuthorizationStatus forStatusCode(int statusCode) {
-        return EnumUtils.forKey(statusCode, CODE_TO_STATUS, AuthorizationStatus.class);
+        return CODE_TO_STATUS.get(statusCode);
     }
 }

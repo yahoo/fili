@@ -11,11 +11,11 @@ import com.yahoo.bard.webservice.logging.RequestLog;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,23 +44,27 @@ public class DateTimeSortMapper extends ResultSetMapper {
     @Override
     public ResultSet map(ResultSet resultSet) {
 
-        Map<DateTime, List<Result>> bucketizedResultsMap = new LinkedHashMap<>();
+        Map<Optional<DateTime>, List<Result>> bucketizedResultsMap = new LinkedHashMap<>();
 
         RequestLog.startTiming("sortResultSet");
         try {
             for (Result result : resultSet) {
-                bucketizedResultsMap.computeIfAbsent(result.getTimeStamp(), ignored -> new ArrayList<>()).add(result);
+                bucketizedResultsMap.computeIfAbsent(
+                        Optional.ofNullable(result.getTimeStamp()), ignored -> new ArrayList<>()
+                ).add(result);
             }
 
-            List<DateTime> dateTimeList = new ArrayList<>(bucketizedResultsMap.keySet());
-
-            Collections.sort(dateTimeList, direction == SortDirection.ASC ?
-                    Comparator.naturalOrder() :
-                    Comparator.reverseOrder());
+            List<DateTime> dateTimeList = bucketizedResultsMap.keySet().stream()
+                    .map(o -> o.orElse(null))
+                    .sorted(direction == SortDirection.ASC ?
+                            Comparator.nullsLast(Comparator.naturalOrder()) :
+                            Comparator.nullsLast(Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
 
             return new ResultSet(
                     resultSet.getSchema(),
                     dateTimeList.stream()
+                            .map(Optional::ofNullable)
                             .map(bucketizedResultsMap::get)
                             .flatMap(List::stream)
                             .collect(Collectors.toList())

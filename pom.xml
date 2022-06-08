@@ -5,7 +5,7 @@
 
     <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
-    <version>0.12-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Fili: parent pom</name>
@@ -75,11 +75,11 @@
     <distributionManagement>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -91,13 +91,13 @@
     </scm>
 
     <properties>
-        <releaseRepoUrl>https://oss.sonatype.org/service/local/staging/deploy/maven2/</releaseRepoUrl>
-        <snapshotRepoUrl>https://oss.sonatype.org/content/repositories/snapshots/</snapshotRepoUrl>
+        <releaseRepoUrl>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</releaseRepoUrl>
+        <snapshotRepoUrl>https://s01.oss.sonatype.org/content/repositories/snapshots/</snapshotRepoUrl>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
-        <version.fili>0.12-SNAPSHOT</version.fili>
+        <version.fili>1.0-SNAPSHOT</version.fili>
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
@@ -110,15 +110,14 @@
         <version.jetty>9.4.40.v20210413</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
-        <version.spring>5.1.18.RELEASE</version.spring>
-        <version.groovy>3.0.7</version.groovy>
-        <version.jackson>2.10.5</version.jackson>
-        <version.jackson-databind>2.10.5.1</version.jackson-databind>
-        <version.junit5>5.7.0</version.junit5>
+        <version.spring>5.3.20</version.spring>
+        <version.groovy>2.5.15</version.groovy>
+        <version.jackson>2.12.6</version.jackson>
+        <version.jackson-databind>2.12.6.1</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.12.1</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
-        <version.druid.api>0.12.1</version.druid.api>
+        <version.druid.api>0.20.2</version.druid.api>
 
         <profiles.active>test</profiles.active>
 
@@ -371,10 +370,39 @@
 
             <!-- Druid -->
             <dependency>
-                <groupId>io.druid</groupId>
-                <artifactId>druid-api</artifactId>
+                <groupId>org.apache.druid</groupId>
+                <artifactId>druid-core</artifactId>
                 <version>${version.druid.api}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-api</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-jul</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-1.2-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-slf4j-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty</artifactId>
@@ -430,13 +458,6 @@
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-csv</artifactId>
                 <version>${version.jackson}</version>
-            </dependency>
-
-            <!-- JodaTime -->
-            <dependency>
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>2.9.6</version>
             </dependency>
 
             <!-- HTTP Client -->
@@ -732,11 +753,12 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <!-- disabled below -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>codenarc-maven-plugin</artifactId>
                     <version>0.22-1</version>
                     <configuration>
-                        <groovyVersion>${version.groovy}</groovyVersion>
+                        <groovyVersion>{version.groovy}</groovyVersion>
                         <maxPriority1Violations>0</maxPriority1Violations>
                         <maxPriority2Violations>0</maxPriority2Violations>
                         <maxPriority3Violations>0</maxPriority3Violations>
@@ -856,10 +878,12 @@
                 <executions>
                     <execution>
                         <id>add-groovy-sources</id>
+                        <!--
                         <goals>
                             <goal>addSources</goal>
                             <goal>addTestSources</goal>
                         </goals>
+                        -->
                     </execution>
                     <execution>
                         <id>compile-groovy</id>
@@ -869,9 +893,11 @@
                     </execution>
                     <execution>
                         <id>test-compile-groovy</id>
+                        <!--
                         <goals>
                             <goal>compileTests</goal>
                         </goals>
+                        -->
                     </execution>
                 </executions>
             </plugin>
@@ -1005,10 +1031,13 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>codenarc-maven-plugin</artifactId>
-            </plugin>
+            <!-- Codenarc plugin is not being maintained and is not compatible with later versions of groovy 2.5
+                because the groovy-all jar became a pom.  There is a fix involving the codenarc ant task
+                which could be explored -->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>codenarc-maven-plugin</artifactId>-->
+<!--            </plugin>-->
         </plugins>
     </reporting>
 
@@ -1059,7 +1088,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
