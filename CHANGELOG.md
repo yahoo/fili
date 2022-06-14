@@ -19,6 +19,10 @@ Current
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
 ### Added:
+- [DatasourceMetadataLoader more extensible](https://github.com/yahoo/fili/issues/1257)
+  * Changed internal resources to be protected to support extension
+  * Changed method that builds and executes callbacks to return those callbacks
+
 -[Support user configured messages for authorization failures](https://github.com/yahoo/fili/issues/1255)
   * Changed `AuthorizationStatus` from an enum to a class collecting constants.  Make the description for failures be user configurable.
 

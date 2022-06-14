@@ -18,6 +18,7 @@ import com.yahoo.bard.webservice.table.PhysicalTableDictionary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.asynchttpclient.Response;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,12 +59,12 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
     public static final String DRUID_SEG_LOADER_TIMER_DELAY_KEY =
             SYSTEM_CONFIG.getPackageVariableName("druid_seg_loader_timer_delay");
 
-    private final DruidWebService druidWebService;
-    private final PhysicalTableDictionary physicalTableDictionary;
-    private final DataSourceMetadataService metadataService;
-    private final AtomicReference<DateTime> lastRunTimestamp;
-    private final ObjectMapper mapper;
-    private final FailureCallback failureCallback;
+    protected final DruidWebService druidWebService;
+    protected final PhysicalTableDictionary physicalTableDictionary;
+    protected final DataSourceMetadataService metadataService;
+    protected final AtomicReference<DateTime> lastRunTimestamp;
+    protected final ObjectMapper mapper;
+    protected final FailureCallback failureCallback;
 
     /**
      * Datasource metadata loader fetches data from the druid coordinator and updates the datasource metadata service.
@@ -110,14 +112,16 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
      * Queries Druid for updated datasource metadata and then updates the datasource metadata service.
      *
      * @param dataSourceName  The data source to be updated.
+     *
+     * @return The response future for the json object being queried
      */
-    protected void queryDataSourceMetadata(DataSourceName dataSourceName) {
+    protected Future<Response> queryDataSourceMetadata(DataSourceName dataSourceName) {
         String resourcePath = String.format(DATASOURCE_METADATA_QUERY_FORMAT, dataSourceName.asName());
 
         // Success callback will update datasource metadata on success
         SuccessCallback success = buildDataSourceMetadataSuccessCallback(dataSourceName);
         HttpErrorCallback errorCallback = getErrorCallback(dataSourceName);
-        druidWebService.getJsonObject(success, errorCallback, failureCallback, resourcePath);
+        return druidWebService.getJsonObject(success, errorCallback, failureCallback, resourcePath);
     }
 
     /**
