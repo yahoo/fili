@@ -10,7 +10,7 @@ Current
 
 ### Fixed:
 
-- [Fixing intermittent test error related to json serialization]()
+- [Fixing intermittent test error related to json serialization](https://github.com/yahoo/fili/pull/1259)
   * Switched from String comparison to JsonNode comparison
 
 - [Incompatbile jakson-joda and joda resulted in runtime error on deploy](https://github.com/yahoo/fili/pull/1252)
