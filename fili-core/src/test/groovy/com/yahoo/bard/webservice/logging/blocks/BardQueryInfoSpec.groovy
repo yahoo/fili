@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.logging.blocks
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.util.GroovyTestUtils
 
 import org.junit.Ignore
 
@@ -32,9 +33,10 @@ class BardQueryInfoSpec extends Specification {
         BardCacheInfo bardCacheInfo = new BardCacheInfo("testsetFailureSerialization", 10, "test", null,100)
 
         then:
-        new ObjectMappersSuite().jsonMapper.writeValueAsString(
-                bardCacheInfo
-        ) == """{"opType":"testsetFailureSerialization","cacheKeyCksum":"test","signatureCksum":null,"cacheKeyLen":10,"cacheValLen":100}"""
+        GroovyTestUtils.compareJson(
+                new ObjectMappersSuite().jsonMapper.writeValueAsString(bardCacheInfo),
+                """{"opType":"testsetFailureSerialization","cacheKeyCksum":"test","signatureCksum":null,"cacheKeyLen":10,"cacheValLen":100}"""
+        )
     }
 
     def "BardQueryInfo with weight check is serialized correctly"() {
@@ -46,10 +48,11 @@ class BardQueryInfoSpec extends Specification {
         BardQueryInfo.accumulateSketchesOutput(500L )
 
         then:
-        new ObjectMappersSuite().jsonMapper.writeValueAsString(
-                bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
-            """"weightCheckLinesOutput":100,"weightCheckLinesScanned":5000,"weightCheckQueries":1,"weightCheckSketchesOutput":500,"weightCheckSketchesScanned":25000},"cacheStats":[]}"""
+        GroovyTestUtils.compareJson(
+                new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo),
+                """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
+                """"weightCheckLinesOutput":100,"weightCheckLinesScanned":5000,"weightCheckQueries":1,"weightCheckSketchesOutput":500,"weightCheckSketchesScanned":25000},"cacheStats":[]}"""
+        )
     }
 
     @Ignore
@@ -60,10 +63,13 @@ class BardQueryInfoSpec extends Specification {
 
         then:
         String serialized = new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo)
-        serialized == """{"type":"test",""" +
-                """"queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0}""" +
+        GroovyTestUtils.compareJson(
+                serialized,
+                """{"type":"test",""" +
+                        """"queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0}""" +
                         ""","cacheStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}]""" +
-                    """}"""
+                        """}"""
+        )
     }
 
     @Unroll
@@ -92,8 +98,9 @@ class BardQueryInfoSpec extends Specification {
     @Ignore
     def "Object serializes with type and map"() {
         expect:
-        new ObjectMappersSuite().jsonMapper.writeValueAsString(
-                bardQueryInfo
-        ) == """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0},"cacheStats":[]}"""
+        GroovyTestUtils.compareJson(
+                new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo),
+                """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0},"cacheStats":[]}"""
+        )
     }
 }
