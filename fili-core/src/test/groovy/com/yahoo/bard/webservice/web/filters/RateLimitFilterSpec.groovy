@@ -36,13 +36,13 @@ class RateLimitFilterSpec extends Specification {
     static void setDefaults() {
         originalGlobalLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_GLOBAL_KEY, LIMIT_GLOBAL as String)
         originalUserLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_PER_USER_KEY, LIMIT_PER_USER as String)
-        originalUiLimit = systemConfig.setProperty(DefaultRateLimiter.REQUEST_LIMIT_UI_KEY, LIMIT_UI as String)
+        originalUiLimit = systemConfig.setProperty(DefaultRateLimiter.EXTENDED_RATE_LIMIT_KEY, LIMIT_UI as String)
     }
 
     static void clearDefaults() {
         systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_GLOBAL_KEY, originalGlobalLimit)
         systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_PER_USER_KEY, originalUserLimit)
-        systemConfig.resetProperty(DefaultRateLimiter.REQUEST_LIMIT_UI_KEY, originalUiLimit)
+        systemConfig.resetProperty(DefaultRateLimiter.EXTENDED_RATE_LIMIT_KEY, originalUiLimit)
     }
 
     def setupSpec() {
@@ -63,7 +63,7 @@ class RateLimitFilterSpec extends Specification {
                 it.dec(it.count)
                 assert it.count == 0
             }
-            [requestBypassMeter, requestUiMeter, requestUserMeter, rejectUiMeter, rejectUserMeter].each {
+            [requestBypassMeter, requestExtendedMeter, requestUserMeter, rejectExtendedMeter, rejectUserMeter].each {
                 it.mark(-it.count)
                 assert it.count == 0
             }
@@ -128,7 +128,7 @@ class RateLimitFilterSpec extends Specification {
         expect:
         TestRateLimitFilter.instance.rateLimiter.requestLimitGlobal == LIMIT_GLOBAL
         TestRateLimitFilter.instance.rateLimiter.requestLimitPerUser == LIMIT_PER_USER
-        TestRateLimitFilter.instance.rateLimiter.requestLimitUi == LIMIT_UI
+        TestRateLimitFilter.instance.rateLimiter.requestLimitExtended == LIMIT_UI
     }
 
     def "User limit reached"() {
@@ -139,9 +139,9 @@ class RateLimitFilterSpec extends Specification {
         TestRateLimitFilter.instance.rateLimiter.globalCount.get() == 0
         TestRateLimitFilter.instance.rateLimiter.requestGlobalCounter.count == LIMIT_PER_USER
         TestRateLimitFilter.instance.rateLimiter.requestBypassMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.requestUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.requestExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.requestUserMeter.count == LIMIT_PER_USER
-        TestRateLimitFilter.instance.rateLimiter.rejectUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.rejectExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.rejectUserMeter.count == 12 - LIMIT_PER_USER
 
         TestMultiAccess.ok.get() + TestMultiAccess.fail.get() == 12
@@ -163,9 +163,9 @@ class RateLimitFilterSpec extends Specification {
         TestRateLimitFilter.instance.rateLimiter.globalCount.get() == 0
         TestRateLimitFilter.instance.rateLimiter.requestGlobalCounter.count == 20
         TestRateLimitFilter.instance.rateLimiter.requestBypassMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.requestUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.requestExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.requestUserMeter.count == 20
-        TestRateLimitFilter.instance.rateLimiter.rejectUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.rejectExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.rejectUserMeter.count == 0
 
         TestMultiAccess.fail.get() == 0
@@ -184,9 +184,9 @@ class RateLimitFilterSpec extends Specification {
         TestRateLimitFilter.instance.rateLimiter.globalCount.get() == 0
         TestRateLimitFilter.instance.rateLimiter.requestGlobalCounter.count == LIMIT_GLOBAL
         TestRateLimitFilter.instance.rateLimiter.requestBypassMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.requestUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.requestExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.requestUserMeter.count == LIMIT_GLOBAL
-        TestRateLimitFilter.instance.rateLimiter.rejectUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.rejectExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.rejectUserMeter.count == 30 - LIMIT_GLOBAL
 
         threads.size() == 30
@@ -227,9 +227,9 @@ class RateLimitFilterSpec extends Specification {
         TestRateLimitFilter.instance.rateLimiter.globalCount.get() == 0
         TestRateLimitFilter.instance.rateLimiter.requestGlobalCounter.count == LIMIT_UI
         TestRateLimitFilter.instance.rateLimiter.requestBypassMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.requestUiMeter.count == LIMIT_UI
+        TestRateLimitFilter.instance.rateLimiter.requestExtendedMeter.count == LIMIT_UI
         TestRateLimitFilter.instance.rateLimiter.requestUserMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.rejectUiMeter.count == 20 - LIMIT_UI
+        TestRateLimitFilter.instance.rateLimiter.rejectExtendedMeter.count == 20 - LIMIT_UI
         TestRateLimitFilter.instance.rateLimiter.rejectUserMeter.count == 0
 
         TestMultiAccess.ok.get() + TestMultiAccess.fail.get() == 20
@@ -245,9 +245,9 @@ class RateLimitFilterSpec extends Specification {
         TestRateLimitFilter.instance.rateLimiter.globalCount.get() == 0
         TestRateLimitFilter.instance.rateLimiter.requestGlobalCounter.count == 0
         TestRateLimitFilter.instance.rateLimiter.requestBypassMeter.count == 30
-        TestRateLimitFilter.instance.rateLimiter.requestUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.requestExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.requestUserMeter.count == 0
-        TestRateLimitFilter.instance.rateLimiter.rejectUiMeter.count == 0
+        TestRateLimitFilter.instance.rateLimiter.rejectExtendedMeter.count == 0
         TestRateLimitFilter.instance.rateLimiter.rejectUserMeter.count == 0
 
         TestOptions.ok.get() + TestOptions.fail.get() == 30

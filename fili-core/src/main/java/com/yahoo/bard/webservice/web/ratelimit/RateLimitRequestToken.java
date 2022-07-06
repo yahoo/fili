@@ -17,6 +17,13 @@ public interface RateLimitRequestToken extends Closeable {
     boolean isBound();
 
     /**
+     * Retrieve a message (if any) about this token.
+     *
+     * @return a message about this token
+     */
+    String getMessage();
+
+    /**
      * Bind the counters to the token.
      *
      * @return true if the token was able to be bound or is already bounf, or false if rejected.

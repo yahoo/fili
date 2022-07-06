@@ -80,7 +80,7 @@ public class RateLimitFilter implements ContainerRequestFilter, ContainerRespons
             if (token.isBound()) {
                 request.setProperty(PROPERTY_TOKEN, token);
             } else {
-                String msg = String.format("Rate limit reached. Reject %s", uri.toString());
+                String msg = String.format("Rate limit reached. %s Reject %s", token.getMessage(), uri.toString());
                 LOG.debug(msg);
                 RequestLog.stopTiming(this);
                 request.abortWith(Response.status(RATE_LIMIT).entity(msg).build());
