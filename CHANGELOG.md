@@ -73,6 +73,11 @@ Current
 
 ### Changed:
 
+- [Extensions to support RateLimit reporting extensibility](https://github.com/yahoo/fili/issues/1261)
+  * Renamed isUi to isExtended to more clearly indicate the purpose of the fields.
+  * Added extensible methods for generating global and personal rate limit generation.
+  * Added message to the `RateLimitRequestToken` interface to support richer logging of rate limit failures.
+
 - [Bump to Groovy 2.5](https://github.com/yahoo/fili/issues/1245)
   * Lost the use of the codenarc-maven-plugin because it's not compatible with groovy 2.5 and isn't supported.
   * Possible solution: https://stackoverflow.com/questions/57576796/how-to-use-codenarc-maven-plugin-with-groovy-2-5
