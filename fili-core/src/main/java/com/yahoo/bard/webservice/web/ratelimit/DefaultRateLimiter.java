@@ -279,7 +279,7 @@ public class DefaultRateLimiter implements RateLimiter {
     }
 
     /**
-     * The token to reflect global rate limiting.
+     * The token to reflect personal rate limiting.
      * (Added to encourage extension in subclasses.)
      *
      * @param count  The atomic reference that holds the amount of in-flight requests the user owns
@@ -290,7 +290,7 @@ public class DefaultRateLimiter implements RateLimiter {
      * @param requestMeter  Meter tracking the amount of requests that have been launched
      * @param rejectMeter  Meter tracking the amount of requests that have been rejected
      *
-     * @return A token that indicates global request limits are full.
+     * @return A token that indicates personal request limits are full.
      */
     protected RateLimitRequestToken getPersonalRateLimitExceededRequestToken(
             AtomicInteger count,
@@ -328,32 +328,6 @@ public class DefaultRateLimiter implements RateLimiter {
             Meter rejectMeter
     ) {
         return GLOBAL_REJECT_REQUEST_TOKEN;
-    }
-
-    /**
-     * The token to reflect global rate limiting.
-     * (Added to encourage extension in subclasses.)
-     *
-     * @param count  The atomic reference that holds the amount of in-flight requests the user owns
-     * @param userName  The user who launched the request
-     * @param useExtendedRateLimit  Whether or not this query was generated from the UI
-     * @param request  The request associated with this token
-     * @param requestLimit  The limit of requests the user is allowed to launch
-     * @param requestMeter  Meter tracking the amount of requests that have been launched
-     * @param rejectMeter  Meter tracking the amount of requests that have been rejected
-     *
-     * @return A token that indicates global request limits are full.
-     */
-    protected RateLimitRequestToken getPersonalRateLimitToken(
-            AtomicInteger count,
-            String userName,
-            boolean useExtendedRateLimit,
-            ContainerRequestContext request,
-            int requestLimit,
-            Meter requestMeter,
-            Meter rejectMeter
-    ) {
-        return REJECT_REQUEST_TOKEN;
     }
 
     /**

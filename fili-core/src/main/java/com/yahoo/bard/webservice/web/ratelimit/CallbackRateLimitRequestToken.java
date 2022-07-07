@@ -23,9 +23,7 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
      * @param rateLimitCleanup  The callback for cleaning up after the request associated with this token is complete
      */
     public CallbackRateLimitRequestToken(boolean isBound, RateLimitCleanupOnRequestComplete rateLimitCleanup) {
-        this.rateLimitCleanup = rateLimitCleanup;
-        this.isBound = isBound;
-        this.message = "";
+        this(isBound, rateLimitCleanup, "");
     }
 
 
