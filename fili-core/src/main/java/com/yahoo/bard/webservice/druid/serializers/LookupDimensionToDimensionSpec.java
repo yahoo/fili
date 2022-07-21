@@ -13,7 +13,6 @@ import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.sun.corba.se.impl.io.TypeMismatchException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ public class LookupDimensionToDimensionSpec extends JsonSerializer<ExtractionFun
             throws IOException {
 
         if (!LookupDimension.class.isInstance(value) && !RegisteredLookupDimension.class.isInstance(value)) {
-            throw new TypeMismatchException("Lookup dimension serializer was given a non-lookup dimension.");
+            throw new IllegalArgumentException("Lookup dimension serializer was given a non-lookup dimension.");
         }
 
         Optional<ExtractionFunction> extractionFunction = value.getExtractionFunction();

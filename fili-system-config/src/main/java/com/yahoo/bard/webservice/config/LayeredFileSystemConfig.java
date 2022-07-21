@@ -120,7 +120,7 @@ public class LayeredFileSystemConfig implements SystemConfig {
             )
                     .flatMap(Function.identity())
                     .filter(Objects::nonNull)
-                    .forEachOrdered(masterConfiguration::addConfiguration);
+                    .forEachOrdered(config -> masterConfiguration.addConfiguration((Configuration) config));
 
             // Use the config which has been loaded to identify module dependencies
             List<String> dependentModules = masterConfiguration.getList(
