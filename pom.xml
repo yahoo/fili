@@ -719,7 +719,7 @@
                     <configuration>
                         <rules>
                             <requireJavaVersion>
-                                <version>[1.8,1.9]</version>
+                                <version>[11,12]</version>
                             </requireJavaVersion>
                             <requireMavenVersion>
                                 <version>[${min_maven_version},)</version>
