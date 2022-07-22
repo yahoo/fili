@@ -650,7 +650,7 @@
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <additionalJOptions>H
                             <additionalJOption>-XDiag</additionalJOption>
-                            <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
+                            <!--<additionalJOption>-J-XX:-UseG1GC</additionalJOption>-->
                             <additionalJOption>-J-Xms20m</additionalJOption>
                             <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
                             <additionalJOption>${javadoc_options}</additionalJOption>
