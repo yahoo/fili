@@ -73,6 +73,11 @@ Current
 
 ### Changed:
 
+- [Support JDK 11 compilation](https://github.com/yahoo/fili/issues/1263)
+  * Updated POM
+  * Explicitly added javax dependencies
+  * Removed reference to Corba error type
+
 - [Extensions to support RateLimit reporting extensibility](https://github.com/yahoo/fili/issues/1261)
   * Renamed isUi to isExtended to more clearly indicate the purpose of the fields.
   * Added extensible methods for generating global and personal rate limit generation.
