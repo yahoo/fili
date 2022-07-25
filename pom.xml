@@ -1007,6 +1007,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                    <skip>true</skip>
                 </configuration>
                 <reportSets>
                     <reportSet>
