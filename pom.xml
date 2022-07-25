@@ -124,6 +124,7 @@
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
+        <javadocs.package.exclude>*.luthier:*.antlr</javadocs.package.exclude>
 
         <min_maven_version>3.5</min_maven_version>
 
@@ -656,7 +657,7 @@
                             <additionalJOption>${javadoc_options}</additionalJOption>
                         </additionalJOptions>
                         <!-- lint breaks JDK8 builds, disable -->
-                        <additionalparam>${disableDocLint}</additionalparam>
+                        <additionalparam>${disableDocLint}</additionalparam>   q
                     </configuration>
                 </plugin>
 
@@ -719,7 +720,7 @@
                     <configuration>
                         <rules>
                             <requireJavaVersion>
-                                <version>[11,12]</version>
+                                <version>[1.8,12]</version>
                             </requireJavaVersion>
                             <requireMavenVersion>
                                 <version>[${min_maven_version},)</version>
@@ -765,7 +766,7 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven-project-info-reports-plugin-version}</version>
                     <configuration>
-                        <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -964,6 +965,25 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>ci-management</report>
+                            <report>dependency-management</report>
+                            <report>distribution-management</report>
+                            <report>index</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>mailing-lists</report>
+                            <report>modules</report>
+                            <report>plugin-management</report>
+                            <report>plugins</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                            <report>team</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
