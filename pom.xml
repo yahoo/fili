@@ -1005,6 +1005,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <id>aggregate-javadoc</id>
