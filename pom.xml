@@ -124,7 +124,7 @@
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
-        <javadocs.package.exclude>*.luthier:*.antlr</javadocs.package.exclude>
+        <javadocs.package.exclude>*.luthier</javadocs.package.exclude>
 
         <min_maven_version>3.5</min_maven_version>
 
@@ -647,6 +647,7 @@
                     <configuration>
                         <quiet>true</quiet>
                         <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                        <sourcepath>${project.build.directory}/generated-sources/antlr4</sourcepath>
                         <detectLinks>false</detectLinks>
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <additionalJOptions>H
@@ -657,7 +658,7 @@
                             <additionalJOption>${javadoc_options}</additionalJOption>
                         </additionalJOptions>
                         <!-- lint breaks JDK8 builds, disable -->
-                        <additionalparam>${disableDocLint}</additionalparam>   q
+                        <additionalparam>${disableDocLint}</additionalparam>
                     </configuration>
                 </plugin>
 
@@ -1007,7 +1008,6 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                    <skip>true</skip>
                 </configuration>
                 <reportSets>
                     <reportSet>
