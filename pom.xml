@@ -650,7 +650,7 @@
                         <sourcepath>${project.build.directory}/generated-sources/antlr4</sourcepath>
                         <detectLinks>false</detectLinks>
                         <detectOfflineLinks>false</detectOfflineLinks>
-                        <additionalJOptions>H
+                        <additionalJOptions>
                             <additionalJOption>-XDiag</additionalJOption>
                             <!--<additionalJOption>-J-XX:-UseG1GC</additionalJOption>-->
                             <additionalJOption>-J-Xms20m</additionalJOption>
