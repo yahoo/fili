@@ -647,7 +647,7 @@
                     <configuration>
                         <quiet>true</quiet>
                         <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                        <sourcepath>${project.build.directory}/generated-sources/antlr4</sourcepath>
+                        <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/antlr4</sourcepath>
                         <detectLinks>false</detectLinks>
                         <detectOfflineLinks>false</detectOfflineLinks>
                         <additionalJOptions>
