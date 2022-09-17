@@ -28,7 +28,7 @@
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
 
         <version.h2>2.1.210</version.h2>
-        <version.calcite>1.26.0</version.calcite>
+        <version.calcite>1.32.0</version.calcite>
         <presto.version>0.232</presto.version>
     </properties>
 
