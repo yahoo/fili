@@ -73,6 +73,10 @@ Current
 
 ### Changed:
 
+- [Improve query time logging](https://github.com/yahoo/fili/issues/1268)
+  * Added table name to partial data comparator
+  * Removed unmapped physical column warning
+
 - [Support JDK 11 compilation](https://github.com/yahoo/fili/issues/1263)
   * Updated POM
   * Explicitly added javax dependencies
