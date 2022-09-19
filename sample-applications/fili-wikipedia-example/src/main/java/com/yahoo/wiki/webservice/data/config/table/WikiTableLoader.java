@@ -87,7 +87,7 @@ public class WikiTableLoader extends BaseTableLoader {
         // Physical Tables
         Set<PhysicalTableDefinition> samplePhysicalTableDefinition = Utils.asLinkedHashSet(
                 new ConcretePhysicalTableDefinition(
-                        WikiDruidTableName.WIKITICKER,
+                        WikiDruidTableName.WIKIPEDIA,
                         HOUR.buildZonedTimeGrain(DateTimeZone.UTC),
                         druidMetricNames.get(WikiLogicalTableName.WIKIPEDIA),
                         dimsBasefactDruidTableName
