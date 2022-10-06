@@ -109,7 +109,7 @@ class SingleDimensionMultipleComplexMetricDataServletSpec extends BaseDataServle
           ],
           "context": {},
           "dataSource": {
-            "name": "${WikiDruidTableName.WIKITICKER.asName()}",
+            "name": "${WikiDruidTableName.WIKIPEDIA.asName()}",
             "type": "table"
           },
           "dimensions": [
