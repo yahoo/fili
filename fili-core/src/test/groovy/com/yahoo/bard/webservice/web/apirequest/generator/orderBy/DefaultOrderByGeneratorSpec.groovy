@@ -94,7 +94,7 @@ class DefaultOrderByGeneratorSpec extends Specification {
         "xyz|ascending"                  | [["xyz", ASC, METRIC]]
         "xyz|descen"                     | [["xyz", DESC, METRIC]]
         // simple dimension maps to keyfield in binding phase
-        "dim1"                           | [["fieldName", DESC, DIMENSION]]
+        "dim1"                           | [["dim1", DESC, DIMENSION]]
 
         // dateTime not being used as a string match
         "dateTimexyz|DESC"               | [["dateTimexyz", DESC, METRIC]]
@@ -209,7 +209,7 @@ class DefaultOrderByGeneratorSpec extends Specification {
         "xyz|ascending"                  | [["xyz", ASC, METRIC]]
         "xyz|descen"                     | [["xyz", DESC, METRIC]]
         // simple dimension maps to keyfield in binding phase
-        "dim1"                           | [["fieldName", DESC, DIMENSION]]
+        "dim1"                           | [["dim1", DESC, DIMENSION]]
 
         // dateTime not being used as a string match
         "dateTimexyz|DESC"               | [["dateTimexyz", DESC, METRIC]]

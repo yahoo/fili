@@ -21,6 +21,10 @@ Current
    * Use getter to pull both this and that dependent metrics to correctly utilize dynamic method dispatch.
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
+- [Add Ability to Sort by Dimension](https://github.com/yahoo/fili/issues/1276)
+  * Modified the DefaultOrderByGenerator.java for getting the order by column name
+  * Modified the DefaultOrderByGenerator.groovy for testing the dimension sorting feature.
+
 ### Added:
 - [DatasourceMetadataLoader more extensible](https://github.com/yahoo/fili/issues/1257)
   * Changed internal resources to be protected to support extension
