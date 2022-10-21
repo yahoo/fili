@@ -353,11 +353,11 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(querySigningService).to(QuerySigningService.class);
 
-                if (!CacheFeatureFlag.NONE.isOn()) {
+
                     bind(buildQuerySignedCacheService(
                             buildLocalSignatureCache(), querySigningService, getMapper())).to(
                             CacheService.class);
-                }
+
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
 

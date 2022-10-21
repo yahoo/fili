@@ -275,7 +275,8 @@ public class DefaultOrderByGenerator implements Generator<List<OrderByColumn>>, 
         } else if (dimensionsByName.containsKey(column.getDimension())) {
 
             Dimension d = dimensionsByName.get(column.getDimension());
-            String physicalName = d.getKey().getName();
+
+            String physicalName = column.getDimension();
             result = new OrderByColumn(physicalName, column.getDirection(), DIMENSION);
         } else {
             result = column;
