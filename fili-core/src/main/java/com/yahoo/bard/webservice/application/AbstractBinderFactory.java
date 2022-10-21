@@ -353,11 +353,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
 
                 bind(querySigningService).to(QuerySigningService.class);
 
-
-                    bind(buildQuerySignedCacheService(
-                            buildLocalSignatureCache(), querySigningService, getMapper())).to(
-                            CacheService.class);
-
+                bind(buildQuerySignedCacheService(buildLocalSignatureCache(), querySigningService, getMapper()))
+                        .to(CacheService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
 
@@ -1322,15 +1319,15 @@ public abstract class AbstractBinderFactory implements BinderFactory {
      */
     protected DruidWebService buildDruidWebService(DruidServiceConfig druidServiceConfig, ObjectMapper mapper) {
         Supplier<Map<String, String>> supplier = buildDruidWebServiceHeaderSupplier();
-        return DRUID_UNCOVERED_INTERVAL_LIMIT > 0
-                ? new AsyncDruidWebServiceImpl(
-                druidServiceConfig,
-                mapper,
-                supplier,
-                new HeaderNestingJsonBuilderStrategy(
-                        AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
+        return DRUID_UNCOVERED_INTERVAL_LIMIT > 0 ?
+                new AsyncDruidWebServiceImpl(
+                        druidServiceConfig,
+                        mapper,
+                        supplier,
+                        new HeaderNestingJsonBuilderStrategy(
+                                AsyncDruidWebServiceImpl.DEFAULT_JSON_NODE_BUILDER_STRATEGY
+                        )
                 )
-        )
                 : new AsyncDruidWebServiceImpl(druidServiceConfig, mapper, supplier);
     }
 
