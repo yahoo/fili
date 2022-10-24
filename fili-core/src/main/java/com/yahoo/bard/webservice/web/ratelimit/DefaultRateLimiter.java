@@ -33,8 +33,13 @@ import javax.ws.rs.core.SecurityContext;
 public class DefaultRateLimiter implements RateLimiter {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultRateLimiter.class);
     protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     protected static final RateLimitRequestToken REJECT_REQUEST_TOKEN =
-            new CallbackRateLimitRequestToken(false, () -> { });
+            new CallbackRateLimitRequestToken(false, () -> { }, "Exceeded user request limit.");
+
+    protected static final RateLimitRequestToken GLOBAL_REJECT_REQUEST_TOKEN =
+            new CallbackRateLimitRequestToken(false, () -> { }, "Global request limit exceeded.");
+
     protected static final RateLimitRequestToken BYPASS_TOKEN =
             new BypassRateLimitRequestToken();
 
@@ -43,13 +48,13 @@ public class DefaultRateLimiter implements RateLimiter {
             SYSTEM_CONFIG.getPackageVariableName("request_limit_global");
     protected static final @NotNull String REQUEST_LIMIT_PER_USER_KEY =
             SYSTEM_CONFIG.getPackageVariableName("request_limit_per_user");
-    protected static final @NotNull String REQUEST_LIMIT_UI_KEY =
+    protected static final @NotNull String EXTENDED_RATE_LIMIT_KEY =
             SYSTEM_CONFIG.getPackageVariableName("request_limit_ui");
 
     // Default values
     protected static final int DEFAULT_REQUEST_LIMIT_GLOBAL = 70;
     protected static final int DEFAULT_REQUEST_LIMIT_PER_USER = 2;
-    protected static final int DEFAULT_REQUEST_LIMIT_UI = 52;
+    protected static final int DEFAULT_REQUEST_LIMIT_EXTENDED = 52;
 
     protected static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
@@ -58,7 +63,7 @@ public class DefaultRateLimiter implements RateLimiter {
     // Request limits
     protected final int requestLimitGlobal;
     protected final int requestLimitPerUser;
-    protected final int requestLimitUi;
+    protected final int requestLimitExtended;
 
     // Live count holders
     protected final AtomicInteger globalCount = new AtomicInteger();
@@ -68,9 +73,9 @@ public class DefaultRateLimiter implements RateLimiter {
     protected final Counter usersCounter;
 
     protected final Meter requestBypassMeter;
-    protected final Meter requestUiMeter;
+    protected final Meter requestExtendedMeter;
     protected final Meter requestUserMeter;
-    protected final Meter rejectUiMeter;
+    protected final Meter rejectExtendedMeter;
     protected final Meter rejectUserMeter;
 
     /**
@@ -82,7 +87,7 @@ public class DefaultRateLimiter implements RateLimiter {
         // Load limits
         requestLimitGlobal = SYSTEM_CONFIG.getIntProperty(REQUEST_LIMIT_GLOBAL_KEY, DEFAULT_REQUEST_LIMIT_GLOBAL);
         requestLimitPerUser = SYSTEM_CONFIG.getIntProperty(REQUEST_LIMIT_PER_USER_KEY, DEFAULT_REQUEST_LIMIT_PER_USER);
-        requestLimitUi = SYSTEM_CONFIG.getIntProperty(REQUEST_LIMIT_UI_KEY, DEFAULT_REQUEST_LIMIT_UI);
+        requestLimitExtended = SYSTEM_CONFIG.getIntProperty(EXTENDED_RATE_LIMIT_KEY, DEFAULT_REQUEST_LIMIT_EXTENDED);
 
         // Register counters for currently active requests
         usersCounter = REGISTRY.counter("ratelimit.count.users");
@@ -90,22 +95,22 @@ public class DefaultRateLimiter implements RateLimiter {
 
         // Register meters for number of requests
         requestUserMeter = REGISTRY.meter("ratelimit.meter.request.user");
-        requestUiMeter = REGISTRY.meter("ratelimit.meter.request.ui");
+        requestExtendedMeter = REGISTRY.meter("ratelimit.meter.request.ui");
         requestBypassMeter = REGISTRY.meter("ratelimit.meter.request.bypass");
         rejectUserMeter = REGISTRY.meter("ratelimit.meter.reject.user");
-        rejectUiMeter = REGISTRY.meter("ratelimit.meter.reject.ui");
+        rejectExtendedMeter = REGISTRY.meter("ratelimit.meter.reject.ui");
     }
 
     /**
      * Get the current count for this username. If user does not have a counter, create one.
      *
      * @param request  The request context
-     * @param isUIQuery  Flag to check if it is a UI query
+     * @param isExtendedLimitQuery  Flag to check if it is a query with the extended rate limit
      * @param userName  Username to get the count for
      *
      * @return The atomic count for the user
      */
-    protected AtomicInteger getCount(ContainerRequestContext request, boolean isUIQuery, String userName) {
+    protected AtomicInteger getCount(ContainerRequestContext request, boolean isExtendedLimitQuery, String userName) {
         AtomicInteger count = userCounts.get(userName);
 
         // Create a counter if we don't have one yet
@@ -142,12 +147,17 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @param rejectMeter  Meter to count the rejection in
      * @param isRejectGlobal  Whether or not the rejection is on the global rate limit
-     * @param isUIQuery  Whether or not the request is a UI Query
+     * @param isExtendedRateLimit  Whether or not the request is a UI Query
      * @param userName  Username of the user who made the request
      */
-    protected void rejectRequest(Meter rejectMeter, boolean isRejectGlobal, boolean isUIQuery, String userName) {
+    protected void rejectRequest(
+            Meter rejectMeter,
+            boolean isRejectGlobal,
+            boolean isExtendedRateLimit,
+            String userName
+    ) {
         rejectMeter.mark();
-        String limitType = isRejectGlobal ? "GLOBAL" : isUIQuery ? "UI" : "USER";
+        String limitType = isRejectGlobal ? "GLOBAL" : isExtendedRateLimit ? "UI" : "USER";
         LOG.info("{} limit {}", limitType, userName);
     }
 
@@ -167,15 +177,16 @@ public class DefaultRateLimiter implements RateLimiter {
         Principal user = securityContext == null ? null : securityContext.getUserPrincipal();
         String userName = String.valueOf(user == null ? null : user.getName());
 
-        boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
+        // Extended rate limits support cases such as dashboard UI views
+        boolean isUIQuery = useExtendedRateLimit(headers);
         Meter requestMeter;
         Meter rejectMeter;
         int requestLimit;
 
         if (isUIQuery) {
-            requestMeter = requestUiMeter;
-            rejectMeter = rejectUiMeter;
-            requestLimit = requestLimitUi;
+            requestMeter = requestExtendedMeter;
+            rejectMeter = rejectExtendedMeter;
+            requestLimit = requestLimitExtended;
         } else {
             requestMeter = requestUserMeter;
             rejectMeter = rejectUserMeter;
@@ -183,7 +194,27 @@ public class DefaultRateLimiter implements RateLimiter {
         }
 
         AtomicInteger count = getCount(request, isUIQuery, userName);
-        return createNewRateLimitRequestToken(count, userName, isUIQuery, requestLimit, requestMeter, rejectMeter);
+        return createNewRateLimitRequestToken(
+                count,
+                userName,
+                isUIQuery,
+                request,
+                requestLimit,
+                requestMeter,
+                rejectMeter
+        );
+    }
+
+    /**
+     * Check if the extended rate limit should be used.
+     *
+     * @param headers Request headers to use to understand the request.
+     *
+     * @return true if the extended rate limit should be applied.
+     */
+    protected boolean useExtendedRateLimit(final MultivaluedMap<String, String> headers) {
+        boolean isUIQuery = DataApiRequestTypeIdentifier.isUi(headers);
+        return isUIQuery;
     }
 
     /**
@@ -191,7 +222,8 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @param count  The atomic reference that holds the amount of in-flight requests the user owns
      * @param userName  The user who launched the request
-     * @param isUIQuery  Whether or not this query was generated from the UI
+     * @param useExtendedRateLimit  Whether or not this query was generated from the UI
+     * @param request  The request associated with this token
      * @param requestLimit  The limit of requests the user is allowed to launch
      * @param requestMeter  Meter tracking the amount of requests that have been launched
      * @param rejectMeter  Meter tracking the amount of requests that have been rejected
@@ -199,20 +231,42 @@ public class DefaultRateLimiter implements RateLimiter {
      * @return a new RateLimitRequestToken, representing an in-flight (or rejected) request that is tracked by the
      * RateLimiter
      */
-    protected RateLimitRequestToken createNewRateLimitRequestToken(AtomicInteger count, String userName,
-            boolean isUIQuery, int requestLimit, Meter requestMeter, Meter rejectMeter) {
+    protected RateLimitRequestToken createNewRateLimitRequestToken(
+            AtomicInteger count,
+            String userName,
+            boolean useExtendedRateLimit,
+            ContainerRequestContext request,
+            int requestLimit,
+            Meter requestMeter,
+            Meter rejectMeter
+    ) {
         if (!incrementAndCheckCount(globalCount, requestLimitGlobal)) {
-            rejectRequest(rejectMeter, true, isUIQuery, userName);
-            return REJECT_REQUEST_TOKEN;
+            rejectRequest(rejectMeter, true, useExtendedRateLimit, userName);
+            return getGlobalRateLimitExceededRequestToken(
+                    count,
+                    userName,
+                    useExtendedRateLimit,
+                    request,
+                    requestLimit,
+                    requestMeter,
+                    rejectMeter
+            );
         }
-
 
         // Bind to the user
         if (!incrementAndCheckCount(count, requestLimit)) {
             // Decrement the global count that had already been incremented
             globalCount.decrementAndGet();
-            rejectRequest(rejectMeter, false, isUIQuery, userName);
-            return REJECT_REQUEST_TOKEN;
+            rejectRequest(rejectMeter, false, useExtendedRateLimit, userName);
+            return getPersonalRateLimitExceededRequestToken(
+                    count,
+                    userName,
+                    useExtendedRateLimit,
+                    request,
+                    requestLimit,
+                    requestMeter,
+                    rejectMeter
+            );
         }
 
         // Measure the accepted request and current open connections
@@ -220,8 +274,60 @@ public class DefaultRateLimiter implements RateLimiter {
         requestGlobalCounter.inc();
 
         // Return new request token
-        RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName);
+        RateLimitCleanupOnRequestComplete callback = generateCleanupClosure(count, userName, request);
         return new CallbackRateLimitRequestToken(true, callback);
+    }
+
+    /**
+     * The token to reflect personal rate limiting.
+     * (Added to encourage extension in subclasses.)
+     *
+     * @param count  The atomic reference that holds the amount of in-flight requests the user owns
+     * @param userName  The user who launched the request
+     * @param useExtendedRateLimit  Whether or not this query was generated from the UI
+     * @param request  The request associated with this token
+     * @param requestLimit  The limit of requests the user is allowed to launch
+     * @param requestMeter  Meter tracking the amount of requests that have been launched
+     * @param rejectMeter  Meter tracking the amount of requests that have been rejected
+     *
+     * @return A token that indicates personal request limits are full.
+     */
+    protected RateLimitRequestToken getPersonalRateLimitExceededRequestToken(
+            AtomicInteger count,
+            String userName,
+            boolean useExtendedRateLimit,
+            ContainerRequestContext request,
+            int requestLimit,
+            Meter requestMeter,
+            Meter rejectMeter
+    ) {
+        return REJECT_REQUEST_TOKEN;
+    }
+
+    /**
+     * The token to reflect global rate limiting.
+     * (Added to encourage extension in subclasses.)
+     *
+     * @param count  The atomic reference that holds the amount of in-flight requests the user owns
+     * @param userName  The user who launched the request
+     * @param useExtendedRateLimit  Whether or not this query was generated from the UI
+     * @param request  The request associated with this token
+     * @param requestLimit  The limit of requests the user is allowed to launch
+     * @param requestMeter  Meter tracking the amount of requests that have been launched
+     * @param rejectMeter  Meter tracking the amount of requests that have been rejected
+     *
+     * @return A token that indicates global request limits are full.
+     */
+    protected RateLimitRequestToken getGlobalRateLimitExceededRequestToken(
+            AtomicInteger count,
+            String userName,
+            boolean useExtendedRateLimit,
+            ContainerRequestContext request,
+            int requestLimit,
+            Meter requestMeter,
+            Meter rejectMeter
+    ) {
+        return GLOBAL_REJECT_REQUEST_TOKEN;
     }
 
     /**
@@ -230,10 +336,15 @@ public class DefaultRateLimiter implements RateLimiter {
      *
      * @param count  The AtomicInteger that stores the amount of in-flight requests an individual user owns
      * @param userName  The name of the user that made the request
+     * @param request The request being wrapped
      *
      * @return A callback implementation to be given to a CallbackRateLimitRequestToken
      */
-    protected RateLimitCleanupOnRequestComplete generateCleanupClosure(AtomicInteger count, String userName) {
+    protected RateLimitCleanupOnRequestComplete generateCleanupClosure(
+            AtomicInteger count,
+            String userName,
+            ContainerRequestContext request
+    ) {
         return () -> {
             if (globalCount.decrementAndGet() < 0) {
                 // Reset to 0 if it falls below 0

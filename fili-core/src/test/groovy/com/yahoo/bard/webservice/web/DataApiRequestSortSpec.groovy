@@ -71,4 +71,18 @@ class DataApiRequestSortSpec extends Specification {
         (String) r.readEntity(String.class).contains(expectedMessage)
         r.getStatus() == 400
     }
+
+    def "Dimension also added for sorting"() {
+        when:
+        String expectedMessage = ErrorMessageFormat.DATE_TIME_SORT_VALUE_INVALID.format()
+        javax.ws.rs.core.Response r = jtb.getHarness().target("data/shapes/day/size")
+                .queryParam("metrics","height")
+                .queryParam("dateTime","2014-09-01%2F2014-09-10")
+                .queryParam("sort","size|ASC")
+                .request().get()
+
+        then:
+        (String) r.readEntity(String.class).contains(expectedMessage)
+        r.getStatus() == 200
+    }
 }

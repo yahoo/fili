@@ -81,7 +81,8 @@ class PartialDataRequestHandlerSpec extends Specification {
         1 * partialDataHandler.findMissingTimeGrainIntervals(
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
-                apiRequest.granularity
+                apiRequest.granularity,
+                _
         ) >> intervals
         0 * response.getResponseContext()
         0 * response.getMappers()
@@ -112,7 +113,8 @@ class PartialDataRequestHandlerSpec extends Specification {
         1 * partialDataHandler.findMissingTimeGrainIntervals(
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
-                apiRequest.granularity
+                apiRequest.granularity,
+                _
         ) >> nonEmptyIntervals
         1 * response.getResponseContext() >> responseContext
         1 * response.getMappers() >> resultSetMappers
@@ -156,7 +158,8 @@ class PartialDataRequestHandlerSpec extends Specification {
         1 * partialDataHandler.findMissingTimeGrainIntervals(
                 availableIntervals,
                 new SimplifiedIntervalList(apiRequest.intervals),
-                apiRequest.granularity
+                apiRequest.granularity,
+                _
         ) >> nonEmptyIntervals
         1 * response.getResponseContext() >> responseContext
         1 * next.handleRequest(rc, apiRequest, groupByQuery, response) >> true

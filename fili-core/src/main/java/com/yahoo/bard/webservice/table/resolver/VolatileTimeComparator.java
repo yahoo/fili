@@ -85,7 +85,8 @@ public class VolatileTimeComparator implements Comparator<PhysicalTable> {
         SimplifiedIntervalList volatilePartialRequestIntervals = partialDataHandler.findMissingTimeGrainIntervals(
                 table.getAvailableIntervals(requestConstraint),
                 volatileIntervalsService.getVolatileIntervals(apiRequestGranularity, requestIntervals, table),
-                apiRequestGranularity
+                apiRequestGranularity,
+                table.getName()
         );
         //Next find the intervals on the physical table that are available.
         SimplifiedIntervalList tableAvailability = table.getAvailableIntervals(requestConstraint);

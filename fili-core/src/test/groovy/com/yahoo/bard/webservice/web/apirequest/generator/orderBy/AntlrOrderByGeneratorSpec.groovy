@@ -95,7 +95,7 @@ class AntlrOrderByGeneratorSpec extends Specification {
         "xyz|ascending"                  | [["xyz", ASC, METRIC]]
         "xyz|descen"                     | [["xyz", DESC, METRIC]]
         // simple dimension maps to keyfield in binding phase
-        "dim1"                           | [["fieldName", DESC, DIMENSION]]
+        "dim1"                           | [["dim1", DESC, DIMENSION]]
 
         // dateTime not being used as a string match
         "dateTimexyz|DESC"               | [["dateTimexyz", DESC, METRIC]]
@@ -112,7 +112,7 @@ class AntlrOrderByGeneratorSpec extends Specification {
         "xyz(param1=foo,param2=bar)"            | [["xyz(param1=foo,param2=bar)", DESC, METRIC]]
         "xyz(param1=foo,param2=bar)|descending" | [["xyz(param1=foo,param2=bar)", DESC, METRIC]]
         "xyz(param1=foo,param2=bar)|ASC,xyz(param1=foo2,param2=bar2)|DESC"        | [["xyz(param1=foo,param2=bar)", ASC, METRIC],
-                                                                                    ["xyz(param1=foo2,param2=bar2)", DESC, METRIC]]
+                                                                                     ["xyz(param1=foo2,param2=bar2)", DESC, METRIC]]
         "xyz(param1=foo,param2=bar)|ASCENDING"  | [["xyz(param1=foo,param2=bar)", ASC, METRIC]]
     }
 
@@ -217,7 +217,7 @@ class AntlrOrderByGeneratorSpec extends Specification {
         "xyz|ascending"                  | [["xyz", ASC, METRIC]]
         "xyz|descen"                     | [["xyz", DESC, METRIC]]
         // simple dimension maps to keyfield in binding phase
-        "dim1"                           | [["fieldName", DESC, DIMENSION]]
+        "dim1"                           | [["dim1", DESC, DIMENSION]]
 
         // dateTime not being used as a string match
         "dateTimexyz|DESC"               | [["dateTimexyz", DESC, METRIC]]

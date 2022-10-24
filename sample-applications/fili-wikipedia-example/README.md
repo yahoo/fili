@@ -18,6 +18,7 @@ This example is an entirely self contained example that provides a Fili applicat
     ```bash
     cd fili
     mvn install
+    cd sample-applications
     mvn -pl fili-wikipedia-example exec:java
     ```
 - Note that if your setup is different you can adjust it by changing the default parameters below

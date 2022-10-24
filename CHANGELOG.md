@@ -10,6 +10,9 @@ Current
 
 ### Fixed:
 
+- [Fixing intermittent test error related to json serialization](https://github.com/yahoo/fili/pull/1259)
+  * Switched from String comparison to JsonNode comparison
+
 - [Incompatbile jakson-joda and joda resulted in runtime error on deploy](https://github.com/yahoo/fili/pull/1252)
    * removed explicit joda depdendency to allow for implicit versioning from jackson.
 
@@ -18,7 +21,15 @@ Current
    * Use getter to pull both this and that dependent metrics to correctly utilize dynamic method dispatch.
    * Added dependent metric time coalescence to base `PrototcolMetricImpl`
 
+- [Add Ability to Sort by Dimension](https://github.com/yahoo/fili/issues/1276)
+  * Modified the DefaultOrderByGenerator.java for getting the order by column name
+  * Modified the DefaultOrderByGenerator.groovy for testing the dimension sorting feature.
+
 ### Added:
+- [DatasourceMetadataLoader more extensible](https://github.com/yahoo/fili/issues/1257)
+  * Changed internal resources to be protected to support extension
+  * Changed method that builds and executes callbacks to return those callbacks
+
 -[Support user configured messages for authorization failures](https://github.com/yahoo/fili/issues/1255)
   * Changed `AuthorizationStatus` from an enum to a class collecting constants.  Make the description for failures be user configurable.
 
@@ -65,6 +76,20 @@ Current
    * Added `nextDay`, `nextWeek`, `nextMonth`, `nextQuarter`, `nextYear`
 
 ### Changed:
+
+- [Improve query time logging](https://github.com/yahoo/fili/issues/1268)
+  * Added table name to partial data comparator
+  * Removed unmapped physical column warning
+
+- [Support JDK 11 compilation](https://github.com/yahoo/fili/issues/1263)
+  * Updated POM
+  * Explicitly added javax dependencies
+  * Removed reference to Corba error type
+
+- [Extensions to support RateLimit reporting extensibility](https://github.com/yahoo/fili/issues/1261)
+  * Renamed isUi to isExtended to more clearly indicate the purpose of the fields.
+  * Added extensible methods for generating global and personal rate limit generation.
+  * Added message to the `RateLimitRequestToken` interface to support richer logging of rate limit failures.
 
 - [Bump to Groovy 2.5](https://github.com/yahoo/fili/issues/1245)
   * Lost the use of the codenarc-maven-plugin because it's not compatible with groovy 2.5 and isn't supported.

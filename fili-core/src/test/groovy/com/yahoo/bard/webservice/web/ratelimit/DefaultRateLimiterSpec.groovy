@@ -57,7 +57,7 @@ class DefaultRateLimiterSpec extends Specification {
         // reset metrics to 0
         rateLimiter.with {
             [requestGlobalCounter, usersCounter].each { it.dec(it.count) }
-            [requestBypassMeter, requestUiMeter, requestUserMeter, rejectUiMeter, rejectUserMeter].each {
+            [requestBypassMeter, requestExtendedMeter, requestUserMeter, rejectExtendedMeter, rejectUserMeter].each {
                 it.mark(-it.count)
             }
         }
@@ -86,9 +86,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.requestGlobalCounter.count == 0
         rateLimiter.usersCounter.count == 0
         rateLimiter.requestBypassMeter.count == 1
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 0
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -106,9 +106,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.requestGlobalCounter.count == 0
         rateLimiter.usersCounter.count == 0
         rateLimiter.requestBypassMeter.count == 1
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 0
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -121,9 +121,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.requestGlobalCounter.count == 1
         rateLimiter.usersCounter.count == 1
         rateLimiter.requestBypassMeter.count == 0
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 1
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -141,9 +141,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.requestGlobalCounter.count == 1
         rateLimiter.usersCounter.count == 1
         rateLimiter.requestBypassMeter.count == 0
-        rateLimiter.requestUiMeter.count == 1
+        rateLimiter.requestExtendedMeter.count == 1
         rateLimiter.requestUserMeter.count == 0
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -185,13 +185,13 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.requestBypassMeter.count == 0
 
         and: "We have not allowed any UI requests"
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
 
         and: "We have allowed the per-user limit of user requests"
         rateLimiter.requestUserMeter.count == RateLimitFilterSpec.LIMIT_PER_USER
 
         and: "We have not rejected any UI requests"
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
 
         and: "We have rejected the global limit of requests except for the per-user limit that we had allowed"
         rateLimiter.rejectUserMeter.count == RateLimitFilterSpec.LIMIT_GLOBAL-RateLimitFilterSpec.LIMIT_PER_USER
@@ -220,9 +220,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.globalCount.get() == 0
         rateLimiter.requestGlobalCounter.count == 1
         rateLimiter.requestBypassMeter.count == 0
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 1
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -242,9 +242,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.globalCount.get() == 0
         rateLimiter.requestGlobalCounter.count == 1
         rateLimiter.requestBypassMeter.count == 0
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 1
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 
@@ -270,9 +270,9 @@ class DefaultRateLimiterSpec extends Specification {
         rateLimiter.globalCount.get() == 0
         rateLimiter.requestGlobalCounter.count == 1
         rateLimiter.requestBypassMeter.count == 0
-        rateLimiter.requestUiMeter.count == 0
+        rateLimiter.requestExtendedMeter.count == 0
         rateLimiter.requestUserMeter.count == 1
-        rateLimiter.rejectUiMeter.count == 0
+        rateLimiter.rejectExtendedMeter.count == 0
         rateLimiter.rejectUserMeter.count == 0
     }
 }

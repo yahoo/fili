@@ -112,8 +112,8 @@
 
         <version.spring>5.3.20</version.spring>
         <version.groovy>2.5.15</version.groovy>
-        <version.jackson>2.12.6</version.jackson>
-        <version.jackson-databind>2.12.6.1</version.jackson-databind>
+        <version.jackson>2.13.4</version.jackson>
+        <version.jackson-databind>2.13.4.1</version.jackson-databind>
 
         <version.gmavenplus.plugin>1.12.1</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
@@ -124,6 +124,7 @@
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
+        <javadocs.package.exclude>*.luthier</javadocs.package.exclude>
 
         <min_maven_version>3.5</min_maven_version>
 
@@ -672,11 +673,12 @@
                     <configuration>
                         <quiet>true</quiet>
                         <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                        <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/antlr4</sourcepath>
                         <detectLinks>false</detectLinks>
                         <detectOfflineLinks>false</detectOfflineLinks>
-                        <additionalJOptions>H
+                        <additionalJOptions>
                             <additionalJOption>-XDiag</additionalJOption>
-                            <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
+                            <!--<additionalJOption>-J-XX:-UseG1GC</additionalJOption>-->
                             <additionalJOption>-J-Xms20m</additionalJOption>
                             <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
                             <additionalJOption>${javadoc_options}</additionalJOption>
@@ -735,7 +737,7 @@
                     <configuration>
                         <rules>
                             <requireJavaVersion>
-                                <version>[1.8,1.9]</version>
+                                <version>[1.8,12]</version>
                             </requireJavaVersion>
                             <requireMavenVersion>
                                 <version>[${min_maven_version},)</version>
@@ -781,7 +783,7 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven-project-info-reports-plugin-version}</version>
                     <configuration>
-                        <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -980,6 +982,25 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>ci-management</report>
+                            <report>dependency-management</report>
+                            <report>distribution-management</report>
+                            <report>index</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>mailing-lists</report>
+                            <report>modules</report>
+                            <report>plugin-management</report>
+                            <report>plugins</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                            <report>team</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -1001,6 +1022,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <id>aggregate-javadoc</id>
