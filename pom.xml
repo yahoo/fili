@@ -530,12 +530,6 @@
 
     <!-- Common things that all modules need -->
     <dependencies>
-        <!-- Mandatory dependencies for using Spock -->
-        <dependency>
-            <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- add dependencies below to enable JUnit 4 style tests -->
         <dependency>
             <groupId>org.junit.vintage</groupId>

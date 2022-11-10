@@ -512,7 +512,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.optimizeBackendQuery() >> canOptimize
 
-        apiRequest.getDimensions() >> { (nDims > 0) ? [resources.d1] as Set : [] as Set }
+        apiRequest.getDimensions() >> { (nDims > 0) ? ([resources.d1] as Set) : ([] as Set) }
 
         apiRequest.sorts >> {
             nSorts > 0 ?

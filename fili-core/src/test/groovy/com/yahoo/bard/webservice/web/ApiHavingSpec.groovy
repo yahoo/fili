@@ -91,7 +91,7 @@ class ApiHavingSpec extends Specification {
     }
 
     @Unroll
-    def "Bad having query #having throws #exception.simpleName because #reason"() {
+    def "Bad having query #havingString throws #exception.simpleName because #reason"() {
 
         when:
         new ApiHaving(havingString, metricStore)

@@ -146,7 +146,7 @@ class DateTimeUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "sliceIntervals slices #interval into #expected of the timeGrain #timeGrain"() {
+    def "sliceIntervals slices #intervalString into #expected of the timeGrain #timeGrain"() {
 
         expect:
         DateTimeUtils.sliceIntervals(new Interval(intervalString), timeGrain)  == (buildIntervalSet(expected) as List)
