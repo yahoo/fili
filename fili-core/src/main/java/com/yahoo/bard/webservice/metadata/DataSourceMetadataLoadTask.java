@@ -232,8 +232,8 @@ public class DataSourceMetadataLoadTask extends LoadTask<Boolean> {
             // Usually, it means Druid knows about the data source, but no segments have been loaded
             if (statusCode == NO_CONTENT.getStatusCode()) {
                 String msg = String.format(
-                        "Druid returned 204 NO CONTENT when loading metadata for the '%s' datasource. While not an " +
-                                "error, it is unusual for a Druid data source to report having no data in it. Please " +
+                        "Druid returned 204 NO CONTENT when loading metadata for the '%s' datasource. " +
+                                "It is unusual for a Druid data source to report having no data in it. Please " +
                                 "verify that your cluster is healthy.",
                         dataSourceName.asName()
                 );
