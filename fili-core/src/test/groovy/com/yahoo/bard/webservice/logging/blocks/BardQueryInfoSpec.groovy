@@ -50,7 +50,7 @@ class BardQueryInfoSpec extends Specification {
         then:
         GroovyTestUtils.compareJson(
                 new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo),
-                """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
+                """{"type":"test","queryCounter":{"druidResponseSize":0,"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,""" +
                 """"weightCheckLinesOutput":100,"weightCheckLinesScanned":5000,"weightCheckQueries":1,"weightCheckSketchesOutput":500,"weightCheckSketchesScanned":25000},"cacheStats":[]}"""
         )
     }
@@ -66,7 +66,7 @@ class BardQueryInfoSpec extends Specification {
         GroovyTestUtils.compareJson(
                 serialized,
                 """{"type":"test",""" +
-                        """"queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0}""" +
+                        """"queryCounter":{"druidResponseSize":0,"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0}""" +
                         ""","cacheStats":[{"opType":"setFailure","cacheKeyCksum":"test","signatureCksum":"testSignature","cacheKeyLen":10,"cacheValLen":100}]""" +
                         """}"""
         )
@@ -100,7 +100,7 @@ class BardQueryInfoSpec extends Specification {
         expect:
         GroovyTestUtils.compareJson(
                 new ObjectMappersSuite().jsonMapper.writeValueAsString(bardQueryInfo),
-                """{"type":"test","queryCounter":{"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0},"cacheStats":[]}"""
+                """{"type":"test","queryCounter":{"druidResponseSize":0,"factCacheHits":0,"factCachePutErrors":0,"factCachePutTimeouts":0,"factQueryCount":0,"weightCheckQueries":0},"cacheStats":[]}"""
         )
     }
 }

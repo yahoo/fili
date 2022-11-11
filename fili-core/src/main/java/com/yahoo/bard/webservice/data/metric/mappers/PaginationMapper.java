@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.metric.mappers;
 import com.yahoo.bard.webservice.data.Result;
 import com.yahoo.bard.webservice.data.ResultSet;
 import com.yahoo.bard.webservice.data.ResultSetSchema;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
 import com.yahoo.bard.webservice.util.Pagination;
 import com.yahoo.bard.webservice.web.AbstractResponse;
@@ -50,6 +51,7 @@ public class PaginationMapper extends ResultSetMapper {
      */
     @Override
     public ResultSet map(ResultSet resultSet) {
+        BardQueryInfo.accumulateDruidResponseSize(resultSet.size());
         Pagination<Result> pages = new AllPagesPagination<>(resultSet, paginationParameters);
         if (uriBuilder != null) {
             AbstractResponse.addLinks(pages, uriBuilder, responseProcessor);

@@ -22,6 +22,8 @@ import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfoUtils
 import com.yahoo.bard.webservice.util.GroovyTestUtils
 import com.yahoo.bard.webservice.web.PageNotFoundException
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
@@ -52,7 +54,11 @@ class PaginationMapperSpec extends Specification {
     private DataApiRequest apiRequest
     private ObjectMappersSuite objectMappers
 
+    private BardQueryInfo bardQueryInfo
+
     def setup(){
+
+        bardQueryInfo = BardQueryInfoUtils.initializeBardQueryInfo();
         apiRequest = Mock(DataApiRequest)
         apiRequest.getLogicalMetrics() >> Collections.emptySet()
         objectMappers = new ObjectMappersSuite()
@@ -130,6 +136,7 @@ class PaginationMapperSpec extends Specification {
 
         then: "We expect the data to be correct, the links to be added properly, and the pagination to be there"
         pageOfData == expectedData
+        bardQueryInfo.getQueryCounter().get(BardQueryInfo.DRUID_RESPONSE_SIZE).get()==testResults.size();
         List<Link> computedHeaders = responseProcessor.getHeaders()[HttpHeaders.LINK] as List<Link>
         //Apparently, Link's equality is not order agnostic }:-(.
         computedHeaders == expectedHeaders || [computedHeaders, expectedHeaders].transpose()
