@@ -10,6 +10,33 @@ Current
 
 ### Fixed:
 
+### Added:
+
+### Changed:
+
+- [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
+
+### Removed:
+
+### Fixed:
+
+### Deprecated:
+
+### Known Issues:
+
+## Contract changes:
+
+-------------
+
+### 
+1.0 Highlights
+-------------
+
+The vast majority of improvements in 1.0 have been focused on better logging and 
+resolving vulnerable dependencies.
+
+### Fixed:
+
 - [Fixing intermittent test error related to json serialization](https://github.com/yahoo/fili/pull/1259)
   * Switched from String comparison to JsonNode comparison
 
