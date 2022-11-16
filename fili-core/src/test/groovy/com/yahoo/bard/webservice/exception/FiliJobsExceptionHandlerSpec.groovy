@@ -55,10 +55,10 @@ class FiliJobsExceptionHandlerSpec extends Specification {
 
     def "A Throwable returns an Internal Server Error"() {
         given:
-        Throwable throwable = new Throwable("Throw")
+        Throwable t = new Throwable("Throw")
 
         when:
-        Response response = jobsExceptionHandler.handleThrowable(throwable, request, null)
+        Response response = jobsExceptionHandler.handleThrowable(t, request, null)
 
         then:
         response.status == Response.Status.INTERNAL_SERVER_ERROR.statusCode

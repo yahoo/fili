@@ -482,7 +482,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         TOP_N.setOn(flag)
 
-        def getTDQ = { nested -> nested ? resources.simpleNestedTemplateQuery : resources.simpleTemplateQuery }
+        def getTDQ = { n -> n ? resources.simpleNestedTemplateQuery : resources.simpleTemplateQuery }
 
         when:
         DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, getTDQ(nested))
@@ -512,7 +512,7 @@ class DruidQueryBuilderSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         apiRequest.optimizeBackendQuery() >> canOptimize
 
-        apiRequest.dimensions >> { (nDims > 0) ? [resources.d1] as Set : [] as Set }
+        apiRequest.getDimensions() >> { (nDims > 0) ? ([resources.d1] as Set) : ([] as Set) }
 
         apiRequest.sorts >> {
             nSorts > 0 ?
@@ -524,7 +524,7 @@ class DruidQueryBuilderSpec extends Specification {
 
         initDefault(apiRequest)
 
-        def getTDQ = { nested -> nested ? resources.simpleNestedTemplateQuery : resources.simpleTemplateQuery }
+        def getTDQ = { n -> n ? resources.simpleNestedTemplateQuery : resources.simpleTemplateQuery }
 
         when:
         DruidAggregationQuery<?> dq = builder.buildQuery(apiRequest, getTDQ(nested))

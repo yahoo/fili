@@ -112,7 +112,7 @@ class FilterBindersSpec extends Specification {
     }
 
     @Unroll
-    def "Bad filter #filter throws #exception.simpleName because #reason"() {
+    def "Bad filter #filterString throws #exception.simpleName because #reason"() {
 
         when:
         filterBinders.generateApiFilter(filterString, dimStore)

@@ -48,7 +48,7 @@ class IntervalUtilsGranularityIteratorSpec extends Specification {
     }
 
     @Unroll
-    def "Build #timegrain time grain GranularityIterator with source: #intervalList"() {
+    def "Build #timeGrain time grain GranularityIterator with source: #intervalList"() {
         setup:
         List<Interval> intervals = buildListOfIntervalsFromStrings(intervalList)
         List<Interval> expectedIntervals = buildListOfIntervalsFromStrings(expected)

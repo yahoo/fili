@@ -245,7 +245,7 @@ class IntervalUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "Intersect of #requestedIntervals by #grain yields #expected intersected with fixed supply"() {
+    def "Intersect of #requested by #grain yields #expected intersected with fixed supply"() {
         setup:
         SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
         Granularity granularity = grain

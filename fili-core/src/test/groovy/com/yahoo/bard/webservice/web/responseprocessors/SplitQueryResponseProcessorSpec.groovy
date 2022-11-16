@@ -160,7 +160,7 @@ class SplitQueryResponseProcessorSpec extends Specification {
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
         1 * nextFail.invoke(_) >> { it -> captureT = it }
-        captureT.getMessage().contains(expectedError)
+        captureT.getMessage().endsWith(expectedError)
 
         when:
         sqrp.processResponse(node1, groupByQuery2, null)
@@ -187,6 +187,6 @@ class SplitQueryResponseProcessorSpec extends Specification {
         0 * next.processResponse(_, _, _)
         1 * next.getFailureCallback(groupByQuery2) >> nextFail
         1 * nextFail.invoke(_) >> { it -> captureT = it }
-        captureT.getMessage().contains(expectedError)
+        captureT.getMessage().endsWith(expectedError)
     }
 }
