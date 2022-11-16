@@ -71,10 +71,10 @@ class FiliTablesExceptionHandlerSpec extends Specification {
 
     def "A Throwable returns a Bad Request"() {
         given:
-        Throwable throwable = new Throwable("Throw")
+        Throwable t = new Throwable("Throw")
 
         when:
-        Response response = tablesExceptionHandler.handleThrowable(throwable, request, null)
+        Response response = tablesExceptionHandler.handleThrowable(t, request, null)
 
         then:
         response.status == Response.Status.BAD_REQUEST.statusCode
