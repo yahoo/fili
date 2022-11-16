@@ -8,8 +8,7 @@ import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 
-import org.junit.Ignore
-
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import javax.ws.rs.core.Response
