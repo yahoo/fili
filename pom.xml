@@ -875,12 +875,10 @@
                 <executions>
                     <execution>
                         <id>add-groovy-sources</id>
-                        <!--
                         <goals>
                             <goal>addSources</goal>
                             <goal>addTestSources</goal>
                         </goals>
-                        -->
                     </execution>
                     <execution>
                         <id>compile-groovy</id>
@@ -890,11 +888,9 @@
                     </execution>
                     <execution>
                         <id>test-compile-groovy</id>
-                        <!--
                         <goals>
                             <goal>compileTests</goal>
                         </goals>
-                        -->
                     </execution>
                 </executions>
             </plugin>
