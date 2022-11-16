@@ -5,8 +5,8 @@ package com.yahoo.bard.webservice.web.apirequest
 import com.yahoo.bard.webservice.application.JerseyTestBinder
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary
 import com.yahoo.bard.webservice.web.ApiFilter
-import com.yahoo.bard.webservice.web.BadApiRequestException
-import com.yahoo.bard.webservice.web.apirequest.binders.FilterBinders
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
+import com.yahoo.bard.webservice.web.apirequest.generator.filter.FilterBinders
 import com.yahoo.bard.webservice.web.endpoints.DimensionsServlet
 
 import spock.lang.Shared
@@ -106,7 +106,7 @@ class DimensionsApiRequestImplSpec extends Specification {
 
         where:
         name    | filter                 | dictionary      | exception              | reason
-        "color" | "color|desc-in[color]" | emptyDictionary | BadApiRequestException | "Dimension Dictionary is empty.*"
+        "color" | "color|desc-in[color]" | emptyDictionary | BadApiRequestException | "Dimension.* do not exist.*"
         "blank" | "color|desc-in[color]" | fullDictionary  | BadApiRequestException | "Dimension.* do not exist.*"
         null    | "blank|desc-in[blank]" | fullDictionary  | BadApiRequestException | "Filter.*does not exist.*"
         //More enhanced dimension dictionary is needed to test what happens when a filter matches multiple dimensions

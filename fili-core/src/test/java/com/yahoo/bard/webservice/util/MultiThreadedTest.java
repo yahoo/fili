@@ -91,6 +91,7 @@ public abstract class MultiThreadedTest {
             try {
                 thread.join();
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
             }
 

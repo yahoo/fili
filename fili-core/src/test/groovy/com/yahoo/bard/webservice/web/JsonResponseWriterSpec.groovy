@@ -13,6 +13,7 @@ import com.yahoo.bard.webservice.util.JsonSortStrategy
 import com.yahoo.bard.webservice.util.Pagination
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 
+import org.joda.time.DateTime
 import org.joda.time.Interval
 import org.joda.time.format.DateTimeFormatter
 
@@ -195,5 +196,53 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
             "YYYY-MM-dd HH:mm",
             "YYYY-MM-dd"
         ]
+    }
+
+
+    @Unroll
+    def "test json serialization with partially null time"() {
+        setup:
+        def dateTime = new DateTime()
+        formattedDateTime = dateTime.toString(getDefaultFormat())
+
+        GString defaultJsonFormat = """{
+                                    "rows" : [ {
+                                                    "platform|desc" : "mobile \\" desc..",
+                                                    "product|id" : "ymail",
+                                                    "pageViews" : 10,
+                                                    "dateTime" : null,
+                                                    "platform|id" : "mob",
+                                                    "timeSpent" : 10,
+                                                    "product|desc" : "yahoo, mail",
+                                                    "property|desc": "United States"
+                                                }, {
+                                                    "platform|desc" : "desktop ,\\" desc..",
+                                                    "product|id" : "ysports",
+                                                    "pageViews" : 10,
+                                                    "dateTime" : "${-> formattedDateTime}",
+                                                    "platform|id" : "desk",
+                                                    "timeSpent" : 10,
+                                                    "product|desc" : "yahoo sports",
+                                                    "property|desc": "India"
+                                                  }
+                                            ]
+                                }"""
+
+        response = new ResponseData(
+                buildTestResultSet(metricColumnsMap, defaultRequestedMetrics, [null, dateTime]),
+                apiRequest,
+                new SimplifiedIntervalList(),
+                volatileIntervals,
+                (Pagination) null,
+                [:]
+        )
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream()
+        jsonResponseWriter = new JsonResponseWriter(MAPPERS)
+        jsonResponseWriter.write(apiRequest, response, os)
+
+
+        expect:
+        GroovyTestUtils.compareJson(os.toString(), defaultJsonFormat)
     }
 }

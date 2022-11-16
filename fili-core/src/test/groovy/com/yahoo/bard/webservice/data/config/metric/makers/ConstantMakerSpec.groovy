@@ -3,8 +3,11 @@
 package com.yahoo.bard.webservice.data.config.metric.makers
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
+import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
 import com.yahoo.bard.webservice.druid.model.postaggregation.ConstantPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.PostAggregation
 
@@ -22,10 +25,11 @@ class ConstantMakerSpec extends Specification {
             [] as Set,
             [postAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(
+            new LogicalMetricInfo(AGGREGATION_NAME),
             constantQuery,
             new NoOpResultSetMapper(),
-            AGGREGATION_NAME
+            []
         )
 
         and:

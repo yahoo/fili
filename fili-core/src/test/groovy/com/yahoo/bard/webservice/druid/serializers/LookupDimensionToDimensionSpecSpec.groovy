@@ -10,6 +10,7 @@ import com.yahoo.bard.webservice.data.DruidQueryBuilder
 import com.yahoo.bard.webservice.data.PartialDataHandler
 import com.yahoo.bard.webservice.data.QueryBuildingTestingResources
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.volatility.DefaultingVolatileIntervalsService
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery
@@ -47,7 +48,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
                 resources.druidHavingBuilder
         )
         apiRequest = Mock(DataApiRequest)
-        LogicalMetric lm1 = new LogicalMetric(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
+        LogicalMetric lm1 = new LogicalMetricImpl(resources.simpleTemplateQuery, new NoOpResultSetMapper(), "lm1", null)
 
         apiRequest.getTable() >> resources.lt14
         apiRequest.getGranularity() >> HOUR.buildZonedTimeGrain(UTC)
@@ -66,6 +67,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
     def "Given lookup dimension with no namespace serialize using dimension serializer"() {
         given:
         apiRequest.getDimensions() >> ([resources.d10])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d10])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -75,6 +77,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
     def "Given lookup dimension with one namespace serialize correctly to (lookup) extraction dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d9])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d9])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -84,6 +87,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
     def "Given lookup dimension with multiple namespaces serialize correctly to (cascade) extraction dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d8])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d8])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleTemplateQuery)
 
         expect:
@@ -93,6 +97,7 @@ class LookupDimensionToDimensionSpecSpec extends Specification{
     def "Given lookup dimension with nested query, only the inner most dimension serialize to dimension spec"() {
         given:
         apiRequest.getDimensions() >> ([resources.d9])
+        apiRequest.getAllGroupingDimensions() >> ([resources.d9])
         druidQuery = builder.buildQuery(apiRequest, resources.simpleNestedTemplateQuery)
         String serializedQuery = objectMapper.writeValueAsString(druidQuery)
 

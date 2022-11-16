@@ -66,7 +66,7 @@ public class TestLookupDimensionConfig extends TestDimensionConfig implements Lo
         return this.namespaces;
     }
 
-    //CHECKSTYLE:OFF
+    // CHECKSTYLE:OFF
     @Override
     public TestLookupDimensionConfig withApiName(TestApiDimensionName apiName) {
         return new TestLookupDimensionConfig(apiName, getPhysicalName(), getKeyValueStore(), getSearchProvider(), getFields(), getDefaultDimensionFields(), namespaces);
@@ -100,5 +100,5 @@ public class TestLookupDimensionConfig extends TestDimensionConfig implements Lo
     public TestLookupDimensionConfig withNamespaces(List<String> namespaces) {
         return new TestLookupDimensionConfig(getApiNameEnum(), getPhysicalName(), getKeyValueStore(), getSearchProvider(), getFields(), getDefaultDimensionFields(), namespaces);
     }
-    //CHECKSTYLE:ON
+    // CHECKSTYLE:ON
 }

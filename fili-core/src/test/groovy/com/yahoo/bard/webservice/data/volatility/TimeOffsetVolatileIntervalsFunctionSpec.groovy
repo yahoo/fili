@@ -10,6 +10,7 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.concurrent.TimeUnit
 import java.util.function.LongSupplier
 /**
  * Test to ensure that time offset returns volatile intervals
@@ -17,8 +18,8 @@ import java.util.function.LongSupplier
 class TimeOffsetVolatileIntervalsFunctionSpec extends Specification {
 
     static final long NOW = System.currentTimeMillis()
-    static final long PAST = 10 * 60 * 1000;
-    static final long FUTURE = 10 * 1000;
+    static final long PAST = TimeUnit.MINUTES.toMillis(10)
+    static final long FUTURE = TimeUnit.SECONDS.toMillis(10);
 
     @Shared TimeOffsetVolatileIntervalsFunction offsetService;
     @Shared TimeOffsetVolatileIntervalsFunction paddedService;

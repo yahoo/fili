@@ -13,6 +13,11 @@ public class BypassRateLimitRequestToken implements RateLimitRequestToken {
     }
 
     @Override
+    public String getMessage() {
+        return "Bypass token";
+    }
+
+    @Override
     public boolean bind() {
         return true;
     }

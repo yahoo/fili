@@ -24,6 +24,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
@@ -155,7 +156,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
         metricDict.add(viz.make())
 
         LogicalMetric foosMetric = metricDict.get("foos")
-        LogicalMetric ratioMetric = new LogicalMetric(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
+        LogicalMetric ratioMetric = new LogicalMetricImpl(foosMetric.templateDruidQuery, foosMetric.calculation, "ratioMetric", "ratioMetric Long Name", "Ratios", "Dummy metric Ratio Metric description")
         metricDict.add(ratioMetric)
 
         LogicalMetricColumn lmc = new LogicalMetricColumn(foosMetric);
@@ -192,7 +193,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 fooNoBarAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+                TestingDataApiRequestImpl.buildDataApiRequestValue()
         )
         fooNoBarPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,
@@ -205,7 +206,7 @@ class ThetaSketchIntersectionReportingResources extends Specification {
                 regFoosAggregation,
                 dimensionDict,
                 table,
-                new TestingDataApiRequestImpl()
+                TestingDataApiRequestImpl.buildDataApiRequestValue()
         )
         fooRegFoosPostAggregationInterim = ThetaSketchSetOperationHelper.makePostAggFromAgg(
                 SketchSetOperationPostAggFunction.INTERSECT,

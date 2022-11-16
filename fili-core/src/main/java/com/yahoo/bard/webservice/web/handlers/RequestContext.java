@@ -26,7 +26,7 @@ public class RequestContext {
     /**
      * Build a context for a request.
      *
-     * @param containerRequestContext  context from the http request object
+     * @param containerRequestContext  context from the http request object (nullabe in embedded contexts)
      * @param readCache  true if the cache should be checked for a response
      */
     public RequestContext(ContainerRequestContext containerRequestContext, boolean readCache) {
@@ -47,6 +47,10 @@ public class RequestContext {
 
     public SecurityContext getSecurityContext() {
         return containerRequestContext.getSecurityContext();
+    }
+
+    public ContainerRequestContext getContainerRequestContext() {
+        return containerRequestContext;
     }
 
     /**
@@ -76,6 +80,8 @@ public class RequestContext {
     }
 
     public UriBuilder getUriBuilder() {
-        return containerRequestContext.getUriInfo().getRequestUriBuilder();
+        return containerRequestContext == null
+                ? null
+                : containerRequestContext.getUriInfo().getRequestUriBuilder();
     }
 }

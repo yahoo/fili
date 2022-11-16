@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yahoo.fili</groupId>
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili-parent-pom</artifactId>
-    <version>0.12-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Fili: parent pom</name>
@@ -49,8 +49,9 @@
 
     <developers>
         <developer>
-            <name>Yahoo Inc.</name>
-            <url>https://github.com/yahoo</url>
+            <name>Fili Maintainers</name>
+            <organization>Yahoo! Inc.</organization>
+            <organizationUrl>http://www.yahoo.com/</organizationUrl>
         </developer>
     </developers>
 
@@ -72,14 +73,14 @@
     </mailingLists>
 
     <distributionManagement>
-        <site>
-            <id>git</id>
-            <url>scm:git:ssh://git@github.com:yahoo/fili.git</url>
-        </site>
         <repository>
-            <id>bintray-fili-repo</id>
-            <url>https://api.bintray.com/maven/yahoo/maven/fili/;publish=1</url>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <scm>
@@ -90,37 +91,41 @@
     </scm>
 
     <properties>
+        <releaseRepoUrl>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</releaseRepoUrl>
+        <snapshotRepoUrl>https://s01.oss.sonatype.org/content/repositories/snapshots/</snapshotRepoUrl>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
 
-        <version.fili>0.12-SNAPSHOT</version.fili>
+        <version.fili>1.1-SNAPSHOT</version.fili>
 
         <version.slf4j>1.7.25</version.slf4j>
         <version.servlet>3.1.0</version.servlet>
+        <version.asynchttp>2.12.3</version.asynchttp>
         <version.jersey>2.24</version.jersey>
         <version.hk2>2.5.0-b36</version.hk2>
         <version.metrics>3.2.2</version.metrics>
         <version.logback>1.2.3</version.logback>
         <version.lucene>7.5.0</version.lucene>
-        <version.netty>4.1.42.Final</version.netty>
-        <version.jetty>9.4.20.v20190813</version.jetty>
+        <version.jetty>9.4.40.v20210413</version.jetty>
+        <version.hibernate>5.4.3.Final</version.hibernate>
 
-        <version.lombok>1.18.8</version.lombok>
+        <version.spring>5.3.20</version.spring>
+        <version.groovy>3.0.7</version.groovy>
+        <version.jackson>2.13.4</version.jackson>
+        <version.jackson-databind>2.13.4.1</version.jackson-databind>
+        <version.junit5>5.7.0</version.junit5>
 
+        <version.gmavenplus.plugin>1.12.1</version.gmavenplus.plugin>
+        <version.guava>30.0-jre</version.guava>
+        <version.druid.api>0.20.2</version.druid.api>
 
-        <version.spring>5.1.9.RELEASE</version.spring>
-        <version.groovy>2.4.15</version.groovy>
-        <version.jackson>2.10.0</version.jackson>
-        <version.jackson-databind>2.10.0</version.jackson-databind>
-
-        <version.gmavenplus.plugin>1.6.3</version.gmavenplus.plugin>
-        <version.guava>25.0-jre</version.guava>
-        <version.druid.api>0.12.1</version.druid.api>
         <profiles.active>test</profiles.active>
 
         <disableDocLint>-Xdoclint:none</disableDocLint>
 
         <javadoc_options>${disableDocLint}</javadoc_options>
+        <javadocs.package.exclude>*.luthier</javadocs.package.exclude>
 
         <min_maven_version>3.5</min_maven_version>
 
@@ -135,19 +140,19 @@
         <checkstyle.skip>false</checkstyle.skip>
         <checkstyle.config.location>checkstyle-style.xml</checkstyle.config.location>
         <checkstyle.suppressions.location>checkstyle-suppressions.xml</checkstyle.suppressions.location>
-        <checkstyle.version>8.18</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
         <checkstyle.resourceIncludes>**/*.properties*</checkstyle.resourceIncludes>
 
         <dependency.locations.enabled>false</dependency.locations.enabled>
         <maven-javadoc-plugin-version>3.1.0</maven-javadoc-plugin-version>
         <maven-jar-plugin-version>3.1.1</maven-jar-plugin-version>
         <maven-war-plugin-version>3.2.2</maven-war-plugin-version>
-        <maven-compiler-plugin-version>3.8.0</maven-compiler-plugin-version>
+        <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
         <maven-pmd-plugin-version>3.11.0</maven-pmd-plugin-version>
         <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
-        <maven-surefire-plugin-version>3.0.0-M3</maven-surefire-plugin-version>
+        <maven-surefire-plugin-version>3.0.0-M5</maven-surefire-plugin-version>
         <maven-site-plugin-version>3.7.1</maven-site-plugin-version>
-        <maven-checkstyle-plugin-version>3.0.0</maven-checkstyle-plugin-version>
+        <maven-checkstyle-plugin-version>3.1.0</maven-checkstyle-plugin-version>
         <maven-project-info-reports-plugin-version>3.0.0</maven-project-info-reports-plugin-version>
         <maven-surefire-report-plugin-version>${maven-surefire-plugin-version}</maven-surefire-report-plugin-version>
 
@@ -158,27 +163,27 @@
         <dependencies>
             <!-- Local module dependencies -->
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-system-config</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>luthier</artifactId>
                 <version>${version.fili}</version>
             </dependency>
             <dependency>
-                <groupId>com.yahoo.fili</groupId>
+                <groupId>com.yahoo.bard</groupId>
                 <artifactId>fili-core</artifactId>
                 <version>${version.fili}</version>
                 <type>test-jar</type>
@@ -235,19 +240,13 @@
                 <version>${version.spring}</version>
             </dependency>
 
-            <!-- Test -->
+            <!--  spock stuff -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.12</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency><!-- Mandatory dependency for using Spock -->
                 <groupId>org.spockframework</groupId>
-                <artifactId>spock-core</artifactId>
-                <version>1.2-groovy-2.4</version>
-                <scope>test</scope>
+                <artifactId>spock-bom</artifactId>
+                <version>2.0-M5-groovy-3.0</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- Optional dependencies for using Spock -->
@@ -373,9 +372,57 @@
 
             <!-- Druid -->
             <dependency>
-                <groupId>io.druid</groupId>
-                <artifactId>druid-api</artifactId>
+                <groupId>org.apache.druid</groupId>
+                <artifactId>druid-core</artifactId>
                 <version>${version.druid.api}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-api</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-jul</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-1.2-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-slf4j-impl</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.dataformat</groupId>
+                        <artifactId>jackson-dataformat-smile</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.core</groupId>
+                        <artifactId>jackson-databind</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-validator</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Json Parsing -->
@@ -415,70 +462,23 @@
                 <version>${version.jackson}</version>
             </dependency>
 
-            <!-- Redis -->
-            <dependency>
-                <!-- TODO: Move to only redison dependency -->
-                <groupId>redis.clients</groupId>
-                <artifactId>jedis</artifactId>
-                <version>2.9.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.redisson</groupId>
-                <artifactId>redisson</artifactId>
-                <version>3.8.0</version>
-            </dependency>
-
-            <!-- JodaTime -->
-            <dependency>
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>2.9.6</version>
-            </dependency>
-
             <!-- HTTP Client -->
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client</artifactId>
-                <version>2.10.4</version>
+                <version>${version.asynchttp}</version>
             </dependency>
             <dependency>
                 <groupId>org.asynchttpclient</groupId>
                 <artifactId>async-http-client-netty-utils</artifactId>
-                <version>2.10.4</version>
-            </dependency>
-
-            <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-common</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-transport</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler</artifactId>
-                <version>${version.netty}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty</artifactId>
-                <version>3.10.6.Final</version>
+                <version>${version.asynchttp}</version>
             </dependency>
 
             <!-- ReactiveX -->
             <dependency>
                 <groupId>io.reactivex</groupId>
                 <artifactId>rxjava</artifactId>
-                <version>1.2.2</version>
+                <version>1.2.4</version>
             </dependency>
 
             <!-- Memcached -->
@@ -525,30 +525,42 @@
                 <artifactId>jetty-servlet</artifactId>
                 <version>${version.jetty}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
     <!-- Common things that all modules need -->
     <dependencies>
-        <!-- Mandatory dependencies for using Spock -->
+        <!-- add dependencies below to enable JUnit 4 style tests -->
+        <dependency>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+            <version>${version.junit5}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.spockframework</groupId>
-            <artifactId>spock-core</artifactId>
+            <artifactId>spock-junit4</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Optional dependencies for using Spock -->
         <dependency> <!-- enables mocking of classes (in addition to interfaces) -->
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.10.10</version>
+            <scope>test</scope>
         </dependency>
-        <dependency> <!-- enables mocking of classes without default constructor (together with CGLIB) -->
+        <dependency> <!-- enables mocking of classes without default constructor (together with ByteBuddy or CGLIB) -->
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
+            <version>3.1</version>
+            <scope>test</scope>
         </dependency>
-        <dependency> <!-- only necessary if Hamcrest matchers are used -->
+        <dependency> <!-- only required if Hamcrest matchers are used -->
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Validation -->
@@ -572,6 +584,14 @@
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
             <version>${version.groovy}</version>
+            <type>pom</type>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>groovy-testng</artifactId>
+                    <groupId>org.codehaus.groovy</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Lucene -->
@@ -648,11 +668,12 @@
                     <configuration>
                         <quiet>true</quiet>
                         <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                        <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/antlr4</sourcepath>
                         <detectLinks>false</detectLinks>
                         <detectOfflineLinks>false</detectOfflineLinks>
-                        <additionalJOptions>H
+                        <additionalJOptions>
                             <additionalJOption>-XDiag</additionalJOption>
-                            <additionalJOption>-J-XX:-UseG1GC</additionalJOption>
+                            <!--<additionalJOption>-J-XX:-UseG1GC</additionalJOption>-->
                             <additionalJOption>-J-Xms20m</additionalJOption>
                             <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
                             <additionalJOption>${javadoc_options}</additionalJOption>
@@ -667,16 +688,6 @@
                     <groupId>org.codehaus.gmavenplus</groupId>
                     <artifactId>gmavenplus-plugin</artifactId>
                     <version>${version.gmavenplus.plugin}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>addSources</goal>
-                                <goal>addTestSources</goal>
-                                <goal>compile</goal>
-                                <goal>compileTests</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -688,7 +699,8 @@
                         <argLine>${jacoco.args} -Xmx3G</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
-                            <include>%regex[.*Spec.*]</include>
+                            <include>**/*Spec*</include>
+                            <include>**/*Test.java</include>
                         </includes>
                         <trimStackTrace>false</trimStackTrace>
                     </configuration>
@@ -720,7 +732,7 @@
                     <configuration>
                         <rules>
                             <requireJavaVersion>
-                                <version>[1.8,1.9]</version>
+                                <version>[1.8,12]</version>
                             </requireJavaVersion>
                             <requireMavenVersion>
                                 <version>[${min_maven_version},)</version>
@@ -738,11 +750,12 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <!-- disabled below -->
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>codenarc-maven-plugin</artifactId>
                     <version>0.22-1</version>
                     <configuration>
-                        <groovyVersion>${version.groovy}</groovyVersion>
+                        <groovyVersion>{version.groovy}</groovyVersion>
                         <maxPriority1Violations>0</maxPriority1Violations>
                         <maxPriority2Violations>0</maxPriority2Violations>
                         <maxPriority3Violations>0</maxPriority3Violations>
@@ -765,7 +778,7 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven-project-info-reports-plugin-version}</version>
                     <configuration>
-                        <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -790,8 +803,10 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>5.2.1</version>
+                <version>6.1.5</version>
                 <configuration>
+                    <!-- Temporarily disengaging autoupdate because of broken CVE parsing -->
+                    <skip>true</skip>
                     <failBuildOnCVSS>8</failBuildOnCVSS>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <suppressionFile>owasp-suppressions.xml</suppressionFile>
@@ -860,10 +875,12 @@
                 <executions>
                     <execution>
                         <id>add-groovy-sources</id>
+                        <!--
                         <goals>
                             <goal>addSources</goal>
                             <goal>addTestSources</goal>
                         </goals>
+                        -->
                     </execution>
                     <execution>
                         <id>compile-groovy</id>
@@ -873,9 +890,11 @@
                     </execution>
                     <execution>
                         <id>test-compile-groovy</id>
+                        <!--
                         <goals>
                             <goal>compileTests</goal>
                         </goals>
+                        -->
                     </execution>
                 </executions>
             </plugin>
@@ -958,6 +977,25 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>ci-management</report>
+                            <report>dependency-management</report>
+                            <report>distribution-management</report>
+                            <report>index</report>
+                            <report>issue-management</report>
+                            <report>licenses</report>
+                            <report>mailing-lists</report>
+                            <report>modules</report>
+                            <report>plugin-management</report>
+                            <report>plugins</report>
+                            <report>scm</report>
+                            <report>summary</report>
+                            <report>team</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -979,6 +1017,9 @@
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                </configuration>
                 <reportSets>
                     <reportSet>
                         <id>aggregate-javadoc</id>
@@ -1009,14 +1050,70 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>codenarc-maven-plugin</artifactId>
-            </plugin>
+            <!-- Codenarc plugin is not being maintained and is not compatible with later versions of groovy 2.5
+                because the groovy-all jar became a pom.  There is a fix involving the codenarc ant task
+                which could be explored -->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>codenarc-maven-plugin</artifactId>-->
+<!--            </plugin>-->
         </plugins>
     </reporting>
 
     <profiles>
+        <profile>
+            <id>ossrh</id>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.defaultKeyring>false</gpg.defaultKeyring>
+                <gpg.homedir>${env.SD_SOURCE_DIR}/screwdriver/deploy</gpg.homedir>
+                <gpg.publickeyring>pubring.gpg</gpg.publickeyring>
+                <gpg.secretkeyring>secring.gpg</gpg.secretkeyring>
+            </properties>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>coverage.build</id>
             <activation>
@@ -1085,7 +1182,6 @@
                     **/*Main.java,
                     **/*Params.java
                 </sonar.coverage.exclusions>
-                <sonar.java.libraries>$HOME/.m2/repository/org/projectlombok/lombok/${version.lombok}/lombok-${version.lombok}.jar</sonar.java.libraries>
             </properties>
             <build>
                 <pluginManagement>

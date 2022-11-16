@@ -12,6 +12,7 @@ import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ArithmeticPostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
@@ -131,10 +132,12 @@ class ArithmeticMakerSpec extends Specification {
                 aggregations,
                 [sumPostAggregation] as Set
         )
-        LogicalMetric expectedMetric = new LogicalMetric(
-            expectedQuery,
-            MetricMaker.NO_OP_MAPPER,
-            metricName
+
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(
+                new LogicalMetricInfo(metricName),
+                expectedQuery,
+                MetricMaker.NO_OP_MAPPER,
+                operands
         )
 
         and: "a populated metric dictionary for the maker"

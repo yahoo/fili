@@ -11,13 +11,12 @@ import com.yahoo.bard.webservice.application.ObjectMappersSuite
 import com.yahoo.bard.webservice.config.SystemConfig
 import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.cache.TupleDataCache
-import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper
 import com.yahoo.bard.webservice.druid.client.FailureCallback
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfoUtils
 import com.yahoo.bard.webservice.metadata.QuerySigningService
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -40,9 +39,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
     Integer segmentId
     TupleDataCache<String, Integer, String> dataCache = Mock(TupleDataCache)
 
-    DataApiRequest apiRequest = Mock(DataApiRequest)
     GroupByQuery groupByQuery = Mock(GroupByQuery)
-    List<ResultSetMapper> mappers = new ArrayList<ResultSetMapper>()
     @Shared SimplifiedIntervalList intervals = new SimplifiedIntervalList()
     @Shared SimplifiedIntervalList nonEmptyIntervals = new SimplifiedIntervalList([new Interval(0, 1)])
 
@@ -52,7 +49,6 @@ class CacheV2ResponseProcessorSpec extends Specification {
     JsonNode json = jsonFactory.arrayNode()
 
     QuerySigningService<Long> querySigningService = Mock(QuerySigningService)
-    ObjectWriter writer = Mock(ObjectWriter)
 
     CacheV2ResponseProcessor crp
 
@@ -63,10 +59,12 @@ class CacheV2ResponseProcessorSpec extends Specification {
         segmentId = querySigningService.getSegmentSetId(groupByQuery).get()
         crp = new CacheV2ResponseProcessor(next, cacheKey, dataCache, querySigningService, MAPPER)
         cache_partial_data = CACHE_PARTIAL_DATA.isOn()
+        BardQueryInfoUtils.initializeBardQueryInfo()
     }
 
     def cleanup() {
         CACHE_PARTIAL_DATA.setOn(cache_partial_data)
+        BardQueryInfoUtils.resetBardQueryInfo()
     }
 
     def "Test Constructor"() {
@@ -83,7 +81,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
     @Unroll
     def "With responseContext: #context isCacheable returns #expected"() {
         setup:
-        2 * next.getResponseContext() >> context
+        (1.._) * next.getResponseContext() >> context
 
         expect:
         crp.cacheable == expected
@@ -118,7 +116,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         crp.processResponse(json, groupByQuery, null)
 
         then:
-        numGetContext * next.getResponseContext() >> responseContext
+        next.getResponseContext() >> responseContext
         1 * next.processResponse(json, groupByQuery, null)
         1 * dataCache.set(cacheKey, segmentId, '[]') >> { throw new IllegalStateException() }
 
@@ -128,7 +126,6 @@ class CacheV2ResponseProcessorSpec extends Specification {
         false            | _
 
         savedToCache = cachePartialData ? "saving to cache" : "not saved to cache"
-        numGetContext = cachePartialData ? 0 : 2
     }
 
     def "After json serialization error of the cache value, process response continues"() {
@@ -154,11 +151,11 @@ class CacheV2ResponseProcessorSpec extends Specification {
         setup: "turn on or off cache_partial_data"
         CACHE_PARTIAL_DATA.setOn(cachePartialData)
 
-        when: "we process respnse"
+        when: "we process response"
         crp.processResponse(json, groupByQuery, null)
 
         then: "data cache is handled property and continues"
-        numGetContext * next.getResponseContext() >> createResponseContext(
+        next.getResponseContext() >> createResponseContext(
                 [(MISSING_INTERVALS_CONTEXT_KEY.name): simplifiedIntervalList]
         )
         numCache * dataCache.set(*_)
@@ -176,7 +173,6 @@ class CacheV2ResponseProcessorSpec extends Specification {
         on = cachePartialData ? "on" : "off"
         is = simplifiedIntervalList.empty ? "is" : "is not"
 
-        numGetContext = cachePartialData ? 0 : 2
         numCache = simplifiedIntervalList.empty ? 1 : 0
     }
 
@@ -185,7 +181,7 @@ class CacheV2ResponseProcessorSpec extends Specification {
         String max_druid_response_length_to_cache_key = SYSTEM_CONFIG.getPackageVariableName(
                 "druid_max_response_length_to_cache"
         )
-        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key)
+        long oldMaxLength = SYSTEM_CONFIG.getLongProperty(max_druid_response_length_to_cache_key, Integer.MAX_VALUE)
 
         and: "A very small max-length-to-cache"
         long smallMaxLength = 1L
@@ -223,5 +219,17 @@ class CacheV2ResponseProcessorSpec extends Specification {
         then:
         1 * next.getErrorCallback(groupByQuery) >> hec
         1 * next.getFailureCallback(groupByQuery) >> fc
+    }
+
+    def "Cache key checksum is generated as expected"() {
+        expect:
+        CacheV2ResponseProcessor.getMD5Checksum(cacheKey) == "8c3c726f9f4cc3dd99d48a717addb033"
+    }
+    def "RuntimeException is thrown when null key is passed"() {
+        when:
+        CacheV2ResponseProcessor.getMD5Checksum(null)
+
+        then:
+        thrown RuntimeException
     }
 }

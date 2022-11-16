@@ -3,7 +3,9 @@
 package com.yahoo.bard.webservice.web
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadHavingException
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -16,9 +18,9 @@ class ApiHavingSpec extends Specification {
     LogicalMetric metric3
 
     def setup() {
-        metric1 = new LogicalMetric(null, null, "metric1")
-        metric2 = new LogicalMetric(null, null, "metric2")
-        metric3 = new LogicalMetric(null, null, "metric3")
+        metric1 = new LogicalMetricImpl(null, null, "metric1")
+        metric2 = new LogicalMetricImpl(null, null, "metric2")
+        metric3 = new LogicalMetricImpl(null, null, "metric3")
 
         metricStore = new MetricDictionary()
         metricStore.add(metric1)
@@ -89,16 +91,16 @@ class ApiHavingSpec extends Specification {
     }
 
     @Unroll
-    def "Bad having query #having throws #exception.simpleName because #reason"() {
+    def "Bad having query #havingString throws #exception.simpleName because #reason"() {
 
         when:
-        new ApiHaving(having, metricStore)
+        new ApiHaving(havingString, metricStore)
 
         then:
         thrown exception
 
         where:
-        having                        | exception          | reason
+        havingString                  | exception          | reason
         'unknown-eq[123]'             | BadHavingException | 'Unknown Metric'
         'metric1-unknown[123]'        | BadHavingException | 'Unknown Operation'
         'metric1eq[123]'              | BadHavingException | 'Missing Dash'

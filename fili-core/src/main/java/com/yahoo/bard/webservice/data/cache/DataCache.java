@@ -29,6 +29,7 @@ public interface DataCache<T extends Serializable> {
      * @param key  the key under which this object should be added.
      * @param value  the object to store
      *
+     * (Deprecate this return type to be void)
      * @return a boolean representing success of this operation
      * @throws IllegalStateException in the rare circumstance where queue is too
      * full to accept any more requests
@@ -45,6 +46,7 @@ public interface DataCache<T extends Serializable> {
      * @param value  the object to store
      * @param expiration The date on which this key should expire
      *
+     *  //(Deprecate this return type to be void)
      * @return a boolean representing success of this operation
      * @throws IllegalStateException in the rare circumstance where queue is too
      * full to accept any more requests

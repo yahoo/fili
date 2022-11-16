@@ -2,7 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.async.jobs.stores
 
-import com.yahoo.bard.webservice.web.BadFilterException
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException
 import com.yahoo.bard.webservice.web.DefaultFilterOperation
 
 import spock.lang.Specification

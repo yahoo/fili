@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.druid.model.QueryType;
 import com.yahoo.bard.webservice.druid.model.datasource.DataSource;
 import com.yahoo.bard.webservice.logging.RequestLog;
@@ -16,6 +18,10 @@ import java.util.Collections;
  * @param <Q>  Type of AbstractDruidQuery this one extends. This allows the queries to nest their own type.
  */
 public abstract class AbstractDruidQuery<Q extends AbstractDruidQuery<? super Q>> implements DruidQuery<Q> {
+
+    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    private static final String DEFAULT_TIMEOUT_KEY = SYSTEM_CONFIG.getPackageVariableName("default_query_timeout");
 
     protected final QueryType queryType;
 
@@ -41,10 +47,17 @@ public abstract class AbstractDruidQuery<Q extends AbstractDruidQuery<? super Q>
     ) {
         this.queryType = queryType;
         this.dataSource = dataSource;
-        this.context = context == null ?
-                new QueryContext(Collections.<QueryContext.Param, Object>emptyMap(), null)
-                        .withQueryId(RequestLog.getId()) :
-                incrementQueryId ? context.fork() : context;
+        Integer defaultTimeout = SYSTEM_CONFIG.getIntProperty(DEFAULT_TIMEOUT_KEY, -1);
+        QueryContext qc;
+        if (context == null) {
+            qc = new QueryContext(Collections.emptyMap()).withQueryId(RequestLog.getId());
+            if (defaultTimeout > 0) {
+                qc = qc.withTimeout(defaultTimeout);
+            }
+        } else {
+            qc = incrementQueryId ? context.fork() : context;
+        }
+        this.context = qc;
     }
 
     @Override

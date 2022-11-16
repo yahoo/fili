@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Optional;
 
 
 /**
@@ -33,14 +32,11 @@ public class FiliResponseWriter implements ResponseWriter {
     public void write(
             ApiRequest request,
             ResponseData responseData,
-            OutputStream os
-    ) throws IOException {
-        Optional<ResponseWriter> writer = responseWriterSelector.select(request);
-        if (!writer.isPresent()) {
+            OutputStream os) throws IOException {
+        responseWriterSelector.select(request).orElseThrow(() -> {
             String errorMsg = "Format type " + request.getFormat() + " is not recognized.";
             LOG.error(errorMsg);
-            throw new IllegalArgumentException(errorMsg);
-        }
-        writer.get().write(request, responseData, os);
+            return new IllegalArgumentException(errorMsg);
+        }).write(request, responseData, os);
     }
 }

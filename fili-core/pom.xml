@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.yahoo.fili</groupId>
+        <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>0.12-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-core</artifactId>
@@ -31,15 +31,25 @@
         <checkstyle.suppressions.location>../checkstyle-suppressions.xml</checkstyle.suppressions.location>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>2.3.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
-            <groupId>com.yahoo.fili</groupId>
+            <groupId>com.yahoo.bard</groupId>
             <artifactId>fili-system-config</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>io.druid</groupId>
-            <artifactId>druid-api</artifactId>
+            <groupId>org.apache.druid</groupId>
+            <artifactId>druid-core</artifactId>
         </dependency>
 
         <!-- Metrics -->
@@ -108,6 +118,11 @@
 
         <!-- Json Parsing -->
         <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
@@ -136,21 +151,13 @@
             <artifactId>jackson-dataformat-csv</artifactId>
         </dependency>
 
-        <!-- Redis -->
+        <!-- https://mvnrepository.com/artifact/org.dmfs/lib-recur -->
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
+            <groupId>org.dmfs</groupId>
+            <artifactId>lib-recur</artifactId>
+            <version>0.12.2</version>
         </dependency>
 
-        <!-- JodaTime -->
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
 
         <!-- Async HTTP Client -->
         <dependency>
@@ -168,13 +175,6 @@
         <dependency>
             <groupId>net.spy</groupId>
             <artifactId>spymemcached</artifactId>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Jersey Test 'grizzly' container -->
@@ -200,6 +200,13 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-backward-codecs</artifactId>
+        </dependency>
+
+        <!-- ANTLR Runtime -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.6</version>
         </dependency>
 
         <!-- Guava -->
@@ -228,6 +235,19 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>4.6</version>
+                <executions>
+                    <execution>
+                        <id>antlr</id>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -273,6 +293,7 @@
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.avsc"/>
                                     <arg value="${project.basedir}/src/test/resources/avroFilesTesting/sampleData.json"/>
                                     <redirector
+                                        logError="true"
                                         output="${project.build.directory}/avro/avroFilesTesting/sampleData.avro"
                                         binaryOutput="true"/>
                                 </java>

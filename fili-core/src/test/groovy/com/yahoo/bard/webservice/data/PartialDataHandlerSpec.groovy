@@ -102,7 +102,8 @@ class PartialDataHandlerSpec extends Specification {
         expectedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
                 table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
-                dataSourceConstraint.getRequestGranularity()
+                dataSourceConstraint.getRequestGranularity(),
+                "test name"
         )
     }
 
@@ -116,7 +117,8 @@ class PartialDataHandlerSpec extends Specification {
         requestedIntervals == partialDataHandler.findMissingTimeGrainIntervals(
                 table.getAvailableIntervals(dataSourceConstraint),
                 new SimplifiedIntervalList(dataSourceConstraint.getIntervals()),
-                dataSourceConstraint.getRequestGranularity()
+                dataSourceConstraint.getRequestGranularity(),
+                "test name"
         )
     }
 
@@ -151,7 +153,7 @@ class PartialDataHandlerSpec extends Specification {
 
 
     @Unroll
-    def "Collect of #requestedIntervals by #grain yields #expected when fixed supply is removed"() {
+    def "Collect of #requested by #grain yields #expected when fixed supply is removed"() {
         setup:
         SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
         SimplifiedIntervalList expectedIntervals = buildIntervalList(expected)

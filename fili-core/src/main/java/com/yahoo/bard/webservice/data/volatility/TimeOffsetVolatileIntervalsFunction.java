@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 import org.joda.time.Interval;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 
 /**
@@ -23,7 +24,7 @@ public class TimeOffsetVolatileIntervalsFunction implements VolatileIntervalsFun
      * Arbitrary future date for unbounded volatility.
      * About a century.
      */
-    public static final long FAR_FUTURE = 1000L * 60 * 60 * 24 * 365 * 100;
+    public static final long FAR_FUTURE = TimeUnit.DAYS.toMillis(36524);
 
     /**
      * The milliseconds of past time to flag as volatile.

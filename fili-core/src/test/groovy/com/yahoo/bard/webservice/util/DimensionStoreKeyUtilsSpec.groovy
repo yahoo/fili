@@ -44,7 +44,7 @@ class DimensionStoreKeyUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "getColumnKey #respects case for columnName when CASE_SENSITIVE_KEYS_ENABLED is #flagState"() {
+    def "getColumnKey #preserves case for columnName when CASE_SENSITIVE_KEYS_ENABLED is #flagState"() {
         boolean originalFlagState
 
         setup:

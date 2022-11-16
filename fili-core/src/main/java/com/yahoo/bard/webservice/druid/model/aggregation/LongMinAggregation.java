@@ -31,4 +31,9 @@ public class LongMinAggregation extends Aggregation {
     public Aggregation withFieldName(String fieldName) {
         return new LongMinAggregation(getName(), fieldName);
     }
+
+    @Override
+    public boolean isFloatingPoint() {
+        return false;
+    }
 }

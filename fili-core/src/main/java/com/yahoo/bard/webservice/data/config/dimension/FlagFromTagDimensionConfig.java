@@ -20,6 +20,7 @@ import com.yahoo.bard.webservice.web.FilterOperation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -138,15 +139,12 @@ public class FlagFromTagDimensionConfig extends DefaultRegisteredLookupDimension
         public static final String DEFAULT_TRUE_VALUE = "true";
         public static final String DEFAULT_FALSE_VALUE = "false";
 
-        public static final Set<FilterOperation> DEFAULT_POSITIVE_OPS = Stream.of(
+        public static final Set<FilterOperation> DEFAULT_POSITIVE_OPS = ImmutableSet.of(
                 DefaultFilterOperation.in,
                 DefaultFilterOperation.startswith,
                 DefaultFilterOperation.contains,
                 DefaultFilterOperation.eq
-        ).collect(Collectors.collectingAndThen(
-                Collectors.toSet(),
-                Collections::unmodifiableSet
-        ));
+        );
 
         public static final Set<FilterOperation> DEFAULT_NEGATIVE_OPS
                 = Collections.singleton(DefaultFilterOperation.notin);

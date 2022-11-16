@@ -5,9 +5,8 @@ package com.yahoo.bard.webservice.druid.model.filter;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -87,12 +86,10 @@ public class SearchFilter extends DimensionalFilter {
      */
     private SearchFilter(Dimension dimension, String type, String value) {
         super(dimension, DefaultFilterType.SEARCH);
-        this.query = Collections.unmodifiableMap(new LinkedHashMap<String, String>() {
-            {
-                put(QUERY_TYPE, type);
-                put(QUERY_VALUE, value);
-            }
-        });
+        this.query = ImmutableMap.of(
+                QUERY_TYPE, type,
+                QUERY_VALUE, value
+        );
     }
 
     public Map<String, String> getQuery() {

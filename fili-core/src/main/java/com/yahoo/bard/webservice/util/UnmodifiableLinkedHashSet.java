@@ -2,8 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.util;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class UnmodifiableLinkedHashSet<E> extends LinkedHashSet<E> {
      * @param target base set that the resultant object is a view on
      */
     private UnmodifiableLinkedHashSet(Set<E> target) {
-        this.target = Collections.unmodifiableSet(new LinkedHashSet<>(Objects.requireNonNull(target)));
+        this.target = ImmutableSet.copyOf(Objects.requireNonNull(target));
     }
 
     /**

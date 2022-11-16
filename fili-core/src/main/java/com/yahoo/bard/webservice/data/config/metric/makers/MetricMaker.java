@@ -5,6 +5,7 @@ package com.yahoo.bard.webservice.data.config.metric.makers;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
+import com.yahoo.bard.webservice.data.metric.MetricType;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.mappers.NoOpResultSetMapper;
 import com.yahoo.bard.webservice.data.metric.mappers.ResultSetMapper;
@@ -20,10 +21,39 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * Metric maker produces new metrics from existing metrics or raw configuration.
+ *
+ * <p>Metric makers conceptually describe a mapping function on metrics. Makers are initialized with any secondary
+ * parameters or code and then at time of use are passed one or more dependent metrics (or physical columns in the
+ * case of raw aggretations) to produce a new metric with a transformed calculation on the base metric.
+ * Dependent metrics can be simple aggregations of a single column in the target data store, or can be existing complex
+ * calculations themselves based on other metrics.
+ * At query building time, {@link LogicalMetric}s are merged and serialized into aggregations against the
+ * physical data store. MetricMakers are a core approach to building the {@link LogicalMetric}s that represent
+ * the complex reporting calculations that can be done. MetricMakers can be thought of as describing a formula
+ * used in a query.
+ *
+ * <p><b>Metric makers are a primarily a configuration concept.</b> At application initialization they are run to
+ * configure the set of metrics in the system and are not used afterwards. In this way, the set of calculations
+ * that can be done against the target data store is defined by configuration and are not expected to change once
+ * the Fili instance is running.
+ *
+ * <p>Instances of a MetricMaker represent a single instance of a calculation, which can then be applied to multiple
+ * different configured metrics. For example, say we have a ConstantDivisionMaker and we initialized it with the value
+ * '60'. The intended result would be to create metrics smaller than others by a factor of sixty.
+ * Such a MetricMaker instance could be built once and be repeatedly applied over many other metrics.
+ * (e.g. it could be used both to convert metrics in seconds to minutes or those in minutes to hours).
+ * To use it, we would write code
+ * similar to the following: {@code MetricMaker divide60Maker = new ConstantDivisonMaker(60)}
+ * We could then apply divide60Maker to an existing metric:
+ * {@code LogicalMetric totalTimeSpentMinutes = divide60Maker.make(totalTimeMinutesMetadata,
+ * Collections.singletonList(totalTimeSpent)} where {@code totalTimeSpent} is a metric representing an aggregation
+ * against the timeSpent column. In this way we are closing over the desired constant to add, and allowing the
+ * formula that divides by sixty to any metric to be reused against any applicable metric in the client system.
  */
 public abstract class MetricMaker {
 
@@ -92,8 +122,13 @@ public abstract class MetricMaker {
         // Check that we have the right number of metrics
         assertRequiredDependentMetricCount(logicalMetricInfo.getName(), dependentMetrics);
 
+        Optional<MetricType> metricType = makeType(logicalMetricInfo, dependentMetrics);
+
         // Have the subclass actually build the metric
-        return this.makeInner(logicalMetricInfo, dependentMetrics);
+        return this.makeInner(
+                metricType.map(type -> logicalMetricInfo.withType(type)).orElse(logicalMetricInfo),
+                dependentMetrics
+        );
     }
 
     /**
@@ -190,14 +225,34 @@ public abstract class MetricMaker {
     /**
      * A helper function returning the resulting aggregation set from merging one or more template druid queries.
      *
-     * @param names  Names of the metrics to fetch and merge the aggregation clauses from
+     * @param dictionary  The dictionary used to resolve these named
+     * @param names The names of metrics to fetch and merge the aggregation clauses from
      *
      * @return The merged query
      */
-    protected TemplateDruidQuery getMergedQuery(List<String> names) {
+    protected static TemplateDruidQuery getMergedQuery(MetricDictionary dictionary, List<String> names) {
         // Merge in any additional queries
         return names.stream()
-                .map(metrics::get)
+                .map(dictionary::get)
+                .map(LogicalMetric::getTemplateDruidQuery)
+                .reduce(TemplateDruidQuery::merge)
+                .orElseThrow(() -> {
+                    String message = "At least 1 name is needed to merge aggregations";
+                    LOG.error(message);
+                    return new IllegalArgumentException(message);
+                });
+    }
+
+    /**
+     * A helper function returning the resulting aggregation set from merging one or more template druid queries.
+     *
+     * @param logicalMetrics The names of metrics to fetch and merge the aggregation clauses from
+     *
+     * @return The merged query
+     */
+    protected TemplateDruidQuery getMergedQuery(List<LogicalMetric> logicalMetrics) {
+        // Merge in any additional queries
+        return logicalMetrics.stream()
                 .map(LogicalMetric::getTemplateDruidQuery)
                 .reduce(TemplateDruidQuery::merge)
                 .orElseThrow(() -> {
@@ -254,7 +309,7 @@ public abstract class MetricMaker {
         return field.isSketch() ?
                 FieldConverterSupplier.getSketchConverter().asSketchEstimate(field) :
                 field instanceof Aggregation ?
-                        new FieldAccessorPostAggregation(field) :
+                        new FieldAccessorPostAggregation((Aggregation) field) :
                         (PostAggregation) field;
     }
 
@@ -319,7 +374,21 @@ public abstract class MetricMaker {
         // Handle it if it's an Aggregation (ie. wrap it in a fieldAccessorPostAggregation)
         // If it's already a post-agg, we're good, and if it was an agg, we've already wrapped it
         return field instanceof Aggregation ?
-                new FieldAccessorPostAggregation(field) :
+                new FieldAccessorPostAggregation((Aggregation) field) :
                 (PostAggregation) field;
+    }
+
+    /**
+     * Create a new metric type for this metric if necessary.
+     *
+     * @param logicalMetricInfo  The identity metadata for the metric
+     * @param dependentMetrics  The metrics this metric depends on
+     *
+     * @return  An optional whose value, if any, is a new metric type for this metric.
+     */
+    protected Optional<MetricType> makeType(
+            final LogicalMetricInfo logicalMetricInfo, final List<String> dependentMetrics
+    ) {
+        return Optional.empty();
     }
 }

@@ -46,14 +46,16 @@ public class PartialTimeComparator implements Comparator<PhysicalTable> {
                 partialDataHandler.findMissingTimeGrainIntervals(
                         left.getAvailableIntervals(requestConstraint).intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
-                        requestConstraint.getRequestGranularity()
+                        requestConstraint.getRequestGranularity(),
+                        left.getName()
                 )
         );
         long missingDurationRight = IntervalUtils.getTotalDuration(
                 partialDataHandler.findMissingTimeGrainIntervals(
                         right.getAvailableIntervals(requestConstraint).intersect(requestedIntervals),
                         new SimplifiedIntervalList(requestConstraint.getIntervals()),
-                        requestConstraint.getRequestGranularity()
+                        requestConstraint.getRequestGranularity(),
+                        right.getName()
                 )
         );
         long difference = missingDurationLeft - missingDurationRight;

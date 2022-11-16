@@ -21,11 +21,13 @@ import com.yahoo.bard.webservice.data.HttpResponseChannel;
 import com.yahoo.bard.webservice.data.HttpResponseMaker;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
-import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQueryMerger;
 import com.yahoo.bard.webservice.data.time.GranularityParser;
+import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
+import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 import com.yahoo.bard.webservice.druid.model.query.DruidQuery;
 import com.yahoo.bard.webservice.exception.DataExceptionHandler;
@@ -35,14 +37,18 @@ import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.logging.blocks.DataRequest;
 import com.yahoo.bard.webservice.logging.blocks.DruidFilterInfo;
 import com.yahoo.bard.webservice.table.LogicalTable;
+import com.yahoo.bard.webservice.table.resolver.NoMatchFoundException;
 import com.yahoo.bard.webservice.util.Either;
 import com.yahoo.bard.webservice.web.PreResponse;
 import com.yahoo.bard.webservice.web.RequestMapper;
+import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.ResponseFormatResolver;
 import com.yahoo.bard.webservice.web.apirequest.ApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequestFactory;
-import com.yahoo.bard.webservice.web.apirequest.binders.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.LegacyGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.having.HavingGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
 import com.yahoo.bard.webservice.web.handlers.DataRequestHandler;
 import com.yahoo.bard.webservice.web.handlers.RequestContext;
 import com.yahoo.bard.webservice.web.handlers.RequestHandlerUtils;
@@ -56,6 +62,8 @@ import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -66,11 +74,14 @@ import rx.observables.ConnectableObservable;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -97,24 +108,27 @@ import javax.ws.rs.core.UriInfo;
 @Path("data")
 @Singleton
 public class DataServlet extends CORSPreflightServlet implements BardConfigResources {
-    private static final Logger LOG = LoggerFactory.getLogger(DataServlet.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DataServlet.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
 
-    private final ResourceDictionaries resourceDictionaries;
-    private final DruidQueryBuilder druidQueryBuilder;
-    private final TemplateDruidQueryMerger templateDruidQueryMerger;
-    private final DruidResponseParser druidResponseParser;
-    private final DataRequestHandler dataRequestHandler;
-    private final RequestMapper requestMapper;
-    private final DruidFilterBuilder filterBuilder;
-    private final HavingGenerator havingGenerator;
-    private final JobRowBuilder jobRowBuilder;
-    private final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
-    private final JobPayloadBuilder jobPayloadBuilder;
-    private final BroadcastChannel<String> preResponseStoredNotifications;
-    private final DateTimeFormatter dateTimeFormatter;
+    protected final ResourceDictionaries resourceDictionaries;
+    protected final DruidQueryBuilder druidQueryBuilder;
+    protected final TemplateDruidQueryMerger templateDruidQueryMerger;
+    protected final DruidResponseParser druidResponseParser;
+    protected final DataRequestHandler dataRequestHandler;
+    protected final RequestMapper requestMapper;
+    protected final DruidFilterBuilder filterBuilder;
+    protected final HavingGenerator havingGenerator;
+    protected final JobRowBuilder jobRowBuilder;
+    protected final AsynchronousWorkflowsBuilder asynchronousWorkflowsBuilder;
+    protected final JobPayloadBuilder jobPayloadBuilder;
+    protected final BroadcastChannel<String> preResponseStoredNotifications;
+    protected final DateTimeFormatter dateTimeFormatter;
+
+    private final ApiRequestLogicalMetricBinder metricBinder;
+    private final LegacyGenerator<List<OrderByColumn>> orderByGenerator;
 
     private final GranularityParser granularityParser;
 
@@ -126,6 +140,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
     private final DataApiRequestFactory dataApiRequestFactory;
 
+
     // Default JodaTime zone to UTC
     private final DateTimeZone systemTimeZone = DateTimeZone.forID(SYSTEM_CONFIG.getStringProperty(
             SYSTEM_CONFIG.getPackageVariableName("timezone"),
@@ -136,7 +151,6 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
 
     /**
      * Constructor.
-     *
      * @param resourceDictionaries  Dictionary holder
      * @param druidQueryBuilder  A builder for converting API Requests into Druid Queries
      * @param templateDruidQueryMerger  A helper to merge TemplateDruidQueries together
@@ -152,13 +166,15 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param asynchronousWorkflowsBuilder  The factory for building the asynchronous workflow
      * @param preResponseStoredNotifications  The broadcast channel responsible for notifying other Bard processes
      * @param httpResponseMaker  The factory for building HTTP responses
-     * that a query has been completed and its results stored in the
+* that a query has been completed and its results stored in the
      * @param formatResolver  The formatResolver for determining correct response format
      * @param dataApiRequestFactory A factory to build dataApiRequests
-     * {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
+* {@link com.yahoo.bard.webservice.async.preresponses.stores.PreResponseStore}
      * @param responseProcessorFactory  Builds the object that performs post processing on a Druid response
      * @param exceptionHandler  Injects custom logic for handling exceptions thrown during request processing
      * @param dateTimeFormatter  date time formatter
+     * @param metricBinder  A binder to build logical metrics
+     * @param orderByGenerator  A factory to bind and validate sort clauses
      */
     @Inject
     public DataServlet(
@@ -181,7 +197,9 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             DataApiRequestFactory dataApiRequestFactory,
             ResponseProcessorFactory responseProcessorFactory,
             DataExceptionHandler exceptionHandler,
-            DateTimeFormatter dateTimeFormatter
+            DateTimeFormatter dateTimeFormatter,
+            ApiRequestLogicalMetricBinder metricBinder,
+            @Named(DataApiRequest.ORDER_BY_GENERATOR_NAMESPACE) LegacyGenerator<List<OrderByColumn>> orderByGenerator
     ) {
         this.resourceDictionaries = resourceDictionaries;
         this.druidQueryBuilder = druidQueryBuilder;
@@ -204,6 +222,8 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         this.responseProcessorFactory = responseProcessorFactory;
         this.exceptionHandler = exceptionHandler;
         this.dateTimeFormatter = dateTimeFormatter;
+        this.metricBinder = metricBinder;
+        this.orderByGenerator = orderByGenerator;
 
         LOG.trace(
                 "Initialized with ResourceDictionaries: {} \n\n" +
@@ -225,8 +245,14 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
      * @param request  the DataApiRequest to extract the logging information from
      * @param readCache  whether cache is bypassed or not
      * @param druidQuery  Druid query for which we're logging metrics
+     * @param templateDruidQuery  Template druid query for which we're logging metrics
      */
-    private void logRequestMetrics(DataApiRequest request, Boolean readCache, DruidQuery<?> druidQuery) {
+    private void logRequestMetrics(
+            DataApiRequest request,
+            Boolean readCache,
+            DruidQuery<?> druidQuery,
+            TemplateDruidQuery templateDruidQuery
+    ) {
         // Log dimension metrics
         Set<Dimension> dimensions = request.getDimensions();
         for (Dimension dim : dimensions) {
@@ -251,6 +277,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                         request.getApiFilters().values(),
                         metrics,
                         dimensions,
+                        templateDruidQuery.getMetricDimensions(),
                         druidQuery.getDataSource().getNames(),
                         readCache,
                         request.getFormat().toString()
@@ -388,51 +415,36 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     ) {
         DataApiRequest apiRequest = null;
         try {
-            try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
-                apiRequest = dataApiRequestFactory.buildApiRequest(
-                        tableName,
-                        timeGrain,
-                        dimensions,
-                        metrics,
-                        intervals,
-                        filters,
-                        havings,
-                        sorts,
-                        count,
-                        topN,
-                        formatResolver.apply(format, containerRequestContext),
-                        downloadFilename,
-                        timeZone,
-                        asyncAfter,
-                        perPage,
-                        page,
-                        this
-                );
-            }
-
-            if (requestMapper != null) {
-                try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
-                    apiRequest = (DataApiRequest) requestMapper.apply(apiRequest, containerRequestContext);
-                }
-            }
-
+            apiRequest = prepareDataApiRequest(
+                    uriInfo,
+                    containerRequestContext,
+                    tableName,
+                    timeGrain,
+                    dimensions,
+                    metrics,
+                    intervals,
+                    filters,
+                    havings,
+                    sorts,
+                    count,
+                    topN,
+                    format,
+                    timeZone,
+                    asyncAfter,
+                    downloadFilename,
+                    perPage,
+                    page
+            );
             // Build the query template
-            TemplateDruidQuery templateQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
-                templateQuery = templateDruidQueryMerger.merge(apiRequest);
-            }
 
-            // Select the performance slice and build the final query
-            DruidAggregationQuery<?> druidQuery;
-            try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
-                druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
-            }
+            TemplateDruidQuery templateQuery = prepareTemplateDruidQuery(apiRequest);
 
-            // Accumulate data needed for request processing workflow
-            RequestContext context;
-            try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
-                context = new RequestContext(containerRequestContext, readCache);
-            }
+            DruidAggregationQuery<?> druidQuery = prepareDruidQuery(
+                    apiRequest,
+                    templateQuery
+            );
+
+            RequestContext context = prepareContext(containerRequestContext, readCache);
 
             Subject<PreResponse, PreResponse> queryResultsEmitter = PublishSubject.create();
 
@@ -453,7 +465,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             );
 
             try (TimedPhase timer = RequestLog.startTiming("logRequestMetrics")) {
-                logRequestMetrics(apiRequest, readCache, druidQuery);
+                logRequestMetrics(apiRequest, readCache, druidQuery, templateQuery);
                 RequestLog.record(new DruidFilterInfo(druidQuery.getFilter()));
             }
 
@@ -486,6 +498,101 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
                 );
             }
         }
+    }
+
+    protected RequestContext prepareContext(
+            final ContainerRequestContext containerRequestContext,
+            final Boolean readCache
+    ) {
+        // Accumulate data needed for request processing workflow
+        RequestContext context;
+        try (TimedPhase timer = RequestLog.startTiming("BuildRequestContext")) {
+            // In embedded contexts, containerRequestContext may be null
+            context = new RequestContext(containerRequestContext, readCache);
+        }
+        return context;
+    }
+
+    protected DruidAggregationQuery<?> prepareDruidQuery(
+            final DataApiRequest apiRequest,
+            final TemplateDruidQuery templateQuery
+    ) throws FilterBuilderException, NoMatchFoundException {
+        // Select the performance slice and build the final query
+        DruidAggregationQuery<?> druidQuery;
+        try (TimedPhase timer = RequestLog.startTiming("DruidQueryBuilder")) {
+            druidQuery = druidQueryBuilder.buildQuery(apiRequest, templateQuery);
+        }
+        return druidQuery;
+    }
+
+    protected TemplateDruidQuery prepareTemplateDruidQuery(final DataApiRequest apiRequest) {
+        TemplateDruidQuery templateQuery;
+        try (TimedPhase timer = RequestLog.startTiming("DruidQueryMerge")) {
+            templateQuery = templateDruidQueryMerger.merge(apiRequest);
+        }
+        return templateQuery;
+    }
+
+    protected DataApiRequest prepareDataApiRequest(
+            UriInfo uriInfo,
+            ContainerRequestContext containerRequestContext,
+            String tableName,
+            String timeGrain,
+            List<PathSegment> dimensions,
+            String metrics,
+            String intervals,
+            String filters,
+            String havings,
+            String sorts,
+            String count,
+            String topN,
+            String format,
+            String timeZone,
+            String asyncAfter,
+            String downloadFilename,
+            String perPage,
+            String page) throws RequestValidationException {
+        DataApiRequest dataApiRequest;
+        List<PathSegment> cleanedDimensions = dimensions.stream().filter(ps -> !ps.getPath().isEmpty())
+                .collect(Collectors.toList()
+        );
+
+        MultiValuedMap<String, String> wrappedQueryParams = new ArrayListValuedHashMap<>();
+
+        for (Map.Entry<String, List<String>> entry : containerRequestContext.getUriInfo()
+                .getQueryParameters().entrySet()) {
+            wrappedQueryParams.putAll(entry.getKey(), entry.getValue());
+        }
+
+        try (TimedPhase timer = RequestLog.startTiming("DataApiRequest")) {
+            dataApiRequest = dataApiRequestFactory.buildApiRequest(
+                    tableName,
+                    timeGrain,
+                    cleanedDimensions,
+                    metrics,
+                    intervals,
+                    filters,
+                    havings,
+                    sorts,
+                    count,
+                    topN,
+                    formatResolver.apply(format, containerRequestContext),
+                    downloadFilename,
+                    timeZone,
+                    asyncAfter,
+                    perPage,
+                    page,
+                    wrappedQueryParams,
+                    this
+            );
+        }
+
+        if (requestMapper != null) {
+            try (TimedPhase timer = RequestLog.startTiming("DataApiRequestMappers")) {
+                dataApiRequest = (DataApiRequest) requestMapper.apply(dataApiRequest, containerRequestContext);
+            }
+        }
+        return dataApiRequest;
     }
 
     /**
@@ -587,7 +694,7 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
             );
         } catch (JsonProcessingException e) {
             LOG.error("Error serializing JobRow: %s", e);
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -595,10 +702,12 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
         return druidResponseParser;
     }
 
+    @Override
     public DruidFilterBuilder getFilterBuilder() {
         return filterBuilder;
     }
 
+    @Override
     public HavingGenerator getHavingApiGenerator() {
         return havingGenerator;
     }
@@ -645,5 +754,15 @@ public class DataServlet extends CORSPreflightServlet implements BardConfigResou
     @Override
     public GranularityParser getGranularityParser() {
         return granularityParser;
+    }
+
+    @Override
+    public ApiRequestLogicalMetricBinder getMetricBinder() {
+        return metricBinder;
+    }
+
+    @Override
+    public LegacyGenerator<List<OrderByColumn>> getOrderByGenerator() {
+        return orderByGenerator;
     }
 }

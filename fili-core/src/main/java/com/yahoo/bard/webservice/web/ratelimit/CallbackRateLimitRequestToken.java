@@ -14,6 +14,7 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
 
     private final RateLimitCleanupOnRequestComplete rateLimitCleanup;
     private boolean isBound;
+    private String message;
 
     /**
      * Constructor.
@@ -22,13 +23,34 @@ public class CallbackRateLimitRequestToken implements RateLimitRequestToken {
      * @param rateLimitCleanup  The callback for cleaning up after the request associated with this token is complete
      */
     public CallbackRateLimitRequestToken(boolean isBound, RateLimitCleanupOnRequestComplete rateLimitCleanup) {
-        this.rateLimitCleanup = rateLimitCleanup;
-        this.isBound = isBound;
+        this(isBound, rateLimitCleanup, "");
     }
 
+
+    /**
+     * Constructor.
+     *
+     * @param isBound  Indicate whether or not the request associated with this token is valid (bound) or not
+     * @param rateLimitCleanup  The callback for cleaning up after the request associated with this token is complete
+     * @param message A message to display when logging this token.
+     */
+    public CallbackRateLimitRequestToken(
+            boolean isBound,
+            RateLimitCleanupOnRequestComplete rateLimitCleanup,
+            String message
+    ) {
+        this.rateLimitCleanup = rateLimitCleanup;
+        this.isBound = isBound;
+        this.message = message;
+    }
     @Override
     public boolean isBound() {
         return isBound;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
     }
 
     @Override

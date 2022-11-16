@@ -89,6 +89,18 @@ public class TimedPhase implements AutoCloseable {
         return duration;
     }
 
+    /**
+     * Return the duration of the timer in nanoseconds.
+     *
+     * @return The duration of the timer in nanoseconds
+     */
+    public long getActiveDuration() {
+        if (isRunning()) {
+            return System.nanoTime() - start;
+        }
+        return duration;
+    }
+
     public String getName() {
         return name;
     }

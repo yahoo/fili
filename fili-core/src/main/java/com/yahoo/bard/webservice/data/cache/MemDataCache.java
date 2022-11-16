@@ -2,20 +2,31 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.data.cache;
 
+import static net.spy.memcached.DefaultConnectionFactory.DEFAULT_OPERATION_TIMEOUT;
+
+import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigException;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
+import com.yahoo.bard.webservice.web.responseprocessors.CacheV2ResponseProcessor;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,7 +42,21 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final @NotNull String SERVER_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName("memcached_servers");
+
+    private static final @NotNull String OPERATION_TIMEOUT_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "memcached_operation_timeout"
+    );
+
+    public static final String MAX_CACHE_LENGTH_CONFIG_KEY = SYSTEM_CONFIG.getPackageVariableName(
+            "druid_max_response_length_to_cache"
+    );
+
     private static final String SERVER_CONFIG = SYSTEM_CONFIG.getStringProperty(SERVER_CONFIG_KEY);
+    private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    public static final Meter CACHE_SET_TIMEOUT_FAILURES = REGISTRY.meter("queries.meter.cache.put.timeout.failures");
+    public static final String LOG_CACHE_SET_TIMEOUT = "cacheSetTimedOut";
+
+    protected final long maxCache = SYSTEM_CONFIG.getLongProperty(MAX_CACHE_LENGTH_CONFIG_KEY, -1);
 
     /**
      * Memcached uses the actual value sent, and it may either be Unix time (number of seconds since January 1, 1970, as
@@ -42,10 +67,12 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     private static final int EXPIRATION_MAX_VALUE = 60 * 60 * 24 * 30;
     private static final @NotNull String EXPIRATION_KEY =
             SYSTEM_CONFIG.getPackageVariableName("memcached_expiration_seconds");
+
     private static final int EXPIRATION_DEFAULT_VALUE = 3600;
-    private static final int EXPIRATION = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
 
     final private MemcachedClient client;
+    private static final @NotNull String WAIT_FOR_FUTURE =
+            SYSTEM_CONFIG.getPackageVariableName("wait_for_future_from_memcached");
 
     /**
      * Constructor using a default Memcached Client.
@@ -54,7 +81,12 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      */
     @Inject
     public MemDataCache() throws IOException {
-        this(new MemcachedClient(new BinaryConnectionFactory(), AddrUtil.getAddresses(SERVER_CONFIG)));
+        this(
+                new MemcachedClient(new TimeoutConfigurerBinaryConnectionFactory(
+                        SYSTEM_CONFIG.getLongProperty(OPERATION_TIMEOUT_CONFIG_KEY, DEFAULT_OPERATION_TIMEOUT)),
+                        AddrUtil.getAddresses(SERVER_CONFIG)
+                )
+        );
     }
 
     /**
@@ -64,7 +96,8 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
      */
     public MemDataCache(MemcachedClient client) {
         // validate expiration value
-        if (EXPIRATION > EXPIRATION_MAX_VALUE) {
+        int expiration = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
+        if (expiration > EXPIRATION_MAX_VALUE) {
             throw new SystemConfigException("memcached_expiration_seconds exceeds " + EXPIRATION_MAX_VALUE);
         }
         this.client = client;
@@ -77,19 +110,36 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
             T value = (T) client.get(key);
             return value;
         } catch (RuntimeException warnThenIgnore) {
-            LOG.warn(warnThenIgnore.getMessage(), warnThenIgnore);
+            LOG.warn("get failed for key {} with cksum {} , {}",
+                    key,
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
+                    warnThenIgnore.getMessage(),
+                    warnThenIgnore);
+            BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                    CacheV2ResponseProcessor.getMD5Checksum(key),
+                    new BardCacheInfo(
+                            QuerySignedCacheService.LOG_CACHE_READ_FAILURES,
+                            key.length(),
+                            CacheV2ResponseProcessor.getMD5Checksum(key),
+                            null,
+                            0
+                    )
+            );
             return null;
         }
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T value) throws IllegalStateException {
-        return setInSeconds(key, value, EXPIRATION);
+        int expiration = SYSTEM_CONFIG.getIntProperty(EXPIRATION_KEY, EXPIRATION_DEFAULT_VALUE);
+        return setInSeconds(key, value, expiration);
     }
 
+    //(Deprecate this return type to be void)
     @Override
     public boolean set(String key, T value, DateTime expiration) throws IllegalStateException {
-        return setInSeconds(key, value, (int) (expiration.getMillis() / 1000L));
+        return setInSeconds(key, value, (int) TimeUnit.MILLISECONDS.toSeconds(expiration.getMillis()));
     }
 
     /**
@@ -113,9 +163,32 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
         try {
             // Omitting null checking for key since it should be rare.
             // An exception will be thrown by the memcached client.
-            return client.set(key, expirationInSeconds, value).get();
+            if (SYSTEM_CONFIG.getBooleanProperty(WAIT_FOR_FUTURE, false)) {
+                return client.set(key, expirationInSeconds, value).get();
+            } else {
+                return client.set(key, expirationInSeconds, value) != null;
+            }
         } catch (Exception e) {
-            LOG.warn("set failed {} {}", key, e.toString());
+            Throwable exception = e.getClass() == RuntimeException.class ? e.getCause() : e;
+            if (exception instanceof TimeoutException) {
+                //mark and log the timeout errors on cache set
+
+                CACHE_SET_TIMEOUT_FAILURES.mark(1);
+                BardQueryInfo.getBardQueryInfo().incrementCountCacheSetTimeoutFailures();
+                BardQueryInfo.getBardQueryInfo().addCacheInfo(
+                        CacheV2ResponseProcessor.getMD5Checksum(key),
+                        new BardCacheInfo(
+                                LOG_CACHE_SET_TIMEOUT,
+                                key.length(),
+                                CacheV2ResponseProcessor.getMD5Checksum(key),
+                                null,
+                                value.toString().length()
+                        )
+                );
+
+            }
+            LOG.warn("set failed for key: {} ,cksum: {} {}",
+                    key, CacheV2ResponseProcessor.getMD5Checksum(key), e.toString());
             throw new IllegalStateException(e);
         }
     }

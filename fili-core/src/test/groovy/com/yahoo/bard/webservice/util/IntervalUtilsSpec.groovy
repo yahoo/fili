@@ -91,9 +91,9 @@ class IntervalUtilsSpec extends Specification {
 
     @Unroll
     def "Slicing Intervals #baseIntervals with period #grain returns #expected"(
-            Granularity grain,
-            List<String> baseIntervals,
-            List<String> expected
+            Object grain,
+            Object baseIntervals,
+            Object expected
     ) {
         given:
         List<Interval> baseIntervalList = buildIntervalList(baseIntervals)
@@ -107,7 +107,7 @@ class IntervalUtilsSpec extends Specification {
         [grain, baseIntervals, expected] << sliceExpectedSets()
     }
 
-    static def sliceExpectedSets() {
+    static List<?> sliceExpectedSets() {
         List results = []
         results.add(
                 [DAY, ["2015-01-14/2015-01-17"], ["2015-01-14/2015-01-15", "2015-01-15/2015-01-16", "2015-01-16/2015-01-17"]]
@@ -245,7 +245,7 @@ class IntervalUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "Intersect of #requestedIntervals by #grain yields #expected intersected with fixed supply"() {
+    def "Intersect of #requested by #grain yields #expected intersected with fixed supply"() {
         setup:
         SimplifiedIntervalList supply = buildIntervalList(['2012-05-04/2017-02-03'])
         Granularity granularity = grain

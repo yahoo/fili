@@ -5,10 +5,12 @@ package com.yahoo.bard.webservice.data.config.metric.makers
 import com.yahoo.bard.webservice.data.config.names.TestApiMetricName
 import com.yahoo.bard.webservice.data.config.names.TestDruidMetricName
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.LogicalMetricInfo
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery
 import com.yahoo.bard.webservice.data.metric.mappers.SketchRoundUpMapper
+import com.yahoo.bard.webservice.data.metric.protocol.ProtocolMetricImpl
 import com.yahoo.bard.webservice.druid.model.aggregation.Aggregation
 import com.yahoo.bard.webservice.druid.model.aggregation.ThetaSketchAggregation
 
@@ -32,15 +34,17 @@ class ThetaSketchMakerSpec extends Specification {
 
     def "A Logical Metric that performs a sketch count is built correctly"() {
         given: "A name for this , and the name of the metric this metric relies on"
+        LogicalMetricInfo info = new LogicalMetricInfo(TestApiMetricName.A_OTHER_USERS.asName())
         String metricName = TestApiMetricName.A_OTHER_USERS.asName()
         String dependentMetricName = TestDruidMetricName.USERS.asName()
 
         and: "The logical metric the maker is expected to build"
         Set aggregations = [new ThetaSketchAggregation(metricName, dependentMetricName, SKETCH_SIZE)] as Set
-        LogicalMetric expectedMetric = new LogicalMetric(
+        LogicalMetric expectedMetric = new ProtocolMetricImpl(
+                info,
                 new TemplateDruidQuery(aggregations, [] as Set),
                 new SketchRoundUpMapper(metricName),
-                metricName
+                []
         )
 
         and:

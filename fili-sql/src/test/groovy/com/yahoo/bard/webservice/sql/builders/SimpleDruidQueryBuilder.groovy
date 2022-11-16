@@ -2,6 +2,9 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.sql.builders
 
+import com.yahoo.bard.webservice.druid.model.orderby.TopNMetric
+import org.apache.lucene.search.Sort
+
 import static com.yahoo.bard.webservice.database.Database.ADDED
 import static com.yahoo.bard.webservice.database.Database.CHANNEL
 import static com.yahoo.bard.webservice.database.Database.CITY_NAME
@@ -57,7 +60,7 @@ import com.yahoo.bard.webservice.table.ConstrainedTable
 import com.yahoo.bard.webservice.table.PhysicalTableDictionary
 import com.yahoo.bard.webservice.table.SqlPhysicalTable
 import com.yahoo.bard.webservice.table.availability.PermissiveAvailability
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.resolver.BaseDataSourceConstraint
 import com.yahoo.bard.webservice.util.Utils
 import com.yahoo.bard.webservice.web.filters.ApiFilters
 
@@ -122,7 +125,8 @@ class SimpleDruidQueryBuilder {
                 filter,
                 aggregations,
                 postAggs,
-                intervals
+                intervals,
+                null
         )
     }
 
@@ -148,7 +152,8 @@ class SimpleDruidQueryBuilder {
                 aggregations,
                 postAggs,
                 intervals,
-                limitSpec
+                limitSpec,
+                null
         )
     }
 
@@ -212,7 +217,7 @@ class SimpleDruidQueryBuilder {
         return new TableDataSource(
                 new ConstrainedTable(
                         strictPhysicalTable,
-                        new DataSourceConstraint(
+                        new BaseDataSourceConstraint(
                                 [] as Set,
                                 [] as Set,
                                 [] as Set,
@@ -249,5 +254,9 @@ class SimpleDruidQueryBuilder {
                         ScanSearchProviderManager.getInstance(dimension)
                 )
         )
+    }
+
+    public static TopNMetric getTopNMetric(String metric, SortDirection direction) {
+        return new TopNMetric(metric, direction);
     }
 }

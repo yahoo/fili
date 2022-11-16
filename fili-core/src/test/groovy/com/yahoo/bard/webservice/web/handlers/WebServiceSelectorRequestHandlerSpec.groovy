@@ -3,18 +3,26 @@
 package com.yahoo.bard.webservice.web.handlers
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.druid.client.DruidServiceConfig
 import com.yahoo.bard.webservice.druid.client.DruidWebService
+import com.yahoo.bard.webservice.druid.model.datasource.DataSource
+import com.yahoo.bard.webservice.druid.model.orderby.LimitSpec
 import com.yahoo.bard.webservice.druid.model.query.GroupByQuery
 import com.yahoo.bard.webservice.druid.model.query.QueryContext
+import com.yahoo.bard.webservice.logging.RequestLog
+import com.yahoo.bard.webservice.logging.TimeRemainingFunction
 import com.yahoo.bard.webservice.web.DataApiRequestTypeIdentifier
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.filters.BardLoggingFilter
 import com.yahoo.bard.webservice.web.responseprocessors.ResponseProcessor
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.concurrent.TimeUnit
 
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedHashMap
@@ -85,6 +93,135 @@ class WebServiceSelectorRequestHandlerSpec extends Specification {
         5        |  null      | true            | 1
         null     |  1         | true            | 1
         5        |  1         | true            | 1
+    }
 
+    @Unroll
+    def "Test lower query timeout is preserved client timeout: #timeout queryTimeout: #originalTimeout expected: #expected"() {
+        setup:
+        QueryContext originalContext = new QueryContext([:])
+
+        if (originalTimeout != null) {
+            originalContext = originalContext.withTimeout(originalTimeout)
+        }
+
+        QueryContext expectedContext
+        if (expected != null) {
+            expectedContext = new QueryContext([(QueryContext.Param.TIMEOUT): expected])
+        } else {
+            expectedContext = new QueryContext([:])
+        }
+
+        int valueChanging = (timeout != null ? 1: 0)
+        int valueNotChanging = (timeout == null ? 1: 0)
+
+        DruidWebService onWebService = webService
+        DataRequestHandler nextHandler = webServiceNext
+
+        ContainerRequestContext crc = Mock(ContainerRequestContext)
+        crc.getHeaders() >> headerMap
+
+        headerMap.add(DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME, DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
+        headerMap.add("referer", "http://somewhere")
+        rc = new RequestContext(crc, true)
+
+        when:
+        handler.handleRequest(rc, request, groupByQuery, response)
+
+        then:
+        onWebService.getServiceConfig() >> serviceConfig
+        serviceConfig.getPriority() >> null
+        onWebService.getTimeout() >> timeout
+        groupByQuery.getContext() >> originalContext
+        (valueChanging) * groupByQuery.withContext(_) >> modifiedGroupByQuery
+        (valueChanging) * nextHandler.handleRequest(rc, request, modifiedGroupByQuery, response)
+        (valueNotChanging) * nextHandler.handleRequest(rc, request, groupByQuery, response)
+
+        where:
+        timeout  |  originalTimeout | expected
+        5        |  10              | 5
+        5        |  1               | 1
+        5        |  null            | 5
+        null     |  10              | 10
+        null     |  1               | 1
+        null     |  null            | null
+    }
+
+    def "Test time function counts down based on total timing"() {
+        setup:
+
+        WebServiceSelectorRequestHandler handler = new WebServiceSelectorRequestHandler(
+                webService,
+                webServiceNext,
+                mapper,
+                TimeRemainingFunction.INSTANCE
+        )
+
+        RequestLog.startTiming(BardLoggingFilter.TOTAL_TIMER)
+        DataSource dataSource = Mock(DataSource)
+        GroupByQuery groupByQuery1 = new GroupByQuery(
+                dataSource,
+                DefaultTimeGrain.DAY,
+                Collections.emptyList(),
+                null,
+                null,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                null,
+                null
+        )
+        Integer timeout = 20000
+        Integer timeSoFar = 0
+        QueryContext latestActualContext = null
+
+        and: "Stubbing"
+        DruidWebService onWebService
+        DataRequestHandler nextHandler = webServiceNext
+        ContainerRequestContext crc = Mock(ContainerRequestContext)
+        crc.getHeaders() >> headerMap
+        headerMap.add(DataApiRequestTypeIdentifier.CLIENT_HEADER_NAME, DataApiRequestTypeIdentifier.CLIENT_HEADER_VALUE)
+        headerMap.add("referer", "http://somewhere")
+
+        onWebService = webService
+        onWebService.getTimeout() >> timeout
+        onWebService.getServiceConfig() >> serviceConfig
+
+        nextHandler
+        rc = new RequestContext(crc, true)
+
+        when:
+        Thread.sleep(1000)
+        handler.handleRequest(rc, request, groupByQuery1, response)
+
+
+        then:
+        1 * nextHandler.handleRequest(rc, request, _, response) >> {
+            arguments ->
+                timeSoFar = (int) TimeUnit.NANOSECONDS.toMillis(RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration())
+                latestActualContext = ((GroupByQuery) arguments[2]).getContext()
+                return true
+        }
+        timeSoFar > 1000
+        timeSoFar < 19000
+        Math.abs(timeout - timeSoFar - latestActualContext.getTimeout() ) < 100
+
+        when:
+        Thread.sleep(2000)
+        handler.handleRequest(rc, request, groupByQuery1, response)
+
+
+        then:
+        1 * nextHandler.handleRequest(rc, request, _, response) >> {
+            arguments ->
+                timeSoFar = (int) TimeUnit.NANOSECONDS.toMillis(RequestLog.fetchTiming(BardLoggingFilter.TOTAL_TIMER).getActiveDuration())
+                latestActualContext = ((GroupByQuery) arguments[2]).getContext()
+                return true
+        }
+        timeSoFar > 3000
+        timeSoFar < 17000
+        Math.abs(timeout - timeSoFar - latestActualContext.getTimeout() ) < 100
+
+        cleanup:
+        RequestLog.stopTiming(BardLoggingFilter.TOTAL_TIMER)
     }
  }

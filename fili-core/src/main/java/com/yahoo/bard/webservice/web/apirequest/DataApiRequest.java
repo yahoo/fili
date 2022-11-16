@@ -2,10 +2,13 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
+import com.yahoo.bard.webservice.config.SystemConfig;
+import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
+import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
 import com.yahoo.bard.webservice.druid.model.filter.Filter;
@@ -21,13 +24,16 @@ import com.yahoo.bard.webservice.web.util.PaginationParameters;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
@@ -35,9 +41,16 @@ import javax.ws.rs.core.Response;
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
  */
 public interface DataApiRequest extends ApiRequest {
+
+    SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
     String REQUEST_MAPPER_NAMESPACE = "dataApiRequestMapper";
+    String METRIC_GENERATOR_NAMESPACE = "metric_generator";
+    String ORDER_BY_GENERATOR_NAMESPACE = "order_by_generator";
+
+
     String RATIO_METRIC_CATEGORY = "Ratios";
-    String DATE_TIME_STRING = "dateTime";
+    String DATE_TIME_STRING = SYSTEM_CONFIG.getStringProperty(SYSTEM_CONFIG.getPackageVariableName("time_dimension"));
 
     // utility methods
 
@@ -377,7 +390,7 @@ public interface DataApiRequest extends ApiRequest {
     @Deprecated
     default DataApiRequest withPaginationParameters(Optional<PaginationParameters> paginationParameters) {
         return withPaginationParameters(paginationParameters.orElse(null));
-    };
+    }
 
     DataApiRequest withPaginationParameters(PaginationParameters paginationParameters);
 
@@ -391,6 +404,17 @@ public interface DataApiRequest extends ApiRequest {
 
     DataApiRequest withAsyncAfter(long asyncAfter);
 
+    /**
+     * Whether or not to attempt to build an optimal backend query (i.e. topN or timeSeries in the case of Druid) if possible.
+     *
+     * @return True if the backend query built from this request can be safely optimized (i.e. converted into a topN
+     * or timeseries query when hitting Druid), false if a naive query should be built (i.e. groupBy in the
+     * case of Druid)
+     */
+    default boolean optimizeBackendQuery() {
+        return true;
+    }
+
     // Builder with methods
 
     @Deprecated
@@ -398,6 +422,23 @@ public interface DataApiRequest extends ApiRequest {
 
     @Deprecated
     DataApiRequest withFilterBuilder(DruidFilterBuilder filterBuilder);
+
+    /**
+     * The set of referenced dimensions on this ApiRequest.
+     *
+     * @return a set of dimensions
+     */
+    default Set<Dimension> getAllGroupingDimensions() {
+        return Stream.of(
+                getDimensions(),
+                getLogicalMetrics().stream()
+                        .map(LogicalMetric::getTemplateDruidQuery)
+                        .filter(Objects::nonNull)
+                        .map(TemplateDruidQuery::getDimensions)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toSet())
+        ).flatMap(Set::stream).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
 
     // CHECKSTYLE:ON
 }

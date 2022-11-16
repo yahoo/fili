@@ -361,6 +361,7 @@ public class AbstractBinderFactorySpec extends Specification {
         // for coverage
         test.clear()
         test.get("key") == null
+        //(Deprecate this return type to be void)
         !test.set("key", "value")
     }
 

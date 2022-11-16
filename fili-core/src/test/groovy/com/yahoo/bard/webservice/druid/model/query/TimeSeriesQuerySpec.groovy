@@ -2,6 +2,19 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.druid.model.query
 
+import com.yahoo.bard.webservice.data.config.dimension.TestDimensions
+import com.yahoo.bard.webservice.data.dimension.Dimension
+import com.yahoo.bard.webservice.data.dimension.DimensionField
+import com.yahoo.bard.webservice.data.dimension.MapStore
+import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
+import com.yahoo.bard.webservice.data.dimension.impl.NoOpSearchProvider
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain
+import com.yahoo.bard.webservice.druid.model.aggregation.LongSumAggregation
+import com.yahoo.bard.webservice.druid.model.datasource.DataSource
+import com.yahoo.bard.webservice.druid.model.filter.Filter
+import com.yahoo.bard.webservice.druid.model.filter.SelectorFilter
+import com.yahoo.bard.webservice.druid.model.postaggregation.FieldAccessorPostAggregation
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -20,6 +33,8 @@ import org.joda.time.Interval
 
 import spock.lang.Shared
 import spock.lang.Specification
+
+import static com.yahoo.bard.webservice.table.TableTestUtils.buildTable
 
 class TimeSeriesQuerySpec extends Specification {
     private static final ObjectMapper MAPPER = new ObjectMappersSuite().getMapper()
@@ -103,5 +118,52 @@ class TimeSeriesQuerySpec extends Specification {
 
         expect:
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
+    }
+
+    def "check with dimensions returns group by query with input dimensions"() {
+        ZonedTimeGrain day = DAY.buildZonedTimeGrain(DateTimeZone.UTC)
+        DataSource ds1 = new TableDataSource(buildTable("table_name", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]} ))
+        Dimension locale = Mock(Dimension)
+        Filter filter1 = new SelectorFilter(locale, "US")
+        Aggregation agg1 = new LongSumAggregation("pageViewsSum", "pageViews")
+        Set<Aggregation> aggregation1 = [agg1]
+        Set<PostAggregation> postAggregation1 = [new FieldAccessorPostAggregation(agg1)]
+        List<Interval> intervals1 = [new Interval("2011-07-04T00:00:00.000Z/2011-07-06T00:00:00.000Z")]
+        QueryContext context1 = [(QueryContext.Param.TIMEOUT): 5]
+        boolean id = false
+
+        Dimension dimension1 = new KeyValueStoreDimension(
+                "a",
+                "dim 1",
+                new LinkedHashSet<DimensionField>(),
+                new MapStore(),
+                new NoOpSearchProvider(5)
+        )
+        Dimension dimension2 = new KeyValueStoreDimension(
+                "b",
+                "dim 2",
+                new LinkedHashSet<DimensionField>(),
+                new MapStore(),
+                new NoOpSearchProvider(5)
+        )
+        Collection<Dimension> dimList = new ArrayList<>()
+        Collections.addAll(dimList, dimension1, dimension2)
+        Collection<Dimension> dimensions = Collections.unmodifiableCollection(dimList)
+        TimeSeriesQuery dq1 = new TimeSeriesQuery(ds1, DAY, filter1, aggregation1, postAggregation1, intervals1, context1, id)
+
+        when:
+        GroupByQuery dq2 = dq1.withDimensions(dimensions)
+
+        then:
+        dq2 instanceof GroupByQuery
+        dq2.getDimensions().toArray() == dimensions.toArray()
+        (dq2.getDimensions().intersect(dimensions)).size() == 2
+        !dq2.getDimensions().disjoint(dimensions)
+        dq1.getDataSource() == dq2.getDataSource()
+        dq1.getFilter() == dq2.getFilter()
+        dq1.getAggregations() == dq2.getAggregations()
+        dq1.getPostAggregations() == dq2.getPostAggregations()
+        dq1.getIntervals() == dq2.getIntervals()
+        dq1.getContext() == dq2.getContext()
     }
 }

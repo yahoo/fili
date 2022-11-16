@@ -4,6 +4,7 @@ package com.yahoo.bard.webservice.data.config.luthier.factories
 
 import com.yahoo.bard.webservice.data.config.luthier.LuthierIndustrialPark
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+
 import spock.lang.Specification
 
 class DefaultMetricFactorySpec extends Specification {
@@ -22,6 +23,6 @@ class DefaultMetricFactorySpec extends Specification {
             logicalMetric.name == "longSumCO"
             logicalMetric.description == "longSumCO"
             logicalMetric.category == "GENERAL"
-            logicalMetric.type == "number"
+            logicalMetric.type.type == "number"
     }
 }

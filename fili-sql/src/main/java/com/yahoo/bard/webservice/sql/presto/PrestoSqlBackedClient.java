@@ -3,6 +3,7 @@
 package com.yahoo.bard.webservice.sql.presto;
 
 
+import com.yahoo.bard.webservice.data.time.ZonelessTimeGrain;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
@@ -12,6 +13,8 @@ import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 import com.yahoo.bard.webservice.sql.SqlBackedClient;
 import com.yahoo.bard.webservice.sql.SqlResultSetProcessor;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR;
+import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.MINUTE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,12 +41,15 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
     private final ObjectMapper jsonWriter;
     private final DruidQueryToPrestoConverter druidQueryToPrestoConverter;
     private final CalciteHelper calciteHelper;
+    private final static String TIMESTAMP_FORMAT_HOUR = "%Y%m%d%H";
+    private final static String TIMESTAMP_FORMAT_DAY = "%Y%m%d";
+    private final static String TIMESTAMP_FORMAT_MINUTE = "%Y%m%d%H%i";
 
     /**
      * Creates a sql converter using the given database and datasource.
      *
-     * @param dataSource The presto datasource used for connection.
-     * @param objectMapper  The mapper for all JSON processing.
+     * @param dataSource   The presto datasource used for connection.
+     * @param objectMapper The mapper for all JSON processing.
      */
     public PrestoSqlBackedClient(DataSource dataSource, ObjectMapper objectMapper) {
         try {
@@ -89,8 +95,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * execute it against the database, process the results
      * and return a jsonNode in the format of a druid response.
      *
-     * @param druidQuery  The druid query to build and process.
-     *
+     * @param druidQuery The druid query to build and process.
      * @return a druid-like response to the query.
      */
     private JsonNode executeAndProcessQuery(DruidAggregationQuery<?> druidQuery) {
@@ -103,7 +108,17 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
         String sqlQuery = druidQueryToPrestoConverter.buildSqlQuery(druidQuery, aliasMaker);
 
         LOG.info("Input raw sql query: {}", sqlQuery);
-        sqlQuery = sqlQueryToPrestoQuery(sqlQuery);
+        String timestampFormat;
+        ZonelessTimeGrain tableTimeGrain = druidQuery.getDataSource().getPhysicalTable()
+                .getSchema().getTimeGrain().getBaseTimeGrain();
+        if (tableTimeGrain.equals(HOUR)) {
+            timestampFormat = TIMESTAMP_FORMAT_HOUR;
+        } else if (tableTimeGrain.equals(MINUTE)) {
+            timestampFormat = TIMESTAMP_FORMAT_MINUTE;
+        } else {
+            timestampFormat = TIMESTAMP_FORMAT_DAY;
+        }
+        sqlQuery = sqlQueryToPrestoQuery(sqlQuery, timestampFormat);
         LOG.info("Processed to presto query: {}", sqlQuery);
 
         SqlResultSetProcessor resultSetProcessor = new SqlResultSetProcessor(
@@ -118,7 +133,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
             ResultSet resultSet = statement.executeQuery(sqlQuery);
             resultSetProcessor.process(resultSet);
             JsonNode jsonNode = resultSetProcessor.buildDruidResponse();
-            LOG.info("Created response: {}", jsonNode);
+            LOG.trace("Created response: {}", jsonNode);
             return jsonNode;
         } catch (SQLException e) {
             LOG.warn("Failed while processing {}", druidQuery);
@@ -132,86 +147,78 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * Steps are:
      * <ul>
      *     <li>1. Replace Time functions with String Functions to be used for HIVE tables</li>
-     *     <li>2. Convert datestamp from Date format to String format</li>
-     *     <Li>3. Specify Catalog in FROM expression</Li>
-     *     <li>4. Calcite wrap column name in single quotes which is not allowed in Presto
+     *     <li>2. Calcite wrap column name in single quotes which is not allowed in Presto
      *            as Presto is not ANSI compliant.
      *            Replace single quotation marks with double quotation marks.</li>
-     *     <li>5. Convert FETCH NEXT n ROWS expression to prestodb-supported LIMIT n expression</li>
+     *     <li>3. Convert FETCH NEXT n ROWS expression to prestodb-supported LIMIT n expression</li>
      * </ul>
      *
      * @param sqlQuery The sql query converted from druid query.
-     *
+     * @param timestampFormat The format used to parse the timestamp
      * @return a presto compatible sql dialect.
-     * */
-    protected static String sqlQueryToPrestoQuery(String sqlQuery) {
+     */
+    protected static String sqlQueryToPrestoQuery(String sqlQuery, String timestampFormat) {
         if (sqlQuery == null || sqlQuery.isEmpty()) {
             throw new IllegalStateException("Input sqlQuery is null or empty");
         }
 
         // Extract the timestamp column name.
-        String pat = ".*YEAR\\(\"(.*?)\"\\).*";
+        String pat = ".*WHERE\\s\"(.*?)\"\\s>=.*";
         Pattern pattern = Pattern.compile(pat, Pattern.DOTALL);
         Matcher matcher = pattern.matcher(sqlQuery);
-        matcher.matches();
-        String timestampColumn = matcher.group(1);
 
-        String fixTimePrestoQuery = sqlQuery
-                .replace(
-                        String.format("DAYOFYEAR(\"%s\")", timestampColumn),
-                        String.format("DAY_OF_YEAR(date_parse(SUBSTRING (%s,1,10),\'%%Y%%m%%d%%H\'))", timestampColumn)
-                )
-                .replace(
-                        String.format(" YEAR(\"%s\")", timestampColumn),
-                        String.format(" SUBSTRING(%s,1,4)", timestampColumn)
-                )
-                .replace(
-                        String.format("MONTH(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,5,2)", timestampColumn)
-                )
-                .replace(
-                        String.format("HOUR(\"%s\")", timestampColumn),
-                        String.format("SUBSTRING(%s,9,2)", timestampColumn)
-                );
+        String fixTimePrestoQuery = sqlQuery.replace("CHARACTER SET \"ISO-8859-1\"", "");
 
-        int datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" >", timestampColumn));
-        int datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
-        fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 9, datestampNumericStartPosition + 11) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 12, datestampNumericStartPosition + 14) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 15, datestampNumericStartPosition + 17) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
+        if (matcher.matches()) {
+            String timestampColumn = matcher.group(1);
 
-        datestampStartPosition = fixTimePrestoQuery.indexOf(String.format("\"%s\" <", timestampColumn));
-        datestampNumericStartPosition = fixTimePrestoQuery.indexOf('\'', datestampStartPosition);
-        fixTimePrestoQuery = fixTimePrestoQuery.substring(0, datestampNumericStartPosition + 5) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 6, datestampNumericStartPosition + 8) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 9, datestampNumericStartPosition + 11) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 12, datestampNumericStartPosition + 14) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 15, datestampNumericStartPosition + 17) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 18, datestampNumericStartPosition + 20) +
-                fixTimePrestoQuery.substring(datestampNumericStartPosition + 21);
-
+            fixTimePrestoQuery = fixTimePrestoQuery
+                    .replace(
+                            String.format("DAYOFYEAR(\"%s\")", timestampColumn),
+                            String.format("DAY_OF_YEAR(date_parse(\"%s\",'%s'))",
+                                    timestampColumn, timestampFormat)
+                    )
+                    .replace(
+                            String.format(" YEAR(\"%s\")", timestampColumn),
+                            String.format(" SUBSTRING(\"%s\",1,4)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("MONTH(\"%s\")", timestampColumn),
+                            String.format("SUBSTRING(\"%s\",5,2)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("HOUR(\"%s\")", timestampColumn),
+                            String.format("SUBSTRING(\"%s\",9,2)", timestampColumn)
+                    )
+                    .replace(
+                            String.format("WEEK(\"%s\")", timestampColumn),
+                            String.format("WEEK_OF_YEAR(date_parse(\"%s\",'%s'))",
+                                    timestampColumn, timestampFormat)
+                    );
+        } else {
+            throw new IllegalStateException("no timestamp information in the sql query " + sqlQuery);
+        }
         String fixCatalogPrestoQuery = fixTimePrestoQuery;
 
-        int orderbyIndex = fixCatalogPrestoQuery.indexOf("ORDER BY");
+        int orderbyIndex = fixCatalogPrestoQuery.lastIndexOf("ORDER BY");
         final int orderByClauseLength = 9;
+        int orderbyEndIndex = fixCatalogPrestoQuery.indexOf("\n", orderbyIndex);
+        if (orderbyEndIndex == -1) { orderbyEndIndex = fixCatalogPrestoQuery.length(); }
         String fixQuotePrestoQuery = fixCatalogPrestoQuery;
         if (orderbyIndex != -1) {
             orderbyIndex = orderbyIndex + orderByClauseLength;
             //this way other part won't break abnormally.
-            String orderByClause = fixCatalogPrestoQuery.substring(orderbyIndex);
+            String orderByClause = fixCatalogPrestoQuery.substring(orderbyIndex, orderbyEndIndex);
             orderByClause = orderByClause
                     .replace("'", "\"")   //replace double quotes into single quotes
-                    .replace("\"%", "'%") //time stamp needs single quotes
-                    .replace("H\"", "H'");
-            fixQuotePrestoQuery = fixCatalogPrestoQuery.substring(0, orderbyIndex) + orderByClause;
+                    .replace(String.format("\"%s\"", timestampFormat),
+                            String.format("'%s'", timestampFormat)); //time stamp needs single quotes
+            fixQuotePrestoQuery = fixCatalogPrestoQuery.substring(0, orderbyIndex) + orderByClause +
+                    fixCatalogPrestoQuery.substring(orderbyEndIndex);
         }
 
-        String limitPrestoQuery = fetchToLimitHelper(fixQuotePrestoQuery);
-        return limitPrestoQuery;
+        String fixFilterPrestoQuery = fixQuotePrestoQuery;
+        return fetchToLimitHelper(fixFilterPrestoQuery);
     }
 
     /**
@@ -220,10 +227,9 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
      * but prestodb does not have support for FETCH NEXT.
      *
      * @param fixQuotePrestoQuery The intermediate sqlToPrestoQuery.
-     *
      * @return a presto query with LIMIT fix.
-     * */
-    private static String fetchToLimitHelper(String fixQuotePrestoQuery) {
+     */
+    protected static String fetchToLimitHelper(String fixQuotePrestoQuery) {
         String limitPrestoQuery = fixQuotePrestoQuery;
         int index = limitPrestoQuery.indexOf("FETCH NEXT");
         if (index != -1) {
@@ -246,13 +252,7 @@ public class PrestoSqlBackedClient implements SqlBackedClient {
                     rows += (nextPart.charAt(i) - '0');
                 }
             }
-            int idxOfLineReturn = nextPart.indexOf('\n');
-            if (idxOfLineReturn != -1) {
-                nextPart = "LIMIT " + rows + nextPart.substring(idxOfLineReturn);
-
-            } else {
-                nextPart = "LIMIT " + rows;
-            }
+            nextPart = nextPart.replace("FETCH NEXT " + rows + " ROWS ONLY", "LIMIT " + rows);
             limitPrestoQuery = prevPart + nextPart;
         }
         return limitPrestoQuery;

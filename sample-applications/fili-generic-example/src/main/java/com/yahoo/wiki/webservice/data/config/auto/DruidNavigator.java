@@ -19,7 +19,7 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.druid.timeline.DataSegment;
+import org.apache.druid.timeline.DataSegment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,8 +91,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         // wait until list of table names are loaded before processing continues (i.e. ["t1","t2"])
         try {
             responseFuture.get(30, TimeUnit.SECONDS);
-        } catch (TimeoutException | InterruptedException | ExecutionException e) {
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             LOG.error("Interrupted while waiting for a response from druid", e);
+            throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
+        } catch (TimeoutException | ExecutionException e) {
+            LOG.error("Timeout while waiting for a response from druid", e);
             throw new RuntimeException("Unable to automatically configure correctly, no response from druid.", e);
         }
 
@@ -100,8 +104,12 @@ public class DruidNavigator implements Supplier<List<? extends DataSourceConfigu
         fullTableResponses.forEach(future -> {
             try {
                 future.get(30, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 LOG.error("Interrupted while building tables", e);
+                throw new RuntimeException("Unable to configure, couldn't fetch table data.", e);
+            } catch (ExecutionException | TimeoutException e) {
+                LOG.error("Timeout while building tables", e);
                 throw new RuntimeException("Unable to configure, couldn't fetch table data.", e);
             }
         });

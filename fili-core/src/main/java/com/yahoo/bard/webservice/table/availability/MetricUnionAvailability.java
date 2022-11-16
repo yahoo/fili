@@ -7,6 +7,7 @@ import com.yahoo.bard.webservice.table.ConfigPhysicalTable;
 import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.slf4j.Logger;
@@ -90,20 +91,24 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
         metricNames = availabilitiesToMetricNames.values()
                 .stream()
                 .flatMap(Set::stream)
-                .collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf));
+                .collect(ImmutableSet.toImmutableSet());
 
-        this.availabilitiesToMetricNames = availabilitiesToMetricNames;
+        this.availabilitiesToMetricNames = availabilitiesToMetricNames.entrySet().stream()
+                .collect(ImmutableMap.toImmutableMap(
+                        Map.Entry::getKey,
+                        e -> ImmutableSet.copyOf(e.getValue())
+                ));
 
         // validate metric uniqueness such that
         // each table's underlying datasource schema don't have repeated metric column
         if (!isMetricUnique(availabilitiesToMetricNames)) {
-                String message = String.format(
-                        "Metric columns must be unique across the metric union data sources, but duplicate was found " +
-                                "across the following data sources: %s",
-                        getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
-                );
-                LOG.error(message);
-                throw new RuntimeException(message);
+            String message = String.format(
+                    "Metric columns must be unique across the metric union data sources, but duplicate was found " +
+                            "across the following data sources: %s",
+                    getDataSourceNames().stream().map(DataSourceName::asName).collect(Collectors.joining(", "))
+            );
+            LOG.error(message);
+            throw new RuntimeException(message);
         }
     }
 
@@ -121,7 +126,7 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
         return constructSubConstraint(constraint).entrySet().stream()
                 .map(entry -> entry.getKey().getAvailableIntervals(entry.getValue()))
-                .reduce(SimplifiedIntervalList::intersect).orElse(new SimplifiedIntervalList());
+                .reduce(SimplifiedIntervalList::intersect).orElseGet(SimplifiedIntervalList::new);
     }
 
     /**
@@ -187,7 +192,8 @@ public class MetricUnionAvailability extends BaseCompositeAvailability implement
 
     @Override
     public String toString() {
-        return String.format("MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
+        return String.format(
+                "MetricUnionAvailability with data source names: [%s] and Configured metric columns: %s",
                 getDataSourceNames().stream()
                         .map(DataSourceName::asName)
                         .collect(Collectors.joining(", ")),

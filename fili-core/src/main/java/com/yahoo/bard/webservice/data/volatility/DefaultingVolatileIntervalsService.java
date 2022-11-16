@@ -8,6 +8,8 @@ import com.yahoo.bard.webservice.table.PhysicalTable;
 import com.yahoo.bard.webservice.util.IntervalUtils;
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * An implementation of VolatileIntervalsService.
@@ -61,10 +62,8 @@ public class DefaultingVolatileIntervalsService implements VolatileIntervalsServ
             Map<PhysicalTable, VolatileIntervalsFunction> intervalsFunctions
     ) {
         this.defaultIntervals = defaultIntervalsFunction;
-        this.intervalsFunctions = Collections.unmodifiableMap(
-                intervalsFunctions.entrySet().stream()
-                        .collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue))
-        );
+        this.intervalsFunctions = intervalsFunctions.entrySet().stream()
+                .collect(ImmutableMap.toImmutableMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
     }
 
     @Override

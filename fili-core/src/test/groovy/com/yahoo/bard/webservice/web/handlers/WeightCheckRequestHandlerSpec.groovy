@@ -112,7 +112,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
                 mapper
         ) {
             @Override
-            public SuccessCallback buildSuccessCallback(
+            SuccessCallback buildSuccessCallback(
                     final RequestContext context,
                     final DataApiRequest request,
                     final DruidAggregationQuery<?> groupByQuery,
@@ -153,7 +153,7 @@ class WeightCheckRequestHandlerSpec extends Specification {
                 queryWeightUtil,
                 mapper
         ) {
-            public SuccessCallback buildSuccessCallback(
+            SuccessCallback buildSuccessCallback(
                     final RequestContext context,
                     final DataApiRequest request,
                     final DruidAggregationQuery<?> groupByQuery,
@@ -198,7 +198,10 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "count" : "$expectedCount"
+                "${WeightEvaluationQuery.OUTPUT_SKETCHES}" : "$expectedCount",
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}" : 100,
+                "${WeightEvaluationQuery.SCANNED_LINES}" : 10000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}" : 100
             }
         } ]
         """
@@ -234,7 +237,10 @@ class WeightCheckRequestHandlerSpec extends Specification {
             "version" : "v1",
             "timestamp" : "2012-01-01T00:00:00.000Z",
             "event" : {
-                "count" : "$expectedCount"
+                "${WeightEvaluationQuery.OUTPUT_SKETCHES}" : "$expectedCount",
+                "${WeightEvaluationQuery.OUTPUT_LINE_COUNT}" : 100,
+                "${WeightEvaluationQuery.SCANNED_LINES}" : 10000,
+                "${WeightEvaluationQuery.SKETCHES_PER_ROW}" : 10
             }
         } ]
         """

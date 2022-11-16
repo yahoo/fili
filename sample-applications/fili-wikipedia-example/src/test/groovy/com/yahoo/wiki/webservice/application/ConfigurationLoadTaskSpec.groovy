@@ -4,7 +4,6 @@ package com.yahoo.wiki.webservice.application
 
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.HOUR
-import static com.yahoo.wiki.webservice.data.config.names.WikiDruidTableName.WIKITICKER
 import static com.yahoo.wiki.webservice.data.config.names.WikiLogicalTableName.WIKIPEDIA
 
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader
@@ -81,6 +80,6 @@ class ConfigurationLoadTaskSpec extends Specification {
 
     def "test fetching of physicalTable by its name"() {
         expect: "fetched table has the same name as that requested"
-        physicalTableDictionary.get(WIKITICKER.asName()).getName() == WIKITICKER.asName()
+        physicalTableDictionary.get(WIKIPEDIA.asName()).getName() == WIKIPEDIA.asName()
     }
 }

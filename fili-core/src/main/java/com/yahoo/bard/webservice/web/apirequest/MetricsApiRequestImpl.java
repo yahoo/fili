@@ -2,13 +2,15 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web.apirequest;
 
-import static com.yahoo.bard.webservice.web.ErrorMessageFormat.EMPTY_DICTIONARY;
 import static com.yahoo.bard.webservice.web.ErrorMessageFormat.METRICS_UNDEFINED;
 
 import com.yahoo.bard.webservice.data.metric.LogicalMetric;
 import com.yahoo.bard.webservice.data.metric.MetricDictionary;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.MissingResourceApiRequestException;
 
+import com.yahoo.bard.webservice.web.util.PaginationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +104,25 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     }
 
     /**
+     * All argument constructor, meant to be used for rewriting apiRequest.
+     *
+     * @param format  Format of the request
+     * @param downloadFilename If not null and not empty, indicates the response should be downloaded by the client with
+     * the provided filename. Otherwise indicates the response should be rendered in the browser.
+     * @param paginationParameters  Pagination info for the request
+     * @param metrics  Desired metrics of the request
+     */
+    private MetricsApiRequestImpl(
+            ResponseFormatType format,
+            String downloadFilename,
+            PaginationParameters paginationParameters,
+            LinkedHashSet<LogicalMetric> metrics
+    ) {
+        super(format, downloadFilename, SYNCHRONOUS_ASYNC_AFTER_VALUE, paginationParameters);
+        this.metrics = metrics;
+    }
+
+    /**
      * Generates the set of all available metrics.
      *
      * @param metricName  string corresponding to the metric name specified in the URL
@@ -117,14 +138,9 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         if (generated.isEmpty()) {
-            String msg;
-            if (metricDictionary.isEmpty()) {
-                msg = EMPTY_DICTIONARY.logFormat("Metric");
-            } else {
-                msg = METRICS_UNDEFINED.logFormat(metricName);
-            }
+            String msg = METRICS_UNDEFINED.logFormat(metricName);
             LOG.error(msg);
-            throw new BadApiRequestException(msg);
+            throw new MissingResourceApiRequestException(msg);
         }
 
         LOG.trace("Generated set of metrics: {}", generated);
@@ -139,5 +155,15 @@ public class MetricsApiRequestImpl extends ApiRequestImpl implements MetricsApiR
     @Override
     public LogicalMetric getMetric() {
         return this.metrics.iterator().next();
+    }
+
+    @Override
+    public MetricsApiRequest withMetrics(LinkedHashSet<LogicalMetric> logicalMetrics) {
+        return new MetricsApiRequestImpl(
+                format,
+                downloadFilename,
+                paginationParameters,
+                logicalMetrics
+        );
     }
 }

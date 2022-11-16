@@ -8,7 +8,7 @@ import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionRow;
 import com.yahoo.bard.webservice.web.ApiFilter;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.FilterOperation;
 
 import java.util.Collection;

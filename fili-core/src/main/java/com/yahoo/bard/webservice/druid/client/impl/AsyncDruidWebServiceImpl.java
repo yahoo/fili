@@ -240,7 +240,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
      *
      * @return the set up client
      */
-    private static AsyncHttpClient initializeWebClient(int requestTimeout) {
+    public static AsyncHttpClient initializeWebClient(int requestTimeout) {
 
         LOG.debug("Druid request timeout: {}ms", requestTimeout);
         List<String> cipherSuites = SYSTEM_CONFIG.getListProperty(SSL_ENABLED_CIPHER_KEY, null);
@@ -305,8 +305,8 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
 
                         }
 
-                        // we consumed this response, so pass null to any chains
-                        return null;
+                        // If we don't return non null, the future will not mark as done
+                        return response;
                     }
 
                     @Override
@@ -459,7 +459,7 @@ public class AsyncDruidWebServiceImpl implements DruidWebService {
         }
         RequestLog.record(new DruidResponse(druidQueryId));
 
-        LOG.debug(
+        LOG.trace(
                 "druid {} response code: {} {} and druid query id: {}",
                 getServiceConfig().getNameAndUrl(),
                 status.getStatusCode(),

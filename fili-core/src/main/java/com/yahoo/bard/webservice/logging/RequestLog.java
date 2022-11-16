@@ -29,7 +29,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +44,7 @@ public class RequestLog {
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
     private static final String ID_KEY = "logid";
-    private static final long MS_PER_NS = 1000000;
+    private static final float MS_PER_NS = TimeUnit.MILLISECONDS.toNanos(1);
     private static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
     private static final ThreadLocal<RequestLog> RLOG = ThreadLocal.withInitial(RequestLog::new);
     private static final String LOGINFO_ORDER_STRING = SYSTEM_CONFIG.getStringProperty(
@@ -162,21 +161,20 @@ public class RequestLog {
     private Map<String, Float> aggregateDurations() {
         Map<String, Long> durations = durations();
 
-        OptionalLong max = durations.entrySet()
+        durations.entrySet()
                 .stream()
                 .filter(e -> e.getKey().contains(DRUID_QUERY_TIMER))
                 .mapToLong(Map.Entry::getValue)
                 .peek(v -> REGISTRY.timer(DRUID_QUERY_ALL_TIMER).update(v, TimeUnit.NANOSECONDS))
-                .max();
-
-        if (max.isPresent()) {
-            REGISTRY.timer(DRUID_QUERY_MAX_TIMER).update(max.getAsLong(), TimeUnit.NANOSECONDS);
-            durations.put(DRUID_QUERY_MAX_TIMER, max.getAsLong());
-        }
+                .max()
+                .ifPresent(max -> {
+            REGISTRY.timer(DRUID_QUERY_MAX_TIMER).update(max, TimeUnit.NANOSECONDS);
+            durations.put(DRUID_QUERY_MAX_TIMER, max);
+        });
 
         return durations.entrySet()
                 .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> (float) e.getValue() / MS_PER_NS));
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() / MS_PER_NS));
     }
 
     /**
@@ -237,6 +235,18 @@ public class RequestLog {
         }
         current.mostRecentTimer = timePhase;
         return timePhase.start();
+    }
+
+    /**
+     * Retrieve a stopwatch from the session.
+     *
+     * @param timePhaseName  the name of this stopwatch
+     *
+     * @return The stopwatch or null if it doesn't exist
+     */
+    public static TimedPhase fetchTiming(String timePhaseName) {
+        RequestLog current = RLOG.get();
+        return current.times.get(timePhaseName);
     }
 
     /**
@@ -342,7 +352,7 @@ public class RequestLog {
 
         LogInfo logInfo = requestLog.info.get(cls.getSimpleName());
         if (logInfo == null) {
-            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName());
+            String message = ErrorMessageFormat.RESOURCE_RETRIEVAL_FAILURE.format(cls.getSimpleName(), requestLog);
             LOG.error(message);
             throw new IllegalStateException(message);
         }

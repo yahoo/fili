@@ -13,7 +13,7 @@ import com.yahoo.bard.webservice.data.dimension.DimensionField
 import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
-import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricDictionary
 import com.yahoo.bard.webservice.data.time.AllGranularity
 import com.yahoo.bard.webservice.data.time.Granularity
@@ -22,9 +22,9 @@ import com.yahoo.bard.webservice.data.time.StandardGranularityParser
 import com.yahoo.bard.webservice.table.LogicalTable
 import com.yahoo.bard.webservice.table.TableGroup
 import com.yahoo.bard.webservice.util.IntervalUtils
-import com.yahoo.bard.webservice.web.BadApiRequestException
 import com.yahoo.bard.webservice.web.DefaultResponseFormatType
 import com.yahoo.bard.webservice.web.ErrorMessageFormat
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import org.joda.time.DateTime
@@ -47,6 +47,8 @@ class ApiRequestSpec extends Specification {
     MetricDictionary metricDict
     @Shared
     LogicalTable table
+
+    public static final DataApiRequest REQUEST = TestingDataApiRequestImpl.buildDataApiRequestValue()
 
     GranularityParser granularityParser = new StandardGranularityParser()
 
@@ -75,7 +77,7 @@ class ApiRequestSpec extends Specification {
 
         metricDict = new MetricDictionary()
         [ "met1", "met2", "met3", "met4" ].each { String name ->
-            metricDict.put(name, new LogicalMetric(null, null, name))
+            metricDict.put(name, new LogicalMetricImpl(null, null, name))
         }
         TableGroup tg = Mock(TableGroup)
         tg.getApiMetricNames() >> ([] as Set)
@@ -90,14 +92,14 @@ class ApiRequestSpec extends Specification {
 
         where:
         responseFormat                 | expectedFormat
-        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat(null)
-        DefaultResponseFormatType.JSON | new TestingDataApiRequestImpl().generateAcceptFormat("json")
-        DefaultResponseFormatType.CSV  | new TestingDataApiRequestImpl().generateAcceptFormat("csv")
+        DefaultResponseFormatType.JSON | REQUEST.generateAcceptFormat(null)
+        DefaultResponseFormatType.JSON | REQUEST.generateAcceptFormat("json")
+        DefaultResponseFormatType.CSV  | REQUEST.generateAcceptFormat("csv")
     }
 
     def "check invalid parsing generateFormat"() {
         when:
-        new TestingDataApiRequestImpl().generateAcceptFormat("bad")
+        REQUEST.generateAcceptFormat("bad")
 
         then:
         thrown BadApiRequestException
@@ -106,7 +108,7 @@ class ApiRequestSpec extends Specification {
     @Unroll
     def "check valid granularity name #name parses to granularity #expected"() {
         expect:
-        new TestingDataApiRequestImpl().generateGranularity(name, granularityParser) == expected
+        REQUEST.generateGranularity(name, granularityParser) == expected
 
         where:
         name  | expected
@@ -120,7 +122,7 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = ErrorMessageFormat.UNKNOWN_GRANULARITY.format(timeGrainName)
 
         when:
-        new TestingDataApiRequestImpl().generateGranularity(timeGrainName, new StandardGranularityParser())
+        REQUEST.generateGranularity(timeGrainName, new StandardGranularityParser())
 
         then:
         Exception e = thrown(BadApiRequestException)
@@ -129,7 +131,7 @@ class ApiRequestSpec extends Specification {
 
     def "check empty generateDimensions"() {
 
-        Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions(
+        Set<Dimension> dims = REQUEST.generateDimensions(
                 new ArrayList<PathSegment>(),
                 dimensionDict
         )
@@ -152,7 +154,7 @@ class ApiRequestSpec extends Specification {
         three.getPath() >> "three"
         three.getMatrixParameters() >> emptyMap
 
-        Set<Dimension> dims = new TestingDataApiRequestImpl().generateDimensions([one, two, three], dimensionDict)
+        Set<Dimension> dims = REQUEST.generateDimensions([one, two, three], dimensionDict)
 
         HashSet<Dimension> expected =
                 ["one", "two", "three"].collect { String name ->
@@ -170,14 +172,14 @@ class ApiRequestSpec extends Specification {
         DateTimeFormatter dateTimeFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER
 
         DateTimeZone dateTimeZone = DateTimeZone.forID(zone)
-        List<Interval> intervals = TestingDataApiRequestImpl.generateIntervals(
+        List<Interval> intervals = REQUEST.generateIntervals(
                 intervalString,
                 DAY,
                 dateTimeFormatter.withZone(dateTimeZone)
         )
 
         expect:
-        TestingDataApiRequestImpl.validateTimeAlignment(DAY, intervals)
+        REQUEST.validateTimeAlignment(DAY, intervals)
 
         where:
         intervalString          | zone
@@ -190,11 +192,11 @@ class ApiRequestSpec extends Specification {
         String expectedMessage = "'[2015-02-15T00:00:00.000Z/2016-02-22T00:00:00.000Z]'"
         expectedMessage += " does not align with granularity 'week'."
         expectedMessage += " Week must start on a Monday and end on a Monday."
-        Granularity granularity = new TestingDataApiRequestImpl().generateGranularity(
+        Granularity granularity = REQUEST.generateGranularity(
                 "week",
                 new StandardGranularityParser()
         )
-        Set<Interval> intervals = new TestingDataApiRequestImpl().generateIntervals(
+        Set<Interval> intervals = REQUEST.generateIntervals(
                 "2015-02-15/2016-02-22",
                 granularity,
                 FULLY_OPTIONAL_DATETIME_FORMATTER
@@ -215,7 +217,7 @@ class ApiRequestSpec extends Specification {
         DateTimeFormatter adjustedFormatter = FULLY_OPTIONAL_DATETIME_FORMATTER.withZone(dateTimeZone)
 
         expect:
-        TestingDataApiRequestImpl.getAsDateTime(
+        REQUEST.getAsDateTime(
                 null,
                 null,
                 baseTimeString,

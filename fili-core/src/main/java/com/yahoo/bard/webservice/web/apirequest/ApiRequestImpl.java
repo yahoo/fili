@@ -13,17 +13,18 @@ import com.yahoo.bard.webservice.data.time.GranularityParser;
 import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.table.LogicalTableDictionary;
 import com.yahoo.bard.webservice.util.AllPagesPagination;
-import com.yahoo.bard.webservice.web.BadApiRequestException;
 import com.yahoo.bard.webservice.web.ResponseFormatType;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultAsyncAfterGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultDimensionGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultGranularityGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalTableGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.UtcBasedIntervalGenerator;
-import com.yahoo.bard.webservice.web.apirequest.generator.DefaultLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultPaginationGenerator;
 import com.yahoo.bard.webservice.web.apirequest.generator.DefaultResponseFormatGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.DefaultTimezoneGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.intervals.UtcBasedIntervalGenerator;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.ApiRequestLogicalMetricBinder;
+import com.yahoo.bard.webservice.web.apirequest.generator.metric.DefaultLogicalMetricGenerator;
 import com.yahoo.bard.webservice.web.util.PaginationParameters;
 
 import org.joda.time.DateTime;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.PathSegment;
@@ -47,6 +49,7 @@ import javax.ws.rs.core.PathSegment;
  * API Request. Abstract class offering default implementations for the common components of API request objects.
  */
 public abstract class ApiRequestImpl implements ApiRequest {
+
     private static final Logger LOG = LoggerFactory.getLogger(ApiRequestImpl.class);
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
     protected static final String COMMA_AFTER_BRACKET_PATTERN = "(?<=]),";
@@ -66,6 +69,13 @@ public abstract class ApiRequestImpl implements ApiRequest {
     protected final PaginationParameters paginationParameters;
     protected final long asyncAfter;
     protected final String downloadFilename;
+
+    protected static Supplier<DateTime> timeSource = DateTime::new;
+
+    // hardcoding this for now to the old behavior so injection can be based on the protocol binder without changing
+    // this code.
+    protected static final ApiRequestLogicalMetricBinder DEFAULT_METRIC_BINDER = new DefaultLogicalMetricGenerator();
+    protected ApiRequestLogicalMetricBinder metricBinder = DEFAULT_METRIC_BINDER;
 
     /**
      * Parses the API request URL and generates the API request object.
@@ -248,7 +258,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             List<PathSegment> apiDimensions,
             DimensionDictionary dimensionDictionary
     ) throws BadApiRequestException {
-        return DefaultDimensionGenerator.generateDimensions(apiDimensions, dimensionDictionary);
+        return DefaultDimensionGenerator.INSTANCE.generateDimensions(apiDimensions, dimensionDictionary);
     }
 
     /**
@@ -261,7 +271,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
      */
     protected void validateRequestDimensions(Set<Dimension> requestDimensions, LogicalTable table)
             throws BadApiRequestException {
-       DefaultDimensionGenerator.validateRequestDimensions(requestDimensions, table);
+       DefaultDimensionGenerator.INSTANCE.validateRequestDimensions(requestDimensions, table);
     }
 
     /**
@@ -278,7 +288,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
     /**
      * Extracts the list of metrics from the url metric query string and generates a set of LogicalMetrics.
      * <p>
-     * If the query contains undefined metrics, {@link com.yahoo.bard.webservice.web.BadApiRequestException} will be
+     * If the query contains undefined metrics, {@link BadApiRequestException} will be
      * thrown.
      *
      * @param apiMetricQuery  URL query string containing the metrics separated by ','
@@ -290,7 +300,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             String apiMetricQuery,
             MetricDictionary metricDictionary
     ) {
-        return DefaultLogicalMetricGenerator.generateLogicalMetrics(apiMetricQuery, metricDictionary);
+        return metricBinder.generateLogicalMetrics(apiMetricQuery, metricDictionary);
     }
 
     /**
@@ -300,10 +310,32 @@ public abstract class ApiRequestImpl implements ApiRequest {
      * @param table  The logical table for the request
      *
      * @throws BadApiRequestException if the requested metrics are not in the logical table
+     *
+     * @deprecated Use {@link #validateMetrics(Set, LogicalTable, LogicalTableDictionary)} instead
      */
+    @Deprecated
     protected void validateMetrics(Set<LogicalMetric> logicalMetrics, LogicalTable table)
             throws BadApiRequestException {
-        DefaultLogicalMetricGenerator.validateMetrics(logicalMetrics, table);
+        metricBinder.validateMetrics(logicalMetrics, table);
+    }
+
+
+    /**
+     * Validate that all metrics are part of the logical table.
+     *
+     * @param logicalMetrics  The set of metrics being validated
+     * @param table  The logical table for the request
+     * @param logicalTableDictionary Logical table dictionary used for error validation messages.
+     *
+     * @throws BadApiRequestException if the requested metrics are not in the logical table
+     */
+    protected void validateMetrics(
+            Set<LogicalMetric> logicalMetrics,
+            LogicalTable table,
+            LogicalTableDictionary logicalTableDictionary
+    )
+            throws BadApiRequestException {
+        metricBinder.validateMetrics(logicalMetrics, table, logicalTableDictionary);
     }
 
     /**
@@ -322,7 +354,7 @@ public abstract class ApiRequestImpl implements ApiRequest {
             DateTimeFormatter dateTimeFormatter
     ) throws BadApiRequestException {
         return UtcBasedIntervalGenerator.generateIntervals(
-                new DateTime(),
+                timeSource.get(),
                 apiIntervalQuery,
                 granularity,
                 dateTimeFormatter

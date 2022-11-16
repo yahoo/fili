@@ -5,10 +5,11 @@ package com.yahoo.bard.webservice.web;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.DimensionDictionary;
 import com.yahoo.bard.webservice.data.dimension.DimensionField;
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadFilterException;
 
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +44,7 @@ public class ApiFilter {
         this.dimension = dimension;
         this.dimensionField = dimensionField;
         this.operation = operation;
-        this.values = Collections.unmodifiableList(new ArrayList<>(values)) ;
+        this.values = ImmutableList.copyOf(values);
     }
 
     /**

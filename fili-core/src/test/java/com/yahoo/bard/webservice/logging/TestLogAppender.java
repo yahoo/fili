@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class TestLogAppender extends AppenderBase<ILoggingEvent> implements Closeable {
 
-    public static final int MAX_MESSAGE_WAIT_MS = 10000;
+    public static final int MAX_MESSAGE_WAIT_MS = (int) TimeUnit.SECONDS.toMillis(10);
     private final Logger logger;
     private final List<ILoggingEvent> events = Collections.synchronizedList(new ArrayList<>());
 
@@ -89,7 +90,7 @@ public class TestLogAppender extends AppenderBase<ILoggingEvent> implements Clos
             try {
                 events.wait(MAX_MESSAGE_WAIT_MS);
             } catch (InterruptedException ignored) {
-                // Empty
+                Thread.currentThread().interrupt();
             }
         }
         return events.get(index).getFormattedMessage();

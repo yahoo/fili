@@ -35,14 +35,11 @@ public abstract class DimensionalFilter<T extends DimensionalFilter<? super T>> 
         super(type);
 
         this.dimension = dimension;
-
-        if (dimension instanceof ExtractionFunctionDimension) {
-            Optional<ExtractionFunction> optionalExtractionFunction = ((ExtractionFunctionDimension) dimension)
-                    .getExtractionFunction();
-            this.extractionFunction = optionalExtractionFunction.isPresent() ? optionalExtractionFunction.get() : null;
-        } else {
-            this.extractionFunction = null;
-        }
+        this.extractionFunction = Optional.ofNullable(dimension)
+                .filter(ExtractionFunctionDimension.class::isInstance)
+                .map(ExtractionFunctionDimension.class::cast)
+                .flatMap(ExtractionFunctionDimension::getExtractionFunction)
+                .orElse(null);
     }
 
     /**

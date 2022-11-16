@@ -15,10 +15,10 @@ import com.yahoo.bard.webservice.sql.ApiToFieldMapper;
 import com.yahoo.bard.webservice.sql.DruidQueryToSqlConverter;
 import com.yahoo.bard.webservice.sql.aggregation.DruidSqlAggregationConverter;
 import com.yahoo.bard.webservice.sql.aggregation.SqlAggregation;
+import com.yahoo.bard.webservice.sql.evaluator.FilterEvaluator;
+import com.yahoo.bard.webservice.sql.evaluator.PrestoFilterEvaluator;
 import com.yahoo.bard.webservice.sql.helper.CalciteHelper;
 import com.yahoo.bard.webservice.sql.helper.SqlTimeConverter;
-
-import com.google.common.base.CaseFormat;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -60,7 +60,16 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
      * @return a new time converter.
      */
     protected SqlTimeConverter buildSqlTimeConverter() {
-        return new SqlTimeConverter();
+        return new SqlTimeConverter("yyyyMMddHH", "yyyyMMdd");
+    }
+
+    /**
+     * Builds a filterEvaluator.
+     *
+     * @return a filter evaluator
+     */
+    protected FilterEvaluator buildFilterEvaluator() {
+        return new PrestoFilterEvaluator();
     }
 
     /**
@@ -91,8 +100,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
     ) {
         // druid does NULLS FIRST
         List<RexNode> sorts = new ArrayList<>();
-        int timePartFunctions = getTimeConverter().timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
-        int groupBys = druidQuery.getDimensions().size() + timePartFunctions;
+        int datePartFunctionSize = getTimeConverter().timeGrainToDatePartFunctions(druidQuery.getGranularity()).size();
+        int groupBySize = druidQuery.getDimensions().size() + datePartFunctionSize;
 
         List<RexNode> limitSpecSorts = new ArrayList<>();
         Set<String> limitSpecColumns = new HashSet<>();
@@ -103,10 +112,9 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                 limitSpec.getColumns()
                         .stream()
                         .map(orderByColumn -> {
-                            // TODO: investigate the field name mapping discrepency
-                            String orderByField = apiToFieldMapper.unApply(orderByColumn.getDimension());
-                            limitSpecColumns.add(orderByField);
-                            RexNode sort = builder.literal(orderByField);
+                            String orderByField = apiToFieldMapper.apply(orderByColumn.getDimension());
+                            limitSpecColumns.add(apiToFieldMapper.unApply(orderByField));
+                            RexNode sort = builder.literal(apiToFieldMapper.unApply(orderByField));
                             if (orderByColumn.getDirection().equals(SortDirection.DESC)) {
                                 sort = builder.desc(sort);
                             }
@@ -115,11 +123,8 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
                         .forEach(limitSpecSorts::add);
             }
         }
-        // add time group by
-        if (timePartFunctions == 0) {
-            sorts.add(builder.field(timestampColumn));
-        }
-        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBys));
+
+        sorts.addAll(builder.fields().subList(druidQuery.getDimensions().size(), groupBySize));
 
         // add limit spec group by
         sorts.addAll(limitSpecSorts);
@@ -135,44 +140,6 @@ public class DruidQueryToPrestoConverter extends DruidQueryToSqlConverter {
 
         return sorts.stream()
                 .map(sort -> builder.call(SqlStdOperatorTable.NULLS_FIRST, sort))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Find all druid aggregations and convert them to {@link org.apache.calcite.tools.RelBuilder.AggCall}.
-     * Difference between this and the base class is the special column lower underscore to lower camel case conversion
-     * for Druid column names
-     * @param builder  The RelBuilder created with Calcite.
-     * @param druidQuery  The druid query to get the aggregations of.
-     * @param apiToFieldMapper  The mapping from api to physical name.
-     *
-     * @return the list of aggregations.
-     */
-    @Override
-    protected List<RelBuilder.AggCall> getAllQueryAggregations(
-            RelBuilder builder,
-            DruidAggregationQuery<?> druidQuery,
-            ApiToFieldMapper apiToFieldMapper
-    ) {
-        return druidQuery.getAggregations()
-                .stream()
-                .map(aggregation -> getDruidSqlAggregationConverter().apply(aggregation, apiToFieldMapper))
-                .map(optionalSqlAggregation -> optionalSqlAggregation.orElseThrow(() -> {
-                    String msg = "Couldn't build sql aggregation with " + optionalSqlAggregation;
-                    LOG.debug(msg);
-                    return new RuntimeException(msg);
-                }))
-                .map(sqlAggregation -> builder.aggregateCall(
-                        sqlAggregation.getSqlAggFunction(),
-                        false,
-                        null,
-                        // TODO: investigate the field name case discrepency
-                        CaseFormat.LOWER_UNDERSCORE.to(
-                                CaseFormat.LOWER_CAMEL,
-                                sqlAggregation.getSqlAggregationAsName()
-                        ),
-                        builder.field(sqlAggregation.getSqlAggregationFieldName())
-                ))
                 .collect(Collectors.toList());
     }
 

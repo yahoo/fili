@@ -72,7 +72,10 @@ public class WikiMain {
                 try {
                     Response response = responseFuture.get();
                     LOG.debug("Mark Dimension Cache Updated Response: {}", response);
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    LOG.warn("Interrupted while marking dimensions healthy", e);
+                } catch (ExecutionException e) {
                     LOG.warn("Failed while marking dimensions healthy", e);
                 }
             }

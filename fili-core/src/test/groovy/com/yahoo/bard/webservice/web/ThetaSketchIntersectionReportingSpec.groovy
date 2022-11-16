@@ -14,6 +14,8 @@ import com.yahoo.bard.webservice.druid.model.postaggregation.SketchSetOperationP
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchEstimatePostAggregation
 import com.yahoo.bard.webservice.druid.model.postaggregation.ThetaSketchSetOperationPostAggregation
 import com.yahoo.bard.webservice.druid.util.FieldConverterSupplier
+import com.yahoo.bard.webservice.web.apirequest.DataApiRequest
+import com.yahoo.bard.webservice.web.apirequest.exceptions.BadApiRequestException
 import com.yahoo.bard.webservice.web.apirequest.utils.TestingDataApiRequestImpl
 
 import spock.lang.Specification
@@ -22,6 +24,8 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     ThetaSketchIntersectionReportingResources resources
     boolean intersectionReportingState
+
+    static final DataApiRequest REQUEST = TestingDataApiRequestImpl.buildStableDataApiRequestImpl()
 
     def setup() {
         intersectionReportingState = INTERSECTION_REPORTING.isOn()
@@ -35,11 +39,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the format of the metric filter is invalid, BadApiRequestException is thrown"(){
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN]property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -50,11 +54,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the API query contains duplicate metrics, BadApiRequestException is thrown"(){
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "foos,foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -64,11 +68,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When the queried metric is not present in Metric Dictionary, BadApiRequestException is thrown"() {
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "dinga",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -78,11 +82,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains 'OR' condition, BadApiRequestException is thrown"(){
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "foos(OR(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -91,11 +95,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When the INTERSECTION_REPORTING flag is enabled and the query contains unfiltered metrics, the Logical Metrics returned are equal to the Logical Metrics from the Metric Dictionary"() {
-        Set<LogicalMetric> logicalMetrics = new TestingDataApiRequestImpl().generateLogicalMetrics(
+        Set<LogicalMetric> logicalMetrics = REQUEST.generateLogicalMetrics(
                 "pageViews,foos",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
         HashSet<Dimension> expected =
                 ["pageViews", "foos"].collect { String name ->
@@ -110,11 +114,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When metric filter contains invalid dimension, BadApiRequestException is thrown"(){
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "foos(AND(country1|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -128,7 +132,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-                new TestingDataApiRequestImpl()
+                REQUEST
         )
 
         expect:
@@ -142,10 +146,10 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
                 resources.filterObj,
                 resources.dimensionDict,
                 resources.table,
-                new TestingDataApiRequestImpl()
+                REQUEST
         )
 
-        Set<Aggregation> aggregations = templateDruidQuery.aggregations;
+        Set<Aggregation> aggregations = templateDruidQuery.aggregations
         Aggregation aggregation = aggregations.first()
 
         FuzzySetPostAggregation postAggregation = templateDruidQuery.getPostAggregations().first()
@@ -155,7 +159,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         //The number of Filtered Aggregations should be  number of aggs * number of filters
         aggregations.size() == 4
         aggregation instanceof FilteredAggregation
-        setOperationPostAggregation.fields == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
+        setOperationPostAggregation.postAggregations == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
     }
 
     def "replacePostAggregation replaces the filedAccesors of foo postAgg with intersection of its Filtered Aggregators"(){
@@ -168,7 +172,7 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
         ThetaSketchSetOperationPostAggregation setOperationPostAggregation = replacedPostAgg.field
 
         expect:
-        setOperationPostAggregation.getFields() == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
+        setOperationPostAggregation.getPostAggregations() == [resources.fooNoBarPostAggregationInterim, resources.fooRegFoosPostAggregationInterim]
     }
 
     def "getFilteredAggregation returns a set of filteredAggregations for a given aggregation and Filter object"(){
@@ -186,11 +190,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
 
     def "When invalid(non-sketch) metric is used for filtering, IllegalArgumentException is thrown "(){
         when:
-        new TestingDataApiRequestImpl().generateLogicalMetrics(
+        REQUEST.generateLogicalMetrics(
                 "pageViews(AND(country|id-in[US,IN],property|id-in[news,sports]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         then:
@@ -199,11 +203,11 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "When API request contains filtered metrics, the Logical Metric returned by generateLogicalMetrics is filtered and therefore not equal to the Logical Metric from the Metric dictionary "(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  REQUEST.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         HashSet<Dimension> expected =
@@ -218,44 +222,44 @@ class ThetaSketchIntersectionReportingSpec extends Specification {
     }
 
     def "An exception is thrown when validateMetrics is passed an intersection expression using invalid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  REQUEST.generateLogicalMetrics(
                 "regFoos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        REQUEST.validateMetrics(logicalMetrics, resources.table)
 
         then:
-        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK'."
+        String expectedMessage = "Requested metric(s) '[regFoos]' are not supported by the table 'NETWORK' with grain 'day'."
         Exception e = thrown(BadApiRequestException)
         e.message == expectedMessage
 
     }
 
     def "No exception is thrown when validateMetrics is passed an intersection expression using valid metrics"(){
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  REQUEST.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         when:
-        new TestingDataApiRequestImpl().validateMetrics(logicalMetrics, resources.table)
+        REQUEST.validateMetrics(logicalMetrics, resources.table)
 
         then:
         noExceptionThrown()
     }
 
     def "The dimensions returned from the filtered logical metric are correct"() {
-        LinkedHashSet<LogicalMetric> logicalMetrics =  new TestingDataApiRequestImpl().generateLogicalMetrics(
+        LinkedHashSet<LogicalMetric> logicalMetrics =  REQUEST.generateLogicalMetrics(
                 "foos(AND(country|id-in[US,IN],property|id-in[14,125]))",
+                resources.table,
                 resources.metricDict,
-                resources.dimensionDict,
-                resources.table
+                resources.dimensionDict
         )
 
         expect:

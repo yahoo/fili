@@ -2,6 +2,7 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.wiki.webservice.data.config.dimension;
 
+import com.google.common.collect.ImmutableSet;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultDimensionField;
 import com.yahoo.bard.webservice.data.config.dimension.DefaultKeyValueStoreDimensionConfig;
 import com.yahoo.bard.webservice.data.config.dimension.DimensionConfig;
@@ -48,12 +49,7 @@ public class GenericDimensionConfigs {
                                             getDefaultKeyValueStore(dimensionName),
                                             getDefaultSearchProvider(dimensionName)
                                     )
-                            ).collect(
-                                    Collectors.collectingAndThen(
-                                            Collectors.toSet(),
-                                            Collections::unmodifiableSet
-                                    ));
-
+                            ).collect(ImmutableSet.toImmutableSet());
                     dataSourceToDimensionConfigs.put(dataSourceConfiguration.getName(), tableDimensionConfigs);
                 });
     }

@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.Result
 import com.yahoo.bard.webservice.data.ResultSet
 import com.yahoo.bard.webservice.data.ResultSetSchema
+import com.yahoo.bard.webservice.data.config.dimension.NamelessDimensionField
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
 import com.yahoo.bard.webservice.data.dimension.DimensionColumn
@@ -18,6 +19,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.DateTimeFormatterFactory
@@ -29,7 +31,9 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
+import spock.lang.Subject
 
+import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
 class ResponseDataSpec extends Specification {
@@ -39,10 +43,13 @@ class ResponseDataSpec extends Specification {
     static final int PAGE = 2
     static final int PER_PAGE = 2
 
+    @Subject
+    ResponseData response
+
     Set<Column> columns
     Set<LogicalMetric> testLogicalMetrics
-    ResponseData response
-    DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
+
+    DateTime dateTime = new DateTime(TimeUnit.DAYS.toMillis(365 * 45))
     DataApiRequest apiRequest = Mock(DataApiRequest)
     ResultSet resultSet
     ByteArrayOutputStream os = new ByteArrayOutputStream()
@@ -78,7 +85,7 @@ class ResponseDataSpec extends Specification {
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
-            new LogicalMetric(null, null, it.name)
+            new LogicalMetricImpl(null, null, it.name)
         } as Set
 
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }
@@ -87,6 +94,9 @@ class ResponseDataSpec extends Specification {
 
         dimensionFields.add(BardDimensionField.ID)
         dimensionFields.add(BardDimensionField.DESC)
+
+        LinkedHashSet<DimensionField> unnamedColumnFields = new LinkedHashSet<>()
+        unnamedColumnFields.add(NamelessDimensionField.EMPTY)
 
         List<DimensionColumn> dimensionColumns = [] as List
         Dimension dim1 = new KeyValueStoreDimension(
@@ -112,7 +122,7 @@ class ResponseDataSpec extends Specification {
         Dimension dim3 = new KeyValueStoreDimension(
                 "property",
                 "property",
-                dimensionFields,
+                unnamedColumnFields,
                 MapStoreManager.getInstance("property"),
                 ScanSearchProviderManager.getInstance("property")
         )
@@ -138,19 +148,19 @@ class ResponseDataSpec extends Specification {
         Map<DimensionColumn, DimensionRow> dimensionRows1 = [
                 (dimensionColumns[0]): BardDimensionField.makeDimensionRow(dimensionColumns[0].dimension, "ymail", "yahoo, mail"),
                 (dimensionColumns[1]): BardDimensionField.makeDimensionRow(dimensionColumns[1].dimension, "mob", """mobile " desc.."""),
-                (dimensionColumns[2]): BardDimensionField.makeDimensionRow(dimensionColumns[2].dimension, "US", "United States")
+                (dimensionColumns[2]): BardDimensionField.makeDimensionRow(dimensionColumns[2].dimension, "US")
         ] as LinkedHashMap
 
         Map<DimensionColumn, DimensionRow> dimensionRows2 = [
                 (dimensionColumns[0]): BardDimensionField.makeDimensionRow(dimensionColumns[0].dimension, "ysports", "yahoo sports"),
                 (dimensionColumns[1]): BardDimensionField.makeDimensionRow(dimensionColumns[1].dimension, "desk", """desktop ," desc.."""),
-                (dimensionColumns[2]): BardDimensionField.makeDimensionRow(dimensionColumns[2].dimension, "IN", "India")
+                (dimensionColumns[2]): BardDimensionField.makeDimensionRow(dimensionColumns[2].dimension, "IN")
         ] as LinkedHashMap
 
         Map<Dimension, Set<DimensionField>> defaultDimensionFieldsToShow = [
                 (dim1): dimensionFields,
                 (dim2): dimensionFields,
-                (dim3): [BardDimensionField.DESC] as Set // to show only description
+                (dim3): [NamelessDimensionField.EMPTY] as Set // to show only description
         ]
 
         apiRequest.getDimensionFields() >> { return defaultDimensionFieldsToShow }
@@ -228,7 +238,7 @@ class ResponseDataSpec extends Specification {
         expectedRow.put("product|desc","yahoo, mail")
         expectedRow.put("platform|id","mob")
         expectedRow.put("platform|desc","mobile \" desc..")
-        expectedRow.put("property|desc","United States")
+        expectedRow.put("property","US")
         expectedRow.put("pageViews",10)
         expectedRow.put("timeSpent",10)
 

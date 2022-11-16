@@ -14,7 +14,7 @@ the "current" section of the [CHANGELOG](/CHANGELOG.md). As part of declaring th
 be cleaned up so that the changes are easy to digest for those upgrading, flag them for the version they apply to, and
 move them into an "immutable" section so that new changes don't continue to be added. Here are the steps:
 
-1. Update [README.md](/README.md) link to "stable" version on Bintray to be the about-to-be-released stable version.
+1. Update [README.md](/README.md) link to "stable" version to be the about-to-be-released stable version.
    Make sure to update both the button text and the link address.
 2. Update the CHANGELOG file by retitling the "current" section with the about-to-be-released stable version and release
    date.
@@ -48,5 +48,3 @@ making that happen:
 
    For example, the proper tag will be `v0.8.0` if we're releasing the `v0.7.x` line as stable and starting development
    on the `v0.8.0` line). This wil cause the same artifact to be built and released under the proper version number.
-2. Delete the "too high" version that got released from Bintray
-3. Remove the "too high" tag from the repo

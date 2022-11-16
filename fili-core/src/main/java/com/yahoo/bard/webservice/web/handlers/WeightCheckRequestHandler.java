@@ -8,6 +8,7 @@ import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.client.SuccessCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.druid.model.query.WeightEvaluationQuery;
 import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.web.ErrorMessageFormat;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
@@ -104,7 +105,7 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
      * @param context  The context data from the request processing chain
      * @param request  The API request itself
      * @param druidQuery  The query being processed
-     * @param response  the response handler
+     * @param response  The response handler
      * @param queryRowLimit  The number of aggregating lines allowed
      *
      * @return The callback handler for the weight request
@@ -127,22 +128,21 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                     JsonNode row = jsonResult.get(0);
                     // If the weight limit query is empty or reports acceptable rows, run the full query
                     if (row != null) {
-                        int rowCount = row.get("event").get("count").asInt();
+                        long linesScanned = row.get("event").get(WeightEvaluationQuery.SCANNED_LINES).asLong();
+                        BardQueryInfo.accumulateLinesScanned(linesScanned);
 
-                        if (rowCount > queryRowLimit) {
-                            String reason = String.format(
-                                    ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
-                                    rowCount,
-                                    queryRowLimit
-                            );
-                            String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
+                        long resultSketchCount = row.get("event").get(WeightEvaluationQuery.OUTPUT_SKETCHES).asLong();
+                        BardQueryInfo.accumulateSketchesOutput(resultSketchCount);
 
-                            LOG.debug(reason);
-                            response.getErrorCallback(druidQuery).dispatch(
-                                507, //  Insufficient Storage
-                                reason,
-                                description
-                            );
+                        long linesOutput = row.get("event").get(WeightEvaluationQuery.OUTPUT_LINE_COUNT).asLong();
+                        BardQueryInfo.accumulateLinesOutput(linesOutput);
+
+                        int sketchesPerLine = row.get("event").get(WeightEvaluationQuery.SKETCHES_PER_ROW).asInt();
+
+                        BardQueryInfo.accumulateSketchesScanned(sketchesPerLine * linesScanned);
+
+                        if (resultSketchCount > queryRowLimit) {
+                            dispatchInsufficientStorage(response, druidQuery, resultSketchCount, queryRowLimit);
                             return;
                         }
                     }
@@ -153,5 +153,35 @@ public class WeightCheckRequestHandler extends BaseDataRequestHandler {
                 }
             }
         };
+    }
+
+    /**
+     * Dispatch an HTTP INSUFFICIENT_STORAGE (507) status based on the cardinality of the requester 's query
+     * as measured by the weight check query.
+     *
+     * @param response The response handler
+     * @param druidQuery The query being processed
+     * @param rowCount Row count from the json result
+     * @param queryRowLimit The number of aggregating lines allowed
+     */
+    protected static void dispatchInsufficientStorage(
+            ResponseProcessor response,
+            DruidAggregationQuery<?> druidQuery,
+            long rowCount,
+            long queryRowLimit
+    ) {
+        String reason = String.format(
+                ErrorMessageFormat.WEIGHT_CHECK_FAILED.logFormat(rowCount, queryRowLimit),
+                rowCount,
+                queryRowLimit
+        );
+        String description = ErrorMessageFormat.WEIGHT_CHECK_FAILED.format();
+
+        LOG.debug(reason);
+        response.getErrorCallback(druidQuery).dispatch(
+                507, //  Insufficient Storage
+                reason,
+                description
+        );
     }
 }

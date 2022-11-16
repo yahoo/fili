@@ -287,8 +287,8 @@ public class JsonSlurper {
             content = new LinkedHashMap();
         }
 
-        JsonToken previousToken = null;
-        JsonToken currentToken = null;
+        JsonToken previousToken;
+        JsonToken currentToken;
 
         for (;;) {
             currentToken = lexer.nextToken();

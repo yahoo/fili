@@ -3,8 +3,16 @@ Fili
 
 *Read this in other languages: [中文](./translations/zh/README-zh.md).*
 
-[![Download](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion) [![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) [![Travis](https://img.shields.io/travis/yahoo/fili/master.svg?maxAge=2592000)](https://travis-ci.org/yahoo/fili/builds/) [![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) [![Users Google Group](https://img.shields.io/badge/google_group-users-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-users) [![Developers Google Group](https://img.shields.io/badge/google_group-developers-blue.svg?maxAge=2592000)](https://groups.google.com/forum/#!forum/fili-developers)  
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=alert_status)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=coverage)](https://sonarcloud.io/dashboard?id=yahoo_fili) [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=ncloc)](https://sonarcloud.io/dashboard?id=yahoo_fili)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.yahoo.bard/fili/)
+[![Gitter](https://img.shields.io/gitter/room/yahoo/fili.svg?maxAge=2592000)](https://gitter.im/yahoo/fili) 
+[![Screwdriver](https://cd.screwdriver.cd/pipelines/6154/badge)](https://cd.screwdriver.cd/pipelines/6154) 
+[![Codacy grade](https://img.shields.io/codacy/grade/91fa6c38f25d4ea0ae3569ee70a33e38.svg?maxAge=21600)](https://www.codacy.com/app/Fili/fili/dashboard) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=alert_status)](https://sonarcloud.io/dashboard?id=yahoo_fili)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=coverage)](https://sonarcloud.io/dashboard?id=yahoo_fili) 
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=yahoo_fili&metric=ncloc)](https://sonarcloud.io/dashboard?id=yahoo_fili)
+
+**The Fili groupId has been changed from com.yahoo.fili to com.yahoo.bard.**
 
 Fili is a Java-based framework that makes it easy to build and maintain RESTful web services for time series reporting 
 and analytics. Fili's HTTP GET-based [reporting API](docs/end-user-api.md) is clean and user-friendly, hiding the 
@@ -88,38 +96,33 @@ using them. After deprecated APIs are no longer supported, they may be removed a
 Binaries (How to Get It)
 ------------------------
 
-Binaries for Fili are stored in [Bintray](https://bintray.com/yahoo/maven/fili). Dependency information for Maven, Ivy,
-and Gradle can be found at https://bintray.com/yahoo/maven/fili, and some examples are below.
+Binaries for Fili are stored in [Maven Central](https://search.maven.org/search?q=com.yahoo.bard). Dependency information for Maven, Ivy,
+and Gradle can be found at https://search.maven.org/search?q=com.yahoo.bard, and some examples are below.
 
 Maven:
 ```xml
 <dependency>
-    <groupId>com.yahoo.fili</groupId>
+    <groupId>com.yahoo.bard</groupId>
     <artifactId>fili</artifactId>
     <version>x.y.z</version>
 </dependency>
 
 <repository>
     <id>fili</id>
-    <url>http://yahoo.bintray.com/maven</url>
+    <url>https://repo1.maven.org/maven2</url>
 </repository>
 ```
 
 Gradle:
 ```groovy
 repositories {
-    maven { url 'http://yahoo.bintray.com/maven' }
+    maven { url 'https://repo1.maven.org/maven2' }
 }
 
 dependencies {
-    compile 'com.yahoo.fili:fili:x.y.z'
+    compile 'com.yahoo.bard:fili:x.y.z'
 }
 ```
-
-The most bleeding-edge version is: [![Bleeding-edge](https://api.bintray.com/packages/yahoo/maven/fili/images/download.svg)](https://bintray.com/yahoo/maven/fili/_latestVersion)
-
-The most recent stable version is: [![Stable](https://img.shields.io/badge/Stable-0.9.137-blue.svg)](https://bintray.com/yahoo/maven/fili/0.9.128)
-
 
 Extending
 ---------

@@ -9,6 +9,10 @@ import com.yahoo.bard.webservice.util.Utils;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,11 +21,24 @@ import java.util.Set;
 public enum DefaultSqlAggregationType implements SqlAggregationType {
     SUM(SqlStdOperatorTable.SUM, "longSum", "doubleSum"),
     MIN(SqlStdOperatorTable.MIN, "longMin", "doubleMin"),
-    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax");
+    MAX(SqlStdOperatorTable.MAX, "longMax", "doubleMax"),
+    COUNT(SqlStdOperatorTable.COUNT, "count");
     // todo avg
 
     private final Set<String> validDruidAggregations;
     private final SqlAggFunction sqlAggFunction;
+    public static Map<String, SqlAggregationType> defaultDruidToSqlAggregation;
+    static {
+        Map<String, SqlAggregationType> druidToSqlAggregation = new HashMap<>();
+        Arrays.stream(DefaultSqlAggregationType.values())
+                .forEach(defaultSqlAggregationType -> {
+                    defaultSqlAggregationType.getSupportedDruidAggregations()
+                            .forEach(druidAggregation -> {
+                                druidToSqlAggregation.put(druidAggregation, defaultSqlAggregationType);
+                            });
+                });
+        defaultDruidToSqlAggregation = Collections.unmodifiableMap(druidToSqlAggregation);
+    }
 
     /**
      * Construct an DefaultSqlAggregationType with a keyword to look for in a
@@ -42,6 +59,6 @@ public enum DefaultSqlAggregationType implements SqlAggregationType {
 
     @Override
     public SqlAggregation getSqlAggregation(Aggregation aggregation, ApiToFieldMapper apiToFieldMapper) {
-        return new SqlAggregation(apiToFieldMapper.apply(aggregation.getFieldName()), sqlAggFunction);
+        return new SqlAggregation(aggregation.getName(), aggregation.getFieldName(), sqlAggFunction);
     }
 }

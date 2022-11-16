@@ -14,6 +14,7 @@ import static com.yahoo.bard.webservice.sql.builders.Havings.equal
 import static com.yahoo.bard.webservice.sql.builders.Havings.gt
 import static com.yahoo.bard.webservice.sql.builders.Havings.lt
 import static com.yahoo.bard.webservice.sql.builders.Havings.or
+import static com.yahoo.bard.webservice.sql.DruidQueryToSqlConverterSpec.API_PREPEND
 
 import com.yahoo.bard.webservice.data.time.DefaultTimeGrain
 import com.yahoo.bard.webservice.database.Database
@@ -74,18 +75,17 @@ class HavingEvaluatorSpec extends Specification {
         builder.filter(havingFilter)
 
         expect:
-        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitChild(0, builder.build()).
+        String sql = new RelToSqlConverter(SqlDialect.create(CONNECTION.getMetaData())).visitRoot(builder.build()).
                 asSelect().
                 toString();
         sql.contains(expectedHavingSql)
         where: "we have"
-        having                                               | aggregations                           | expectedHavingSql
-        gt(API + ADDED, ONE)                                 | [sum(API + ADDED)]                     | "HAVING SUM(`${ADDED}`) > 1"
-        lt(API + DELETED, ONE)                               | [sum(API + DELETED)]                   | "HAVING SUM(`${DELETED}`) < 1"
-        equal(API + DELETED, ONE)                            | [sum(API + DELETED), sum(API + ADDED)] | "HAVING SUM(`${DELETED}`) = 1"
-        or(equal(API + DELETED, ONE), lt(API + ADDED, TWO))  | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
-        and(equal(API + DELETED, ONE), lt(API + ADDED, TWO)) | [max(API + DELETED), min(API + ADDED)] | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
-
+        having                                                               | aggregations               | expectedHavingSql
+        gt(API_PREPEND + ADDED, ONE)                                         | [sum(ADDED)]               | "HAVING SUM(`${ADDED}`) > 1"
+        lt(API_PREPEND + DELETED, ONE)                                       | [sum(DELETED)]             | "HAVING SUM(`${DELETED}`) < 1"
+        equal(API_PREPEND + DELETED, ONE)                                    | [sum(DELETED), sum(ADDED)] | "HAVING SUM(`${DELETED}`) = 1"
+        or(equal(API_PREPEND + DELETED, ONE), lt(API_PREPEND + ADDED, TWO))  | [max(DELETED), min(ADDED)] | "HAVING MAX(`${DELETED}`) = 1 OR MIN(`${ADDED}`) < 2"
+        and(equal(API_PREPEND + DELETED, ONE), lt(API_PREPEND + ADDED, TWO)) | [max(DELETED), min(ADDED)] | "HAVING MAX(`${DELETED}`) = 1 AND MIN(`${ADDED}`) < 2"
     }
 
     def "Test null input"() {

@@ -11,12 +11,15 @@ import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 import com.yahoo.bard.webservice.web.filters.ApiFilters;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.joda.time.Interval;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -24,7 +27,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Constraints used to match and resolve the best table for a given query.
  */
-public class QueryPlanningConstraint extends DataSourceConstraint {
+public class QueryPlanningConstraint extends BaseDataSourceConstraint {
 
     private final LogicalTable logicalTable;
     private final List<Interval> intervals;
@@ -48,11 +51,11 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
      * @param requestGranularity  The requested granularity of on the requested table
      */
     public QueryPlanningConstraint(
-            Set<Dimension> requestDimensions,
-            Set<Dimension> filterDimensions,
-            Set<Dimension> metricDimensions,
-            Set<String> metricNames,
-            ApiFilters apiFilters,
+            @NotNull Set<Dimension> requestDimensions,
+            @NotNull Set<Dimension> filterDimensions,
+            @NotNull Set<Dimension> metricDimensions,
+            @NotNull Set<String> metricNames,
+            @NotNull ApiFilters apiFilters,
             LogicalTable logicalTable,
             List<Interval> intervals,
             Set<LogicalMetric> logicalMetrics,
@@ -134,6 +137,40 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
     }
 
     @Override
+    public QueryPlanningConstraint withMetricIntersection(Set<String> metricNames) {
+        return new QueryPlanningConstraint(
+                getRequestDimensions(),
+                getFilterDimensions(),
+                getMetricDimensions(),
+                metricNames.stream()
+                        .filter(getMetricNames()::contains)
+                        .collect(Collectors.toSet()),
+                getApiFilters(),
+                getLogicalTable(),
+                getIntervals(),
+                getLogicalMetrics(),
+                getMinimumGranularity(),
+                getRequestGranularity()
+        );
+    }
+
+    @Override
+    public QueryPlanningConstraint withDimensionFilter(Predicate<Dimension> filter) {
+        return new QueryPlanningConstraint (
+                getRequestDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getFilterDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getMetricDimensions().stream().filter(filter).collect(Collectors.toSet()),
+                getMetricNames(),
+                getApiFilters(),
+                getLogicalTable(),
+                getIntervals(),
+                getLogicalMetrics(),
+                getMinimumGranularity(),
+                getRequestGranularity()
+        );
+    }
+
+    @Override
     public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
@@ -170,10 +207,8 @@ public class QueryPlanningConstraint extends DataSourceConstraint {
      * @return names of all {@link #logicalMetrics}
      */
     private Set<String> generateLogicalMetricNames() {
-        return Collections.unmodifiableSet(
-                logicalMetrics.stream()
+        return logicalMetrics.stream()
                         .map(LogicalMetric::getName)
-                        .collect(Collectors.toSet())
-        );
+                        .collect(ImmutableSet.toImmutableSet());
     }
 }

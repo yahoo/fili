@@ -26,4 +26,12 @@ public interface MetricsApiRequest extends ApiRequest {
      * @return an available metric
      */
     LogicalMetric getMetric();
+
+    /**
+     * Returns a MetricsApiRequest with set of given metrics.
+     *
+     * @param metrics Set of desired logical metrics in the api request
+     * @return MetricsApiRequest with set of given metrics
+     */
+    MetricsApiRequest withMetrics(LinkedHashSet<LogicalMetric> metrics);
 }

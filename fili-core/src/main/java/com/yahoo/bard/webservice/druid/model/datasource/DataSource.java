@@ -9,12 +9,10 @@ import com.yahoo.bard.webservice.table.ConstrainedTable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * DataSource base class.
@@ -58,12 +56,7 @@ public abstract class DataSource {
     public Set<String> getNames() {
         return getPhysicalTable().getDataSourceNames().stream()
                 .map(DataSourceName::asName)
-                .collect(
-                        Collectors.collectingAndThen(
-                                Collectors.toCollection(LinkedHashSet::new),
-                                Collections::unmodifiableSet
-                        )
-                );
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     /**

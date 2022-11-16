@@ -6,6 +6,8 @@ import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 import static com.yahoo.bard.webservice.table.TableTestUtils.buildTable
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
+import com.yahoo.bard.webservice.config.SystemConfig
+import com.yahoo.bard.webservice.config.SystemConfigProvider
 import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.dimension.BardDimensionField
 import com.yahoo.bard.webservice.data.dimension.Dimension
@@ -167,6 +169,14 @@ class GroupByQuerySpec extends Specification {
         }
         """
     }
+
+    def stringContextMap(Map vars) {
+        vars.context = vars.context ?
+                /{"queryId":"dummy100_1",$vars.context}/ :
+                /{"queryId": "dummy100_1"}/
+        """$vars.context"""
+    }
+
 
     def "check dimensions serialization"() {
         //no dimensions
@@ -446,7 +456,6 @@ class GroupByQuerySpec extends Specification {
         GroupByQuery dq4 = dq1.withContext(context4)
         GroupByQuery dq5 = dq3.withContext(dq3.getContext().withPopulateCache(null))
 
-
         String druidQuery0 = MAPPER.writeValueAsString(dq0)
         String druidQuery1 = MAPPER.writeValueAsString(dq1)
         String druidQuery2 = MAPPER.writeValueAsString(dq2)
@@ -470,7 +479,28 @@ class GroupByQuerySpec extends Specification {
         String queryString3 = stringQuery(context: contextString3)
         String queryString4 = stringQuery(context: contextString4)
 
+
+        String druidQueryCtx0 = MAPPER.writeValueAsString(dq0.getContext())
+        String expectedCtx0 = stringContextMap(default: true)
+
+        String druidQueryCtx1 = MAPPER.writeValueAsString(dq1.getContext())
+        String expectedCtx1 = stringContextMap(context: contextString1)
+        String druidQueryCtx2 = MAPPER.writeValueAsString(dq2.getContext())
+        String expectedCtx2 = stringContextMap(context: contextString2)
+        String druidQueryCtx3 = MAPPER.writeValueAsString(dq3.getContext())
+        String expectedCtx3 = stringContextMap(context: contextString3)
+        String druidQueryCtx4 = MAPPER.writeValueAsString(dq4.getContext())
+        String expectedCtx4 = stringContextMap(context: contextString4)
+
         expect:
+        GroovyTestUtils.compareJson(druidQueryCtx0, expectedCtx0)
+        GroovyTestUtils.compareJson(druidQueryCtx1, expectedCtx1)
+        GroovyTestUtils.compareJson(druidQueryCtx2, expectedCtx2)
+        GroovyTestUtils.compareJson(druidQueryCtx3, expectedCtx3)
+        GroovyTestUtils.compareJson(druidQueryCtx4, expectedCtx4)
+
+        // because of the way the test harness ignores context
+        // these lines probably do nothing.
         GroovyTestUtils.compareJson(druidQuery0, queryString0)
         GroovyTestUtils.compareJson(druidQuery1, queryString1)
         GroovyTestUtils.compareJson(druidQuery2, queryString2)
@@ -509,8 +539,8 @@ class GroupByQuerySpec extends Specification {
         and: "A nested query"
         TableDataSource table = new TableDataSource(buildTable("inner1", day, [] as Set, [:], Mock(DataSourceMetadataService) { getAvailableIntervalsByDataSource(_ as DataSourceName) >> [:]}))
         GroupByQuery inner = defaultQuery(dataSource: table, intervals: startingIntervals)
-        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource<>(inner), intervals: startingIntervals)
-        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource<>(middle), intervals: startingIntervals)
+        GroupByQuery middle = defaultQuery(dataSource: new QueryDataSource(inner), intervals: startingIntervals)
+        GroupByQuery outer = defaultQuery(dataSource: new QueryDataSource(middle), intervals: startingIntervals)
 
         when: "We set all intervals"
         GroupByQuery converted = outer.withAllIntervals(endingIntervals)
@@ -533,5 +563,28 @@ class GroupByQuerySpec extends Specification {
 
         expect:
         query.buildSchemaColumns().collect(Collectors.toList()) == columns
+    }
+
+    def "Default context respects configured timeouts"() {
+        setup:
+        SystemConfig config = SystemConfigProvider.getInstance()
+        String defaultTimeoutKey = config.getPackageVariableName("default_query_timeout")
+
+        config.setProperty(defaultTimeoutKey, "123")
+
+        List<Dimension> dimensions = [dimension1, dimension2]
+        List<Aggregation> aggregations = [aggregation1, aggregation2]
+        List<PostAggregation> postAggregations = [postAggregation3]
+
+        GroupByQuery query = defaultQuery(dimensions: dimensions, aggregations: aggregations, postAggregations: postAggregations )
+
+        when:
+        query = query.withContext(null)
+
+        then:
+        query.getContext().getTimeout() == 123
+
+        cleanup:
+        config.resetProperty(defaultTimeoutKey, null)
     }
 }

@@ -11,11 +11,11 @@ import static org.apache.calcite.sql.fun.SqlStdOperatorTable.SECOND;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.WEEK;
 import static org.apache.calcite.sql.fun.SqlStdOperatorTable.YEAR;
 
-import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
-import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
 import com.yahoo.bard.webservice.data.time.AllGranularity;
-import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.data.time.DefaultTimeGrain;
 import com.yahoo.bard.webservice.data.time.Granularity;
+import com.yahoo.bard.webservice.data.time.ZonedTimeGrain;
+import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
 
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.fun.SqlDatePartFunction;
@@ -25,7 +25,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.MutableDateTime;
 
-import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,13 +38,26 @@ import java.util.stream.Collectors;
 public class SqlTimeConverter {
     // This mapping shows what information we need to group for each granularity
     private final Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap;
+    private final String timeStringFormatHour;
+    private final String timeStringFormatDay;
 
     /**
      * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
-     * {@link #buildDefaultGranularityToDateFunctionsMap()} map.
+     * {@link #buildDefaultGranularityToDateFunctionsMap()} map. Use the default "yyyy-MM-dd HH:mm:ss.S" as time string
+     * format
      */
     public SqlTimeConverter() {
-        this(buildDefaultGranularityToDateFunctionsMap());
+        this(buildDefaultGranularityToDateFunctionsMap(), "yyyy-MM-dd HH", "yyyy-MM-dd");
+    }
+
+    /**
+     * Builds a sql time converter which can group by, filter, and reparse dateTimes from a row in a ResultSet using the
+     * {@link #buildDefaultGranularityToDateFunctionsMap()} map and set the timestamp format.
+     * @param timeStringFormatHour The hourly time string format
+     * @param timeStringFormatDay The daily time string format
+     */
+    public SqlTimeConverter(String timeStringFormatHour, String timeStringFormatDay) {
+        this(buildDefaultGranularityToDateFunctionsMap(), timeStringFormatHour, timeStringFormatDay);
     }
 
     /**
@@ -53,9 +65,17 @@ public class SqlTimeConverter {
      *
      * @param granularityToDateFunctionMap  The mapping defining what granularity needs to be kept in order to properly
      * group by and reparse a dateTime.
+     * @param timeStringFormatHour The time string format for the hourly timestamp column
+     * @param timeStringFormatDay The time string format for the daily timestamp column
      */
-    public SqlTimeConverter(Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap) {
+    public SqlTimeConverter(
+            Map<Granularity, List<SqlDatePartFunction>> granularityToDateFunctionMap,
+            String timeStringFormatHour,
+            String timeStringFormatDay
+    ) {
         this.granularityToDateFunctionMap = granularityToDateFunctionMap;
+        this.timeStringFormatHour = timeStringFormatHour;
+        this.timeStringFormatDay = timeStringFormatDay;
     }
 
     /**
@@ -67,7 +87,7 @@ public class SqlTimeConverter {
     public static Map<Granularity, List<SqlDatePartFunction>> buildDefaultGranularityToDateFunctionsMap() {
         Map<Granularity, List<SqlDatePartFunction>> defaultMap = new HashMap<>();
         defaultMap.put(AllGranularity.INSTANCE, Collections.emptyList());
-        defaultMap.put(DefaultTimeGrain.YEAR, asList(YEAR));
+        defaultMap.put(DefaultTimeGrain.YEAR, Collections.singletonList(YEAR));
         defaultMap.put(DefaultTimeGrain.MONTH, asList(YEAR, MONTH));
         defaultMap.put(DefaultTimeGrain.WEEK, asList(YEAR, WEEK));
         defaultMap.put(DefaultTimeGrain.DAY, asList(YEAR, DAYOFYEAR));
@@ -108,25 +128,37 @@ public class SqlTimeConverter {
             DruidAggregationQuery<?> druidQuery,
             String timestampColumn
     ) {
+        String timeStringFormat;
+        if (druidQuery.getDataSource().getPhysicalTable().getSchema().getTimeGrain().getBaseTimeGrain()
+                .equals(DefaultTimeGrain.HOUR)) {
+            timeStringFormat = timeStringFormatHour;
+        } else {
+            timeStringFormat = timeStringFormatDay;
+        }
         // create filters to only select results within the given intervals
         List<RexNode> timeFilters = druidQuery.getIntervals().stream()
                 .map(interval -> {
 
-                    DateTimeZone timeZone = getTimeZone(druidQuery);
-
-                    Timestamp start = TimestampUtils.timestampFromDateTime(interval.getStart().toDateTime(timeZone));
-                    Timestamp end = TimestampUtils.timestampFromDateTime(interval.getEnd().toDateTime(timeZone));
+                    DateTimeZone timeZone = druidQuery.getTimeZone();
+                    String start = TimestampUtils.dateTimeToString(
+                            interval.getStart().toDateTime(timeZone),
+                            timeStringFormat
+                    );
+                    String end = TimestampUtils.dateTimeToString(
+                            interval.getEnd().toDateTime(timeZone),
+                            timeStringFormat
+                    );
 
                     return builder.and(
                             builder.call(
-                                    SqlStdOperatorTable.GREATER_THAN,
+                                    SqlStdOperatorTable.GREATER_THAN_OR_EQUAL,
                                     builder.field(timestampColumn),
-                                    builder.literal(start.toString())
+                                    builder.literal(start)
                             ),
                             builder.call(
                                     SqlStdOperatorTable.LESS_THAN,
                                     builder.field(timestampColumn),
-                                    builder.literal(end.toString())
+                                    builder.literal(end)
                             )
                     );
                 })
@@ -147,12 +179,18 @@ public class SqlTimeConverter {
     public List<RexNode> buildGroupBy(RelBuilder builder, Granularity granularity, String timeColumn) {
         List<SqlDatePartFunction> sqlDatePartFunctions = timeGrainToDatePartFunctions(granularity);
         if (sqlDatePartFunctions.isEmpty()) {
-            return Collections.singletonList(builder.field(timeColumn));
+            return Collections.emptyList();
         }
 
         return sqlDatePartFunctions
                 .stream()
-                .map(sqlDatePartFunction -> builder.call(sqlDatePartFunction, builder.field(timeColumn)))
+                .map(sqlDatePartFunction ->
+                        builder.alias(builder.call(
+                                sqlDatePartFunction,
+                                builder.field(timeColumn)),
+                                sqlDatePartFunction.getName()
+                        )
+                )
                 .collect(Collectors.toList());
     }
 
@@ -170,14 +208,15 @@ public class SqlTimeConverter {
      */
     public DateTime getIntervalStart(int offset, String[] recordValues, DruidAggregationQuery<?> druidQuery) {
         List<SqlDatePartFunction> times = timeGrainToDatePartFunctions(druidQuery.getGranularity());
-
-        DateTimeZone timeZone = getTimeZone(druidQuery);
+        DateTimeZone timeZone = druidQuery.getTimeZone();
 
         if (times.isEmpty()) {
             throw new UnsupportedOperationException("Can't parse dateTime for if no times were grouped on.");
         }
 
-        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, 1, 0, 0, 0, 0, timeZone);
+        int startDay = (druidQuery.getGranularity().satisfiedBy(DefaultTimeGrain.WEEK)) ? 7 : 1;
+        MutableDateTime mutableDateTime = new MutableDateTime(0, 1, startDay, 0, 0, 0, 0, timeZone);
+
 
         for (int i = 0; i < times.size(); i++) {
             int value = Integer.parseInt(recordValues[offset + i]);
@@ -186,21 +225,6 @@ public class SqlTimeConverter {
         }
 
         return mutableDateTime.toDateTime();
-    }
-
-    /**
-     * Gets the timezone of the backing table for the given druid query.
-     *
-     * @param druidQuery  The druid query to find the timezone for
-     *
-     * @return the {@link DateTimeZone} of the physical table for this query.
-     */
-    private DateTimeZone getTimeZone(DruidAggregationQuery<?> druidQuery) {
-        return druidQuery.getDataSource()
-                .getPhysicalTable()
-                .getSchema()
-                .getTimeGrain()
-                .getTimeZone();
     }
 
     /**

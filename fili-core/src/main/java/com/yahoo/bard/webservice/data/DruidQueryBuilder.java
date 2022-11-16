@@ -7,6 +7,7 @@ import static com.yahoo.bard.webservice.web.ErrorMessageFormat.TOP_N_UNSORTED;
 import com.yahoo.bard.webservice.config.BardFeatureFlag;
 import com.yahoo.bard.webservice.data.dimension.Dimension;
 import com.yahoo.bard.webservice.data.dimension.FilterBuilderException;
+import com.yahoo.bard.webservice.data.dimension.VirtualDimension;
 import com.yahoo.bard.webservice.data.metric.TemplateDruidQuery;
 import com.yahoo.bard.webservice.data.time.Granularity;
 import com.yahoo.bard.webservice.druid.model.builders.DruidFilterBuilder;
@@ -40,8 +41,10 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -134,7 +137,7 @@ public class DruidQueryBuilder {
         DataApiRequest tableFilteredRequest = request.withFilters(
                 logicalTable.getFilters()
                         .map(f -> ApiFilters.union(f, request.getApiFilters()))
-                        .orElse(request.getApiFilters())
+                        .orElseGet(request::getApiFilters)
         );
 
         // Resolve the table from the the group, the combined dimensions in request, and template time grain
@@ -144,13 +147,17 @@ public class DruidQueryBuilder {
 
         Filter filter = druidFilterBuilder.buildFilters(tableFilteredRequest.getApiFilters());
 
+        Set<Dimension> nonVirtualGroupingDimensions = tableFilteredRequest.getAllGroupingDimensions().stream()
+                .filter(dim -> ! (dim instanceof VirtualDimension))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
         return druidTopNMetric != null ?
             buildTopNQuery(
                     template,
                     table,
                     tableFilteredRequest.getGranularity(),
                     tableFilteredRequest.getTimeZone(),
-                    tableFilteredRequest.getDimensions(),
+                    nonVirtualGroupingDimensions,
                     filter,
                     tableFilteredRequest.getIntervals(),
                     druidTopNMetric,
@@ -170,7 +177,7 @@ public class DruidQueryBuilder {
                         table,
                         tableFilteredRequest.getGranularity(),
                         tableFilteredRequest.getTimeZone(),
-                        tableFilteredRequest.getDimensions(),
+                        nonVirtualGroupingDimensions,
                         filter,
                         druidHavingBuilder.buildHavings(tableFilteredRequest.getHavings()),
                         tableFilteredRequest.getIntervals(),
@@ -263,7 +270,10 @@ public class DruidQueryBuilder {
                 template.getAggregations(),
                 template.getPostAggregations(),
                 intervals,
-                druidOrderBy
+                druidOrderBy,
+                null,
+                false,
+                template.getVirtualColumns()
         );
     }
 
@@ -348,7 +358,8 @@ public class DruidQueryBuilder {
                 template.getPostAggregations(),
                 intervals,
                 topN,
-                metricSpec
+                metricSpec,
+                template.getVirtualColumns()
         );
     }
 
@@ -401,7 +412,8 @@ public class DruidQueryBuilder {
                 filter,
                 template.getAggregations(),
                 template.getPostAggregations(),
-                intervals
+                intervals,
+                template.getVirtualColumns()
         );
     }
 
@@ -414,7 +426,8 @@ public class DruidQueryBuilder {
      * @return true if the optimization can be done, false if it can't
      */
     protected boolean canOptimizeTopN(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
-        return apiRequest.getDimensions().size() == 1 &&
+        return apiRequest.optimizeBackendQuery() &&
+                apiRequest.getDimensions().size() == 1 &&
                 apiRequest.getSorts().size() == 1 &&
                 !templateDruidQuery.isNested() &&
                 BardFeatureFlag.TOP_N.isOn() &&
@@ -430,7 +443,8 @@ public class DruidQueryBuilder {
      * @return true if the optimization can be done, false if it can't
      */
     protected boolean canOptimizeTimeSeries(DataApiRequest apiRequest, TemplateDruidQuery templateDruidQuery) {
-        return apiRequest.getDimensions().isEmpty() &&
+        return apiRequest.optimizeBackendQuery() &&
+            apiRequest.getDimensions().isEmpty() &&
                 !templateDruidQuery.isNested() &&
                 apiRequest.getSorts().isEmpty() &&
                 !apiRequest.getCount().isPresent() &&

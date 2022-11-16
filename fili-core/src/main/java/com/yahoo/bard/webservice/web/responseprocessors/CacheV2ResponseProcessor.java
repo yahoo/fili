@@ -6,15 +6,21 @@ import static com.yahoo.bard.webservice.config.BardFeatureFlag.CACHE_PARTIAL_DAT
 import static com.yahoo.bard.webservice.web.handlers.PartialDataRequestHandler.getPartialIntervalsWithDefault;
 import static com.yahoo.bard.webservice.web.handlers.VolatileDataRequestHandler.getVolatileIntervalsWithDefault;
 
+import com.yahoo.bard.webservice.application.MetricRegistryFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.druid.client.FailureCallback;
 import com.yahoo.bard.webservice.druid.client.HttpErrorCallback;
 import com.yahoo.bard.webservice.druid.model.query.DruidAggregationQuery;
+import com.yahoo.bard.webservice.logging.blocks.BardCacheInfo;
+import com.yahoo.bard.webservice.logging.blocks.BardQueryInfo;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
-import com.yahoo.bard.webservice.util.SimplifiedIntervalList;
+import com.yahoo.bard.webservice.web.util.QuerySignedCacheService;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -22,7 +28,13 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
+
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * A response processor which caches the results if appropriate after completing a query.
@@ -30,7 +42,10 @@ import javax.validation.constraints.NotNull;
 public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(CacheV2ResponseProcessor.class);
-    private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+
+    protected static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
+    protected static final MetricRegistry REGISTRY = MetricRegistryFactory.getRegistry();
+    public static final Meter CACHE_SET_FAILURES = REGISTRY.meter("queries.meter.cache.put.failures");
 
     private final long maxDruidResponseLengthToCache = SYSTEM_CONFIG.getLongProperty(
             SYSTEM_CONFIG.getPackageVariableName(
@@ -39,10 +54,11 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
             Long.MAX_VALUE
     );
 
-    private final ResponseProcessor next;
-    private final String cacheKey;
-    private final @NotNull TupleDataCache<String, Long, String> dataCache;
-    private final @NotNull QuerySigningService<Long> querySigningService;
+    protected final ResponseProcessor next;
+    protected final String cacheKey;
+    protected final String cacheKeyChecksum;
+    protected final @NotNull TupleDataCache<String, Long, String> dataCache;
+    protected final @NotNull QuerySigningService<Long> querySigningService;
 
     protected final ObjectWriter writer;
 
@@ -67,6 +83,7 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
         this.dataCache = dataCache;
         this.querySigningService = querySigningService;
         this.writer = mapper.writer();
+        this.cacheKeyChecksum = getMD5Checksum(cacheKey);
     }
 
     @Override
@@ -86,35 +103,84 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
 
     @Override
     public void processResponse(JsonNode json, DruidAggregationQuery<?> druidQuery, LoggingContext metadata) {
-        if (CACHE_PARTIAL_DATA.isOn() || isCacheable()) {
-            String valueString = null;
+        // Capture the query signature for the request as we're about to process it
+        Long querySignature = querySigningService.getSegmentSetId(druidQuery).orElse(null);
+
+        // First dispatch message to user
+        next.processResponse(json, druidQuery, metadata);
+
+        // Then try to cache
+        if (isCacheable()) {
+            String valueString;
             try {
                 valueString = writer.writeValueAsString(json);
+            } catch (JsonProcessingException e) {
+                handleException(e, querySignature);
+                return;
+            }
+
+            try {
                 int valueLength = valueString.length();
                 if (valueLength <= maxDruidResponseLengthToCache) {
                     dataCache.set(
                             cacheKey,
-                            querySigningService.getSegmentSetId(druidQuery).orElse(null),
+                            querySignature,
                             valueString
                     );
+                    afterCache();
                 } else {
                     LOG.debug(
-                            "Response not cached. Length of {} exceeds max value length of {}",
+                            "Response not cached for query with key checksum {}." +
+                                    "Length of {} exceeds max value length of {}",
+                            cacheKeyChecksum,
                             valueLength,
                             maxDruidResponseLengthToCache
                     );
                 }
             } catch (Exception e) {
-                LOG.warn(
-                        "Unable to cache {}value of size: {}",
-                        valueString == null ? "null " : "",
-                        valueString == null ? "N/A" : valueString.length(),
-                        e
-                );
+                handleException(e, querySignature, valueString);
             }
         }
+    }
 
-        next.processResponse(json, druidQuery, metadata);
+    private void handleException(Exception e, Long querySignature) {
+        //mark and log the cache put failure
+        String querySignatureHash = String.valueOf(querySignature);
+
+        CACHE_SET_FAILURES.mark(1);
+        BardQueryInfo.incrementCountCacheSetFailures();
+        BardQueryInfo.addCacheInfo(cacheKeyChecksum,
+                new BardCacheInfo(
+                        QuerySignedCacheService.LOG_CACHE_SET_FAILURES,
+                        cacheKey.length(),
+                        cacheKeyChecksum,
+                        querySignature != null
+                                ? CacheV2ResponseProcessor.getMD5Checksum(querySignatureHash)
+                                : null,
+                        0
+                )
+        );
+        LOG.warn("Unable to cache {} value of size: {} and key checksum: {} ", "null ", "N/A", cacheKeyChecksum, e);
+    }
+    private void handleException(Exception e, Long querySignature, String valueString) {
+        //mark and log the cache put failure
+        String querySignatureHash = String.valueOf(querySignature);
+
+        CACHE_SET_FAILURES.mark(1);
+        String message = String.format(
+                "Unable to cache %s value of size: %s and key checksum: %s. Message: %s ",
+                valueString == null ? "null " : "",
+                valueString == null ? "N/A" : valueString.length(),
+                getMD5Checksum(cacheKey),
+                e.getMessage()
+        );
+
+
+        if (e instanceof IllegalArgumentException) {
+            LOG.error(message, e);
+        } else {
+            LOG.warn(message, e);
+        }
     }
 
     /**
@@ -123,9 +189,49 @@ public class CacheV2ResponseProcessor implements ResponseProcessor {
      * @return whether request can be cached
      */
     protected boolean isCacheable() {
-        SimplifiedIntervalList missingIntervals = getPartialIntervalsWithDefault(getResponseContext());
-        SimplifiedIntervalList volatileIntervals = getVolatileIntervalsWithDefault(getResponseContext());
+        ResponseContext responseContext = getResponseContext();
+        // Moved from external check to inside this method
+        return CACHE_PARTIAL_DATA.isOn() ||
+                getPartialIntervalsWithDefault(responseContext).isEmpty() &&
+                        getVolatileIntervalsWithDefault(responseContext).isEmpty();
+    }
 
-        return missingIntervals.isEmpty() && volatileIntervals.isEmpty();
+    /**
+     * Generate the Checksum of cacheKey using MD5 algorithm.
+     * @param cacheKey cache key
+     *
+     * @return String representation of the checksum
+     */
+    public static String getMD5Checksum(String cacheKey) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hash = digest.digest(cacheKey.getBytes(StandardCharsets.UTF_8));
+            return bytesToHex(hash); // make it readable
+        } catch (NoSuchAlgorithmException ex) {
+            String msg = "Unable to initialize hash generator with default MD5 algorithm ";
+            LOG.warn(msg, ex);
+            throw new RuntimeException(msg, ex);
+        } catch (Exception exception) {
+            String msg = "Failed to generate checksum for cache key";
+            LOG.warn(msg, exception);
+            throw new RuntimeException(msg, exception);
+        }
+    }
+
+    /**
+     * Converts bytes array to the hex String.
+     * @param hash array of bytes to be converted in Hex
+     *
+     * @return String representation of the checksum
+     */
+    public static String  bytesToHex(byte[] hash) {
+        return DatatypeConverter.printHexBinary(hash)
+                .toLowerCase(Locale.ENGLISH);
+    }
+
+    /**
+     * Path for cacheStore implementation.
+     */
+    protected void afterCache() {
     }
 }

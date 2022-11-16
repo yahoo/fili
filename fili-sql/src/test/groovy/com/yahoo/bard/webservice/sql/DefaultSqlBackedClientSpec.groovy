@@ -45,6 +45,7 @@ import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.get
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.getDimensions
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.groupByQuery
 import static com.yahoo.bard.webservice.sql.builders.SimpleDruidQueryBuilder.timeSeriesQuery
+import static com.yahoo.bard.webservice.sql.DruidQueryToSqlConverterSpec.API_PREPEND
 
 import com.yahoo.bard.webservice.data.DruidResponseParser
 import com.yahoo.bard.webservice.data.ResultSet
@@ -81,13 +82,17 @@ import spock.lang.Unroll
 import java.util.function.Function
 
 class DefaultSqlBackedClientSpec extends Specification {
-    private static SqlBackedClient sqlBackedClient = new DefaultSqlBackedClient(Database.getDataSource(), new ObjectMapper())
+    private static SqlBackedClient sqlBackedClient
     private static final String TRUE = "TRUE"
     private static final String FALSE = "FALSE"
     private static final String FIRST_COMMENT = "added project"
     // FIRST_COMMENT is the first result in the database
     private static final String UNIQUE_COMMENT = "took out (then), added quotation marks"
     private static final DruidResponseParser RESPONSE_PARSER = new DruidResponseParser()
+
+    def setupSpec() {
+        sqlBackedClient = new DefaultSqlBackedClient(Database.getDataSource(), new ObjectMapper())
+    }
 
     ResultSet parse(JsonNode jsonNode, AbstractDruidAggregationQuery<?> druidQuery) {
         List<Column> columns = new ArrayList<>()
@@ -178,7 +183,7 @@ class DefaultSqlBackedClientSpec extends Specification {
         MINUTE    | search(COMMENT, FIRST_COMMENT)                      | 1
         MINUTE    | select(COMMENT, FIRST_COMMENT)                      | 1
         MINUTE    | not(select(COMMENT, FIRST_COMMENT))                 | 1393
-        MINUTE    | or(select(IS_ROBOT, TRUE), select(IS_ROBOT, FALSE)) | 1394
+//        MINUTE    | or(select(IS_ROBOT, TRUE), select(IS_ROBOT, FALSE)) | 1394
         HOUR      | null                                                | 24
         DAY       | null                                                | 1
         WEEK      | null                                                | 1
@@ -201,7 +206,8 @@ class DefaultSqlBackedClientSpec extends Specification {
                 null,
                 [sum(ADDED)],
                 [],
-                [interval(start, end)]
+                [interval(start, end)],
+                null
         )
         JsonNode jsonNode = sqlBackedClient.executeQuery(timeSeriesQuery, null, null).get()
         ResultSet parse = parse(jsonNode, timeSeriesQuery)
@@ -234,12 +240,12 @@ class DefaultSqlBackedClientSpec extends Specification {
 
         where: "we have"
         timeGrain | filter                          | response
-        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":36.0,"${DELETED}":0.0,"${DELTA}":36.0}}]"""
-        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":5.0,"${DELTA}":-5.0}}]"""
-        DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        WEEK      | null                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
+        HOUR      | select(COMMENT, FIRST_COMMENT)  | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":36.0,"${API_PREPEND}${DELETED}":0.0,"${API_PREPEND}${DELTA}":36.0}}]"""
+        HOUR      | select(COMMENT, UNIQUE_COMMENT) | """[{"timestamp":"2015-09-12T01:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0.0,"${API_PREPEND}${DELETED}":5.0,"${API_PREPEND}${DELTA}":-5.0}}]"""
+        DAY       | null                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        WEEK      | null                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        MONTH     | null                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        YEAR      | null                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
     }
 
     @Unroll
@@ -253,31 +259,31 @@ class DefaultSqlBackedClientSpec extends Specification {
         jsonNode.toString() == response
 
         where: "we have"
-        timeGrain | aggregation         | postAgg                                                                                                                                                                                                            | response
-        DAY       | { s -> sum(s) }     |[new ArithmeticPostAggregation("added_to_deleted_ratio", ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE, [new FieldAccessorPostAggregation(sum(ADDED)), new FieldAccessorPostAggregation(sum(DELETED))])] | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0,"added_to_deleted_ratio":"23.80324779735124195405505481"}}]"""
-        WEEK      | { s -> sum(s) }     |[]                                                                                                                                                                                                                  | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        MONTH     | { s -> sum(s) }     |[]                                                                                                                                                                                                                  | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        YEAR      | { s -> sum(s) }     |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573.0,"${DELETED}":394298.0,"${DELTA}":8991275.0}}]"""
-        DAY       | { s -> min(s) }     |[]| """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
-        WEEK      | { s -> min(s) }     |[]| """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
-        MONTH     | { s -> min(s) }     |[]| """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
-        YEAR      | { s -> min(s) }     |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":0.0,"${DELETED}":0.0,"${DELTA}":-500.0}}]"""
-        DAY       | { s -> max(s) }     |[]| """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
-        WEEK      | { s -> max(s) }     |[]| """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
-        MONTH     | { s -> max(s) }     |[]| """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
-        YEAR      | { s -> max(s) }     |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":199818.0,"${DELETED}":500.0,"${DELTA}":199818.0}}]"""
-        DAY       | { s -> longSum(s) } |[]| """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
-        WEEK      | { s -> longSum(s) } |[]| """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
-        MONTH     | { s -> longSum(s) } |[]| """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
-        YEAR      | { s -> longSum(s) } |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":9385573,"${DELETED}":394298,"${DELTA}":8991275}}]"""
-        DAY       | { s -> longMin(s) } |[]| """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
-        WEEK      | { s -> longMin(s) } |[]| """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
-        MONTH     | { s -> longMin(s) } |[]| """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
-        YEAR      | { s -> longMin(s) } |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":0,"${DELETED}":0,"${DELTA}":-500}}]"""
-        DAY       | { s -> longMax(s) } |[]| """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
-        WEEK      | { s -> longMax(s) } |[]| """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
-        MONTH     | { s -> longMax(s) } |[]| """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
-        YEAR      | { s -> longMax(s) } |[]| """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${ADDED}":199818,"${DELETED}":500,"${DELTA}":199818}}]"""
+        timeGrain | aggregation         | postAgg                                                                                                                                                                                                                       | response
+        DAY       | { s -> sum(s) }     | [new ArithmeticPostAggregation("added_to_deleted_ratio", ArithmeticPostAggregation.ArithmeticPostAggregationFunction.DIVIDE, [new FieldAccessorPostAggregation(sum(ADDED)), new FieldAccessorPostAggregation(sum(DELETED))])] | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0,"added_to_deleted_ratio":"23.80324779735124195405505481"}}]"""
+        WEEK      | { s -> sum(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        MONTH     | { s -> sum(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        YEAR      | { s -> sum(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573.0,"${API_PREPEND}${DELETED}":394298.0,"${API_PREPEND}${DELTA}":8991275.0}}]"""
+        DAY       | { s -> min(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0.0,"${API_PREPEND}${DELETED}":0.0,"${API_PREPEND}${DELTA}":-500.0}}]"""
+        WEEK      | { s -> min(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0.0,"${API_PREPEND}${DELETED}":0.0,"${API_PREPEND}${DELTA}":-500.0}}]"""
+        MONTH     | { s -> min(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0.0,"${API_PREPEND}${DELETED}":0.0,"${API_PREPEND}${DELTA}":-500.0}}]"""
+        YEAR      | { s -> min(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0.0,"${API_PREPEND}${DELETED}":0.0,"${API_PREPEND}${DELTA}":-500.0}}]"""
+        DAY       | { s -> max(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818.0,"${API_PREPEND}${DELETED}":500.0,"${API_PREPEND}${DELTA}":199818.0}}]"""
+        WEEK      | { s -> max(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818.0,"${API_PREPEND}${DELETED}":500.0,"${API_PREPEND}${DELTA}":199818.0}}]"""
+        MONTH     | { s -> max(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818.0,"${API_PREPEND}${DELETED}":500.0,"${API_PREPEND}${DELTA}":199818.0}}]"""
+        YEAR      | { s -> max(s) }     | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818.0,"${API_PREPEND}${DELETED}":500.0,"${API_PREPEND}${DELTA}":199818.0}}]"""
+        DAY       | { s -> longSum(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573,"${API_PREPEND}${DELETED}":394298,"${API_PREPEND}${DELTA}":8991275}}]"""
+        WEEK      | { s -> longSum(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573,"${API_PREPEND}${DELETED}":394298,"${API_PREPEND}${DELTA}":8991275}}]"""
+        MONTH     | { s -> longSum(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573,"${API_PREPEND}${DELETED}":394298,"${API_PREPEND}${DELTA}":8991275}}]"""
+        YEAR      | { s -> longSum(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":9385573,"${API_PREPEND}${DELETED}":394298,"${API_PREPEND}${DELTA}":8991275}}]"""
+        DAY       | { s -> longMin(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0,"${API_PREPEND}${DELETED}":0,"${API_PREPEND}${DELTA}":-500}}]"""
+        WEEK      | { s -> longMin(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0,"${API_PREPEND}${DELETED}":0,"${API_PREPEND}${DELTA}":-500}}]"""
+        MONTH     | { s -> longMin(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0,"${API_PREPEND}${DELETED}":0,"${API_PREPEND}${DELTA}":-500}}]"""
+        YEAR      | { s -> longMin(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":0,"${API_PREPEND}${DELETED}":0,"${API_PREPEND}${DELTA}":-500}}]"""
+        DAY       | { s -> longMax(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-12T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818,"${API_PREPEND}${DELETED}":500,"${API_PREPEND}${DELTA}":199818}}]"""
+        WEEK      | { s -> longMax(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-07T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818,"${API_PREPEND}${DELETED}":500,"${API_PREPEND}${DELTA}":199818}}]"""
+        MONTH     | { s -> longMax(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-09-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818,"${API_PREPEND}${DELETED}":500,"${API_PREPEND}${DELTA}":199818}}]"""
+        YEAR      | { s -> longMax(s) } | []                                                                                                                                                                                                                            | """[{"timestamp":"2015-01-01T00:00:00.000Z","event":{"${API_PREPEND}${ADDED}":199818,"${API_PREPEND}${DELETED}":500,"${API_PREPEND}${DELTA}":199818}}]"""
 
     }
 
@@ -292,17 +298,17 @@ class DefaultSqlBackedClientSpec extends Specification {
         parse.size() == size
 
         where: "we have"
-        timeGrain | dims               | filter                         | having                          | size
-        INSTANCE  | []                 | null                           | null                            | 39244
-        HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(ADDED, 1), lt(ADDED, 1.01)) | 0
-        HOUR      | [IS_ROBOT]         | null                           | null                            | 24 * 2
-        DAY       | [IS_NEW, IS_ROBOT] | null                           | null                            | 4
-        HOUR      | [IS_NEW, IS_ROBOT] | null                           | equal(ADDED, 0)                 | 0
-        HOUR      | [IS_NEW, IS_ROBOT] | search(COMMENT, FIRST_COMMENT) | equal(ADDED, 36)                | 1
-        HOUR      | []                 | null                           | gt(ADDED, 400000)               | 12
-        HOUR      | []                 | null                           | null                            | 24
-        DAY       | [PAGE, USER]       | null                           | null                            | 36565
-        DAY       | []                 | null                           | null                            | 1
+        timeGrain | dims               | filter                         | having                                                         | size
+        INSTANCE  | []                 | null                           | null                                                           | 1
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | and(gt(API_PREPEND + ADDED, 1), lt(API_PREPEND + ADDED, 1.01)) | 0
+        HOUR      | [IS_ROBOT]         | null                           | null                                                           | 24 * 2
+        DAY       | [IS_NEW, IS_ROBOT] | null                           | null                                                           | 4
+        HOUR      | [IS_NEW, IS_ROBOT] | null                           | equal(API_PREPEND + ADDED, 0)                                  | 0
+        HOUR      | [IS_NEW, IS_ROBOT] | search(COMMENT, FIRST_COMMENT) | equal(API_PREPEND + ADDED, 36)                                 | 1
+        HOUR      | []                 | null                           | gt(API_PREPEND + ADDED, 400000)                                | 12
+        HOUR      | []                 | null                           | null                                                           | 24
+        DAY       | [PAGE, USER]       | null                           | null                                                           | 36565
+        DAY       | []                 | null                           | null                                                           | 1
     }
 
     @Unroll
@@ -316,12 +322,12 @@ class DefaultSqlBackedClientSpec extends Specification {
         parse.size() == expectedSize
 
         where:
-        grain    | dims                                    | metrics          | metricDirections | limit                | expectedSize
-        DAY      | [METRO_CODE]                            | [ADDED]          | [DESC]           | Optional.of(10)   | 10
-        DAY      | []                                      | [ADDED, DELETED] | [DESC, ASC]      | Optional.of(10)   | 1
-        DAY      | [METRO_CODE, IS_ROBOT, REGION_ISO_CODE] | [ADDED]          | [DESC]           | Optional.of(100) | 100
-        YEAR     | [METRO_CODE]                            | []               | []               | Optional.of(1)    | 1
-        MONTH    | [USER]                                  | []               | []               | Optional.of(49)   | 49
-        INSTANCE | [COUNTRY_ISO_CODE]                      | []               | []               | Optional.of(25)   | 25
+        grain    | dims                                    | metrics                                      | metricDirections | limit            | expectedSize
+        DAY      | [METRO_CODE]                            | [API_PREPEND + ADDED]                        | [DESC]           | Optional.of(10)  | 10
+        DAY      | []                                      | [API_PREPEND + ADDED, API_PREPEND + DELETED] | [DESC, ASC]      | Optional.of(10)  | 1
+        DAY      | [METRO_CODE, IS_ROBOT, REGION_ISO_CODE] | [API_PREPEND + ADDED]                        | [DESC]           | Optional.of(100) | 100
+        YEAR     | [METRO_CODE]                            | []                                           | []               | Optional.of(1)   | 1
+        MONTH    | [USER]                                  | []                                           | []               | Optional.of(49)  | 49
+        INSTANCE | [COUNTRY_ISO_CODE]                      | []                                           | []               | Optional.of(25)  | 25
     }
 }

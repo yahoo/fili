@@ -2,6 +2,8 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.web
 
+import com.yahoo.bard.webservice.data.metric.MetricType
+
 import static com.yahoo.bard.webservice.data.time.DefaultTimeGrain.DAY
 
 import com.yahoo.bard.webservice.application.ObjectMappersSuite
@@ -19,6 +21,7 @@ import com.yahoo.bard.webservice.data.dimension.MapStoreManager
 import com.yahoo.bard.webservice.data.dimension.impl.KeyValueStoreDimension
 import com.yahoo.bard.webservice.data.dimension.impl.ScanSearchProviderManager
 import com.yahoo.bard.webservice.data.metric.LogicalMetric
+import com.yahoo.bard.webservice.data.metric.LogicalMetricImpl
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.util.JsonSlurper
@@ -31,6 +34,8 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
+
+import java.util.concurrent.TimeUnit
 
 import javax.ws.rs.core.UriBuilder
 
@@ -102,13 +107,13 @@ abstract class ResponseWriterSpec extends Specification {
     ]
 
     Set<Column> columns
-    Set<LogicalMetric> testLogicalMetrics
+    LinkedHashSet<LogicalMetric> testLogicalMetrics
     ResponseData response
     CsvResponseWriter csvResponseWriter
     JsonResponseWriter jsonResponseWriter
     JsonApiResponseWriter jsonApiResponseWriter
 
-    DateTime dateTime = new DateTime(1000L * 60 * 60 * 24 * 365 * 45)
+    DateTime dateTime = new DateTime(TimeUnit.DAYS.toMillis(365 * 45))
     String formattedDateTime
     DataApiRequest apiRequest = Mock(DataApiRequest)
     ResultSet resultSet
@@ -197,9 +202,17 @@ abstract class ResponseWriterSpec extends Specification {
     }
 
     ResultSet buildTestResultSet(Map<MetricColumn, Object> metricValues, Set<MetricColumn> requestedMetrics) {
+        return buildTestResultSet(metricValues, requestedMetrics, [dateTime, dateTime])
+    }
+
+    ResultSet buildTestResultSet(
+            Map<MetricColumn, Object> metricValues,
+            Set<MetricColumn> requestedMetrics,
+            List<DateTime> dateTimes
+    ) {
         // Setup logical metrics for the API request mock
         testLogicalMetrics = requestedMetrics.collect {
-            new LogicalMetric(null, null, it.name)
+            new LogicalMetricImpl(null, null, it.name)
         } as Set
 
         apiRequest.getLogicalMetrics() >> { return testLogicalMetrics }
@@ -276,8 +289,8 @@ abstract class ResponseWriterSpec extends Specification {
 
         apiRequest.getDimensionFields() >> { return defaultDimensionFieldsToShow }
 
-        Result result1 = new Result(dimensionRows1, metricValues, dateTime)
-        Result result2 = new Result(dimensionRows2, metricValues, dateTime)
+        Result result1 = new Result(dimensionRows1, metricValues, dateTimes[0])
+        Result result2 = new Result(dimensionRows2, metricValues, dateTimes[1])
 
         resultSet = new ResultSet(schema, [result1, result2])
 

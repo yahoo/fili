@@ -37,13 +37,15 @@ public class PartialDataHandler {
      * @param availableIntervals  The intervals available in the tables
      * @param requestedIntervals  The intervals that may not be fully satisfied
      * @param granularity  The granularity at which to find missing intervals
+     * @param tableName The table name used to log availability issues
      *
      * @return bucket-rounded subintervals of the requested intervals which have incomplete data
      */
     public SimplifiedIntervalList findMissingTimeGrainIntervals(
             @NotNull SimplifiedIntervalList availableIntervals,
             @NotNull SimplifiedIntervalList requestedIntervals,
-            Granularity granularity
+            Granularity granularity,
+            String tableName
     ) {
         SimplifiedIntervalList missingIntervals = collectBucketedIntervalsNotInIntervalList(
                 availableIntervals,
@@ -56,7 +58,9 @@ public class PartialDataHandler {
             missingIntervals = requestedIntervals;
         }
 
-        LOG.debug("Missing intervals: {} for grain {}", missingIntervals, granularity);
+        if (!missingIntervals.isEmpty()) {
+            LOG.debug("Missing intervals: {} for grain {} on table {}", missingIntervals, granularity, tableName);
+        }
         return missingIntervals;
     }
 

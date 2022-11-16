@@ -6,7 +6,8 @@ import com.yahoo.bard.webservice.data.config.names.DataSourceName
 import com.yahoo.bard.webservice.data.metric.MetricColumn
 import com.yahoo.bard.webservice.table.Column
 import com.yahoo.bard.webservice.table.ConfigPhysicalTable
-import com.yahoo.bard.webservice.table.resolver.DataSourceConstraint
+import com.yahoo.bard.webservice.table.PhysicalTableSchema
+import com.yahoo.bard.webservice.table.resolver.BaseDataSourceConstraint
 import com.yahoo.bard.webservice.table.resolver.PhysicalDataSourceConstraint
 import com.yahoo.bard.webservice.util.SimplifiedIntervalList
 import com.yahoo.bard.webservice.web.filters.ApiFilters
@@ -191,7 +192,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
@@ -202,7 +203,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 [:] as ApiFilters
         )
 
-        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'ignored2'] as Set)
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, Mock(PhysicalTableSchema), [metric1, metric2, 'ignored2'] as Set)
 
         expect:
         metricUnionAvailability.constructSubConstraint(physicalDataSourceConstraint).get(availability1).getMetricNames() == [metric1] as Set
@@ -227,7 +228,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
@@ -238,7 +239,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 apiFilters
         )
 
-        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2] as Set)
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, Mock(PhysicalTableSchema), [metric1, metric2] as Set)
 
         expect:
         metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList(
@@ -276,7 +277,7 @@ class MetricUnionAvailabilitySpec extends Specification {
 
         metricUnionAvailability = new MetricUnionAvailability(physicalTables.availability as Set, availabilitiesToMetricNames)
 
-        DataSourceConstraint dataSourceConstraint = new DataSourceConstraint(
+        BaseDataSourceConstraint dataSourceConstraint = new BaseDataSourceConstraint(
                 [] as Set,
                 [] as Set,
                 [] as Set,
@@ -287,7 +288,7 @@ class MetricUnionAvailabilitySpec extends Specification {
                 apiFilters
         )
 
-        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, [metric1, metric2, 'un_configured'] as Set)
+        PhysicalDataSourceConstraint physicalDataSourceConstraint = new PhysicalDataSourceConstraint(dataSourceConstraint, Mock(PhysicalTableSchema), [metric1, metric2, 'un_configured'] as Set)
 
         expect:
         metricUnionAvailability.getAvailableIntervals(physicalDataSourceConstraint) == new SimplifiedIntervalList()

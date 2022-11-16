@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -475,8 +476,8 @@ public class KeyValueStoreDimension implements Dimension {
                 indexRows.put(rowIdKey, new Pair<>(dimensionRow, dimensionRowOld));
 
             } catch (IOException e) {
-                LOG.error("Exception while adding dimension row {}", e);
-                throw new RuntimeException(e);
+                LOG.error("Exception while adding dimension row", e);
+                throw new UncheckedIOException(e);
             }
         }
 
@@ -521,8 +522,8 @@ public class KeyValueStoreDimension implements Dimension {
                 drByKey = parseDimensionRow(dimensionRowMap);
             }
         } catch (IOException e) {
-            LOG.error("Cannot map string to DimensionRow object. {}", e);
-            throw new RuntimeException(e);
+            LOG.error("Cannot map string to DimensionRow object.", e);
+            throw new UncheckedIOException(e);
         }
         return drByKey;
     }
@@ -555,8 +556,8 @@ public class KeyValueStoreDimension implements Dimension {
             keyValueStore.put(allValuesKey, "[]");
 
         } catch (IOException e) {
-            LOG.error("Exception while reading dimension rows {}", e);
-            throw new RuntimeException(e);
+            LOG.error("Exception while reading dimension rows", e);
+            throw new UncheckedIOException(e);
         }
     }
 

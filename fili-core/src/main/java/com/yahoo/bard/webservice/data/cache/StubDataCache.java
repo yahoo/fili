@@ -17,6 +17,7 @@ public class StubDataCache<T extends Serializable> implements DataCache<T> {
     }
 
     @Override
+    //(Deprecate this return type to be void)
     public boolean set(String key, T value) {
         return Boolean.FALSE;
     }
