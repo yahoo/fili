@@ -214,7 +214,7 @@ class DataPaginationSpec extends BaseDataServletComponentSpec {
     }
 
     @Unroll
-    def "An error is returned if the requested page (#page) or perPage (#perPage) is not a number."() {
+    def "An error is returned if the requested page (#page) or perPage (#rowsPerPage) is not a number."() {
         when: "We send a request with an incorrect type of page requested"
         Response response = makeAbstractRequest({getQueryParams("$rowsPerPage", "$page")})
 

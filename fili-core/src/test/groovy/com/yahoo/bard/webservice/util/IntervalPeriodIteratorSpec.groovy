@@ -17,7 +17,7 @@ class IntervalPeriodIteratorSpec extends Specification {
     }
 
     @Unroll
-    def "boundary at returns Date #expectedMoment with period #period and n #n from interval #baseInterval"() {
+    def "boundary at returns Date #expectedInstant with period #period and n #n from interval #baseInterval"() {
         expect:
         boundaryAtCalculationIsCorrect(baseInterval, period, n, expectedInstant)
 

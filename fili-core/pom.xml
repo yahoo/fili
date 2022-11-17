@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.yahoo.bard</groupId>
         <artifactId>fili-parent-pom</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>fili-core</artifactId>
@@ -175,13 +175,6 @@
         <dependency>
             <groupId>net.spy</groupId>
             <artifactId>spymemcached</artifactId>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Jersey Test 'grizzly' container -->

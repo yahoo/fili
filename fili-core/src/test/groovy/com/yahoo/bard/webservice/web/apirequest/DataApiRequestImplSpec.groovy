@@ -227,7 +227,7 @@ class DataApiRequestImplSpec extends Specification {
     }
 
     @Unroll
-    def "check valid granularity name #name parses to granularity #expected"() {
+    def "check valid granularity name #name parses to granularity #expectedGrain"() {
         expect:
         REQUEST.generateGranularity(name, granularityParser) == expectedGrain
 

@@ -79,7 +79,7 @@ class PartitionAvailabilitySpec extends Specification{
     }
 
     @Unroll
-    def "getDataSourceNames returns #expected from #dataSourceNames1 and #dataSourceNames2"() {
+    def "getDataSourceNames returns #expected from #names1 and #names2"() {
         given:
         availability1 = Mock(Availability)
         availability2 = Mock(Availability)
