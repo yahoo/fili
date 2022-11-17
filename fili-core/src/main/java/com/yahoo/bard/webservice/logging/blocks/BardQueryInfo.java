@@ -68,7 +68,7 @@ public class BardQueryInfo implements LogInfo {
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_ERRORS, factPutErrorsCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_TIMEOUTS, factPutTimeoutsCount),
-        new AbstractMap.SimpleImmutableEntry<>(DRUID_RESPONSE_SIZE, druidResponseSize)
+                new AbstractMap.SimpleImmutableEntry<>(DRUID_RESPONSE_SIZE, druidResponseSize)
         ).collect(Collectors.toMap(
                 AbstractMap.SimpleImmutableEntry::getKey,
                 AbstractMap.SimpleImmutableEntry::getValue
