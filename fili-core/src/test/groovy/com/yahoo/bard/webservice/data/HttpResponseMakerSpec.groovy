@@ -26,12 +26,16 @@ import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
 
+import java.nio.file.attribute.UserPrincipal
+import java.security.Principal
+
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.HttpHeaders
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.PathSegment
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.SecurityContext
 import javax.ws.rs.core.UriInfo
 
 class HttpResponseMakerSpec extends Specification {
@@ -50,11 +54,21 @@ class HttpResponseMakerSpec extends Specification {
     HttpResponseMaker httpResponseMaker
     ResponseWriter responseWriter
     ContainerRequestContext containerRequestContext
+    Principal user;
 
     def setup() {
         apiRequest = Mock(DataApiRequest)
         druidResponseParser = Mock(DruidResponseParser)
         containerRequestContext = Mock(ContainerRequestContext)
+        SecurityContext securityContext = Mock(SecurityContext)
+        user = new UserPrincipal() {
+            @Override
+            String getName() {
+                return "name"
+            }
+        }
+        securityContext.getUserPrincipal() >> user
+        containerRequestContext.getSecurityContext() >> securityContext
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)

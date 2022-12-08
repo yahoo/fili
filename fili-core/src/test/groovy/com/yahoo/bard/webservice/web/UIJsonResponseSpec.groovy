@@ -27,9 +27,17 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 
+import java.security.Principal
+
 class UIJsonResponseSpec extends Specification {
     private static final ObjectMappersSuite MAPPERS = new ObjectMappersSuite()
 
+    static final Principal user = new Principal() {
+        @Override
+        String getName() {
+            return "name"
+        }
+    }
     ResultSetSchema newSchema
     Map<DimensionColumn, DimensionRow> dimensionRows
     Map<MetricColumn, BigDecimal> metricValues
@@ -117,6 +125,7 @@ class UIJsonResponseSpec extends Specification {
 
         when: "get and serialize a JsonResponse"
         ResponseData jro = new ResponseData(
+                user,
                 resultSet,
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,
@@ -177,6 +186,7 @@ class UIJsonResponseSpec extends Specification {
 
         when: "We get and serialize a JsonResponse for it"
         ResponseData jro = new ResponseData(
+                user,
                 resultSet,
                 apiMetricColumnNames,
                 defaultDimensionFieldsToShow,

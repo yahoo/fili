@@ -43,6 +43,7 @@ class JsonApiResponseWriterNoTypeMetadataSpec extends ResponseWriterNoTypeMetada
                     }"""
 
         response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),
