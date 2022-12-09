@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -79,6 +78,14 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
 
     public abstract List<String> getRolesForId(String id) throws IOException;
 
+    /**
+     * Test whether the user is authorized to impersonate using the From header.
+     *
+     * @param securityContext  The security context of the logged in user.
+     */
+    public abstract boolean isAuthorizedToImpersonate(SecurityContext securityContext) throws IOException;
+
+
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
 
@@ -87,25 +94,30 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
         if (fromId == null || fromId.equals("")) {
             return;
         }
+
+        if (!isAuthorizedToImpersonate(requestContext.getSecurityContext())) {
+            throwUnauthorizedImpersonationError(requestContext, fromId);
+        }
+
         Matcher matcher = pattern.matcher(fromId);
         boolean matches = matcher.find();
         if (!matches) {
-            throwMalformedFromHeaderException(fromId);
+            throwMalformedFromHeaderError(fromId);
         }
         String userId = matcher.group(1);
         String domain = matcher.group(2);
         if (userId.isEmpty()) {
-            throwMalformedFromHeaderException(fromId);
+            throwMalformedFromHeaderError(fromId);
         }
 
         List<String> roles = null;
         try {
             roles = getRolesForId(userId);
-            roles = roles.stream().map( s->s.toLowerCase(Locale.US)).collect(Collectors.toList());
+            roles = roles.stream().map(s -> s.toLowerCase(Locale.US)).collect(Collectors.toList());
         } catch (IOException e) {
             String error = String.format("Failed authorization with from header: (%s)", fromId);
             LOG.error(error, e);
-            throwAuthorizationException(fromId);
+            throwImpersonatedUserAuthorizationError(fromId);
         }
         List<String> finalRoles = roles;
 
@@ -123,39 +135,76 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
             }
         };
         requestContext.setSecurityContext(new SecurityContext() {
-                @Override
-                public Principal getUserPrincipal() {
-                    return delegatedPrincipal;
-                }
+            @Override
+            public Principal getUserPrincipal() {
+                return delegatedPrincipal;
+            }
 
-                @Override
-                public boolean isUserInRole(String role) {
-                    String conformedRole = aliases.getOrDefault(role, role).toLowerCase(Locale.US);
-                    return finalRoles.contains(conformedRole);
-                }
+            @Override
+            public boolean isUserInRole(String role) {
+                String conformedRole = aliases.getOrDefault(role, role).toLowerCase(Locale.US);
+                return finalRoles.contains(conformedRole);
+            }
 
-                @Override
-                public boolean isSecure() {
-                    return originalSecurityContext.isSecure();
-                }
+            @Override
+            public boolean isSecure() {
+                return originalSecurityContext.isSecure();
+            }
 
-                @Override
-                public String getAuthenticationScheme() {
-                    return originalSecurityContext.getAuthenticationScheme();
-                }
-            });
-        }
+            @Override
+            public String getAuthenticationScheme() {
+                return originalSecurityContext.getAuthenticationScheme();
+            }
+        });
+    }
 
-    private void throwMalformedFromHeaderException(final String fromId) throws IOException {
+    /**
+     * An exception occurred where the user requesting authorization does not have the privilege to impersonate.
+     *
+     * @param requestContext  The request context for the current request.
+     * @param fromId  The attempted impersonation.
+     *
+     * @throws IOException with an WebApplication FORBIDDEN status
+     */
+    private void throwUnauthorizedImpersonationError(
+            final ContainerRequestContext requestContext,
+            final String fromId
+    ) {
         Response.ResponseBuilder builder = null;
-        String response = String.format("From header (%s) is malformed.  Expected USERID@DOMAIN ",fromId) ;
+        Principal principal = requestContext.getSecurityContext().getUserPrincipal();
+        String response = String.format(
+                "Attempted impersonation without proper authorization.  From: (%s), Attempting user: (%s)",
+                fromId,
+                principal.getName()
+        );
+        builder = Response.status(Response.Status.FORBIDDEN).entity(response);
+        throw new WebApplicationException(builder.build());
+    }
+
+    /**
+     * An error has occurred where the From header request doesn't match the expected format.
+     *
+     * @param fromId  The badly formed from header.
+     *
+     * @throws IOException with an WebApplication Unauthorized status
+     */
+    private void throwMalformedFromHeaderError(final String fromId) throws IOException {
+        Response.ResponseBuilder builder = null;
+        String response = String.format("From header (%s) is malformed.  Expected USERID@DOMAIN ", fromId);
         builder = Response.status(Response.Status.UNAUTHORIZED).entity(response);
         throw new WebApplicationException(builder.build());
     }
 
-    private void throwAuthorizationException(final String fromId) throws IOException {
+    /**
+     * The id service has thrown some kind of exception when attempting to fetch impersonation credentials.
+     *
+     * @param fromId  The id being impersonated.
+     *
+     * @throws IOException with an WebApplication FORBIDDEN status
+     */
+    private void throwImpersonatedUserAuthorizationError(final String fromId) throws IOException {
         Response.ResponseBuilder builder = null;
-        String response = String.format("From header (%s) user cannot be authorized.  Expected USERID@DOMAIN ",fromId) ;
+        String response = String.format("From header (%s) user cannot be authorized.  Expected USERID@DOMAIN ", fromId);
         builder = Response.status(Response.Status.FORBIDDEN).entity(response);
         throw new WebApplicationException(builder.build());
     }
