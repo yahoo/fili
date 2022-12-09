@@ -72,24 +72,22 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
                 !missingIntervals.isEmpty();
         boolean haveVolatileIntervals = volatileIntervals != null && ! volatileIntervals.isEmpty();
 
-        if (!BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && !paginating && !haveMissingIntervals
-                && !haveVolatileIntervals) {
+        boolean hasMetadataContent = haveVolatileIntervals || haveMissingIntervals
+                || BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn()
+                || BardFeatureFlag.USER_ID_IN_META_BLOCK.isOn()
+                || paginating;
+
+        if (!hasMetadataContent) {
             return;
         }
+        generator.writeObjectFieldStart("meta");
 
-        if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && !paginating && !haveMissingIntervals
-                && !haveVolatileIntervals) {
-            generator.writeObjectFieldStart("meta");
+        if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn()) {
             writeMetricTypeMetaObject(request, generator);
-            generator.writeEndObject();
-            return;
-        } else if (BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && (paginating || haveMissingIntervals
-                || haveVolatileIntervals)) {
-            generator.writeObjectFieldStart("meta");
-            writeMetricTypeMetaObject(request, generator);
-        } else if (!BardFeatureFlag.METRIC_TYPE_IN_META_BLOCK.isOn() && (paginating || haveMissingIntervals
-                || haveVolatileIntervals)) {
-            generator.writeObjectFieldStart("meta");
+        }
+
+        if (BardFeatureFlag.USER_ID_IN_META_BLOCK.isOn()) {
+            writeUserInMetaObject(responseData, generator);
         }
 
         // Add partial data info into the metadata block if needed.
@@ -119,9 +117,9 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
             generator.writeNumberField("currentPage", pagination.getPage());
             generator.writeNumberField("rowsPerPage", pagination.getPerPage());
             generator.writeNumberField("numberOfResults", pagination.getNumResults());
-
             generator.writeEndObject();
         }
+        generator.writeEndObject();
     }
 
     /**
@@ -166,5 +164,20 @@ public abstract class JsonAndJsonApiResponseWriter implements ResponseWriter {
             }
             generator.writeEndObject();
         }
+    }
+
+    /**
+     * Outputs the user id into the response data.
+     *
+     * @param responseData The id of the user principal on behalf of whom this report is run.
+     * @param generator  The JsonGenerator used to build the JSON response.
+     *
+     * @throws IOException if the generator throws an IOException.
+     */
+    public void writeUserInMetaObject(
+            ResponseData responseData,
+            JsonGenerator generator
+    ) throws IOException {
+        generator.writeStringField("userId", responseData.getUser().getName());
     }
 }

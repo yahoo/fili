@@ -43,7 +43,7 @@ class FeatureFlagRegistrySpec extends Specification {
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
                    "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query",
                    "adjust_current_by_timezone", "require_all_data_request_building_stages_called",
-                   "metric_type_in_meta_block"] as Set
+                   "metric_type_in_meta_block", "user_id_in_meta_block"] as Set
     }
 
     @Unroll

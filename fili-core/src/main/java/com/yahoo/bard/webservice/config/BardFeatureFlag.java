@@ -36,7 +36,9 @@ public enum BardFeatureFlag implements FeatureFlag {
     DEFAULT_IN_FILTER("default_in_filter_enabled"),
     REQUIRE_METRICS_QUERY("require_metrics_in_query"),
     POJO_DARI_REQUIRE_ALL_STAGES_CALLED("require_all_data_request_building_stages_called"),
-    METRIC_TYPE_IN_META_BLOCK("metric_type_in_meta_block")
+    METRIC_TYPE_IN_META_BLOCK("metric_type_in_meta_block"),
+
+    USER_ID_IN_META_BLOCK("user_id_in_meta_block")
     ;
 
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
