@@ -47,6 +47,9 @@ class RoleBasedTableValidatorRequestMapperSpec extends Specification {
     @Shared
     RoleBasedTableValidatorRequestMapper mapper
 
+    @Shared
+    RoleBasedTableValidatorRequestMapper reverseNameMapper
+
     def setupSpec() {
         LogicalTable table1 = Mock(LogicalTable) {
             getName() >> "TABLE1"
@@ -70,6 +73,12 @@ class RoleBasedTableValidatorRequestMapperSpec extends Specification {
         predicate = {it.isUserInRole("GRANT_TABLE2")} as Predicate<SecurityContext>
         securityRules.put("TABLE2", predicate)
 
+        predicate = {it.isUserInRole("GRANT_TABLE2")} as Predicate<SecurityContext>
+        securityRules.put("2ELBAT", predicate)
+
+        predicate = { r -> false}
+        securityRules.put(RoleBasedTableValidatorRequestMapper.DEFAULT_SECURITY_MAPPER_NAME, predicate);
+
         securityContext1.isUserInRole("GRANT_TABLE1") >> true
         containerRequestContext1.getSecurityContext() >> securityContext1
 
@@ -81,6 +90,14 @@ class RoleBasedTableValidatorRequestMapperSpec extends Specification {
                 dictionaries,
                 next
         )
+
+        reverseNameMapper = new RoleBasedTableValidatorRequestMapper(
+                securityRules,
+                dictionaries,
+                next,
+                (r) -> r.getTable().getName().reverse()
+        )
+
     }
 
     @Unroll
@@ -92,6 +109,30 @@ class RoleBasedTableValidatorRequestMapperSpec extends Specification {
         request       | context                    | response
         request1      | containerRequestContext1   | request1
         request2      | containerRequestContext2   | request2
+    }
+
+    @Unroll
+    def "check if tables whose name in reverse matches user role are queryable"() {
+        expect:
+        reverseNameMapper.internalApply(request, context) == response
+
+        where:
+        request       | context                    | response
+        request2      | containerRequestContext2   | request2
+    }
+
+    @Unroll
+    def "check if tables whose name is not in reverse matches user role are queryable"() {
+        when:
+        reverseNameMapper.internalApply(request, context)
+
+        then:
+        thrown exception
+
+        where:
+        request       | context                    | exception
+        request1      | containerRequestContext1   | RequestValidationException
+
     }
 
     @Unroll
