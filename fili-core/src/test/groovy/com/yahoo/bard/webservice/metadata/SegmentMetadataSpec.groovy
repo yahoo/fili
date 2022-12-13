@@ -2,9 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata
 
+import com.yahoo.bard.webservice.servlet.RoleImpersonationFilter
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
+
 import org.joda.time.Interval
 
 import spock.lang.Unroll
+
+import javax.ws.rs.core.SecurityContext
 
 class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
 
@@ -100,5 +105,23 @@ class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
         emptyMetrics = metricSet ? "full" : "empty"
         emptyTime = intervalSet ? "full" : "empty"
         isEmpty = emptyState ? "empty" : "not empty"
+    }
+
+    def "Role Impersonation filter checks right to impersonate and fetches roles"() {
+        setup:
+        RoleImpersonationFilter raf = Mock(RoleImpersonationFilter)
+        raf.getRolesForId(_) >> ["a", "b"]
+        SecurityContext sc = Mock(SecurityContext)
+        raf.isAuthorizedToImpersonate(sc) >> true
+        ResponseContext responseContext = Mock(ResponseContext)
+
+        when:
+        raf.isAuthorizedToImpersonate(sc)
+        //raf.filter(responseContext)
+        System.out.println("foo")
+
+        then:
+        1 * responseContext.setSecurityContext(_)
+        true
     }
 }

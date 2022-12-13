@@ -12,6 +12,10 @@ Current
 
 ### Added:
 
+- [Support user principal impersonation](https://github.com/yahoo/fili/issues/1285)
+  - Created `RoleImpersonationFilterSpec` and `DelegatedPrincipal` to support impersonation
+  - Added logging of active user principal to context block for query.
+
 ### Changed:
 
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)

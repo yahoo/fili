@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 /**
- * Use the from: header and a service to build a user Principal based on a service provider.
+ * Use the 'From:' header and a service to build a user Principal based on a service provider.
  */
 @Singleton
 public abstract class RoleImpersonationFilter implements ContainerRequestFilter {
@@ -41,15 +41,15 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
     public static final String ROLE_NAME_ALIAS_KEY = SYSTEM_CONFIG.getPackageVariableName("role_name_aliases");
 
     /**
+     * The expected structure of a From header is userName@domain.domain.
+     */
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("(\\w+)@([a-zA-Z.])");
+
+    /**
      * The map of incoming roles to expected system roles.  This mapping allows reconciliation of role sources
      * with difference casing, separators, etc.
      */
     private final Map<String, String> aliases;
-
-    /**
-     * The expected structure of a From header is userName@domain.domain.
-     */
-    Pattern pattern = Pattern.compile("(\\w+)@([a-zA-Z.])");
 
     /**
      * Constructor. Builds the mapping of aliases based on system config.
@@ -82,6 +82,9 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
      * Test whether the user is authorized to impersonate using the From header.
      *
      * @param securityContext  The security context of the logged in user.
+     *
+     * @return true if the user has permission to impersonate other users' rights
+     * @throws IOException is authorization creates an error.
      */
     public abstract boolean isAuthorizedToImpersonate(SecurityContext securityContext) throws IOException;
 
@@ -99,16 +102,13 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
             throwUnauthorizedImpersonationError(requestContext, fromId);
         }
 
-        Matcher matcher = pattern.matcher(fromId);
+        Matcher matcher = EMAIL_PATTERN.matcher(fromId);
         boolean matches = matcher.find();
         if (!matches) {
             throwMalformedFromHeaderError(fromId);
         }
         String userId = matcher.group(1);
         String domain = matcher.group(2);
-        if (userId.isEmpty()) {
-            throwMalformedFromHeaderError(fromId);
-        }
 
         List<String> roles = null;
         try {
