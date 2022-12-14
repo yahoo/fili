@@ -40,7 +40,7 @@ import javax.ws.rs.core.Response;
 /**
  * DataApiRequest Request binds, validates, and models the parts of a request to the data endpoint.
  */
-public interface DataApiRequest extends ApiRequest {
+public interface DataApiRequest extends ApiRequestWithTable {
 
     SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
@@ -100,13 +100,6 @@ public interface DataApiRequest extends ApiRequest {
 
 
     // Schema fields
-
-    /**
-     * The logical table for this request.
-     *
-     * @return A logical table
-     */
-    LogicalTable getTable();
 
     /**
      * The grain to group the results of this request.

@@ -14,6 +14,9 @@ Current
 
 ### Changed:
 
+- [Add new interface ApiRequestWithTable](https://github.com/yahoo/fili/pull/1287)
+   - Allows apirequests that contain a table to leverage the same request mappers for e.g. security rules
+
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
 
 - [More flexible security in RoleBased Request Mapping](https://github.com/yahoo/fili/issues/1283)

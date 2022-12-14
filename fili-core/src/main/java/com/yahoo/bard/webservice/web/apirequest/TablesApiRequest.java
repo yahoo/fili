@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
 /**
  * Tables API Request. Such an API Request binds, validates, and models the parts of a request to the tables endpoint.
  */
-public interface TablesApiRequest extends ApiRequest {
+public interface TablesApiRequest extends ApiRequestWithTable {
     String REQUEST_MAPPER_NAMESPACE = "tablesApiRequestMapper";
     String EXCEPTION_HANDLER_NAMESPACE = "tablesApiRequestExceptionHandler";
 
@@ -34,13 +34,6 @@ public interface TablesApiRequest extends ApiRequest {
      * @return the set of LogicalTables associated with a table API request
      */
     Set<LogicalTable> getTables();
-
-    /**
-     * Returns the LogicalTable requested in the table API request URL.
-     *
-     * @return the LogicalTable requested in the table API request URL
-     */
-    LogicalTable getTable();
 
     /**
      * Returns the grain to group the results of this request.

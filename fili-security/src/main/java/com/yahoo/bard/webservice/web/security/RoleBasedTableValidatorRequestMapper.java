@@ -6,7 +6,7 @@ import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.ApiRequestWithTable;
 
 import java.util.Map;
 import java.util.function.Function;
@@ -22,7 +22,7 @@ import javax.ws.rs.core.SecurityContext;
  *
  * @param <T> Type of API Request this RequestMapper will work on
  */
-public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> extends ChainingRequestMapper<T> {
+public class RoleBasedTableValidatorRequestMapper<T extends ApiRequestWithTable> extends ChainingRequestMapper<T> {
 
     public static String DEFAULT_SECURITY_MAPPER_NAME = "__default";
 
