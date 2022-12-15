@@ -171,7 +171,7 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
                 Stream.of(positiveOps, negativeOps)
                         .flatMap(Set::stream)
                         .noneMatch(op -> op.equals(filter.getOperation()))
-                ) {
+        ) {
             throw new BadApiRequestException(
                     String.format(
                             "Dimension %s doesn't support the operation %s. Try using one of the " +
@@ -265,7 +265,8 @@ public class FlagFromTagDimension extends RegisteredLookupDimension implements F
      * The format of the string is "FlagFromTagDimension{apiName=XXX, extractionFunctions=YYY, tagValue=AAA,
      * trueValue=BBB, falseValue=CCC}", where XXX is the Webservice API name of this dimension, YYY is the list of
      * registered lookup extraction functions of this dimension, AAA is the druid indexed tag value this dimension is
-     * based on, and BBB & CCC are the true and false output values produced by the presence of the tag value in druid.
+     * based on, and BBB AND CCC are the true and false output values produced by the presence of the tag value in
+     * druid.
      * Note that there is a single space separating the values after each comma. The API name, tag value, and truth
      * values are surrounded by pairs of single quotes.
      *

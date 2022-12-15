@@ -32,7 +32,6 @@ public class StreamUtils {
      * @param <T> the type of input arguments to the merge function
      *
      * @return a merge function which always throw {@code IllegalStateException}
-     * @see Collectors#throwingMerger()
      */
     public static <T> BinaryOperator<T> throwingMerger() {
         return (u, v) -> { throw new IllegalStateException(TWO_VALUES_OF_THE_SAME_KEY.format(u, v)); };
