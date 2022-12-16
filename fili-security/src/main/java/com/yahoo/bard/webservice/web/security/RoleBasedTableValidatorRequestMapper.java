@@ -64,18 +64,7 @@ public class RoleBasedTableValidatorRequestMapper extends ChainingRequestMapper<
         this.securityContextSelector = securityContextSelector;
     }
 
-    public DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
-            throws RequestValidationException {
-        SecurityContext securityContext = context.getSecurityContext();
-        String securityTag = securityContextSelector.apply(request);
-        Predicate<SecurityContext> isAllowed = securityRules.containsKey(securityTag) ?
-                securityRules.get(securityTag) :
-                securityRules.getOrDefault(DEFAULT_SECURITY_MAPPER_NAME, NO_OP_PREDICATE);
-
-        if (!isAllowed.test(securityContext)) {
-            throw new RequestValidationException(Response.Status.FORBIDDEN, "Permission Denied",
-                    "Request cannot be completed as you do not have enough permission");
-        }
+    public DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context) {
         return request;
     }
 }
