@@ -6,7 +6,7 @@ mvn -version
 
 # We're not on a release tag, so build and test the code
 echo "INFO mvn Install"
-mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build
+mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build -DskipTests
 #capture the maven return code
 MAVEN_RETURN_CODE=$?
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
@@ -24,7 +24,7 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
 fi
 
 echo "INFO mvn Site"
-mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
+mvn  -X -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn post-site -Pcoverage.report,sonar
 
 #echo "INFO mvn sonar"
 #mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn sonar:sonar -Dsonar.projectKey=yahoo_fili -Dsonar.organization=yahoo -Dsonar.login=${SONAR_TOKEN} -Pcoverage.report,sonar
