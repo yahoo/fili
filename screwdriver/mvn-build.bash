@@ -6,7 +6,7 @@ mvn -version
 
 # We're not on a release tag, so build and test the code
 echo "INFO mvn Install"
-mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build -DskipTests
+mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn install -Pcoverage.build
 #capture the maven return code
 MAVEN_RETURN_CODE=$?
 if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
