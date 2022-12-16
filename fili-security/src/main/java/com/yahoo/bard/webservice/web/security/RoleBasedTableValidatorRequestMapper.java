@@ -26,7 +26,7 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
 
     public static String DEFAULT_SECURITY_MAPPER_NAME = "__default";
 
-    public static Predicate<SecurityContext> NO_OP_PREDICATE =  (ignored -> true);
+    public static final Predicate<SecurityContext> NO_OP_PREDICATE = null;
 
     private final Map<String, Predicate<SecurityContext>> securityRules;
 
