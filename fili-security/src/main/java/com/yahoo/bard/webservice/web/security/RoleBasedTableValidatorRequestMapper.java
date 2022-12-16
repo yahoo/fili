@@ -9,6 +9,7 @@ import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.validation.constraints.NotNull;
@@ -23,7 +24,13 @@ import javax.ws.rs.core.SecurityContext;
  */
 public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> extends ChainingRequestMapper<T> {
 
+    public static String DEFAULT_SECURITY_MAPPER_NAME = "__default";
+
+    public static Predicate<SecurityContext> NO_OP_PREDICATE =  (ignored -> true);
+
     private final Map<String, Predicate<SecurityContext>> securityRules;
+
+    private final Function<T, String> securityContextSelector;
 
     /**
      * Constructor.
@@ -36,16 +43,37 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
             ResourceDictionaries resourceDictionaries,
             @NotNull RequestMapper<T> next
     ) {
-        super(resourceDictionaries, next);
-        this.securityRules = securityRules;
+        this(securityRules, resourceDictionaries, next, r -> r.getTable().getName());
     }
 
+    /**
+     * Constructor.
+     * @param securityRules  A map of predicates for validating table access.
+     * @param resourceDictionaries  The dictionaries to use for request mapping.
+     * @param securityContextSelector A function for selecting a security group name from the context.
+     * @param next  The next request mapper to process this ApiRequest
+     */
+    public RoleBasedTableValidatorRequestMapper(
+            Map<String, Predicate<SecurityContext>> securityRules,
+            ResourceDictionaries resourceDictionaries,
+            @NotNull RequestMapper<T> next,
+            Function<T, String> securityContextSelector
+    ) {
+        super(resourceDictionaries, next);
+        this.securityRules = securityRules;
+        this.securityContextSelector = securityContextSelector;
+    }
 
     @Override
     public T internalApply(T request, ContainerRequestContext context)
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
-        if (!securityRules.getOrDefault(request.getTable().getName(), (ignored -> true)).test(securityContext)) {
+        String securityTag = securityContextSelector.apply(request);
+        Predicate<SecurityContext> isAllowed = securityRules.containsKey(securityTag) ?
+                securityRules.get(securityTag) :
+                securityRules.getOrDefault(DEFAULT_SECURITY_MAPPER_NAME, NO_OP_PREDICATE);
+
+        if (!isAllowed.test(securityContext)) {
             throw new RequestValidationException(Response.Status.FORBIDDEN, "Permission Denied",
                     "Request cannot be completed as you do not have enough permission");
         }

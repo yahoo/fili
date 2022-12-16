@@ -16,6 +16,10 @@ Current
 
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
 
+- [More flexible security in RoleBased Request Mapping](https://github.com/yahoo/fili/issues/1283)
+  - Support default security mapping rule
+  - Support selecting security group from a property other than table name
+
 ### Removed:
 
 ### Fixed:
