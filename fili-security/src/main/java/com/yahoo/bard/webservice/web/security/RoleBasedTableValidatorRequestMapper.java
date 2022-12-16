@@ -64,6 +64,14 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
         this.securityContextSelector = securityContextSelector;
     }
 
+    /**
+     * Attempt to verify the request based on the security rules of the context.
+     *
+     * @param request The request to be modified
+     * @param context The container request context.
+     *
+     * @throws RequestValidationException if the user is disallowed permission.
+     */
     @Override
     public T internalApply(T request, ContainerRequestContext context)
             throws RequestValidationException {
