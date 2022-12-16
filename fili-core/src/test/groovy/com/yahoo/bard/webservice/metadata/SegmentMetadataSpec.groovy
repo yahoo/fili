@@ -106,22 +106,4 @@ class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
         emptyTime = intervalSet ? "full" : "empty"
         isEmpty = emptyState ? "empty" : "not empty"
     }
-
-    def "Role Impersonation filter checks right to impersonate and fetches roles"() {
-        setup:
-        RoleImpersonationFilter raf = Mock(RoleImpersonationFilter)
-        raf.getRolesForId(_) >> ["a", "b"]
-        SecurityContext sc = Mock(SecurityContext)
-        raf.isAuthorizedToImpersonate(sc) >> true
-        ResponseContext responseContext = Mock(ResponseContext)
-
-        when:
-        raf.isAuthorizedToImpersonate(sc)
-        //raf.filter(responseContext)
-        System.out.println("foo")
-
-        then:
-        1 * responseContext.setSecurityContext(_)
-        true
-    }
 }
