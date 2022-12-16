@@ -1011,29 +1011,31 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <id>aggregate-javadoc</id>
-                        <inherited>false</inherited>
-                        <reports>
-                            <report>aggregate-no-fork</report>
-<!--                            <report>test-aggregate-no-fork</report>-->
-                        </reports>
-                    </reportSet>
-                    <reportSet>
-                        <id>javadoc</id>
-                        <reports>
-                            <report>javadoc-no-fork</report>
-<!--                            <report>test-javadoc-no-fork</report>-->
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
+
+<!--            <plugin>-->
+<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>-->
+<!--                </configuration>-->
+<!--                <reportSets>-->
+<!--                    <reportSet>-->
+<!--                        <id>aggregate-javadoc</id>-->
+<!--                        <inherited>false</inherited>-->
+<!--                        <reports>-->
+<!--                            <report>aggregate-no-fork</report>-->
+<!--&lt;!&ndash;                            <report>test-aggregate-no-fork</report>&ndash;&gt;-->
+<!--                        </reports>-->
+<!--                    </reportSet>-->
+<!--                    <reportSet>-->
+<!--                        <id>javadoc</id>-->
+<!--                        <reports>-->
+<!--                            <report>javadoc-no-fork</report>-->
+<!--&lt;!&ndash;                            <report>test-javadoc-no-fork</report>&ndash;&gt;-->
+<!--                        </reports>-->
+<!--                    </reportSet>-->
+<!--                </reportSets>-->
+<!--            </plugin>-->
+
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
