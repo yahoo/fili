@@ -4,7 +4,6 @@ package com.yahoo.bard.webservice.web.security;
 
 import static com.yahoo.bard.webservice.web.security.SecurityErrorMessageFormat.DIMENSION_MISSING_MANDATORY_ROLE;
 
-import com.yahoo.bard.webservice.application.AbstractBinderFactory;
 import com.yahoo.bard.webservice.config.SystemConfig;
 import com.yahoo.bard.webservice.config.SystemConfigProvider;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
@@ -49,7 +48,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
     private static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractBinderFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoleDimensionApiFilterRequestMapper.class);
 
     public static final String SECURITY_SIGNUP_MESSAGE_KEY = "security_signup_message";
     public static final String DEFAULT_SECURITY_MESSAGE = "Your security settings do not permit access to this " +
