@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 /**
- * Use the 'From:' header and a service to build a user Principal based on a service provider.
+ * Use the 'From' header and a service to build a user Principal based on a service provider.
  */
 @Singleton
 public abstract class RoleImpersonationFilter implements ContainerRequestFilter {
@@ -76,6 +76,15 @@ public abstract class RoleImpersonationFilter implements ContainerRequestFilter 
         aliases = Collections.unmodifiableMap(inProgressAliases);
     }
 
+    /**
+     * Retrieve a list of roles from some source based on the user id.
+     *
+     * @param id  The user id being fetched.
+     *
+     * @return The string name of a list of roles.
+     *
+     * @throws IOException if the role client has an error.
+     */
     public abstract List<String> getRolesForId(String id) throws IOException;
 
     /**

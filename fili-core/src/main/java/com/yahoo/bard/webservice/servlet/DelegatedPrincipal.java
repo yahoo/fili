@@ -3,6 +3,10 @@
 package com.yahoo.bard.webservice.servlet;
 
 import java.security.Principal;
+
+/**
+ * A subinterface to retrieve impersonator credentials from an impersonated principal.
+ */
 public interface DelegatedPrincipal extends Principal {
 
     /**
