@@ -5,7 +5,6 @@ package com.yahoo.bard.webservice.web.security;
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
 import com.yahoo.bard.webservice.web.ChainingRequestMapper;
 import com.yahoo.bard.webservice.web.RequestMapper;
-import com.yahoo.bard.webservice.web.RequestValidationException;
 import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
 
 import java.util.Map;
@@ -13,7 +12,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 /**
