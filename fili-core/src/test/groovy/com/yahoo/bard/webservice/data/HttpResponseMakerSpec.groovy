@@ -26,7 +26,6 @@ import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
 
-import java.nio.file.attribute.UserPrincipal
 import java.security.Principal
 
 import javax.ws.rs.container.AsyncResponse
@@ -61,10 +60,10 @@ class HttpResponseMakerSpec extends Specification {
         druidResponseParser = Mock(DruidResponseParser)
         containerRequestContext = Mock(ContainerRequestContext)
         SecurityContext securityContext = Mock(SecurityContext)
-        user = new UserPrincipal() {
+        user = new Principal() {
             @Override
             String getName() {
-                return "name"
+                return null
             }
         }
         securityContext.getUserPrincipal() >> user

@@ -1022,14 +1022,14 @@
                         <inherited>false</inherited>
                         <reports>
                             <report>aggregate-no-fork</report>
-                            <report>test-aggregate-no-fork</report>
+<!--                            <report>test-aggregate-no-fork</report>-->
                         </reports>
                     </reportSet>
                     <reportSet>
                         <id>javadoc</id>
                         <reports>
                             <report>javadoc-no-fork</report>
-                            <report>test-javadoc-no-fork</report>
+<!--                            <report>test-javadoc-no-fork</report>-->
                         </reports>
                     </reportSet>
                 </reportSets>
