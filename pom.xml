@@ -1012,29 +1012,39 @@
                 </reportSets>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>-->
-<!--                </configuration>-->
-<!--                <reportSets>-->
-<!--                    <reportSet>-->
-<!--                        <id>aggregate-javadoc</id>-->
-<!--                        <inherited>false</inherited>-->
-<!--                        <reports>-->
-<!--                            <report>aggregate-no-fork</report>-->
-<!--&lt;!&ndash;                            <report>test-aggregate-no-fork</report>&ndash;&gt;-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                    <reportSet>-->
-<!--                        <id>javadoc</id>-->
-<!--                        <reports>-->
-<!--                            <report>javadoc-no-fork</report>-->
-<!--&lt;!&ndash;                            <report>test-javadoc-no-fork</report>&ndash;&gt;-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                </reportSets>-->
-<!--            </plugin>-->
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>${javadocs.package.exclude}</excludePackageNames>
+                    <quiet>true</quiet>
+                    <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/antlr4</sourcepath>
+                    <detectLinks>false</detectLinks>
+                    <detectOfflineLinks>false</detectOfflineLinks>
+                    <additionalJOptions>
+                        <additionalJOption>-XDiag</additionalJOption>
+                        <additionalJOption>-J-Xms20m</additionalJOption>
+                        <additionalJOption>-J-XX:-UseLargePages</additionalJOption>
+                        <additionalJOption>${javadoc_options}</additionalJOption>
+                    </additionalJOptions>
+                    <!-- lint breaks JDK8 builds, disable -->
+                    <additionalparam>${disableDocLint}</additionalparam>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <id>aggregate-javadoc</id>
+                        <inherited>false</inherited>
+                        <reports>
+                            <report>aggregate-no-fork</report>
+                        </reports>
+                    </reportSet>
+                    <reportSet>
+                        <id>javadoc</id>
+                        <reports>
+                            <report>javadoc-no-fork</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
 
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
