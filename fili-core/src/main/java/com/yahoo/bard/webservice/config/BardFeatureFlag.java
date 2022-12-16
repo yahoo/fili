@@ -26,6 +26,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     QUERY_SPLIT("query_split_enabled"),
     CACHE_PARTIAL_DATA("cache_partial_data"),
     TOP_N("top_n_enabled"),
+    LIMIT_SPEC_ON_PAGINATION("limit_spec_on_pagination_enabled"),
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),

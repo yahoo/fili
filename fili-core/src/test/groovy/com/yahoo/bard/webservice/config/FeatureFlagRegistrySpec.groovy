@@ -37,7 +37,7 @@ class FeatureFlagRegistrySpec extends Specification {
         then:
         values == ["partial_data_enabled", "partial_data_protection", "partial_data_query_optimization",
                    "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
-                   "cache_partial_data", "top_n_enabled", "current_macro_uses_latest",
+                   "cache_partial_data", "top_n_enabled", "limit_spec_on_pagination_enabled", "current_macro_uses_latest",
                    "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
