@@ -16,7 +16,7 @@
         <module>fili-system-config</module>
         <module>fili-core</module>
         <module>fili-navi</module>
-        <module>fili-security</module>
+<!--        <module>fili-security</module>-->
         <module>fili</module>
         <module>fili-sql</module>
         <module>luthier</module>

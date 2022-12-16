@@ -14,9 +14,6 @@ if [[ ${MAVEN_RETURN_CODE} -ne 0 ]]; then
     exit ${MAVEN_RETURN_CODE}
 fi
 
-echo "Javadoc Javadoc"
-mvn javadoc:javadoc
-
 echo "INFO dependency check"
 mvn -B org.owasp:dependency-check-maven:check
 #capture the maven return code
