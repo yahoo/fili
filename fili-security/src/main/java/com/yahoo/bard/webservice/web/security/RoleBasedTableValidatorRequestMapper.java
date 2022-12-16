@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -20,7 +19,7 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * A RequestMapper that validates table access for user based on roles that a user is associated with.
  *
- * @param <T> Type of API Request this RequestMapper will work on
+ * @param <T> What kind of DataApiRequest this maps.
  */
 public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> extends ChainingRequestMapper<T> {
 
@@ -34,6 +33,7 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
 
     /**
      * Constructor.
+     *
      * @param securityRules  A map of predicates for validating table access.
      * @param resourceDictionaries  The dictionaries to use for request mapping.
      * @param next  The next request mapper to process this ApiRequest
@@ -41,13 +41,14 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
     public RoleBasedTableValidatorRequestMapper(
             Map<String, Predicate<SecurityContext>> securityRules,
             ResourceDictionaries resourceDictionaries,
-            @NotNull RequestMapper<T> next
+            RequestMapper<T> next
     ) {
         this(securityRules, resourceDictionaries, next, r -> r.getTable().getName());
     }
 
     /**
      * Constructor.
+     *
      * @param securityRules  A map of predicates for validating table access.
      * @param resourceDictionaries  The dictionaries to use for request mapping.
      * @param securityContextSelector A function for selecting a security group name from the context.
@@ -56,7 +57,7 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
     public RoleBasedTableValidatorRequestMapper(
             Map<String, Predicate<SecurityContext>> securityRules,
             ResourceDictionaries resourceDictionaries,
-            @NotNull RequestMapper<T> next,
+            RequestMapper<T> next,
             Function<T, String> securityContextSelector
     ) {
         super(resourceDictionaries, next);
