@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A wrapper around the pagination parameters ('perPage' and 'page') to simplify working with pagination requests.
@@ -135,6 +136,12 @@ public class PaginationParameters {
             return resultSize == 0 ? 1 : (int) Math.ceil(((double) resultSize) / perPage);
         }
         return page;
+    }
+    public Optional<Integer> getMaxResults() {
+        if (page == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(page * perPage);
     }
 
     /**
