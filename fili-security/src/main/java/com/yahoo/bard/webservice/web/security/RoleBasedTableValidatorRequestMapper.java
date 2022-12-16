@@ -19,9 +19,8 @@ import javax.ws.rs.core.SecurityContext;
 /**
  * A RequestMapper that validates table access for user based on roles that a user is associated with.
  *
- * @param <T> What kind of DataApiRequest this maps.
  */
-public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> extends ChainingRequestMapper<T> {
+public class RoleBasedTableValidatorRequestMapper extends ChainingRequestMapper<DataApiRequest> {
 
     public static String DEFAULT_SECURITY_MAPPER_NAME = "__default";
 
@@ -29,7 +28,7 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
 
     private final Map<String, Predicate<SecurityContext>> securityRules;
 
-    private final Function<T, String> securityContextSelector;
+    private final Function<DataApiRequest, String> securityContextSelector;
 
     /**
      * Constructor.
@@ -41,7 +40,7 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
     public RoleBasedTableValidatorRequestMapper(
             Map<String, Predicate<SecurityContext>> securityRules,
             ResourceDictionaries resourceDictionaries,
-            RequestMapper<T> next
+            RequestMapper<DataApiRequest> next
     ) {
         this(securityRules, resourceDictionaries, next, r -> r.getTable().getName());
     }
@@ -57,16 +56,15 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
     public RoleBasedTableValidatorRequestMapper(
             Map<String, Predicate<SecurityContext>> securityRules,
             ResourceDictionaries resourceDictionaries,
-            RequestMapper<T> next,
-            Function<T, String> securityContextSelector
+            RequestMapper<DataApiRequest> next,
+            Function<DataApiRequest, String> securityContextSelector
     ) {
         super(resourceDictionaries, next);
         this.securityRules = securityRules;
         this.securityContextSelector = securityContextSelector;
     }
 
-    @Override
-    public T internalApply(T request, ContainerRequestContext context)
+    public DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
         SecurityContext securityContext = context.getSecurityContext();
         String securityTag = securityContextSelector.apply(request);
