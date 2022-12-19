@@ -27,6 +27,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
         formattedDateTime = dateTime.toString(getDefaultFormat())
 
         ResponseData paginatedResponse = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),
@@ -84,6 +85,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                 "2014-07-15/2014-07-22"
         )] as SimplifiedIntervalList
         ResponseData response1 = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 missingIntervals,
@@ -132,6 +134,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
 
         when: "We serialize the response"
         ResponseData complexResponse = new ResponseData(
+                user,
                 resultSetWithComplexMetrics,
                 apiRequest,
                 new SimplifiedIntervalList(),
@@ -169,6 +172,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                 outputDateTimeFormat
         )
         response = new ResponseData(
+                user,
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics),
                 apiRequest,
                 new SimplifiedIntervalList(),
@@ -229,6 +233,7 @@ class JsonResponseWriterSpec extends ResponseWriterSpec {
                                 }"""
 
         response = new ResponseData(
+                user,
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics, [null, dateTime]),
                 apiRequest,
                 new SimplifiedIntervalList(),

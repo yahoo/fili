@@ -45,6 +45,7 @@ class JsonApiResponseWriterNoSubtypeSpec extends ResponseWriterNoSubtypeSpec {
                     }"""
 
         response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),

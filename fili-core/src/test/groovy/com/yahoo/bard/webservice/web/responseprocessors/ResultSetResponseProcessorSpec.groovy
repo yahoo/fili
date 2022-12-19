@@ -49,11 +49,14 @@ import rx.subjects.PublishSubject
 import rx.subjects.Subject
 import spock.lang.Specification
 
+import java.security.Principal
+
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.ContainerRequestContext
 import javax.ws.rs.core.MultivaluedMap
 import javax.ws.rs.core.PathSegment
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.SecurityContext
 import javax.ws.rs.core.UriInfo
 
 class ResultSetResponseProcessorSpec extends Specification {
@@ -70,6 +73,9 @@ class ResultSetResponseProcessorSpec extends Specification {
     Subject responseEmitter
     DruidResponseParser druidResponseParser
     ContainerRequestContext containerRequestContext
+    SecurityContext securityContext
+    Principal user
+
     UriInfo uriInfo
     PathSegment pathSegment
     MultivaluedMap paramMap
@@ -94,6 +100,16 @@ class ResultSetResponseProcessorSpec extends Specification {
         apiRequest = Mock(DataApiRequest)
         druidResponseParser = Mock(DruidResponseParser)
         containerRequestContext = Mock(ContainerRequestContext)
+        securityContext = Mock(SecurityContext)
+        user = new Principal() {
+            @Override
+            String getName() {
+                return "name"
+            }
+        }
+        containerRequestContext.getSecurityContext() >> securityContext
+        securityContext.getUserPrincipal() >> user
+
         uriInfo = Mock(UriInfo)
         pathSegment = Mock(PathSegment)
         paramMap = Mock(MultivaluedMap)

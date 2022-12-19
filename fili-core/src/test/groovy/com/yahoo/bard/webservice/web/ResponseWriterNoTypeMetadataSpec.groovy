@@ -37,6 +37,7 @@ import org.joda.time.DateTimeZone
 
 import spock.lang.Specification
 
+import java.security.Principal
 import java.util.concurrent.TimeUnit
 
 import javax.ws.rs.core.UriBuilder
@@ -50,6 +51,12 @@ abstract class ResponseWriterNoTypeMetadataSpec extends Specification {
 
     SystemConfig systemConfig = SystemConfigProvider.getInstance()
 
+    static Principal user = new Principal() {
+        @Override
+        String getName() {
+            return "name"
+        }
+    }
     static final int PAGE = 2
     static final int PER_PAGE = 2
     static final String NEXT_PAGE = "example.yahoo.com:1234/v1/data/network/day/platform?metrics=pageViews&" +
@@ -192,6 +199,7 @@ abstract class ResponseWriterNoTypeMetadataSpec extends Specification {
             [(it): new BigDecimal(10)]
         }
         response = new ResponseData(
+                user,
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics),
                 apiRequest,
                 new SimplifiedIntervalList(),
@@ -308,6 +316,7 @@ abstract class ResponseWriterNoTypeMetadataSpec extends Specification {
 
         //response without pagination
         response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),

@@ -41,6 +41,7 @@ class JsonApiResponseWriterSpec extends ResponseWriterSpec {
                     }"""
 
         response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),
