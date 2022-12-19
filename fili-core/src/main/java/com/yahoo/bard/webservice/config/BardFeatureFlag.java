@@ -26,6 +26,7 @@ public enum BardFeatureFlag implements FeatureFlag {
     QUERY_SPLIT("query_split_enabled"),
     CACHE_PARTIAL_DATA("cache_partial_data"),
     TOP_N("top_n_enabled"),
+    LIMIT_SPEC_ON_PAGINATION("limit_spec_on_pagination_enabled"),
     DATA_FILTER_SUBSTRING_OPERATIONS("data_filter_substring_operations_enabled"),
     INTERSECTION_REPORTING("intersection_reporting_enabled"),
     UPDATED_METADATA_COLLECTION_NAMES("updated_metadata_collection_names_enabled"),
@@ -36,7 +37,9 @@ public enum BardFeatureFlag implements FeatureFlag {
     DEFAULT_IN_FILTER("default_in_filter_enabled"),
     REQUIRE_METRICS_QUERY("require_metrics_in_query"),
     POJO_DARI_REQUIRE_ALL_STAGES_CALLED("require_all_data_request_building_stages_called"),
-    METRIC_TYPE_IN_META_BLOCK("metric_type_in_meta_block")
+    METRIC_TYPE_IN_META_BLOCK("metric_type_in_meta_block"),
+
+    USER_ID_IN_META_BLOCK("user_id_in_meta_block")
     ;
 
     static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
