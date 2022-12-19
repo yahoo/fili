@@ -96,8 +96,9 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         ApiFilters revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
 
         return request.withFilters(revisedFilters);
+
          */
-        return null;
+        return request;
     }
 
     /*
