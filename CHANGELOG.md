@@ -13,6 +13,12 @@ Current
 ### Added:
 
 ### Changed:
+- [Reworked RoleBased Request Mapping for greater generality and yet more flexibility](https://github.com/yahoo/fili/pull/1288)
+  - `RoleBasedValidatorRequestMapper` has been added that applies to any ApiRequest, but otherwise behaves like the original 
+        `RoleBasedTableValidatorRequestMapper`. 
+  - The `RoleBasedTableValidatorRequestMapper` is now specific to the TablesApiRequest and handles requests for specific tables and 
+        fullview requests.
+    
 
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
 
