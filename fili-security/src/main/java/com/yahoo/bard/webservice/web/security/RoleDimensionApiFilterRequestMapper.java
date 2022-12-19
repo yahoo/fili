@@ -84,6 +84,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         unauthorizedHttpMessage = DIMENSION_MISSING_MANDATORY_ROLE.format(dimension.getApiName());
     }
 
+    @Override
     protected DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
         /*
