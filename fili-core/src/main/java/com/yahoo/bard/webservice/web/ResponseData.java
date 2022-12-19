@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -46,6 +47,7 @@ public class ResponseData {
     protected static final Logger LOG = LoggerFactory.getLogger(ResponseData.class);
     protected static final Map<Dimension, Map<DimensionField, String>> DIMENSION_FIELD_COLUMN_NAMES = new HashMap<>();
 
+    protected final Principal user;
     protected final ResultSet resultSet;
     protected final LinkedHashSet<MetricColumn> apiMetricColumns;
     protected final LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields;
@@ -57,6 +59,7 @@ public class ResponseData {
     /**
      * Constructor.
      *
+     * @param user  The user principal for the report
      * @param resultSet  ResultSet to turn into response
      * @param apiMetricColumnNames  The names of the logical metrics requested
      * @param requestedApiDimensionFields  The fields for each dimension that should be shown in the response
@@ -66,6 +69,7 @@ public class ResponseData {
      * @param paginationLinks  A mapping from link names to links to be added to the end of the JSON response.
      */
     public ResponseData(
+            Principal user,
             ResultSet resultSet,
             LinkedHashSet<String> apiMetricColumnNames,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
@@ -74,6 +78,7 @@ public class ResponseData {
             Pagination pagination,
             Map<String, URI> paginationLinks
     ) {
+        this.user = user;
         this.resultSet = resultSet;
         this.apiMetricColumns = generateApiMetricColumns(apiMetricColumnNames);
         this.requestedApiDimensionFields = requestedApiDimensionFields;
@@ -88,6 +93,7 @@ public class ResponseData {
     /**
      * Constructor.
      *
+     * @param user  The principal describing the requesting user
      * @param resultSet  ResultSet to turn into response
      * @param apiRequest  API Request to get the metric columns from
      * @param missingIntervals  intervals over which partial data exists
@@ -100,6 +106,7 @@ public class ResponseData {
      */
     @Deprecated
     public ResponseData(
+            Principal user,
             ResultSet resultSet,
             DataApiRequest apiRequest,
             SimplifiedIntervalList missingIntervals,
@@ -108,6 +115,7 @@ public class ResponseData {
             Map<String, URI> paginationLinks
     ) {
         this(
+                user,
                 resultSet,
                 apiRequest.getLogicalMetrics().stream()
                         .map(LogicalMetric::getName)
@@ -118,6 +126,10 @@ public class ResponseData {
                 pagination,
                 paginationLinks
         );
+    }
+
+    public Principal getUser() {
+        return user;
     }
 
     public ResultSet getResultSet() {

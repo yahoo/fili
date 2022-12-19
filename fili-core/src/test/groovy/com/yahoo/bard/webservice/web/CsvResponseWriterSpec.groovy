@@ -115,6 +115,7 @@ class CsvResponseWriterSpec extends ResponseWriterSpec {
         ResultSet resultSet = new ResultSet(schema, [result, result])
 
         ResponseData response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),

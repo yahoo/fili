@@ -29,6 +29,7 @@ import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext;
 import com.yahoo.bard.webservice.web.util.ResponseUtils;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -138,6 +139,8 @@ public class HttpResponseMaker {
             ApiRequest apiRequest,
             ContainerRequestContext containerRequestContext
     ) {
+        Principal user = containerRequestContext.getSecurityContext().getUserPrincipal();
+
         ResponseFormatType responseFormatType = apiRequest.getFormat();
         @SuppressWarnings("unchecked")
         Map<String, URI> bodyLinks = (Map<String, URI>) responseContext.get(
@@ -180,6 +183,7 @@ public class HttpResponseMaker {
 */
         @SuppressWarnings("unchecked")
         ResponseData responseData = buildResponseData(
+                user,
                 resultSet,
                 (LinkedHashSet<String>) responseContext.get(API_METRIC_COLUMN_NAMES.getName()),
                 requestedApiDimensionFields,
@@ -231,6 +235,7 @@ public class HttpResponseMaker {
     /**
      * Builds a ResponseData object.
      *
+     * @param user  The security principal for the active user
      * @param resultSet  ResultSet to turn into response
      * @param apiMetricColumnNames  The names of the logical metrics requested
      * @param requestedApiDimensionFields  The fields for each dimension that should be shown in the response
@@ -242,6 +247,7 @@ public class HttpResponseMaker {
      * @return a new ResponseData object
      */
     protected ResponseData buildResponseData(
+            Principal user,
             ResultSet resultSet,
             LinkedHashSet<String> apiMetricColumnNames,
             LinkedHashMap<Dimension, LinkedHashSet<DimensionField>> requestedApiDimensionFields,
@@ -251,6 +257,7 @@ public class HttpResponseMaker {
             Map<String, URI> paginationLinks
     ) {
         return new ResponseData(
+                user,
                 resultSet,
                 apiMetricColumnNames,
                 requestedApiDimensionFields,

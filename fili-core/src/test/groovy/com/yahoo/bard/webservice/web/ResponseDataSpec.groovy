@@ -33,6 +33,7 @@ import org.joda.time.DateTimeZone
 import spock.lang.Specification
 import spock.lang.Subject
 
+import java.security.Principal
 import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
 
@@ -43,6 +44,12 @@ class ResponseDataSpec extends Specification {
     static final int PAGE = 2
     static final int PER_PAGE = 2
 
+    static final Principal user = new Principal() {
+        @Override
+        String getName() {
+            return "name"
+        }
+    }
     @Subject
     ResponseData response
 
@@ -69,6 +76,7 @@ class ResponseDataSpec extends Specification {
             [(it): new BigDecimal(10)]
         }
         response = new ResponseData(
+                user,
                 buildTestResultSet(metricColumnsMap, defaultRequestedMetrics),
                 apiRequest,
                 new SimplifiedIntervalList(),
@@ -172,6 +180,7 @@ class ResponseDataSpec extends Specification {
 
         //response without pagination
         response = new ResponseData(
+                user,
                 resultSet,
                 apiRequest,
                 new SimplifiedIntervalList(),
