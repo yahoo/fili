@@ -37,13 +37,13 @@ class FeatureFlagRegistrySpec extends Specification {
         then:
         values == ["partial_data_enabled", "partial_data_protection", "partial_data_query_optimization",
                    "druid_cache_enabled", "druid_cache_v2_enabled", "query_split_enabled",
-                   "cache_partial_data", "top_n_enabled", "current_macro_uses_latest",
+                   "cache_partial_data", "top_n_enabled", "limit_spec_on_pagination_enabled", "current_macro_uses_latest",
                    "data_filter_substring_operations_enabled", "intersection_reporting_enabled",
                    "updated_metadata_collection_names_enabled", "druid_coordinator_metadata_enabled",
                    "druid_lookup_metadata_enabled", "druid_dimensions_loader_enabled",
                    "case_sensitive_keys_enabled", "default_in_filter_enabled", "require_metrics_in_query",
                    "adjust_current_by_timezone", "require_all_data_request_building_stages_called",
-                   "metric_type_in_meta_block"] as Set
+                   "metric_type_in_meta_block", "user_id_in_meta_block"] as Set
     }
 
     @Unroll

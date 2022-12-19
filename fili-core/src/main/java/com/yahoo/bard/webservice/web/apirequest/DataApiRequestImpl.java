@@ -1270,6 +1270,18 @@ public class DataApiRequestImpl extends ApiRequestImpl implements DataApiRequest
      * @return The requested value, zero if null or empty
      */
     protected int bindCount(String countRequest) {
+        if (BardFeatureFlag.LIMIT_SPEC_ON_PAGINATION.isOn()) {
+            if (countRequest != null)
+            {
+                return generateInteger(countRequest, "count");
+            }
+            if (paginationParameters == null)
+            {
+                return 0;
+            }
+            Optional<Integer> maxResult = paginationParameters.getMaxResults();
+            return maxResult.isPresent() ? maxResult.get() + paginationParameters.getPerPage() : 0;
+        }
         return generateInteger(countRequest, "count");
     }
 
