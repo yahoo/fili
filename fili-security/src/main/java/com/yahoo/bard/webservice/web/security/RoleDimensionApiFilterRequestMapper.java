@@ -86,7 +86,7 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
 
     protected DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
-
+        /*
         SecurityContext securityContext = context.getSecurityContext();
 
         Set<ApiFilter> securityFilters = buildSecurityFilters(securityContext);
@@ -96,6 +96,8 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         ApiFilters revisedFilters = mergeSecurityFilters(request.getApiFilters(), securityFilters);
 
         return request.withFilters(revisedFilters);
+         */
+        return null;
     }
 
     /*
