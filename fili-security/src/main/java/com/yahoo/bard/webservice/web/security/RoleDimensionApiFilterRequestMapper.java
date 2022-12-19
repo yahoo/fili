@@ -84,19 +84,6 @@ public class RoleDimensionApiFilterRequestMapper extends ChainingRequestMapper<D
         unauthorizedHttpMessage = DIMENSION_MISSING_MANDATORY_ROLE.format(dimension.getApiName());
     }
 
-    /**
-     * Rewrite and Validate the ApiRequest(e.g. Security check, permission check).
-     * <p>
-     * This should throw an exception if the given/converted request is not valid.
-     *
-     * @param request  the apiRequest to rewrite
-     * @param context  the ContainerRequestContext containing user and request information
-     *
-     * @return a reference to an apiRequest, either the original one or a rewritten one
-     *
-     * @throws RequestValidationException with the HTTP status and user-facing error msg to abort with
-     * if the request is not valid
-     */
     protected DataApiRequest internalApply(DataApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
 
