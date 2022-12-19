@@ -2,9 +2,14 @@
 // Licensed under the terms of the Apache license. Please see LICENSE.md file distributed with this work for terms.
 package com.yahoo.bard.webservice.metadata
 
+import com.yahoo.bard.webservice.servlet.RoleImpersonationFilter
+import com.yahoo.bard.webservice.web.responseprocessors.ResponseContext
+
 import org.joda.time.Interval
 
 import spock.lang.Unroll
+
+import javax.ws.rs.core.SecurityContext
 
 class SegmentMetadataSpec extends BaseDataSourceMetadataSpec {
 
