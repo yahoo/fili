@@ -9,6 +9,10 @@ Current
 -------
 
 ### Fixed:
+- [Removed excessive logging and exceptions caused during test runs]()
+  - Metadata Loader during test runs shouldn't try to connect to metadata service. `NoOpDataSourceMetadataLoadTask`
+  - SegmentMetadata in tests do not parse correctly as lists, changing to a null object. `TestDruidWebService` 
+  - Noop cache shouldn't create useless connection to Memcached `StubTupleDataCache`
 
 ### Added:
 
