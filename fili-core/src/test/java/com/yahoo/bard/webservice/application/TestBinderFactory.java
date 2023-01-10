@@ -37,7 +37,9 @@ import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsFunction;
 import com.yahoo.bard.webservice.data.volatility.VolatileIntervalsService;
 import com.yahoo.bard.webservice.druid.client.DruidWebService;
 import com.yahoo.bard.webservice.druid.model.orderby.OrderByColumn;
+import com.yahoo.bard.webservice.metadata.DataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.DataSourceMetadataService;
+import com.yahoo.bard.webservice.metadata.NoopDataSourceMetadataLoadTask;
 import com.yahoo.bard.webservice.metadata.QuerySigningService;
 import com.yahoo.bard.webservice.metadata.SegmentIntervalsHashIdGenerator;
 import com.yahoo.bard.webservice.metadata.TestDataSourceMetadataService;
@@ -247,6 +249,30 @@ public class TestBinderFactory extends AbstractBinderFactory {
     @Override
     protected DruidWebService buildDruidWebService(ObjectMapper mapper) {
         return state.webService;
+    }
+
+    /**
+     * Build a datasource metadata loader.
+     *
+     * @param webService  The web service used by the loader to query druid for segments availability.
+     * @param physicalTableDictionary  The table to get the dimensions from.
+     * @param metadataService  The service to be used to store the datasource metadata.
+     * @param mapper  The object mapper to process the metadata json.
+     *
+     * @return A datasource metadata loader.
+     */
+    protected DataSourceMetadataLoadTask buildDataSourceMetadataLoader(
+            DruidWebService webService,
+            PhysicalTableDictionary physicalTableDictionary,
+            DataSourceMetadataService metadataService,
+            ObjectMapper mapper
+    ) {
+        return new NoopDataSourceMetadataLoadTask(
+                physicalTableDictionary,
+                metadataService,
+                webService,
+                mapper
+        );
     }
 
     @Override

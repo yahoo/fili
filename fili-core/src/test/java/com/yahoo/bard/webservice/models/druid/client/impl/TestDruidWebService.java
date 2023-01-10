@@ -44,9 +44,10 @@ public class TestDruidWebService implements DruidWebService {
 
     private static ObjectWriter writer = mapper.writer();
 
-    public Producer<String> jsonResponse = () -> "[]";
+    public Producer<String> jsonResponse = () -> "{}";
     public String timeBoundaryResponse = "[]";
-    public String segmentMetadataResponse = "[]";
+
+    public String segmentMetadataResponse = "null";
     public int statusCode = 200;
     public String statusName = "";
     public String reasonPhrase = "";
