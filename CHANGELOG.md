@@ -31,6 +31,7 @@ Current
   - Support selecting security group from a property other than table name
 
 ### Removed:
+- [Deleted 3 broken documentation links that no longer exist](https://github.com/yahoo/fili/pull/1293)
 
 ### Fixed:
 
