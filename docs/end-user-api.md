@@ -769,7 +769,7 @@ just like the [`filename`](#filename) parameter on queries sent to the `data` en
 a query to the `data` endpoint, and allow the user to get pages of the results.
 
 4. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
-result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
+result store. Behaves like the `asyncAfter` parameter on the `data` endpoint.
 
 If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the
 [job's metadata](#job-meta-data).

@@ -89,9 +89,7 @@ You also need to give Fili the names of the Druid metrics. This is done by imple
 interface in a similar manner as `ApiMetricName` (except Druid metric names do not require a minimum time grain). 
 
 Implementing `FieldName` allows you to feed the Druid metric names into the [`BaseTableLoader`][baseTableLoader], which 
-uses them to configure the physical tables. See the [`Binding Resources`](binding-resources) for more information about 
-loading tables. The [`WikiDruidMetricName`][wikiDruidMetricName] enum provides an example.
-
+uses them to configure the physical tables. The [`WikiDruidMetricName`][wikiDruidMetricName] enum provides an example.
 
 ### Building and Loading Metrics ###
 
@@ -165,8 +163,7 @@ private void addToMetricDictionary(MetricDictionary metricDictionary, List<Metri
 The [Fili wikipedia example][fili-wikipedia-example] has a sample metric loader called
 [`WikiMetricLoader`][wikiMetricLoader].
 
-Of course, Fili also needs to be told about the `MetricLoader` that you just defined. See
-[Binding Resources](binding-resources) for details on how to do that.
+Of course, Fili also needs to be told about the `MetricLoader` that you just defined.
 
 Custom Metrics
 --------------
