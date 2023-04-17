@@ -110,7 +110,7 @@
         <version.jetty>9.4.40.v20210413</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
-        <version.spring>5.3.26</version.spring>
+        <version.spring>5.3.27</version.spring>
         <version.groovy>3.0.7</version.groovy>
         <version.jackson>2.13.4</version.jackson>
         <version.jackson-databind>2.13.4.2</version.jackson-databind>
