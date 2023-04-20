@@ -23,6 +23,12 @@ Current
   - The `RoleBasedTableValidatorRequestMapper` is now specific to the TablesApiRequest and handles requests for specific tables and 
         fullview requests.
     
+- Dependency version bumps for security issues:
+  -  Snakeyaml: https://bitbucket.org/snakeyaml/snakeyaml/issues/561/cve-2022-1471-vulnerability-in#comment-64634374
+  - json-smart: https://research.jfrog.com/vulnerabilities/stack-exhaustion-in-json-smart-leads-to-denial-of-service-when-parsing-malformed-json-xray-427633/
+  - protobuf: https://github.com/advisories/GHSA-h4h5-3hr4-j3g2
+  - netty-codec:  https://github.com/advisories/GHSA-9vjp-v76f-g363
+  - replace cglib with bytebuddy (jdk conformance issues)
 
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
 
