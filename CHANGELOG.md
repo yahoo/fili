@@ -9,6 +9,10 @@ Current
 -------
 
 ### Fixed:
+- [Removed excessive logging and exceptions caused during test runs]()
+  - Metadata Loader during test runs shouldn't try to connect to metadata service. `NoOpDataSourceMetadataLoadTask`
+  - SegmentMetadata in tests do not parse correctly as lists, changing to a null object. `TestDruidWebService` 
+  - Noop cache shouldn't create useless connection to Memcached `StubTupleDataCache`
 
 ### Added:
 
@@ -17,6 +21,18 @@ Current
   - Added logging of active user principal to context block for query.
 
 ### Changed:
+- [Reworked RoleBased Request Mapping for greater generality and yet more flexibility](https://github.com/yahoo/fili/pull/1288)
+  - `RoleBasedValidatorRequestMapper` has been added that applies to any ApiRequest, but otherwise behaves like the original 
+        `RoleBasedTableValidatorRequestMapper`. 
+  - The `RoleBasedTableValidatorRequestMapper` is now specific to the TablesApiRequest and handles requests for specific tables and 
+        fullview requests.
+    
+- Dependency version bumps for security issues:
+  -  Snakeyaml: https://bitbucket.org/snakeyaml/snakeyaml/issues/561/cve-2022-1471-vulnerability-in#comment-64634374
+  - json-smart: https://research.jfrog.com/vulnerabilities/stack-exhaustion-in-json-smart-leads-to-denial-of-service-when-parsing-malformed-json-xray-427633/
+  - protobuf: https://github.com/advisories/GHSA-h4h5-3hr4-j3g2
+  - netty-codec:  https://github.com/advisories/GHSA-9vjp-v76f-g363
+  - replace cglib with bytebuddy (jdk conformance issues)
 
 - [Updated Groovy to 3.0](https://github.com/yahoo/fili/pull/1171)
 

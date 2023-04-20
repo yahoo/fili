@@ -95,6 +95,9 @@ public abstract class BaseTableLoader implements TableLoader {
                         )
                 ).collect(Collectors.toCollection(LinkedHashSet::new));
 
+        List<String> tableNames = physicalTables.stream().map(PhysicalTable::getName).collect(Collectors.toList());
+        LOG.debug("Physical Tables built for new table group: {}", tableNames);
+
         // Derive the dimensions by taking the union of all the physical dimensions
         Set<Dimension> dimensions = physicalTables.stream()
                 .map(PhysicalTable::getSchema)
@@ -322,8 +325,6 @@ public abstract class BaseTableLoader implements TableLoader {
                             }
                         }
                 );
-
-        LOG.debug("Table Loader Building Physical Table {}", currentTableName);
 
         // Build the current physical table using physical table dictionary to resolve dependency
         ConfigPhysicalTable currentTableBuilt = currentTableDefinition.build(

@@ -45,6 +45,7 @@ import com.yahoo.bard.webservice.data.cache.HashDataCache;
 import com.yahoo.bard.webservice.data.cache.MemDataCache;
 import com.yahoo.bard.webservice.data.cache.MemTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.StubDataCache;
+import com.yahoo.bard.webservice.data.cache.StubTupleDataCache;
 import com.yahoo.bard.webservice.data.cache.TupleDataCache;
 import com.yahoo.bard.webservice.data.config.ConfigurationLoader;
 import com.yahoo.bard.webservice.data.config.DefaultConfigurationLoader;
@@ -354,10 +355,8 @@ public abstract class AbstractBinderFactory implements BinderFactory {
                 bind(querySigningService).to(QuerySigningService.class);
 
 
-                    bind(buildQuerySignedCacheService(
-                            buildLocalSignatureCache(), querySigningService, getMapper())).to(
-                            CacheService.class);
-
+                bind(buildQuerySignedCacheService(buildLocalSignatureCache(), querySigningService, getMapper()))
+                        .to(CacheService.class);
 
                 bind(buildJobRowBuilder()).to(JobRowBuilder.class);
 
@@ -1068,6 +1067,9 @@ public abstract class AbstractBinderFactory implements BinderFactory {
             LOG.warn("Cache V2 feature flag is deprecated, " +
                     "use the new configuration parameter to set desired caching strategy"
             );
+        }
+        if (CacheFeatureFlag.NONE.isOn()) {
+            return new StubTupleDataCache<Long, String>();
         }
         try {
             MemTupleDataCache<Long, String> cache = new MemTupleDataCache<>();
