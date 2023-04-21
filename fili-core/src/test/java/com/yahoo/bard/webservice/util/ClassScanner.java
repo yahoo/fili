@@ -181,7 +181,7 @@ public class ClassScanner {
 
         // Try a no arg constructor first
         try {
-            return newClass.newInstance();
+            return newClass.getConstructor().newInstance();
         } catch (Throwable e) {
             /* Ignore, try using constructors */
             cause = new IllegalArgumentException(newClass + ":" + mode, e);
