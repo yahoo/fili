@@ -260,7 +260,15 @@ public class ClassScanner {
     @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity", "unchecked"})
     private <T> T constructArg(Class<T> cls, Args mode, Stack<Class> stack) throws InstantiationException {
         T arg = null;
-        T cachedValue = getCachedValue(cls);
+        try {
+            T cachedValue = getCachedValue(cls);
+        } catch (StackOverflowError r) {
+            String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name() + " stack " +
+                    stack.toString();
+
+            throw new RuntimeException("Stack overflow " + message, r);
+        }
+
 
         if (cls.isPrimitive()) {
             arg = cachedValue;
