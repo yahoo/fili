@@ -119,7 +119,7 @@ class ClassScannerSpec extends Specification {
      * <tt>ClassUnderTestSpec</tt> if such a Spec exists with that method.
      */
     @IgnoreIf({ClassScannerSpec.getClassesDeclaring("equals", Object.class).empty})
-    @Unroll("test equals for #className")
+    @Unroll
     def "test equals for #className"() {
         setup:
         try {
