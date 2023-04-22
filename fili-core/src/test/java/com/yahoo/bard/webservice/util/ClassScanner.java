@@ -260,7 +260,21 @@ public class ClassScanner {
     @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity", "unchecked"})
     private <T> T constructArg(Class<T> cls, Args mode, Stack<Class> stack) throws InstantiationException {
         T arg = null;
-        T cachedValue = getCachedValue(cls);
+        T cachedValue;
+
+        try {
+            cachedValue = getCachedValue(cls);
+        } catch (StackOverflowError e) {
+            List<Class> startOfStack = new ArrayList<>();
+            for (int i = 1; i <= 10; i++) {
+                startOfStack.add(stack.pop());
+            }
+            List<Class> endOfStack = new ArrayList<>();
+            endOfStack.add(stack.lastElement());
+            String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
+                    + " top of stack " + startOfStack + " last element in stack " + endOfStack;
+            throw new RuntimeException("Stack overflow " + message, e);
+        }
 
         if (cls.isPrimitive()) {
             arg = cachedValue;
@@ -288,7 +302,7 @@ public class ClassScanner {
             arg = constructSubclass(cls, mode, stack);
         } else {
             try {
-                arg = cls.newInstance();
+                arg = cls.getConstructor().newInstance();
             } catch (Throwable ignored) {
                 try {
                     arg = constructObject(cls, mode, stack);
