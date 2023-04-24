@@ -231,15 +231,9 @@ public class ClassScanner {
                     arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
                 } catch (StackOverflowError e) {
                     stackFramesPopped += 1;
-                    if (stackFramesPopped == 20) {
-                        List<Class> startOfStack = new ArrayList<>();
-                        for (int j = 1; j <= 10; j++) {
-                            startOfStack.add(stack.pop());
-                        }
-                        List<Class> endOfStack = new ArrayList<>();
-                        endOfStack.add(stack.lastElement());
+                    if (stackFramesPopped == 15) {
                         String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
-                                + " top of stack " + startOfStack + " last element in stack " + endOfStack;
+                                + " stack " + stack;
                         throw new RuntimeException("Stack overflow " + message, e);
                     }
                     throw e;
@@ -289,15 +283,9 @@ public class ClassScanner {
             cachedValue = getCachedValue(cls);
         } catch (StackOverflowError e) {
             stackFramesPopped += 1;
-            if (stackFramesPopped == 20) {
-                List<Class> startOfStack = new ArrayList<>();
-                for (int j = 1; j <= 10; j++) {
-                    startOfStack.add(stack.pop());
-                }
-                List<Class> endOfStack = new ArrayList<>();
-                endOfStack.add(stack.lastElement());
+            if (stackFramesPopped == 15) {
                 String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
-                        + " top of stack " + startOfStack + " last element in stack " + endOfStack;
+                        + " stack " + stack;
                 throw new RuntimeException("Stack overflow " + message, e);
             }
             throw e;
