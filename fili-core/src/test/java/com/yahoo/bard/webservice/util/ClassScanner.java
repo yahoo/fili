@@ -152,6 +152,8 @@ public class ClassScanner {
         return constructObject(newClass, mode, new Stack<>());
     }
 
+    int stackFramesPopped = 0;
+
     /**
      * Construct the given object.
      *
@@ -222,7 +224,24 @@ public class ClassScanner {
                     }
                 }
 
-                Object arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
+                Object arg;
+                try {
+                    arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
+                } catch (StackOverflowError e) {
+                    stackFramesPopped += 1;
+                    if (stackFramesPopped == 20) {
+                        List<Class> startOfStack = new ArrayList<>();
+                        for (int j = 1; j <= 10; j++) {
+                            startOfStack.add(stack.pop());
+                        }
+                        List<Class> endOfStack = new ArrayList<>();
+                        endOfStack.add(stack.lastElement());
+                        String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
+                                + " top of stack " + startOfStack + " last element in stack " + endOfStack;
+                        throw new RuntimeException("Stack overflow " + message, e);
+                    }
+                    throw e;
+                }
 
                 // cannot pass null to @NotNull arg.  Do not use this constructor, try next
                 if (notnull && arg == null) {
@@ -260,20 +279,24 @@ public class ClassScanner {
     @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity", "unchecked"})
     private <T> T constructArg(Class<T> cls, Args mode, Stack<Class> stack) throws InstantiationException {
         T arg = null;
-        T cachedValue;
+        T cachedValue = null;
 
         try {
             cachedValue = getCachedValue(cls);
         } catch (StackOverflowError e) {
-            List<Class> startOfStack = new ArrayList<>();
-            for (int i = 1; i <= 10; i++) {
-                startOfStack.add(stack.pop());
+            stackFramesPopped += 1;
+            if (stackFramesPopped == 20) {
+                List<Class> startOfStack = new ArrayList<>();
+                for (int j = 1; j <= 10; j++) {
+                    startOfStack.add(stack.pop());
+                }
+                List<Class> endOfStack = new ArrayList<>();
+                endOfStack.add(stack.lastElement());
+                String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
+                        + " top of stack " + startOfStack + " last element in stack " + endOfStack;
+                throw new RuntimeException("Stack overflow " + message, e);
             }
-            List<Class> endOfStack = new ArrayList<>();
-            endOfStack.add(stack.lastElement());
-            String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
-                    + " top of stack " + startOfStack + " last element in stack " + endOfStack;
-            throw new RuntimeException("Stack overflow " + message, e);
+            throw e;
         }
 
         if (cls.isPrimitive()) {
