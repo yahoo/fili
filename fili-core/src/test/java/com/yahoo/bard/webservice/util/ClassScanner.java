@@ -226,6 +226,8 @@ public class ClassScanner {
 
                 Object arg;
                 try {
+                    // Have a weird Heisenbug where this code enters an infinite regress on one class,
+                    // but we can't see which one without better errors.
                     arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
                 } catch (StackOverflowError e) {
                     stackFramesPopped += 1;
@@ -282,6 +284,8 @@ public class ClassScanner {
         T cachedValue = null;
 
         try {
+            // Have a weird Heisenbug where this code enters an infinite regress on one class,
+            // but we can't see which one without better errors.
             cachedValue = getCachedValue(cls);
         } catch (StackOverflowError e) {
             stackFramesPopped += 1;
