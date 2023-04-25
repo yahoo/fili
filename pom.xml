@@ -110,15 +110,15 @@
         <version.jetty>9.4.40.v20210413</version.jetty>
         <version.hibernate>5.4.3.Final</version.hibernate>
 
-        <version.spring>5.3.20</version.spring>
+        <version.spring>5.3.27</version.spring>
         <version.groovy>3.0.7</version.groovy>
         <version.jackson>2.13.4</version.jackson>
-        <version.jackson-databind>2.13.4.1</version.jackson-databind>
+        <version.jackson-databind>2.13.4.2</version.jackson-databind>
         <version.junit5>5.7.0</version.junit5>
 
         <version.gmavenplus.plugin>1.12.1</version.gmavenplus.plugin>
         <version.guava>30.0-jre</version.guava>
-        <version.druid.api>0.20.2</version.druid.api>
+        <version.druid.api>24.0.0</version.druid.api>
 
         <profiles.active>test</profiles.active>
 
@@ -250,12 +250,12 @@
             </dependency>
 
             <!-- Optional dependencies for using Spock -->
-            <dependency> <!-- enables mocking of classes (in addition to interfaces) -->
-                <groupId>cglib</groupId>
-                <artifactId>cglib-nodep</artifactId>
-                <version>3.2.4</version>
-                <scope>test</scope>
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>1.10.10</version>
             </dependency>
+
             <dependency> <!-- enables mocking of classes without default constructor (together with CGLIB) -->
                 <groupId>org.objenesis</groupId>
                 <artifactId>objenesis</artifactId>
@@ -525,6 +525,30 @@
                 <artifactId>jetty-servlet</artifactId>
                 <version>${version.jetty}</version>
             </dependency>
+
+            <!-- Security patches -->
+            <dependency>
+                <groupId>net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>2.4.9</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.9.4</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec</artifactId>
+                <version>4.1.68.Final</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -696,7 +720,7 @@
                     <configuration>
                         <forkCount>1</forkCount>
                         <reuseForks>true</reuseForks>
-                        <argLine>${jacoco.args} -Xmx3G</argLine>
+                        <argLine>${jacoco.args} -Xmx3G  --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <includes>
                             <include>**/*Spec*</include>

@@ -152,6 +152,8 @@ public class ClassScanner {
         return constructObject(newClass, mode, new Stack<>());
     }
 
+    int stackFramesPopped = 0;
+
     /**
      * Construct the given object.
      *
@@ -181,7 +183,7 @@ public class ClassScanner {
 
         // Try a no arg constructor first
         try {
-            return newClass.newInstance();
+            return newClass.getConstructor().newInstance();
         } catch (Throwable e) {
             /* Ignore, try using constructors */
             cause = new IllegalArgumentException(newClass + ":" + mode, e);
@@ -222,7 +224,20 @@ public class ClassScanner {
                     }
                 }
 
-                Object arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
+                Object arg;
+                try {
+                    // Have a weird Heisenbug where this code enters an infinite regress on one class,
+                    // but we can't see which one without better errors.
+                    arg = (cls == newClass ? null : constructArg(cls, argMode, stack));
+                } catch (StackOverflowError e) {
+                    stackFramesPopped += 1;
+                    if (stackFramesPopped == 15) {
+                        String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
+                                + " stack " + stack;
+                        throw new RuntimeException("Stack overflow " + message, e);
+                    }
+                    throw e;
+                }
 
                 // cannot pass null to @NotNull arg.  Do not use this constructor, try next
                 if (notnull && arg == null) {
@@ -260,7 +275,21 @@ public class ClassScanner {
     @SuppressWarnings({"boxing", "checkstyle:cyclomaticcomplexity", "unchecked"})
     private <T> T constructArg(Class<T> cls, Args mode, Stack<Class> stack) throws InstantiationException {
         T arg = null;
-        T cachedValue = getCachedValue(cls);
+        T cachedValue = null;
+
+        try {
+            // Have a weird Heisenbug where this code enters an infinite regress on one class,
+            // but we can't see which one without better errors.
+            cachedValue = getCachedValue(cls);
+        } catch (StackOverflowError e) {
+            stackFramesPopped += 1;
+            if (stackFramesPopped == 15) {
+                String message = "OUTPUT: Class name " + cls.getSimpleName() + "Args mode: " + mode.name()
+                        + " stack " + stack;
+                throw new RuntimeException("Stack overflow " + message, e);
+            }
+            throw e;
+        }
 
         if (cls.isPrimitive()) {
             arg = cachedValue;
@@ -288,7 +317,7 @@ public class ClassScanner {
             arg = constructSubclass(cls, mode, stack);
         } else {
             try {
-                arg = cls.newInstance();
+                arg = cls.getConstructor().newInstance();
             } catch (Throwable ignored) {
                 try {
                     arg = constructObject(cls, mode, stack);

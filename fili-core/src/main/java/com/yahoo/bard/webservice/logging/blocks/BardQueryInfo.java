@@ -31,6 +31,8 @@ public class BardQueryInfo implements LogInfo {
     public static final String WEIGHT_CHECK_SCANNED_LINES = "weightCheckLinesScanned";
     public static final String WEIGHT_CHECK_SKETCHES_SCANNED = "weightCheckSketchesScanned";
 
+    public static final String DRUID_RESPONSE_SIZE = "druidResponseSize";
+
     private final String type;
     private final AtomicLong weightCheckCount = new AtomicLong();
     private final AtomicLong factQueryCount = new AtomicLong();
@@ -43,6 +45,7 @@ public class BardQueryInfo implements LogInfo {
     private final AtomicLong linesScanned = new AtomicLong();
     private final AtomicLong sketchesOutput = new AtomicLong();
     private final AtomicLong linesOutput = new AtomicLong();
+    private final AtomicLong druidResponseSize = new AtomicLong();
 
     /**
      * Constructor.
@@ -64,7 +67,8 @@ public class BardQueryInfo implements LogInfo {
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERIES, factQueryCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_QUERY_CACHE_HIT, factCacheHitCount),
                 new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_ERRORS, factPutErrorsCount),
-                new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_TIMEOUTS, factPutTimeoutsCount)
+                new AbstractMap.SimpleImmutableEntry<>(FACT_PUT_TIMEOUTS, factPutTimeoutsCount),
+                new AbstractMap.SimpleImmutableEntry<>(DRUID_RESPONSE_SIZE, druidResponseSize)
         ).collect(Collectors.toMap(
                 AbstractMap.SimpleImmutableEntry::getKey,
                 AbstractMap.SimpleImmutableEntry::getValue
@@ -160,6 +164,11 @@ public class BardQueryInfo implements LogInfo {
         ;
     }
 
+    public static void accumulateDruidResponseSize(long addend) {
+        getBardQueryInfo().druidResponseSize.getAndAdd(addend);
+
+    }
+
     /**
      * Adds Query key cksum to BardCacheInfo object in the cache stats map.
      * @param cksum Cksum of Cache key.
@@ -168,6 +177,7 @@ public class BardQueryInfo implements LogInfo {
     public static void addCacheInfo(String cksum, BardCacheInfo infoLog) {
         getBardQueryInfo().cacheStatsMap.put(cksum, infoLog);
     }
+
 
     /**
      * Serialize cache put stats log blocks.

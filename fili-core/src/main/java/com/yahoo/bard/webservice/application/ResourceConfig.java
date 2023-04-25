@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * The resource configuration for the bard web applications, especially core filters.
  */
@@ -37,10 +39,12 @@ public class ResourceConfig extends org.glassfish.jersey.server.ResourceConfig {
      * @throws InstantiationException if a class was not able to be instantiated
      * @throws IllegalAccessException if there was a problem accessing something due to security restrictions
      */
-    public ResourceConfig() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public ResourceConfig()
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         // Build the binder using the configured factory
         Class<? extends BinderFactory> binderClass = Class.forName(bindingFactory).asSubclass(BinderFactory.class);
-        BinderFactory binderFactory = binderClass.newInstance();
+        BinderFactory binderFactory = binderClass.getConstructor().newInstance();
         Binder binder = binderFactory.buildBinder();
 
         // Register Instrumentation
