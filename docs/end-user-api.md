@@ -33,8 +33,7 @@ Table of Contents
 - [Asynchronous Queries](#asynchronous-queries)
     - [Jobs endpoint](#jobs-endpoint)
 - [Misc](#misc)
-    - [Dates and Times](#dates-and-times)
-      - [Date Periods](#date-periods)
+    - [Interval Details](#interval-details)
       - [Date Macros](#date-macros)
       - [Time Zone](#time-zone)
     - [Case Sensitivity](#case-sensitivity)
@@ -60,7 +59,7 @@ aggregating, as well as filtering of data, and are a critical part of the system
 fields, as well as a collection of possible values for that dimension. These dimension fields and values serve two
 primary purposes: Filtering and Annotating data query results.
 
-All dimensions have an Id property (a natural key) and a Description property (a human-readable description). Both of
+Typical dimensions have an `id` property (a natural key) and a `desc` (description) property (a human-readable description). Both of
 these fields can be used to filter rows reported on, and both of these fields are included in the data query result set
 for each dimension.
 
@@ -178,8 +177,8 @@ components of this URL.
     week of data.
 - **metrics** - The different [metrics](#metrics) we want included in our response, as a comma-separated list of
     metrics. (Note: these are case-sensitive)
-- **dateTime** - Indicates the [interval](#interval) that we are running the report over, in
-    [ISO 8601 format](#dates-and-times).
+- **dateTime** - Indicates the [interval](#interval) that we are running the report over
+    [Interval Details](#interval-details).
 
 ### Dimension Breakout ###
 
@@ -339,15 +338,17 @@ There are, however, a few differences between pagination for Dimension and Data 
 For JSON (and JSON-API) responses, a `meta` object is included in the body of the response:
  
 ```json
+{
 "meta": {
     "pagination": {
         "currentPage": 2,
         "rowsPerPage": 3,
-        "numberOfResults": 7
+        "numberOfResults": 7,
         "first": "https://sampleapp.fili.io/v1/data/network/day?metrics=pageViews&dateTime=2014-09-01/2014-09-08&perPage=3&page=1",
         "previous": "https://sampleapp.fili.io/v1/data/network/day?metrics=pageViews&dateTime=2014-09-01/2014-09-08&perPage=3&page=1",
         "next": "https://sampleapp.fili.io/v1/data/network/day?metrics=pageViews&dateTime=2014-09-01/2014-09-08&perPage=3&page=3",
         "last": "https://sampleapp.fili.io/v1/data/network/day?metrics=pageViews&dateTime=2014-09-01/2014-09-08&perPage=3&page=3"
+        }
     }
 }
 ```
@@ -677,7 +678,7 @@ Remember that `topN` provides the top N results _for each time bucket_. Therefor
 get `n * numBuckets` results. In both of the examples above, we would get `3 * 34 = 102` results. If you are only
 interested in the first `n` results, see [pagination/limit](#pagination--limit).
 
-Asynchronous Queries
+####Asynchronous Queries####
 --------------------
 Fili supports asynchronous data queries. A new parameter `asyncAfter` is added on data queries. The `asyncAfter`
 parameter will control whether a data query should always be synchronous, or transition from synchronous to asynchronous
@@ -769,7 +770,7 @@ just like the [`filename`](#filename) parameter on queries sent to the `data` en
 a query to the `data` endpoint, and allow the user to get pages of the results.
 
 4. **`asyncAfter`** - Allows the user to specify how long they are willing to wait for results from the
-result store. Behaves like the [`asyncAfter`](async) parameter on the `data` endpoint.
+result store. Behaves like the [`asyncAfter`](#asynchronous-queries) parameter on the `data` endpoint.
 
 If the results for the given ticket are ready, we get the results in the format specified. Otherwise, we get the
 [job's metadata](#job-meta-data).
@@ -783,35 +784,53 @@ will not send a response until all of the data is ready.
 Misc
 ----
 
-### Dates and Times ###
+### Interval Details ###
 
-The date interval is specified using the `dateTime` parameter in the format `dateTime=d1/d2`. The first date is the start date, and the second is the non-inclusive end date. For example, `dateTime=2015-10-01/2015-10-03` will return the data for October 1st and 2nd, but not the 3rd. Dates can be one of: 
+The date interval is specified using the `dateTime` parameter with two terms, seperated by a `/`.  They describe an inclusive/exclusive interval. `dateTime=d1/d2`.  For example, `dateTime=2015-10-01/2015-10-03` will return the data rows for October 1st and 2nd, but not the 3rd. 
+
+Dates can be one of: 
 
 1. ISO 8601 formatted date
-2. ISO 8601 duration  (see below)
-3. Date macro (see below)
+2. Date macros (see below)
+
+Non date terms can include:
+
+1. ISO 8601 Periods
+2. iCalendar Recurrence rules (RFC 2445) (can only be used as the second term)
 
 We have followed the ISO 8601 standards as closely as possible in the API. Wikipedia has a [great article](http://en.wikipedia.org/wiki/ISO_8601) on ISO 8601 dates and times if you want to dig deep. 
 
-#### Date Periods  (ISO 8601 Durations) ####
+#### Date Macros ####
+
+Date macros can use context such as the grain of the request to resolve their intended meaning.
+
+We have created two default macros. The one named `current` translates to the beginning of the current time grain period.  For example, if your time grain is `day`, then `current` will resolve to the starts of the current calendar date.  If your query time grain is `month`, then `current` will resolve to the first of the current month.
+There is also a similar macro named `next` which resolves to one time grain period the date resolved by current. For example, if your time grain is `day`, then, `next` will resolve to the next midnight.
+
+#### Periods (ISO 8601 Durations) ####
 
 Date Periods have been implemented in accordance with the [ISO 8601 standard](https://en.wikipedia.org/wiki/ISO_8601#Durations). Briefly, a period is specified by the letter `P`, followed by a number and then a timegrain (M=month,W=week,D=day,etc).  For example, if you wanted 30 days of data, you would specify `P30D`.  The number and period may be repeated, so `P1Y2M` is an interval of one year and two months. 
 
 This period can take the place of either the start or end date in the query.
 
-#### Recurrence Rule  (RFC 2445) ####
+#### Recurrence Rules (RFC 2445) ####
 
 If the first term is a date, the second one can be an iCalendar recurrence rule.  (https://www.ietf.org/rfc/rfc2445.txt)
 
-#### Date Macros ####
+The syntax for an rrule interval is datetime=DATE/RRULE=FREQ=monthly...
 
-We have created a macro named `current`, which will always be translated to the beginning of the current time grain period.  For example, if your time grain is `day`, then `current` will resolve to today’s date.  If your query time grain is `month`, then `current` will resolve to the first of the current month.
+RRULE syntax is very complex and rich, but the most important details:  They must start with a frequency.  They can contain a count indicating how many repetitions or a due date specifying a final date.  
 
-There is also a similar macro named `next` which resolves to the beginning of the next interval. For example, if your time grain is `day`, then, `next` will resolve to tomorrow's date.
+When using monthly frequency, the parameter `bydayofMonth` cab be specified to select days within the month.  If the value is positive it indicates a day starting from the start of the month (e.g. bymonthday=7,14 would retrieve the seventh and fourteenth days of a month).
+Negative values count backwards from the end of the month, so -1 indicates the last day of a month.
+
+Similar syntax applies to days of week, month of year, or week of month.
+
+Example: `2019-08-01/RRULE=FREQ=monthly;bymonthday=-1;COUNT=3` -> Evaluates to a set of three intervals, containing the last day of the month for three consecutive months starting with the last day of August 2019. The period of these intervals is inferred from the granularity of the query.
 
 #### Time Zone
 
-Currently, time zone cannot be specified for the start or stop instants of an interval. Instead, the time zone of a query can be changed via the `timeZone` query parameter. This changes the time zone in which the intervals specified in the `dateTime` are interpreted. By default, the query will use the default time zone of the API, but any [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) can be specified to override that. For example, specifying query parameters
+Time zone cannot be specified within the interval terms. Instead, the time zone of a query can be changed via the `timeZone` query parameter. This changes the time zone in which the intervals specified in the `dateTime` are interpreted. By default, the query will use the default time zone of the API, but any [time zone identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) can be specified to override that. For example, specifying query parameters
 
     dateTime=2016-09-16/2016-09-17&timeZone=America/Los_Angeles
     vs

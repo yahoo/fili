@@ -3,27 +3,29 @@
 package com.yahoo.bard.webservice.web.security;
 
 import com.yahoo.bard.webservice.data.config.ResourceDictionaries;
-import com.yahoo.bard.webservice.web.ChainingRequestMapper;
+import com.yahoo.bard.webservice.table.LogicalTable;
 import com.yahoo.bard.webservice.web.RequestMapper;
 import com.yahoo.bard.webservice.web.RequestValidationException;
-import com.yahoo.bard.webservice.web.apirequest.DataApiRequest;
+import com.yahoo.bard.webservice.web.apirequest.TablesApiRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 /**
  * A RequestMapper that validates table access for user based on roles that a user is associated with.
- *
- * @param <T> Type of API Request this RequestMapper will work on
  */
-public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> extends ChainingRequestMapper<T> {
+public class RoleBasedTableValidatorRequestMapper extends RoleBasedValidatorRequestMapper<TablesApiRequest> {
 
-    private final Map<String, Predicate<SecurityContext>> securityRules;
+    private static final Logger LOG = LoggerFactory.getLogger(RoleBasedTableValidatorRequestMapper.class);
 
     /**
      * Constructor.
@@ -34,21 +36,21 @@ public class RoleBasedTableValidatorRequestMapper<T extends DataApiRequest> exte
     public RoleBasedTableValidatorRequestMapper(
             Map<String, Predicate<SecurityContext>> securityRules,
             ResourceDictionaries resourceDictionaries,
-            @NotNull RequestMapper<T> next
+            @NotNull RequestMapper<TablesApiRequest> next
     ) {
-        super(resourceDictionaries, next);
-        this.securityRules = securityRules;
+        super(securityRules, resourceDictionaries, next, r -> r.getTable().getName());
     }
 
-
     @Override
-    public T internalApply(T request, ContainerRequestContext context)
+    public TablesApiRequest internalApply(TablesApiRequest request, ContainerRequestContext context)
             throws RequestValidationException {
-        SecurityContext securityContext = context.getSecurityContext();
-        if (!securityRules.getOrDefault(request.getTable().getName(), (ignored -> true)).test(securityContext)) {
-            throw new RequestValidationException(Response.Status.FORBIDDEN, "Permission Denied",
-                    "Request cannot be completed as you do not have enough permission");
+        if (request.getTable() == null) {
+            SecurityContext securityContext = context.getSecurityContext();
+            LinkedHashSet<LogicalTable> exposedTables = request.getTables().stream()
+                    .filter(table -> validate(table.getName(), securityContext))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            return request.withTables(exposedTables);
         }
-        return request;
+        return super.internalApply(request, context);
     }
 }
