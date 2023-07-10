@@ -16,6 +16,7 @@ jobs:
     requires: [~pr]
     steps:
       - header: echo "Starting the pipeline"
+      - anything: echo Testing Security
       - lua-install: apt-get update -qy && apt-get install -y lua5.2
       - build: ./screwdriver/mvn-build.bash
     environment:
