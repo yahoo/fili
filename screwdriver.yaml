@@ -1,11 +1,15 @@
 cache:
   event: ["~/.m2"]
 
+annotations:
+  screwdriver.cd/restrictPR: fork
+
 shared:
   annotations:
     screwdriver.cd/cpu: TURBO
     screwdriver.cd/ram: TURBO
   image: maven:3.6.3-adoptopenjdk-11
+
 
 jobs:
   pull-commit:
