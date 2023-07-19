@@ -21,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.transcoders.SerializingTranscoder;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -82,8 +84,17 @@ public class MemDataCache<T extends Serializable> implements DataCache<T> {
     @Inject
     public MemDataCache() throws IOException {
         this(
-                new MemcachedClient(new TimeoutConfigurerBinaryConnectionFactory(
-                        SYSTEM_CONFIG.getLongProperty(OPERATION_TIMEOUT_CONFIG_KEY, DEFAULT_OPERATION_TIMEOUT)),
+                new MemcachedClient(
+                        new ConnectionFactoryBuilder()
+                                .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                                .setOpTimeout(SYSTEM_CONFIG.getLongProperty(
+                                        OPERATION_TIMEOUT_CONFIG_KEY,
+                                        DEFAULT_OPERATION_TIMEOUT))
+                                .setTranscoder(new SerializingTranscoder(
+                                        SYSTEM_CONFIG.getIntProperty(
+                                        SYSTEM_CONFIG.getPackageVariableName("druid_max_response_length_to_cache"),
+                                        Integer.MAX_VALUE)))
+                                .build(),
                         AddrUtil.getAddresses(SERVER_CONFIG)
                 )
         );

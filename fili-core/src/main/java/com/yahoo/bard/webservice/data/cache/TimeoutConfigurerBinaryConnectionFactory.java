@@ -11,7 +11,10 @@ import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * A binary connection factory with a configurable timeout.
+ *
+ * @deprecated use {@link net.spy.memcached.ConnectionFactoryBuilder.ConnectionFactoryBuilder()} instead.
  */
+@Deprecated
 public class TimeoutConfigurerBinaryConnectionFactory extends BinaryConnectionFactory {
 
     public static final SystemConfig SYSTEM_CONFIG = SystemConfigProvider.getInstance();
